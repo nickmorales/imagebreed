@@ -509,6 +509,12 @@ has 'marker_by_marker_storage' => (
     is => 'rw'
 );
 
+has 'genotyping_data_type' => (
+    isa => 'Str|Undef',
+    is => 'rw',
+);
+
+
 sub BUILD {
     my $self = shift;
 }
@@ -946,6 +952,7 @@ sub store_identifiers {
     my $schema = $self->bcs_schema;
     my $dbh = $schema->storage->dbh;
     my $temp_file_sql_copy = $self->temp_file_sql_copy;
+    my $genotyping_data_type = $self->genotyping_data_type;
 
     my $csv = Text::CSV->new({ binary => 1, auto_diag => 1, eol => "\n"});
     open(my $fh, ">>", $temp_file_sql_copy) or die "Failed to open file $temp_file_sql_copy: $!";
@@ -990,12 +997,19 @@ sub store_identifiers {
         } else {
             ($observation_unit_name, $accession_name) = split(/\|\|\|/, $_);
         }
+        print STDERR "OBSERVATION UNIT NAME =".Dumper($observation_unit_name)."\n";
         #print STDERR "SAVING GENOTYPEPROP FOR $observation_unit_name \n";
-        my $stock_lookup_obj = $self->stock_lookup()->{$observation_unit_name};
+        my $stock_lookup_obj;
+        if (defined $observation_unit_name) {
+            $stock_lookup_obj = $self->stock_lookup()->{$observation_unit_name};
+        } else {
+            $stock_lookup_obj = $self->stock_lookup()->{$_};
+        }
         my $stock_id = $stock_lookup_obj->{stock_id};
         my $genotype_id = $stock_lookup_obj->{genotype_id};
 
         my $genotypeprop_json = $genotypeprop_observation_units->{$_};
+        print STDERR "GENOTYPEPROP JSON =".Dumper($genotypeprop_json)."\n";
         if ($genotypeprop_json) {
 
             if ($self->accession_population_name){
@@ -1036,34 +1050,40 @@ sub store_identifiers {
             }
 
             my $chromosome_counter = 0;
-            foreach my $chromosome (sort keys %$genotypeprop_json) {
-                my $genotypeprop_id = $stock_lookup_obj->{chrom}->{$chromosome_counter};
 
-                my $chrom_genotypeprop = $genotypeprop_json->{$chromosome};
+            if ($genotyping_data_type eq 'ssr') {
+                my $json_string = encode_json $genotypeprop_json;
+                $h_new_genotypeprop->execute($genotype_id, $self->snp_genotypingprop_cvterm_id(), $chromosome_counter, $json_string);
+                my ($genotypeprop_id) = $h_new_genotypeprop->fetchrow_array();
+            } else {
+                foreach my $chromosome (sort keys %$genotypeprop_json) {
+                    my $genotypeprop_id = $stock_lookup_obj->{chrom}->{$chromosome_counter};
 
-                if ( (!$genotypeprop_id && $self->marker_by_marker_storage) || !$self->marker_by_marker_storage ) {
+                    my $chrom_genotypeprop = $genotypeprop_json->{$chromosome};
 
-                    $chrom_genotypeprop->{CHROM} = $chromosome;
+                    if ( (!$genotypeprop_id && $self->marker_by_marker_storage) || !$self->marker_by_marker_storage ) {
 
-                    my $json_string = encode_json $chrom_genotypeprop;
-                    if ($self->marker_by_marker_storage) { #Used when standard VCF is being stored (NOTE VCF is transpoed prior to parsing by default now), where genotype scores are appended into jsonb.
-                        $h_new_genotypeprop->execute($genotype_id, $self->snp_genotypingprop_cvterm_id(), $chromosome_counter, $json_string);
-                        my ($genotypeprop_id) = $h_new_genotypeprop->fetchrow_array();
-                        $self->stock_lookup()->{$observation_unit_name}->{chrom}->{$chromosome_counter} = $genotypeprop_id;
+                        $chrom_genotypeprop->{CHROM} = $chromosome;
+
+                        my $json_string = encode_json $chrom_genotypeprop;
+                        if ($self->marker_by_marker_storage) { #Used when standard VCF is being stored (NOTE VCF is transpoed prior to parsing by default now), where genotype scores are appended into jsonb.
+                            $h_new_genotypeprop->execute($genotype_id, $self->snp_genotypingprop_cvterm_id(), $chromosome_counter, $json_string);
+                            my ($genotypeprop_id) = $h_new_genotypeprop->fetchrow_array();
+                            $self->stock_lookup()->{$observation_unit_name}->{chrom}->{$chromosome_counter} = $genotypeprop_id;
+                        }
+                        else { #Used when transpoed VCF is being stored, or when Intertek files being stored
+                            $csv->print($fh, [ $genotype_id, $self->snp_genotypingprop_cvterm_id(), $chromosome_counter, $json_string ]);
+                        }
                     }
-                    else { #Used when transpoed VCF is being stored, or when Intertek files being stored
-                        $csv->print($fh, [ $genotype_id, $self->snp_genotypingprop_cvterm_id(), $chromosome_counter, $json_string ]);
+                    else { #When storing standard VCF, when genotype scores are appended into jsonb one by one. NOTE VCF is transposed by default now prior to parsing, but NOT transposing is relevant for instances where transposing requires too much memory.
+                        while (my ($m, $v) = each %$chrom_genotypeprop) {
+                            my $v_string = encode_json $v;
+                            $h_genotypeprop->execute($m, '{'.$m.'}', $v_string, $m, '{'.$m.'}', $v_string, $genotypeprop_id);
+                        }
                     }
 
+                    $chromosome_counter++;
                 }
-                else { #When storing standard VCF, when genotype scores are appended into jsonb one by one. NOTE VCF is transposed by default now prior to parsing, but NOT transposing is relevant for instances where transposing requires too much memory.
-                    while (my ($m, $v) = each %$chrom_genotypeprop) {
-                        my $v_string = encode_json $v;
-                        $h_genotypeprop->execute($m, '{'.$m.'}', $v_string, $m, '{'.$m.'}', $v_string, $genotypeprop_id);
-                    }
-                }
-
-                $chromosome_counter++;
             }
         }
     }
