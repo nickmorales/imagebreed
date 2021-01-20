@@ -45,6 +45,7 @@ sub protocol_page :Path("/breeders_toolbox/protocol") Args(1) {
     $c->stash->{species_name} = $protocol->species_name;
     $c->stash->{create_date} = $protocol->create_date;
     $c->stash->{sample_observation_unit_type_name} = $protocol->sample_observation_unit_type_name;
+    $c->stash->{marker_type} = $protocol->marker_type;
     $c->stash->{template} = '/breeders_toolbox/genotyping_protocol/index.mas';
 }
 
