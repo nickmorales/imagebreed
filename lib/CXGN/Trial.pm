@@ -67,7 +67,7 @@ Lukas Mueller <lam87@cornell.edu>
 Based on work by the entire group :-)
 
 =cut
-    
+
 package CXGN::Trial;
 
 use CXGN::PhenotypingTrial;
@@ -94,7 +94,7 @@ sub new {
     }
 
     my $object;
-    while (my $trial_row = $trial_rs->next()) { 
+    while (my $trial_row = $trial_rs->next()) {
         my $name = $trial_row->type()->name();
         my $val = $trial_row->value();
         # print STDERR Dumper [$name, $val];
@@ -113,7 +113,7 @@ sub new {
         elsif ($val eq "sampling_trial") {
             return CXGN::SamplingTrial->new($args);
         }
-        elsif ($val eq "genotype_data_project") {
+        elsif (($val eq "genotype_data_project") || ($val eq "pcr_genotype_data_project")) {
             return CXGN::GenotypeDataProject->new($args);
         }
         elsif ($val eq "drone_run") {
@@ -241,7 +241,7 @@ sub get_all_phenotype_metadata {
         LIMIT $n";
     my $h = $schema->storage()->dbh()->prepare($q);
     $h->execute();
-    
+
     while (my ($file_id, $create_date, $person_id, $username, $basename, $dirname, $filetype) = $h->fetchrow_array()) {
         $file_info{$file_id} = [$file_id, $create_date, $person_id, $username, $basename, $dirname, $filetype];
     }

@@ -224,7 +224,7 @@ sub get_cxgn_project_type {
                 if ($propvalue eq "treatment") {
                     $cxgn_project_type = 'management_factor_project';
                 }
-                if ($propvalue eq "genotype_data_project") {
+                if (($propvalue eq "genotype_data_project") || ($propvalue eq "pcr_genotype_data_project")) {
                     $cxgn_project_type = 'genotyping_data_project';
                 }
                 if ($propvalue eq "drone_run") {
