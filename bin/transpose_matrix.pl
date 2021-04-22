@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 # 'transpose' swaps rows and columns in the given tab-delimited table.
 # syntax perl transpose.pl input.txt > output.txt
-
 while (<>) {
   chomp;
   @line = split /\t/;
@@ -19,6 +18,6 @@ while (<>) {
   }
 }
 for (my $i=0; $i <= $lastcol; $i++) {
-  $outline[$i] =~ s/\s*$//g;
+  $outline[$i] =~ s/[\f\n\r]*$//g;
   print $outline[$i]."\n";
 }
