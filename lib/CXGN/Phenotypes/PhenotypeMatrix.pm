@@ -149,6 +149,7 @@ has 'offset' => (
 sub get_phenotype_matrix {
     my $self = shift;
     my $include_pedigree_parents = $self->include_pedigree_parents();
+    my $include_timestamp = $self->include_timestamp;
 
     print STDERR "GET PHENOMATRIX ".$self->search_type."\n";
 
@@ -165,7 +166,7 @@ sub get_phenotype_matrix {
             plot_list=>$self->plot_list,
             plant_list=>$self->plant_list,
             subplot_list=>$self->subplot_list,
-            include_timestamp=>$self->include_timestamp,
+            include_timestamp=>$include_timestamp,
             exclude_phenotype_outlier=>$self->exclude_phenotype_outlier,
             trait_contains=>$self->trait_contains,
             phenotype_min_value=>$self->phenotype_min_value,
@@ -227,7 +228,17 @@ sub get_phenotype_matrix {
             my $observations = $obs_unit->{observations};
             my %trait_observations;
             foreach (@$observations){
-                $trait_observations{$_->{trait_name}} = $_->{value};
+                my $collect_date = $_->{collect_date};
+                my $timestamp = $_->{timestamp};
+                if ($include_timestamp && $timestamp) {
+                    $trait_observations{$_->{trait_name}} = "$_->{value},$timestamp";
+                }
+                elsif ($include_timestamp && $collect_date) {
+                    $trait_observations{$_->{trait_name}} = "$_->{value},$collect_date";
+                }
+                else {
+                    $trait_observations{$_->{trait_name}} = $_->{value};
+                }
             }
             foreach my $trait (@sorted_traits) {
                 push @line, $trait_observations{$trait};
@@ -241,7 +252,6 @@ sub get_phenotype_matrix {
 
         my %obsunit_data;
         my %traits;
-        my $include_timestamp = $self->include_timestamp;
 
         print STDERR "No of lines retrieved: ".scalar(@$data)."\n";
         print STDERR "Construct Pheno Matrix Start:".localtime."\n";
