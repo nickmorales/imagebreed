@@ -309,6 +309,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
     my $drone_run_band_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
     my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
     my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
+    my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
 
     my @return_drone_run_band_project_ids;
     my @return_drone_run_band_image_ids;
@@ -328,6 +330,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
             my $new_drone_run_band_name = $c->req->param('drone_run_band_name_1');
             my $new_drone_run_band_desc = $c->req->param('drone_run_band_description_1');
             my $new_drone_run_band_type = $c->req->param('drone_run_band_type_1');
+            my $new_drone_run_band_coordinate_system = $c->req->param('drone_run_band_coordinate_system_1') || 'Pixels';
             if (!$new_drone_run_band_name) {
                 $c->stash->{message} = "Please give a new imaging event band name!";
                 $c->stash->{template} = 'generic_message.mas';
@@ -366,13 +369,15 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 name => $new_drone_run_band_name,
                 description => $new_drone_run_band_desc,
                 type => $new_drone_run_band_type,
-                upload_file => $upload_file
+                upload_file => $upload_file,
+                coordinate_system => $new_drone_run_band_coordinate_system
             };
         } else {
             foreach (1..$new_drone_run_band_numbers) {
                 my $new_drone_run_band_name = $c->req->param('drone_run_band_name_'.$_);
                 my $new_drone_run_band_desc = $c->req->param('drone_run_band_description_'.$_);
                 my $new_drone_run_band_type = $c->req->param('drone_run_band_type_'.$_);
+                my $new_drone_run_band_coordinate_system = $c->req->param('drone_run_band_coordinate_system_'.$_) || 'Pixels';
                 if (!$new_drone_run_band_name) {
                     $c->stash->{message} = "Please give a new imaging event band name!".$_;
                     $c->stash->{template} = 'generic_message.mas';
@@ -411,27 +416,85 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                     name => $new_drone_run_band_name,
                     description => $new_drone_run_band_desc,
                     type => $new_drone_run_band_type,
-                    upload_file => $upload_file
+                    upload_file => $upload_file,
+                    coordinate_system => $new_drone_run_band_coordinate_system
                 };
             }
         }
         foreach (@new_drone_run_bands) {
+            my $coordinate_system = $_->{coordinate_system};
+            my $drone_run_band_type = $_->{type};
+            my $upload_file = $_->{upload_file};
+            my $new_drone_run_input_image = $upload_file->tempname;
+
+            my @drone_run_band_projectprops = (
+                {type_id => $drone_run_band_type_cvterm_id, value => $drone_run_band_type},
+                {type_id => $design_cvterm_id, value => 'drone_run_band'},
+                {type_id => $geoparam_coordinates_type_cvterm_id, value => $coordinate_system}
+            );
+
+            my $time = DateTime->now();
+            my $timestamp = $time->ymd()."_".$time->hms();
+            my $upload_original_name = $selected_drone_run_id."_".$drone_run_band_type.".png";
+
+            my $ortho_file;
+            my @geoparams_coordinates;
+            if ($coordinate_system eq 'Pixels') {
+                $ortho_file = $new_drone_run_input_image;
+            }
+            else {
+                my @geoparams_coordinates;
+                if ($drone_run_band_type eq 'RGB Color Image') {
+                    my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
+                    my $outfile_image_r = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
+                    my $outfile_image_g = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
+                    my $outfile_image_b = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
+                    my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
+
+                    my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $new_drone_run_input_image --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams ";
+                    print STDERR $geo_cmd."\n";
+                    my $geo_cmd_status = system($geo_cmd);
+                    $ortho_file = $outfile_image;
+
+                    open(my $fh_geoparams, '<', $outfile_geoparams) or die "Could not open file '".$outfile_geoparams."' $!";
+                        print STDERR "Opened ".$outfile_geoparams."\n";
+                        my $geoparams = <$fh_geoparams>;
+                        chomp $geoparams;
+                        @geoparams_coordinates = split ',', $geoparams;
+                        print STDERR Dumper [$geoparams, \@geoparams_coordinates];
+                    close($fh_geoparams);
+                }
+                else {
+                    my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
+                    my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
+
+                    my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $new_drone_run_input_image --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams ";
+                    print STDERR $geo_cmd."\n";
+                    my $geo_cmd_status = system($geo_cmd);
+                    $ortho_file = $outfile_image;
+
+                    open(my $fh_geoparams, '<', $outfile_geoparams) or die "Could not open file '".$outfile_geoparams."' $!";
+                        print STDERR "Opened ".$outfile_geoparams."\n";
+                        my $geoparams = <$fh_geoparams>;
+                        chomp $geoparams;
+                        @geoparams_coordinates = split ',', $geoparams;
+                        print STDERR Dumper [$geoparams, \@geoparams_coordinates];
+                    close($fh_geoparams);
+                }
+
+                push @drone_run_band_projectprops, {type_id => $geoparam_coordinates_cvterm_id, value => encode_json \@geoparams_coordinates};
+            }
+
             my $project_rs = $schema->resultset("Project::Project")->create({
                 name => $_->{name},
                 description => $_->{description},
-                projectprops => [{type_id => $drone_run_band_type_cvterm_id, value => $_->{type}}, {type_id => $design_cvterm_id, value => 'drone_run_band'}],
+                projectprops => \@drone_run_band_projectprops,
                 project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $selected_drone_run_id}]
             });
             my $selected_drone_run_band_id = $project_rs->project_id();
 
-            my $upload_file = $_->{upload_file};
-            my $upload_original_name = $upload_file->filename();
-            my $upload_tempfile = $upload_file->tempname;
-            my $time = DateTime->now();
-            my $timestamp = $time->ymd()."_".$time->hms();
-
             my $uploader = CXGN::UploadFile->new({
-                tempfile => $upload_tempfile,
+                tempfile => $ortho_file,
                 subdirectory => "drone_imagery_upload",
                 archive_path => $c->config->{archive_path},
                 archive_filename => $upload_original_name,
@@ -446,7 +509,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 $c->stash->{template} = 'generic_message.mas';
                 return;
             }
-            unlink $upload_tempfile;
+            unlink $new_drone_run_input_image;
             print STDERR "Archived Drone Image File: $archived_filename_with_path\n";
 
             my ($check_image_width, $check_image_height) = imgsize($archived_filename_with_path);
@@ -729,6 +792,8 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
     my $drone_run_band_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
     my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
     my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
+    my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
     my $calendar_funcs = CXGN::Calendar->new({});
 
     my %seen_field_trial_drone_run_dates;
@@ -1186,7 +1251,11 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
             my $project_rs = $schema->resultset("Project::Project")->create({
                 name => $imaging_event_name."_".$band_short,
                 description => $imaging_event_desc.". ".$band,
-                projectprops => [{type_id => $drone_run_band_type_cvterm_id, value => $band}, {type_id => $design_cvterm_id, value => 'drone_run_band'}],
+                projectprops => [
+                    {type_id => $drone_run_band_type_cvterm_id, value => $band},
+                    {type_id => $design_cvterm_id, value => 'drone_run_band'},
+                    {type_id => $geoparam_coordinates_type_cvterm_id, value => $coordinate_system}
+                ],
                 project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $selected_drone_run_id}]
             });
             my $selected_drone_run_band_id = $project_rs->project_id();
@@ -1246,6 +1315,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
     my $drone_run_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_experiment', 'experiment_type')->cvterm_id();
     my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
     my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
     my $drone_run_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_project_type', 'project_property')->cvterm_id();
     my $drone_run_is_raw_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_raw_images', 'project_property')->cvterm_id();
@@ -1899,6 +1969,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                 projectprops => [
                     {type_id => $drone_run_band_type_cvterm_id, value => $band},
                     {type_id => $design_cvterm_id, value => 'drone_run_band'},
+                    {type_id => $geoparam_coordinates_type_cvterm_id, value => $coordinate_system},
                     {type_id => $geoparam_coordinates_cvterm_id, value => encode_json \@geoparams_coordinates}
                 ],
                 project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $selected_drone_run_id}]
