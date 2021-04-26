@@ -4,13 +4,13 @@
 
 Usage: ./run_fixture_and_db_patches.pl -u <dbuser> -p <dbpassword> -h <dbhost> -d <dbname> -e <editinguser> [-s <startfrom>] [--test]
 
--u, --user=         database login username   
--p, --pass=         database login pasword    
+-u, --user=         database login username
+-p, --pass=         database login pasword
 -h, --host=         database host
 -d, --db=           database name
 -e, --editinguser=  user to write as patch executor
 -s, --startfrom=0   start patches from folder # (Default: 0)
--t, --test          Do not make permanent changes.      
+-t, --test          Do not make permanent changes.
 
 e.g. `./run_fixture_and_db_patches.pl -u postgres -p postgres -h localhost -d fixture -e janedoe -s 00085 -t`
 
@@ -96,14 +96,12 @@ sub run_patches {
     my @patches = grep {!($_ ~~ @installed)} map { s/.pm//r } (split "\n", `ls`);
     for (my $j = 0; $j < (scalar @patches); $j++) {
         my $patch = $patches[$j];
-	
-	# ignore emacs backup files
-	if ($patch =~ /\~$/) { 
-	    print STDERR "Ignoring $patch...\n";
-	    next;
-	}
 
-	
+        if ($patch =~ /\~$/ || $patch eq 'typescript') {
+            print STDERR "Ignoring $patch...\n";
+            next;
+        }
+
         my $cmd = "echo -ne \"$dbuser\\n$dbpass\" | mx-run $patch -H $host -D $db -u $editinguser".($test?' -t':'');
         print STDERR $cmd."\n";
         system("bash -c '$cmd'");
