@@ -3071,7 +3071,7 @@ sub trial_plot_time_series_accessions : Chained('trial') PathPart('plot_time_ser
     print STDERR Dumper $cmd;
     my $status = system($cmd);
 
-    $c->stash->{rest} = {success => 1, figure => $pheno_figure_tempfile_string, data_file => $pheno_data_tempfile_string};
+    $c->stash->{rest} = {success => 1, figure => $pheno_figure_tempfile_string, data_file => $pheno_data_tempfile_string, cmd => $cmd};
 }
 
 sub trial_accessions_rank : Chained('trial') PathPart('accessions_rank') Args(0) {
