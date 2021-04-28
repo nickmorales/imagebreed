@@ -44,8 +44,6 @@ sub shared_phenotypes: Path('/ajax/heritability/shared_phenotypes') : {
     $c->tempfiles_subdir("heritability_files");
     my ($fh, $tempfile) = $c->tempfile(TEMPLATE=>"heritability_files/trait_XXXXX");
 
-    my $people_schema = $c->dbic_schema("CXGN::People::Schema");
-    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $temppath = $c->config->{basepath}."/".$tempfile;
     my $ds2 = CXGN::Dataset::File->new(people_schema => $people_schema, schema => $schema, sp_dataset_id => $dataset_id, file_name => $temppath);
     my $phenotype_data_ref = $ds2->retrieve_phenotypes();
@@ -124,7 +122,7 @@ sub generate_results: Path('/ajax/heritability/generate_results') : {
     );
 
     my $pheno_filepath = $tempfile . "_phenotype.txt";
-    
+
 
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
@@ -135,7 +133,7 @@ sub generate_results: Path('/ajax/heritability/generate_results') : {
 
     my $phenotype_data_ref = $ds->retrieve_phenotypes($pheno_filepath);
 
-    
+
     my $h2File = $tempfile . "_" . "h2File.png";
     my $figure3file = $tempfile . "_" . "figure3.png";
     my $figure4file = $tempfile . "_" . "figure4.png";
@@ -173,27 +171,24 @@ sub generate_results: Path('/ajax/heritability/generate_results') : {
     # copy($h2File,$newpath) or die "Copy failed: $!";
     # copy($figure3file,$newpath) or die "Copy failed: $!";
     # copy($figure4file,$newpath) or die "Copy failed: $!";
-   
+
     my $figure_path = $c->{basepath} . "./documents/tempfiles/heritability_files/";
     copy($h2File, $figure_path);
     copy($figure3file, $figure_path);
     copy($figure4file, $figure_path);
 
-    my $figure_path = $c->{basepath} . "./documents/tempfiles/heritability_files/";
-
-    
     my $h2Filebasename = basename($h2File);
     my $h2File_response = "/documents/tempfiles/heritability_files/" . $h2Filebasename;
 
     my $figure3basename = basename($figure3file);
     my $figure3_response = "/documents/tempfiles/heritability_files/" . $figure3basename;
-    
+
     my $figure4basename = basename($figure4file);
     my $figure4_response = "/documents/tempfiles/heritability_files/" . $figure4basename;
 
 
     print $h2File_response;
-        
+
     $c->stash->{rest} = {
         h2Table => $h2File_response,
         figure3 => $figure3_response,
@@ -204,4 +199,3 @@ sub generate_results: Path('/ajax/heritability/generate_results') : {
 }
 
 1
-

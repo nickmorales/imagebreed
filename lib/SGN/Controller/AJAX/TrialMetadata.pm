@@ -2,12 +2,9 @@ package SGN::Controller::AJAX::TrialMetadata;
 
 use Moose;
 use Data::Dumper;
-use List::Util 'max';
 use Bio::Chado::Schema;
-use List::Util qw | any |;
 use CXGN::Trial;
 use Math::Round::Var;
-use List::MoreUtils qw(uniq);
 use File::Temp 'tempfile';
 use Text::CSV;
 use CXGN::Trial::FieldMap;
@@ -21,15 +18,14 @@ use CXGN::UploadFile;
 use CXGN::Stock::Seedlot;
 use CXGN::Stock::Seedlot::Transaction;
 use File::Basename qw | basename dirname|;
-use List::MoreUtils ':all';
+use List::MoreUtils qw | :all !before !after |;
 use Try::Tiny;
 use CXGN::BreederSearch;
 use CXGN::Page::FormattingHelpers qw / html_optional_show /;
 use SGN::Image;
 use CXGN::Trial::TrialLayoutDownload;
-use List::Util qw(sum);
 use CXGN::Genotype::DownloadFactory;
-use POSIX;
+use POSIX qw | !qsort !bsearch |;
 use CXGN::Phenotypes::StorePhenotypes;
 use Statistics::Descriptive::Full;
 
@@ -1169,8 +1165,6 @@ sub trial_change_plot_accessions_upload : Chained('trial') PathPart('change_plot
         $user_name = $c->user()->get_object()->get_username();
         $user_role = $c->user->get_object->get_user_type();
     }
-
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
     my $upload = $c->req->upload('trial_design_change_accessions_file');
     my $subdirectory = "trial_change_plot_accessions_upload";
@@ -2992,11 +2986,10 @@ sub trial_plot_time_series_accessions : Chained('trial') PathPart('plot_time_ser
 
     my $header_string = 'germplasmName,time,value,sd';
 
-    my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
-    my $tmp_stats_dir = $shared_cluster_dir_config."/tmp_trial_correlation";
-    mkdir $tmp_stats_dir if ! -d $tmp_stats_dir;
-    my ($stats_tempfile_fh, $stats_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-    my ($stats_out_tempfile_fh, $stats_out_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my $dir = $c->tempfiles_subdir('/trial_analysis_accession_time_series_plot_dir');
+    my $pheno_data_tempfile_string = $c->tempfile( TEMPLATE => 'trial_analysis_accession_time_series_plot_dir/datafileXXXX');
+    $pheno_data_tempfile_string .= '.csv';
+    my $stats_tempfile = $c->config->{basepath}."/".$pheno_data_tempfile_string;
 
     open(my $F, ">", $stats_tempfile) || die "Can't open file ".$stats_tempfile;
         print $F $header_string."\n";
@@ -3046,7 +3039,6 @@ sub trial_plot_time_series_accessions : Chained('trial') PathPart('plot_time_ser
     }
     my $color_string = join '\',\'', @colors;
 
-    my $dir = $c->tempfiles_subdir('/trial_analysis_accession_time_series_plot_dir');
     my $pheno_figure_tempfile_string = $c->tempfile( TEMPLATE => 'trial_analysis_accession_time_series_plot_dir/figureXXXX');
     $pheno_figure_tempfile_string .= '.png';
     my $pheno_figure_tempfile = $c->config->{basepath}."/".$pheno_figure_tempfile_string;
@@ -3079,7 +3071,7 @@ sub trial_plot_time_series_accessions : Chained('trial') PathPart('plot_time_ser
     print STDERR Dumper $cmd;
     my $status = system($cmd);
 
-    $c->stash->{rest} = {success => 1, figure => $pheno_figure_tempfile_string, data_file => $stats_tempfile};
+    $c->stash->{rest} = {success => 1, figure => $pheno_figure_tempfile_string, data_file => $pheno_data_tempfile_string};
 }
 
 sub trial_accessions_rank : Chained('trial') PathPart('accessions_rank') Args(0) {
