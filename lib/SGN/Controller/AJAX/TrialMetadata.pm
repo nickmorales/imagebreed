@@ -245,8 +245,8 @@ sub trial_details_POST  {
     # submitters can change if they are associated with the breeding program
     # users cannot change
 
-    if (! ( (exists($has_roles{$breeding_program_name}) && exists($has_roles{submitter})) || exists($has_roles{curator}))) { 
-    
+    if (! ( (exists($has_roles{$breeding_program_name}) && exists($has_roles{submitter})) || exists($has_roles{curator}))) {
+
 #    if (!exists($has_roles{$breeding_program_name})) {
       $c->stash->{rest} = { error => "You need to be either a curator, or a submitter associated with breeding program $breeding_program_name to change the details of this trial." };
       return;
@@ -3079,7 +3079,7 @@ sub trial_plot_time_series_accessions : Chained('trial') PathPart('plot_time_ser
     print STDERR Dumper $cmd;
     my $status = system($cmd);
 
-    $c->stash->{rest} = {success => 1, figure => $pheno_figure_tempfile_string};
+    $c->stash->{rest} = {success => 1, figure => $pheno_figure_tempfile_string, data_file => $stats_tempfile};
 }
 
 sub trial_accessions_rank : Chained('trial') PathPart('accessions_rank') Args(0) {
