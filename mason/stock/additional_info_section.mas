@@ -47,12 +47,10 @@ $is_owner
     </div>
 </div>
 
-%  if ($type_name eq 'accession'){
-    <div class="panel panel-default">
-        <div class="panel-body panel-body-sm">
-            <b>Stock editors: </b>
-            <br/>
-            <% $editor_link %>
-        </div>
+<div class="panel panel-default">
+    <div class="panel-body panel-body-sm">
+        <b>Stock editors: </b>
+        <br/>
+        <% $editor_link %>
     </div>
-%  }
+</div>

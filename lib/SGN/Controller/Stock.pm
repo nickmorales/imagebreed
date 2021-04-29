@@ -307,7 +307,7 @@ Path Params:
     name = stock unique name
 
 Search for stock(s) matching the organism query and the stock unique name.
-If 1 match is found, display the stock detail page.  Display an error for 
+If 1 match is found, display the stock detail page.  Display an error for
 0 matches and a list of matches when multiple stocks are found.
 
 =cut
@@ -318,14 +318,14 @@ sub view_by_organism_name : Path('/stock/view_by_organism') Args(2) {
 }
 
 
-=head2 view_by_name 
+=head2 view_by_name
 
 Public Path: /stock/view_by_name/$name
 Path Params:
     name = stock unique name
 
 Search for stock(s) matching the stock unique name.
-If 1 match is found, display the stock detail page.  Display an error for 
+If 1 match is found, display the stock detail page.  Display an error for
 0 matches and a list of matches when multiple stocks are found.
 
 =cut
@@ -515,7 +515,7 @@ sub get_stock : Chained('/')  PathPart('stock')  CaptureArgs(1) {
 sub search_stock : Private {
     my ( $self, $c, $organism_query, $stock_query ) = @_;
     my $rs = $self->schema->resultset('Stock::Stock');
-    
+
     my $matches;
     my $count = 0;
 
@@ -539,9 +539,9 @@ sub search_stock : Private {
     # Search by name
     elsif ( defined($stock_query) ) {
         $matches = $rs->search({
-                'UPPER(uniquename)' => uc($stock_query), 
+                'UPPER(uniquename)' => uc($stock_query),
                 is_obsolete => 'false'
-            }, 
+            },
             {join => 'organism'}
         );
         $count = $matches->count;
@@ -553,7 +553,7 @@ sub search_stock : Private {
         $c->stash->{template} = "generic_message.mas";
         $c->stash->{message} = "<strong>No Matching Stock Found</strong> ($stock_query $organism_query)<br />You can view and search for stocks from the <a href='/search/stocks'>Stock Search Page</a>";
     }
-    
+
     # MULTIPLE MATCHES FOUND
     elsif ( $count > 1 ) {
         my $list = "<ul>";
