@@ -138,7 +138,8 @@ is_deeply(\@plot_names, [
 
 
 my $trial = CXGN::Trial->new({ bcs_schema => $f->bcs_schema(), trial_id => $trial_id });
-$trial->create_plant_entities('2');
+my $janedoe_sp_person_id = 41;
+$trial->create_plant_entities('2', undef, $janedoe_sp_person_id);
 
 my $tl = CXGN::Trial::TrialLayout->new({ schema => $f->bcs_schema(), trial_id => $trial_id, experiment_type => 'field_layout' });
 $d = $tl->get_design();
@@ -1460,7 +1461,8 @@ is_deeply($contents->[1]->{'cell'}->[13], [
                         ], "check col13");
 
 $trial = CXGN::Trial->new({ bcs_schema => $f->bcs_schema(), trial_id => $trial_id });
-is($trial->create_tissue_samples(['leaf','root','fruit'],1), 1, 'test create tissue samples');
+my $janedoe_sp_person_id = 41;
+is($trial->create_tissue_samples(['leaf','root','fruit'], 1, $janedoe_sp_person_id), 1, 'test create tissue samples');
 
 my $trial_with_tissues_layout = CXGN::Trial::TrialLayout->new({schema => $f->bcs_schema(), trial_id => $trial_id, experiment_type => 'field_layout'})->get_design();
 print STDERR Dumper $trial_with_tissues_layout;

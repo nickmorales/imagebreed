@@ -97,7 +97,8 @@ foreach (@$trial_plots){
 is(scalar(@trial_plot_names), 20, "check num plots saved");
 
 my $num_plants_add = 2;
-$trial->create_plant_entities($num_plants_add);
+my $janedoe_sp_person_id = 41;
+$trial->create_plant_entities($num_plants_add, undef, $janedoe_sp_person_id);
 
 my %phenotype_metadata;
 $phenotype_metadata{'operator'}="janedoe";

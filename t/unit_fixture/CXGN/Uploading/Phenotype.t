@@ -1724,8 +1724,9 @@ ok($post1_exp_md_files_diff == 0, "Check num rows in NdExperimentMdFIles table a
 
 #For running this test in series with all other tests or alone.. AddPlants.t does this step earlier if tests done in series...
 my $nd_experiment_stock_number;
+my $janedoe_sp_person_id = 41;
 if (!$tn->has_plant_entries) {
-    $tn->create_plant_entities(2);
+    $tn->create_plant_entities(2, undef, $janedoe_sp_person_id);
     $nd_experiment_stock_number = 30;
 } else {
     $nd_experiment_stock_number = 0;

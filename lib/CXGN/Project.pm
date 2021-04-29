@@ -459,7 +459,7 @@ sub get_location_noaa_station_id {
 
 sub get_location_country_name {
     my $self = shift;
-    
+
     my $country_name;
 
     eval {
@@ -469,7 +469,7 @@ sub get_location_country_name {
         if ( $nd_geolocation_id && $country_name_cvterm_id ) {
             my $q = "SELECT value FROM nd_geolocationprop WHERE nd_geolocation_id = ? AND type_id = ?;";
             my $h = $self->bcs_schema->storage->dbh()->prepare($q);
-                    
+
             $h->execute($nd_geolocation_id, $country_name_cvterm_id);
             ($country_name) = $h->fetchrow_array();
         }
@@ -1878,10 +1878,10 @@ sub get_owner_link {
     foreach my $sp_person_id (@sp_person_ids) {
 	my $h = $self->bcs_schema()->storage->dbh()->prepare($q);
 	$h->execute($sp_person_id);
-	my ( $first_name, $last_name )  = $h->fetchrow_array(); 
+	my ( $first_name, $last_name )  = $h->fetchrow_array();
 	my $create_date = ${ $owners }{$sp_person_id};
-	
-	$link .= '<a href="/solpeople/personal-info.pl?sp_person_id='.$sp_person_id. '">' . $first_name . " " . $last_name .  "</a> ". $create_date . "<br />"; 
+
+	$link .= '<a href="/solpeople/personal-info.pl?sp_person_id='.$sp_person_id. '">' . $first_name . " " . $last_name .  "</a> ". $create_date . "<br />";
     }
     return $link;
 }
@@ -2227,8 +2227,13 @@ sub _delete_field_layout_experiment {
         push @all_stock_ids, @subplot_ids;
         push @all_stock_ids, @tissue_sample_ids;
     }
-
     #print STDERR Dumper \@all_stock_ids;
+
+    my $all_stock_ids_sql = join ',', @all_stock_ids;
+    my $delete_stocks_sql = "DELETE FROM phenome.stock_owner WHERE stock_id IN ($all_stock_ids_sql);";
+    my $delete_stocks_h = $self->bcs_schema->storage->dbh()->prepare($delete_stocks_sql);
+    $delete_stocks_h->execute();
+
     my $stock_delete_rs = $self->bcs_schema->resultset('Stock::Stock')->search({stock_id=>{'-in'=>\@all_stock_ids}});
     while (my $r = $stock_delete_rs->next){
         $r->delete();
@@ -2844,7 +2849,7 @@ sub get_project_start_date_cvterm_id {
 
 =head2 function create_plant_entities()
 
- Usage:        $trial->create_plant_entries($plants_per_plot);
+ Usage:        $trial->create_plant_entities($plants_per_plot, $inherits_plot_treatments, $owner_id);
  Desc:         Some trials require plant-level data. This function will
                add an additional layer of plant entries for each plot.
  Ret:
@@ -2858,6 +2863,7 @@ sub create_plant_entities {
     my $self = shift;
     my $plants_per_plot = shift || 30;
     my $inherits_plot_treatments = shift;
+    my $plant_owner_id = shift;
 
     my $create_plant_entities_txn = sub {
         my $chado_schema = $self->bcs_schema();
@@ -2929,7 +2935,7 @@ sub create_plant_entities {
                 my $plant_name = $parent_plot_name."_plant_$plant_index_number";
                 #print STDERR "... ... creating plant $plant_name...\n";
 
-                $self->_save_plant_entry($chado_schema, $accession_cvterm, $cross_cvterm, $family_name_cvterm, $parent_plot_organism, $parent_plot_name, $parent_plot, $plant_name, $plant_cvterm, $plant_index_number, $plant_index_number_cvterm, $block_cvterm, $plot_number_cvterm, $replicate_cvterm, $plant_relationship_cvterm, $field_layout_experiment, $field_layout_cvterm, $inherits_plot_treatments, $treatments, $plot_relationship_cvterm, \%treatment_plots, \%treatment_experiments, $treatment_cvterm);
+                $self->_save_plant_entry($chado_schema, $accession_cvterm, $cross_cvterm, $family_name_cvterm, $parent_plot_organism, $parent_plot_name, $parent_plot, $plant_name, $plant_cvterm, $plant_index_number, $plant_index_number_cvterm, $block_cvterm, $plot_number_cvterm, $replicate_cvterm, $plant_relationship_cvterm, $field_layout_experiment, $field_layout_cvterm, $inherits_plot_treatments, $treatments, $plot_relationship_cvterm, \%treatment_plots, \%treatment_experiments, $treatment_cvterm, $plant_owner_id);
             }
         }
 
@@ -2950,7 +2956,7 @@ sub create_plant_entities {
 
 =head2 function save_plant_entries()
 
- Usage:        $trial->save_plant_entries(\%data, $plants_per_plot, $inherits_plot_treatments);
+ Usage:        $trial->save_plant_entries(\%data, $plants_per_plot, $inherits_plot_treatments, $plant_owner_id);
  Desc:         Some trials require plant-level data. It is possible to upload
                 plant_names to save.
  Ret:
@@ -2967,6 +2973,7 @@ sub save_plant_entries {
     my $parsed_data = shift;
     my $plants_per_plot = shift;
     my $inherits_plot_treatments = shift;
+    my $plant_owner_id = shift;
 
     my $create_plant_entities_txn = sub {
         my $chado_schema = $self->bcs_schema();
@@ -3045,7 +3052,7 @@ sub save_plant_entries {
                 my $given_plant_index_number = $plant_index_numbers->[$increment];
                 my $plant_index_number_save = $given_plant_index_number ? $given_plant_index_number : $plant_index_number;
 
-                $self->_save_plant_entry($chado_schema, $accession_cvterm, $cross_cvterm, $family_name_cvterm, $parent_plot_organism, $parent_plot_name, $parent_plot, $plant_name, $plant_cvterm, $plant_index_number_save, $plant_index_number_cvterm, $block_cvterm, $plot_number_cvterm, $replicate_cvterm, $plant_relationship_cvterm, $field_layout_experiment, $field_layout_cvterm, $inherits_plot_treatments, $treatments, $plot_relationship_cvterm, \%treatment_plots, \%treatment_experiments, $treatment_cvterm);
+                $self->_save_plant_entry($chado_schema, $accession_cvterm, $cross_cvterm, $family_name_cvterm, $parent_plot_organism, $parent_plot_name, $parent_plot, $plant_name, $plant_cvterm, $plant_index_number_save, $plant_index_number_cvterm, $block_cvterm, $plot_number_cvterm, $replicate_cvterm, $plant_relationship_cvterm, $field_layout_experiment, $field_layout_cvterm, $inherits_plot_treatments, $treatments, $plot_relationship_cvterm, \%treatment_plots, \%treatment_experiments, $treatment_cvterm, $plant_owner_id);
                 $plant_index_number++;
                 $increment++;
             }
@@ -3091,6 +3098,7 @@ sub _save_plant_entry {
     my $treatment_plots_ref = shift;
     my $treatment_experiments_ref = shift;
     my $treatment_cvterm = shift;
+    my $plant_owner_id = shift;
     my %treatment_plots = %$treatment_plots_ref;
     my %treatment_experiments = %$treatment_experiments_ref;
 
@@ -3100,6 +3108,10 @@ sub _save_plant_entry {
         uniquename => $plant_name,
         type_id => $plant_cvterm,
     });
+
+    my $plant_owner_q = "INSERT INTO phenome.stock_owner(stock_id, sp_person_id) values(?,?);";
+    my $plant_owner_h = $chado_schema->storage->dbh->prepare($plant_owner_q);
+    $plant_owner_h->execute($plant->stock_id, $plant_owner_id);
 
     my $plantprop = $chado_schema->resultset("Stock::Stockprop")->create( {
         stock_id => $plant->stock_id(),
@@ -3190,7 +3202,7 @@ sub has_plant_entries {
 
 =head2 function create_tissue_samples()
 
- Usage:        $trial->create_tissue_samples(\@tissue_names, $inherits_plot_treatments);
+ Usage:        $trial->create_tissue_samples(\@tissue_names, $inherits_plot_treatments, $user_id);
  Desc:         Some trials require tissue_sample-level data. This function will
                add an additional layer of tissue samples for each plant.
  Ret:
@@ -3204,6 +3216,7 @@ sub create_tissue_samples {
     my $self = shift;
     my $tissue_names = shift;
     my $inherits_plot_treatments = shift;
+    my $user_id = shift;
 
     my $create_tissue_sample_entries_txn = sub {
         my $chado_schema = $self->bcs_schema();
@@ -3296,6 +3309,10 @@ sub create_tissue_samples {
                         uniquename => $tissue_name,
                         type_id => $tissue_sample_cvterm,
                     });
+
+                    my $tissue_owner_q = "INSERT INTO phenome.stock_owner(stock_id, sp_person_id) values(?,?);";
+                    my $tissue_owner_h = $chado_schema->storage->dbh->prepare($tissue_owner_q);
+                    $tissue_owner_h->execute($tissue->stock_id, $user_id);
 
                     my $tissueprop = $chado_schema->resultset("Stock::Stockprop")->create( {
                         stock_id => $tissue->stock_id(),

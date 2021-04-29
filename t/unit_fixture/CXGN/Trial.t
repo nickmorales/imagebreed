@@ -671,7 +671,8 @@ is_deeply($trial_controls, [], "check get_controls");
 
 #add plant entries
 my $num_plants_add = 3;
-$trial->create_plant_entities($num_plants_add);
+my $janedoe_sp_person_id = 41;
+$trial->create_plant_entities($num_plants_add, undef, $janedoe_sp_person_id);
 #print STDERR Dumper($trial);
 ok($trial->has_plant_entries(), "check if plant entries created.");
 

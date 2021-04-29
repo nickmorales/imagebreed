@@ -750,7 +750,7 @@ sub trial_upload_plants : Chained('trial') PathPart('upload_plants') Args(0) {
             push @{$plot_plant_hash{$_->{plot_stock_id}}->{plant_names}}, $_->{plant_name};
         }
         my $t = CXGN::Trial->new( { bcs_schema => $c->dbic_schema("Bio::Chado::Schema"), trial_id => $c->stash->{trial_id} });
-        $t->save_plant_entries(\%plot_plant_hash, $plants_per_plot, $inherits_plot_treatments);
+        $t->save_plant_entries(\%plot_plant_hash, $plants_per_plot, $inherits_plot_treatments, $user_id);
 
         my $layout = $c->stash->{trial_layout};
         $layout->generate_and_cache_layout();
@@ -860,7 +860,7 @@ sub trial_upload_plants_with_index_number : Chained('trial') PathPart('upload_pl
             push @{$plot_plant_hash{$_->{plot_stock_id}}->{plant_index_numbers}}, $_->{plant_index_number};
         }
         my $t = CXGN::Trial->new( { bcs_schema => $c->dbic_schema("Bio::Chado::Schema"), trial_id => $c->stash->{trial_id} });
-        $t->save_plant_entries(\%plot_plant_hash, $plants_per_plot, $inherits_plot_treatments);
+        $t->save_plant_entries(\%plot_plant_hash, $plants_per_plot, $inherits_plot_treatments, $user_id);
 
         my $layout = $c->stash->{trial_layout};
         $layout->generate_and_cache_layout();
@@ -970,7 +970,7 @@ sub trial_upload_plants_with_number_of_plants : Chained('trial') PathPart('uploa
             push @{$plot_plant_hash{$_->{plot_stock_id}}->{plant_index_numbers}}, $_->{plant_index_number};
         }
         my $t = CXGN::Trial->new( { bcs_schema => $c->dbic_schema("Bio::Chado::Schema"), trial_id => $c->stash->{trial_id} });
-        $t->save_plant_entries(\%plot_plant_hash, $plants_per_plot, $inherits_plot_treatments);
+        $t->save_plant_entries(\%plot_plant_hash, $plants_per_plot, $inherits_plot_treatments, $user_id);
 
         my $layout = $c->stash->{trial_layout};
         $layout->generate_and_cache_layout();
@@ -1954,6 +1954,8 @@ sub create_plant_subplots : Chained('trial') PathPart('create_plant_entries') Ar
         return;
     }
 
+    my $user_id = $c->user->get_object->get_sp_person_id();
+
     if (!$plants_per_plot || $plants_per_plot > 500) {
         $c->stash->{rest} = { error => "Plants per plot number is required and must be smaller than 500." };
         return;
@@ -1961,7 +1963,7 @@ sub create_plant_subplots : Chained('trial') PathPart('create_plant_entries') Ar
 
     my $t = CXGN::Trial->new( { bcs_schema => $c->dbic_schema("Bio::Chado::Schema"), trial_id => $c->stash->{trial_id} });
 
-    if ($t->create_plant_entities($plants_per_plot, $plants_with_treatments)) {
+    if ($t->create_plant_entities($plants_per_plot, $plants_with_treatments, $user_id)) {
 
         my $dbh = $c->dbc->dbh();
         my $bs = CXGN::BreederSearch->new( { dbh=>$dbh, dbname=>$c->config->{dbname}, } );
@@ -2007,9 +2009,10 @@ sub create_tissue_samples : Chained('trial') PathPart('create_tissue_samples') A
         $c->detach;
     }
 
+    my $user_id = $c->user->get_object->get_sp_person_id();
     my $t = CXGN::Trial->new({ bcs_schema => $c->dbic_schema("Bio::Chado::Schema"), trial_id => $c->stash->{trial_id} });
 
-    if ($t->create_tissue_samples($tissue_names, $inherits_plot_treatments)) {
+    if ($t->create_tissue_samples($tissue_names, $inherits_plot_treatments, $user_id)) {
         my $dbh = $c->dbc->dbh();
         my $bs = CXGN::BreederSearch->new( { dbh=>$dbh, dbname=>$c->config->{dbname}, } );
         my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'stockprop', 'concurrent', $c->config->{basepath});

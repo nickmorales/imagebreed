@@ -191,7 +191,8 @@ is($after_uploading_relationship_maleplot, $before_uploading_relationship_malepl
 
 #add plants for testing (a total of 38 entries)
 my $trial = CXGN::Trial->new({bcs_schema => $schema, trial_id => 165});
-$trial->create_plant_entities(2);
+my $janedoe_sp_person_id = 41;
+$trial->create_plant_entities(2, undef, $janedoe_sp_person_id);
 
 # test uploading crosses with plants
 my $female_plant_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, "female_parent", "stock_relationship")->cvterm_id();
