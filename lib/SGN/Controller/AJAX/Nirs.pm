@@ -461,8 +461,15 @@ sub generate_predictions_POST : Args(0) {
     my ($training_pheno_data, $train_unique_traits) = $training_dataset->retrieve_phenotypes_ref();
     # print STDERR Dumper $training_pheno_data;
 
+    my $tissue_relationship_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'tissue_sample_of', 'stock_relationship')->cvterm_id();
+    my $plot_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot', 'stock_type')->cvterm_id();
+    my $tissue_sample_plot_q = "SELECT plot.stock_id
+        FROM stock AS plot
+        JOIN stock_relationship ON (stock_relationship.object_id = plot.stock_id AND stock_relationship.type_id = $tissue_relationship_cvterm_id)
+        WHERE plot.type_id = $plot_cvterm_id AND stock_relationship.subject_id = ?;";
+    my $tissue_sample_plot_h = $dbh->prepare($tissue_sample_plot_q);
+
     my %training_pheno_data;
-    my %stock_info;
     my $obs_unit_type_name;
     my %seen_accessions;
     foreach my $d (@$training_pheno_data) {
@@ -471,16 +478,30 @@ sub generate_predictions_POST : Args(0) {
         my $germplasm_name = $d->{germplasm_uniquename};
         $obs_unit_type_name = $d->{observationunit_type_name};
 
-        $stock_info{$obsunit_id} = $obsunit_name;
+        my $plot_id;
+        if ($obs_unit_type_name eq 'tissue_sample') {
+            $tissue_sample_plot_h->execute($obsunit_id);
+            my ($plot_id_ret) = $tissue_sample_plot_h->fetchrow_array();
+            $plot_id = $plot_id_ret;
+        }
+        elsif ($obs_unit_type_name eq 'plot') {
+            $plot_id = $obsunit_id;
+        }
+        else {
+            next;
+        }
+
         $seen_accessions{$germplasm_name}++;
         $training_pheno_data{$obsunit_id} = {
             germplasm_name => $germplasm_name,
-            trial_id => $d->{trial_id}
+            trial_id => $d->{trial_id},
+            obsunit_name => $obsunit_name,
+            plot_id => $plot_id
         };
     }
 
-    my @all_plot_ids = keys %training_pheno_data;
-    my $stock_ids_sql = join ',', @all_plot_ids;
+    my @all_obsunit_ids = keys %training_pheno_data;
+    my $stock_ids_sql = join ',', @all_obsunit_ids;
     my $nirs_training_q = "SELECT stock.uniquename, stock.stock_id, metadata.md_json.json->>'spectra'
         FROM stock
         JOIN nd_experiment_phenotype_bridge USING(stock_id)
@@ -497,7 +518,7 @@ sub generate_predictions_POST : Args(0) {
     # print STDERR Dumper \%training_pheno_data;
 
     my %seen_field_trial_ids;
-    my %seen_stock_ids;
+    my %seen_plot_ids;
     my @training_data_input;
     while ( my ($stock_id, $o) = each %training_pheno_data) {
         my $spectra = $o->{spectra};
@@ -509,7 +530,7 @@ sub generate_predictions_POST : Args(0) {
                 "nirs_spectra" => $spectra
             };
             $seen_field_trial_ids{$o->{trial_id}}++;
-            $seen_stock_ids{$stock_id}++;
+            $seen_plot_ids{$training_pheno_data{$stock_id}->{plot_id}}++;
         }
     }
     my @field_trial_ids_seen = sort keys %seen_field_trial_ids;
@@ -524,28 +545,31 @@ sub generate_predictions_POST : Args(0) {
     foreach (@field_trial_ids_seen) {
         my $field_layout = CXGN::Trial->new({bcs_schema => $schema, trial_id => $_})->get_layout->get_design;
         while (my($plot_number, $o) = each %$field_layout) {
-            if ($obs_unit_type_name eq 'plot' && exists($seen_stock_ids{$o->{plot_id}})) {
+            if ($obs_unit_type_name eq 'plot' && exists($seen_plot_ids{$o->{plot_id}})) {
                 $layout_obs{$o->{plot_name}} = $o;
+            }
+            elsif ($obs_unit_type_name eq 'tissue_sample' && exists($seen_plot_ids{$o->{plot_id}})) {
+                foreach (@{$o->{tissue_sample_names}}) {
+                    $layout_obs{$_} = $o;
+                }
             }
         }
     }
 
     my %analysis_design;
     my $counter = 1;
-    if ($obs_unit_type_name eq 'plot') {
-        foreach (values %layout_obs) {
-            $analysis_design{$counter} = {
-                stock_name => $_->{accession_name},
-                plot_name => $_->{plot_name},
-                plot_number => $counter,
-                col_number => $_->{col_number},
-                row_number => $_->{row_number},
-                rep_number => $_->{rep_number},
-                block_number => $_->{block_number},
-                is_a_control => $_->{is_a_control}
-            };
-            $counter++;
-        }
+    while (my ($k, $v) = each %layout_obs) {
+        $analysis_design{$counter} = {
+            stock_name => $v->{accession_name},
+            plot_name => $k,
+            plot_number => $counter,
+            col_number => $v->{col_number},
+            row_number => $v->{row_number},
+            rep_number => $v->{rep_number},
+            block_number => $v->{block_number},
+            is_a_control => $v->{is_a_control}
+        };
+        $counter++;
     }
 
     $c->tempfiles_subdir("nirs_files");
@@ -575,9 +599,7 @@ sub generate_predictions_POST : Args(0) {
     my $timestamp = $time->ymd()."_".$time->hms();
     my %result_predictions;
     my %seen_plot_names;
-    open(my $fh, '<', $output_results_filepath)
-        or die "Could not open file '$output_results_filepath' $!";
-
+    open(my $fh, '<', $output_results_filepath) or die "Could not open file '$output_results_filepath' $!";
         print STDERR "Opened $output_results_filepath\n";
         my $header = <$fh>;
         my @header_cols;
@@ -591,7 +613,7 @@ sub generate_predictions_POST : Args(0) {
                 @columns = $csv->fields();
             }
             my $stock_id = $columns[0];
-            my $stock_name = $stock_info{$stock_id};
+            my $stock_name = $training_pheno_data{$stock_id}->{obsunit_name};
             my $value = $columns[1];
             $result_predictions{$stock_name}->{$trait_name} = [$value, $timestamp, $user_name, '', ''];
             $seen_plot_names{$stock_name}++;

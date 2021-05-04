@@ -263,11 +263,12 @@ has 'is_public' => ( isa => 'Bool',
 
 =cut
 
-has 'data_level' =>  ( isa => 'String',
-		       is => 'rw',
-		       isa => enum([qw[ plot plant subplot ]]),
-		       default => 'plot',
-    );
+has 'data_level' =>  (
+    isa => 'String',
+    is => 'rw',
+    isa => enum([qw[ plot plant subplot all ]]),
+    default => 'all',
+);
 
 =head2 exclude_phenotype_outlier()
 
