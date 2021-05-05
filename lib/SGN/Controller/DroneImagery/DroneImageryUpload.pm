@@ -796,22 +796,6 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
     my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
     my $calendar_funcs = CXGN::Calendar->new({});
 
-    my %seen_field_trial_drone_run_dates;
-    my $drone_run_date_q = "SELECT drone_run_date.value
-        FROM project AS drone_run_band_project
-        JOIN project_relationship AS drone_run_band_rel ON (drone_run_band_rel.subject_project_id = drone_run_band_project.project_id AND drone_run_band_rel.type_id = $drone_run_drone_run_band_type_id)
-        JOIN project AS drone_run_project ON (drone_run_band_rel.object_project_id = drone_run_project.project_id)
-        JOIN projectprop AS drone_run_date ON(drone_run_project.project_id=drone_run_date.project_id AND drone_run_date.type_id=$project_start_date_type_id);";
-    my $drone_run_date_h = $schema->storage->dbh()->prepare($drone_run_date_q);
-    $drone_run_date_h->execute();
-    while( my ($drone_run_date) = $drone_run_date_h->fetchrow_array()) {
-        my $drone_run_date_formatted = $drone_run_date ? $calendar_funcs->display_start_date($drone_run_date) : '';
-        if ($drone_run_date_formatted) {
-            my $date_obj = Time::Piece->strptime($drone_run_date_formatted, "%Y-%B-%d %H:%M:%S");
-            $seen_field_trial_drone_run_dates{$date_obj->epoch}++;
-        }
-    }
-
     my $upload_file = $c->req->upload('upload_drone_imagery_bulk_images_zipfile');
     my $imaging_events_file = $c->req->upload('upload_drone_imagery_bulk_imaging_events');
 
@@ -910,7 +894,9 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
 
     my @parse_csv_errors;
     my %field_trial_name_lookup;
+    my %field_trial_ids_seen;
     my %vehicle_name_lookup;
+    my %seen_field_trial_drone_run_dates;
 
     my $parser = Spreadsheet::ParseExcel->new();
     my $excel_obj = $parser->parse($upload_imaging_events_file);
@@ -1040,6 +1026,7 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
             return;
         }
         my $field_trial_id = $field_trial_rs->first->project_id();
+        $field_trial_ids_seen{$field_trial_id}++;
         $field_trial_name_lookup{$field_trial_name} = $field_trial_id;
 
         if ($imaging_event_date !~ /^\d{4}\/\d{2}\/\d{2}\s\d\d:\d\d:\d\d$/){
@@ -1080,11 +1067,12 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
         my $planting_date_time_object = Time::Piece->strptime($planting_date, "%Y-%B-%d");
         my $imaging_event_date_time_object = Time::Piece->strptime($imaging_event_date, "%Y/%m/%d %H:%M:%S");
 
-        if (exists($seen_field_trial_drone_run_dates{$imaging_event_date_time_object->epoch})) {
-            $c->stash->{message} = "An imaging event has already occured on this field trial at the same date and time ($imaging_event_date)! Please give a unique date/time for each imaging event!";
-            $c->stash->{template} = 'generic_message.mas';
-            return;
-        }
+        $seen_upload_dates{$imaging_event_name} = {
+            date => $imaging_event_date,
+            time => $imaging_event_date_time_object->epoch,
+            field_trial_name => $field_trial_name,
+            field_trial_id => $field_trial_id
+        };
         $seen_field_trial_drone_run_dates{$imaging_event_date_time_object->epoch}++;
 
         if ($imaging_event_date_time_object->epoch - $planting_date_time_object->epoch <= 0) {
@@ -1110,6 +1098,35 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
             }
         }
     }
+
+    # my $seen_field_trial_ids_check = join ',', keys %field_trial_ids_seen;
+    # my $drone_run_date_q = "SELECT drone_run_date.value
+    #     FROM project AS drone_run_band_project
+    #     JOIN project_relationship AS drone_run_band_rel ON (drone_run_band_rel.subject_project_id = drone_run_band_project.project_id AND drone_run_band_rel.type_id = $drone_run_drone_run_band_type_id)
+    #     JOIN project AS drone_run_project ON (drone_run_band_rel.object_project_id = drone_run_project.project_id)
+    #     JOIN projectprop AS drone_run_date ON(drone_run_project.project_id=drone_run_date.project_id AND drone_run_date.type_id=$project_start_date_type_id)
+    #     WHERE drone_run_project.project_id IN ($seen_field_trial_ids_check);";
+    # my $drone_run_date_h = $schema->storage->dbh()->prepare($drone_run_date_q);
+    # $drone_run_date_h->execute();
+    # while( my ($drone_run_date) = $drone_run_date_h->fetchrow_array()) {
+    #     my $drone_run_date_formatted = $drone_run_date ? $calendar_funcs->display_start_date($drone_run_date) : '';
+    #     if ($drone_run_date_formatted) {
+    #         my $date_obj = Time::Piece->strptime($drone_run_date_formatted, "%Y-%B-%d %H:%M:%S");
+    #         $seen_field_trial_drone_run_dates{$date_obj->epoch}++;
+    #     }
+    # }
+    #
+    # while (my($imaging_event_name,$v) = each %seen_upload_dates) {
+    #     my $time = $v->{time};
+    #     my $date = $v->{date};
+    #     my $field_trial_name = $v->{field_trial_name};
+    #     my $field_trial_id = $v->{field_trial_id};
+    #     if (exists($seen_field_trial_drone_run_dates{$time})) {
+    #         $c->stash->{message} = "An imaging event has already occured on this field trial ($field_trial_name) at the same date and time ($date)! Please give a unique date/time for each imaging event!";
+    #         $c->stash->{template} = 'generic_message.mas';
+    #         return;
+    #     }
+    # }
 
     if (scalar(@parse_csv_errors) > 0) {
         my $error_string = join "<br/>", @parse_csv_errors;
