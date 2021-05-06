@@ -322,7 +322,6 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     my ($stats_out_pe_pheno_rel_tempfile5_fh, $stats_out_pe_pheno_rel_tempfile5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
 
     my ($stats_out_param_tempfile_fh, $stats_out_param_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-    my ($stats_out_cv_predict_tempfile_fh, $stats_out_cv_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_tempfile_row_fh, $stats_out_tempfile_row) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_tempfile_col_fh, $stats_out_tempfile_col) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_tempfile_2dspl_fh, $stats_out_tempfile_2dspl) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
@@ -2144,7 +2143,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 $result_blup_data_altered_env_6_1, $result_blup_data_delta_altered_env_6_1, $result_blup_spatial_data_altered_env_6_1, $result_blup_pe_data_altered_env_6_1, $result_blup_pe_data_delta_altered_env_6_1, $result_residual_data_altered_env_6_1, $result_fitted_data_altered_env_6_1, $fixed_effects_altered_env_hash_6_1, $rr_genetic_coefficients_altered_env_hash_6_1, $rr_temporal_coefficients_altered_env_hash_6_1,
                 $rr_coeff_genetic_covariance_altered_env_array_6_1, $rr_coeff_env_covariance_altered_env_array_6_1, $rr_coeff_genetic_correlation_altered_env_array_6_1, $rr_coeff_env_correlation_altered_env_array_6_1, $rr_residual_variance_altered_env_6_1, $varcomp_altered_array_env_6_1,
                 $model_sum_square_residual_altered_env_6_1, $genetic_effect_min_altered_env_6_1, $genetic_effect_max_altered_env_6_1, $env_effect_min_altered_env_6_1, $env_effect_max_altered_env_6_1, $genetic_effect_sum_square_altered_env_6_1, $genetic_effect_sum_altered_env_6_1, $env_effect_sum_square_altered_env_6_1, $env_effect_sum_altered_env_6_1, $residual_sum_square_altered_env_6_1, $residual_sum_altered_env_6_1
-                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder, \%trait_name_encoder_rev, \%stock_info, \%plot_id_map, \@sorted_trait_names, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_out_cv_predict_tempfile, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
+                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder, \%trait_name_encoder_rev, \%stock_info, \%plot_id_map, \@sorted_trait_names, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
                     print STDERR "PLOTTING CORRELATION\n";
@@ -4432,7 +4431,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 $result_blup_data_altered_env_6_2, $result_blup_data_delta_altered_env_6_2, $result_blup_spatial_data_altered_env_6_2, $result_blup_pe_data_altered_env_6_2, $result_blup_pe_data_delta_altered_env_6_2, $result_residual_data_altered_env_6_2, $result_fitted_data_altered_env_6_2, $fixed_effects_altered_env_hash_6_2, $rr_genetic_coefficients_altered_env_hash_6_2, $rr_temporal_coefficients_altered_env_hash_6_2,
                 $rr_coeff_genetic_covariance_altered_env_array_6_2, $rr_coeff_env_covariance_altered_env_array_6_2, $rr_coeff_genetic_correlation_altered_env_array_6_2, $rr_coeff_env_correlation_altered_env_array_6_2, $rr_residual_variance_altered_env_6_2, $varcomp_altered_array_env_6_2,
                 $model_sum_square_residual_altered_env_6_2, $genetic_effect_min_altered_env_6_2, $genetic_effect_max_altered_env_6_2, $env_effect_min_altered_env_6_2, $env_effect_max_altered_env_6_2, $genetic_effect_sum_square_altered_env_6_2, $genetic_effect_sum_altered_env_6_2, $env_effect_sum_square_altered_env_6_2, $env_effect_sum_altered_env_6_2, $residual_sum_square_altered_env_6_2, $residual_sum_altered_env_6_2
-                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_2, \%trait_name_encoder_rev_2, \%stock_info_2, \%plot_id_map, \@sorted_trait_names_2, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_2, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_2, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_out_cv_predict_tempfile, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_2, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
+                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_2, \%trait_name_encoder_rev_2, \%stock_info_2, \%plot_id_map, \@sorted_trait_names_2, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_2, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_2, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_2, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
                     print STDERR "PLOTTING CORRELATION\n";
@@ -6686,7 +6685,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 $result_blup_data_altered_env_6_3, $result_blup_data_delta_altered_env_6_3, $result_blup_spatial_data_altered_env_6_3, $result_blup_pe_data_altered_env_6_3, $result_blup_pe_data_delta_altered_env_6_3, $result_residual_data_altered_env_6_3, $result_fitted_data_altered_env_6_3, $fixed_effects_altered_env_hash_6_3, $rr_genetic_coefficients_altered_env_hash_6_3, $rr_temporal_coefficients_altered_env_hash_6_3,
                 $rr_coeff_genetic_covariance_altered_env_array_6_3, $rr_coeff_env_covariance_altered_env_array_6_3, $rr_coeff_genetic_correlation_altered_env_array_6_3, $rr_coeff_env_correlation_altered_env_array_6_3, $rr_residual_variance_altered_env_6_3, $varcomp_altered_array_env_6_3,
                 $model_sum_square_residual_altered_env_6_3, $genetic_effect_min_altered_env_6_3, $genetic_effect_max_altered_env_6_3, $env_effect_min_altered_env_6_3, $env_effect_max_altered_env_6_3, $genetic_effect_sum_square_altered_env_6_3, $genetic_effect_sum_altered_env_6_3, $env_effect_sum_square_altered_env_6_3, $env_effect_sum_altered_env_6_3, $residual_sum_square_altered_env_6_3, $residual_sum_altered_env_6_3
-                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_2, \%trait_name_encoder_rev_2, \%stock_info_2, \%plot_id_map, \@sorted_trait_names_2, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_2, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_2, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_out_cv_predict_tempfile, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_2, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
+                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_2, \%trait_name_encoder_rev_2, \%stock_info_2, \%plot_id_map, \@sorted_trait_names_2, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_2, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_2, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_2, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
                     print STDERR "PLOTTING CORRELATION\n";
@@ -9046,7 +9045,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 $result_blup_data_altered_env_6_5, $result_blup_data_delta_altered_env_6_5, $result_blup_spatial_data_altered_env_6_5, $result_blup_pe_data_altered_env_6_5, $result_blup_pe_data_delta_altered_env_6_5, $result_residual_data_altered_env_6_5, $result_fitted_data_altered_env_6_5, $fixed_effects_altered_env_hash_6_5, $rr_genetic_coefficients_altered_env_hash_6_5, $rr_temporal_coefficients_altered_env_hash_6_5,
                 $rr_coeff_genetic_covariance_altered_env_array_6_5, $rr_coeff_env_covariance_altered_env_array_6_5, $rr_coeff_genetic_correlation_altered_env_array_6_5, $rr_coeff_env_correlation_altered_env_array_6_5, $rr_residual_variance_altered_env_6_5, $varcomp_altered_array_env_6_5,
                 $model_sum_square_residual_altered_env_6_5, $genetic_effect_min_altered_env_6_5, $genetic_effect_max_altered_env_6_5, $env_effect_min_altered_env_6_5, $env_effect_max_altered_env_6_5, $genetic_effect_sum_square_altered_env_6_5, $genetic_effect_sum_altered_env_6_5, $env_effect_sum_square_altered_env_6_5, $env_effect_sum_altered_env_6_5, $residual_sum_square_altered_env_6_5, $residual_sum_altered_env_6_5
-                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_5, \%trait_name_encoder_rev_5, \%stock_info_5, \%plot_id_map, \@sorted_trait_names_5, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_5, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_5, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_out_cv_predict_tempfile, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_5, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
+                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_5, \%trait_name_encoder_rev_5, \%stock_info_5, \%plot_id_map, \@sorted_trait_names_5, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_5, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_5, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_5, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
                     print STDERR "PLOTTING CORRELATION\n";
@@ -11403,7 +11402,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 $result_blup_data_altered_env_6_6, $result_blup_data_delta_altered_env_6_6, $result_blup_spatial_data_altered_env_6_6, $result_blup_pe_data_altered_env_6_6, $result_blup_pe_data_delta_altered_env_6_6, $result_residual_data_altered_env_6_6, $result_fitted_data_altered_env_6_6, $fixed_effects_altered_env_hash_6_6, $rr_genetic_coefficients_altered_env_hash_6_6, $rr_temporal_coefficients_altered_env_hash_6_6,
                 $rr_coeff_genetic_covariance_altered_env_array_6_6, $rr_coeff_env_covariance_altered_env_array_6_6, $rr_coeff_genetic_correlation_altered_env_array_6_6, $rr_coeff_env_correlation_altered_env_array_6_6, $rr_residual_variance_altered_env_6_6, $varcomp_altered_array_env_6_6,
                 $model_sum_square_residual_altered_env_6_6, $genetic_effect_min_altered_env_6_6, $genetic_effect_max_altered_env_6_6, $env_effect_min_altered_env_6_6, $env_effect_max_altered_env_6_6, $genetic_effect_sum_square_altered_env_6_6, $genetic_effect_sum_altered_env_6_6, $env_effect_sum_square_altered_env_6_6, $env_effect_sum_altered_env_6_6, $residual_sum_square_altered_env_6_6, $residual_sum_altered_env_6_6
-                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_6, \%trait_name_encoder_rev_6, \%stock_info_6, \%plot_id_map, \@sorted_trait_names_6, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_6, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_6, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_out_cv_predict_tempfile, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_6, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
+                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_6, \%trait_name_encoder_rev_6, \%stock_info_6, \%plot_id_map, \@sorted_trait_names_6, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_6, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_6, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_6, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
                     print STDERR "PLOTTING CORRELATION\n";
@@ -12948,7 +12947,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 }
 
 sub _perform_drone_imagery_analytics {
-    my ($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, $legendre_coeff_exec_array, $trait_name_encoder_hash, $trait_name_encoder_rev_hash, $stock_info_hash, $plot_id_map_hash, $sorted_trait_names_array, $accession_id_factor_map_hash, $rep_time_factors_array, $ind_rep_factors_array, $unique_accession_names_array, $plot_id_count_map_reverse_hash, $sorted_scaled_ln_times_array, $time_count_map_reverse_hash, $accession_id_factor_map_reverse_hash, $seen_times_hash, $plot_id_factor_map_reverse_hash, $trait_to_time_map_hash, $unique_plot_names_array, $stock_name_row_col_hash, $phenotype_data_original_hash, $plot_rep_time_factor_map_hash, $stock_row_col_hash, $stock_row_col_id_hash, $polynomial_map_hash, $plot_ids_ordered_array, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_out_cv_predict_tempfile, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type) = @_;
+    my ($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, $legendre_coeff_exec_array, $trait_name_encoder_hash, $trait_name_encoder_rev_hash, $stock_info_hash, $plot_id_map_hash, $sorted_trait_names_array, $accession_id_factor_map_hash, $rep_time_factors_array, $ind_rep_factors_array, $unique_accession_names_array, $plot_id_count_map_reverse_hash, $sorted_scaled_ln_times_array, $time_count_map_reverse_hash, $accession_id_factor_map_reverse_hash, $seen_times_hash, $plot_id_factor_map_reverse_hash, $trait_to_time_map_hash, $unique_plot_names_array, $stock_name_row_col_hash, $phenotype_data_original_hash, $plot_rep_time_factor_map_hash, $stock_row_col_hash, $stock_row_col_id_hash, $polynomial_map_hash, $plot_ids_ordered_array, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type) = @_;
     my @legendre_coeff_exec = @$legendre_coeff_exec_array;
     my %trait_name_encoder = %$trait_name_encoder_hash;
     my %trait_name_encoder_rev = %$trait_name_encoder_rev_hash;
@@ -12989,7 +12988,11 @@ sub _perform_drone_imagery_analytics {
     my (@rr_coeff_genetic_covariance_original, @rr_coeff_env_covariance_original, @rr_coeff_genetic_correlation_original, @rr_coeff_env_correlation_original, $rr_residual_variance_original);
     my (@varcomp_original);
     my $model_sum_square_residual_original = 0;
-    my $model_sum_square_cv_original = 0;
+    my $model_sum_square_cv1_original = 0;
+    my $model_sum_square_cv2_original = 0;
+    my $model_sum_square_cv3_original = 0;
+    my $model_sum_square_cv4_original = 0;
+    my $model_sum_square_cv5_original = 0;
     my $genetic_effect_min_original = 1000000000;
     my $genetic_effect_max_original = -1000000000;
     my $env_effect_min_original = 1000000000;
@@ -13050,33 +13053,105 @@ sub _perform_drone_imagery_analytics {
             $trait_index++;
         }
         $statistics_cmd .= 'write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        cv_step_size <- length(mat\$plot_id) %/% 5;
+        cv_step_size_modulo <- length(mat\$plot_id) %% 5;
         ';
-        my @encoded_traits_cv;
         my @encoded_traits_cv_check;
-        my @encoded_traits_cv_save;
+        my @encoded_traits_cv_1;
+        my @encoded_traits_cv_save_1;
+        my @encoded_traits_cv_2;
+        my @encoded_traits_cv_save_2;
+        my @encoded_traits_cv_3;
+        my @encoded_traits_cv_save_3;
+        my @encoded_traits_cv_4;
+        my @encoded_traits_cv_save_4;
+        my @encoded_traits_cv_5;
+        my @encoded_traits_cv_save_5;
+
+        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
         foreach my $t_coded (@encoded_traits) {
-            my $t_coded_cv = $t_coded.'_CV1';
-            push @encoded_traits_cv, $t_coded_cv;
-            $statistics_cmd .= 'mat\$'.$t_coded_cv.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv.'[sample(length(mat\$'.$t_coded_cv.'))[1:round(length(mat\$'.$t_coded_cv.')*0.1)]] <- NA;
-            ';
-            push @encoded_traits_cv_save, $t_coded_cv.' = mat\$'.$t_coded_cv;
+            $statistics_cmd .= 'randomized_positions <- sample(length(mat\$plot_id));';
+
             push @encoded_traits_cv_check, $t_coded.' = mat\$'.$t_coded;
+
+            my $t_coded_cv1 = $t_coded.'_CV1';
+            push @encoded_traits_cv_1, $t_coded_cv1;
+            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
+            ';
+            push @encoded_traits_cv_save_1, $t_coded_cv1.' = mat\$'.$t_coded_cv1;
+
+            my $t_coded_cv2 = $t_coded.'_CV2';
+            push @encoded_traits_cv_2, $t_coded_cv2;
+            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            ';
+            push @encoded_traits_cv_save_2, $t_coded_cv2.' = mat\$'.$t_coded_cv2;
+
+            my $t_coded_cv3 = $t_coded.'_CV3';
+            push @encoded_traits_cv_3, $t_coded_cv3;
+            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            ';
+            push @encoded_traits_cv_save_3, $t_coded_cv3.' = mat\$'.$t_coded_cv3;
+
+            my $t_coded_cv4 = $t_coded.'_CV4';
+            push @encoded_traits_cv_4, $t_coded_cv4;
+            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            ';
+            push @encoded_traits_cv_save_4, $t_coded_cv4.' = mat\$'.$t_coded_cv4;
+
+            my $t_coded_cv5 = $t_coded.'_CV5';
+            push @encoded_traits_cv_5, $t_coded_cv5;
+            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            ';
+            push @encoded_traits_cv_save_5, $t_coded_cv5.' = mat\$'.$t_coded_cv5;
         }
-        my $encoded_trait_cv_string = join ',', @encoded_traits_cv;
-        my $cbind_string_cv = $number_traits > 1 ? "cbind($encoded_trait_cv_string)" : $encoded_trait_cv_string;
+        my $encoded_trait_cv_string_1 = join ',', @encoded_traits_cv_1;
+        my $cbind_string_cv_1 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_1)" : $encoded_trait_cv_string_1;
+        my $encoded_trait_cv_string_2 = join ',', @encoded_traits_cv_2;
+        my $cbind_string_cv_2 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_2)" : $encoded_trait_cv_string_2;
+        my $encoded_trait_cv_string_3 = join ',', @encoded_traits_cv_3;
+        my $cbind_string_cv_3 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_3)" : $encoded_trait_cv_string_3;
+        my $encoded_trait_cv_string_4 = join ',', @encoded_traits_cv_4;
+        my $cbind_string_cv_4 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_4)" : $encoded_trait_cv_string_4;
+        my $encoded_trait_cv_string_5 = join ',', @encoded_traits_cv_5;
+        my $cbind_string_cv_5 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_5)" : $encoded_trait_cv_string_5;
         if ($statistics_select eq 'sommer_grm_spatial_genetic_blups') {
-            $statistics_cmd .= 'mix_cv <- mmer('.$cbind_string_cv.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            $statistics_cmd .= 'mix_cv_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            mix_cv_2 <- mmer('.$cbind_string_cv_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            mix_cv_3 <- mmer('.$cbind_string_cv_3.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            mix_cv_4 <- mmer('.$cbind_string_cv_4.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            mix_cv_5 <- mmer('.$cbind_string_cv_5.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
             ';
         }
         elsif ($statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
-            $statistics_cmd .= 'mix_cv <- mmer('.$cbind_string_cv.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            $statistics_cmd .= 'mix_cv_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            mix_cv_2 <- mmer('.$cbind_string_cv_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            mix_cv_3 <- mmer('.$cbind_string_cv_3.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            mix_cv_4 <- mmer('.$cbind_string_cv_4.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            mix_cv_5 <- mmer('.$cbind_string_cv_5.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
             ';
         }
-        my $encoded_traits_cv_save = join ',', @encoded_traits_cv_save;
+        my $encoded_traits_cv_save_1 = join ',', @encoded_traits_cv_save_1;
+        my $encoded_traits_cv_save_2 = join ',', @encoded_traits_cv_save_2;
+        my $encoded_traits_cv_save_3 = join ',', @encoded_traits_cv_save_3;
+        my $encoded_traits_cv_save_4 = join ',', @encoded_traits_cv_save_4;
+        my $encoded_traits_cv_save_5 = join ',', @encoded_traits_cv_save_5;
         my $encoded_traits_cv_check = join ',', @encoded_traits_cv_check;
         $statistics_cmd .= '
-            write.table(data.frame(plot_id = mix_cv\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save.', residuals = mix_cv\$residuals, fitted = mix_cv\$fitted), file=\''.$stats_out_cv_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            write.table(data.frame(plot_id = mix_cv_1\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_1.', residuals = mix_cv_1\$residuals, fitted = mix_cv_1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            write.table(data.frame(plot_id = mix_cv_2\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_2.', residuals = mix_cv_2\$residuals, fitted = mix_cv_2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            write.table(data.frame(plot_id = mix_cv_3\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_3.', residuals = mix_cv_3\$residuals, fitted = mix_cv_3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            write.table(data.frame(plot_id = mix_cv_4\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_4.', residuals = mix_cv_4\$residuals, fitted = mix_cv_4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            write.table(data.frame(plot_id = mix_cv_5\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_5.', residuals = mix_cv_5\$residuals, fitted = mix_cv_5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         }
         "';
         print STDERR Dumper $statistics_cmd;
@@ -13203,14 +13278,14 @@ sub _perform_drone_imagery_analytics {
                 }
             close($fh_residual);
 
-            open(my $fh_cv, '<', $stats_out_cv_predict_tempfile) or die "Could not open file '$stats_out_cv_predict_tempfile' $!";
-                print STDERR "Opened $stats_out_cv_predict_tempfile\n";
-                my $header_cv = <$fh_cv>;
-                my @header_cols_cv;
-                if ($csv->parse($header_cv)) {
-                    @header_cols_cv = $csv->fields();
+            open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                my $header_cv1 = <$fh_cv1>;
+                my @header_cols_cv1;
+                if ($csv->parse($header_cv1)) {
+                    @header_cols_cv1 = $csv->fields();
                 }
-                while (my $row = <$fh_cv>) {
+                while (my $row = <$fh_cv1>) {
                     my @columns;
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
@@ -13224,10 +13299,114 @@ sub _perform_drone_imagery_analytics {
                         my $residual = $columns[1 + 2*$number_traits + $_];
                         my $fitted = $columns[1 + 3*$number_traits + $_];
                         my $stock_name = $plot_id_map{$stock_id};
-                        $model_sum_square_cv_original = $model_sum_square_cv_original + ($true_value-$fitted)**2;
+                        $model_sum_square_cv1_original = $model_sum_square_cv1_original + ($true_value-$fitted)**2;
                     }
                 }
-            close($fh_residual);
+            close($fh_cv1);
+
+            open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                my $header_cv2 = <$fh_cv2>;
+                my @header_cols_cv2;
+                if ($csv->parse($header_cv2)) {
+                    @header_cols_cv2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_original = $model_sum_square_cv2_original + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv2);
+
+            open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                my $header_cv3 = <$fh_cv3>;
+                my @header_cols_cv3;
+                if ($csv->parse($header_cv3)) {
+                    @header_cols_cv3 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_original = $model_sum_square_cv3_original + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv3);
+
+            open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                my $header_cv4 = <$fh_cv4>;
+                my @header_cols_cv4;
+                if ($csv->parse($header_cv4)) {
+                    @header_cols_cv4 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_original = $model_sum_square_cv4_original + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv4);
+
+            open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                my $header_cv5 = <$fh_cv5>;
+                my @header_cols_cv5;
+                if ($csv->parse($header_cv5)) {
+                    @header_cols_cv5 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_original = $model_sum_square_cv5_original + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv5);
 
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -13296,21 +13475,61 @@ sub _perform_drone_imagery_analytics {
             blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
             spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            randomized_positions <- sample(length(mat\$plot_id));
+            cv_step_size <- length(mat\$plot_id) %/% 5;
+            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
             ';
-            my $t_coded_cv = $t.'_CV1';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv.'[sample(length(mat\$'.$t_coded_cv.'))[1:round(length(mat\$'.$t_coded_cv.')*0.1)]] <- NA;
+
+            my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+            my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+            my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+            my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+            my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
+            my $t_coded_cv1 = $t.'_CV1';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
+            ';
+            my $t_coded_cv2 = $t.'_CV2';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv3 = $t.'_CV3';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv4 = $t.'_CV4';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv5 = $t.'_CV5';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
             ';
             if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= 'mix_cv <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
                 ';
             }
             elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= 'mix_cv <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
                 ';
             }
             $statistics_cmd .= '
-                write.table(data.frame(plot_id = mix_cv\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv.' = mat\$'.$t_coded_cv.', residuals = mix_cv\$residuals, fitted = mix_cv\$fitted), file=\''.$stats_out_cv_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             }
             "';
             print STDERR Dumper $statistics_cmd;
@@ -13439,14 +13658,14 @@ sub _perform_drone_imagery_analytics {
                     }
                 close($fh_residual);
 
-                open(my $fh_cv, '<', $stats_out_cv_predict_tempfile) or die "Could not open file '$stats_out_cv_predict_tempfile' $!";
-                    print STDERR "Opened $stats_out_cv_predict_tempfile\n";
-                    my $header_cv = <$fh_cv>;
-                    my @header_cols_cv;
-                    if ($csv->parse($header_cv)) {
-                        @header_cols_cv = $csv->fields();
+                open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                    my $header_cv1 = <$fh_cv1>;
+                    my @header_cols_cv1;
+                    if ($csv->parse($header_cv1)) {
+                        @header_cols_cv1 = $csv->fields();
                     }
-                    while (my $row = <$fh_cv>) {
+                    while (my $row = <$fh_cv1>) {
                         my @columns;
                         if ($csv->parse($row)) {
                             @columns = $csv->fields();
@@ -13459,9 +13678,105 @@ sub _perform_drone_imagery_analytics {
                         my $residual = $columns[3];
                         my $fitted = $columns[4];
                         my $stock_name = $plot_id_map{$stock_id};
-                        $model_sum_square_cv_original = $model_sum_square_cv_original + ($true_value-$fitted)**2;
+                        $model_sum_square_cv1_original = $model_sum_square_cv1_original + ($true_value-$fitted)**2;
                     }
-                close($fh_residual);
+                close($fh_cv1);
+
+                open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                    my $header_cv2 = <$fh_cv2>;
+                    my @header_cols_cv2;
+                    if ($csv->parse($header_cv2)) {
+                        @header_cols_cv2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_original = $model_sum_square_cv2_original + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv2);
+
+                open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                    my $header_cv3 = <$fh_cv3>;
+                    my @header_cols_cv3;
+                    if ($csv->parse($header_cv3)) {
+                        @header_cols_cv3 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_original = $model_sum_square_cv3_original + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv3);
+
+                open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                    my $header_cv4 = <$fh_cv4>;
+                    my @header_cols_cv4;
+                    if ($csv->parse($header_cv4)) {
+                        @header_cols_cv4 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_original = $model_sum_square_cv4_original + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv4);
+
+                open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                    my $header_cv5 = <$fh_cv5>;
+                    my @header_cols_cv5;
+                    if ($csv->parse($header_cv5)) {
+                        @header_cols_cv5 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_original = $model_sum_square_cv5_original + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv5);
 
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -14638,7 +14953,9 @@ sub _perform_drone_imagery_analytics {
     }
     print STDERR "ORIGINAL $statistics_select GENETIC EFFECT SUM $genetic_effect_sum_original\n";
     print STDERR "ORIGINAL $statistics_select ENV EFFECT SUM $env_effect_sum_original\n";
-    print STDERR Dumper [$genetic_effect_min_original, $genetic_effect_max_original, $env_effect_min_original, $env_effect_max_original, $model_sum_square_cv_original];
+    print STDERR Dumper [$genetic_effect_min_original, $genetic_effect_max_original, $env_effect_min_original, $env_effect_max_original];
+    print STDERR Dumper [$model_sum_square_cv1_original, $model_sum_square_cv2_original, $model_sum_square_cv3_original, $model_sum_square_cv4_original, $model_sum_square_cv5_original];
+    die;
 
     my (%phenotype_data_altered, @data_matrix_altered, @data_matrix_phenotypes_altered, @phenotype_data_altered_values);
     my $phenotype_min_altered = 1000000000;
