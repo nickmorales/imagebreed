@@ -627,7 +627,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
 
         my @stitched_bands;
         my %raw_image_bands;
-        # eval {
+        eval {
             if ($new_drone_run_camera_info eq 'micasense_5') {
                 my $upload_panel_original_name = $upload_panel_file->filename();
                 my $upload_panel_tempfile = $upload_panel_file->tempname;
@@ -757,7 +757,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 push @return_drone_run_band_image_ids, $image->get_image_id();
                 push @return_drone_run_band_project_ids, $selected_drone_run_band_id;
             }
-        # };
+        };
 
         $odm_check_prop->value('0');
         $odm_check_prop->update();
