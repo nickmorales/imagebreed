@@ -322,6 +322,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     my ($stats_out_pe_pheno_rel_tempfile5_fh, $stats_out_pe_pheno_rel_tempfile5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
 
     my ($stats_out_param_tempfile_fh, $stats_out_param_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_out_cv_predict_tempfile_fh, $stats_out_cv_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_tempfile_row_fh, $stats_out_tempfile_row) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_tempfile_col_fh, $stats_out_tempfile_col) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_tempfile_2dspl_fh, $stats_out_tempfile_2dspl) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
@@ -1174,13 +1175,13 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'vegetative') {
-                            
+
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'reproductive') {
-                            
+
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'mature') {
-                            
+
                         }
                         else {
                             $c->stash->{rest} = { error => "The value of $compute_relationship_matrix_from_htp_phenotypes_time_points htp_pheno_rel_matrix_time_points is not valid!" };
@@ -2101,49 +2102,49 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 $sig_col = $col_stat->variance();
 
                 my ($statistical_ontology_term_1, $analysis_model_training_data_file_type_1, $analysis_model_language_1, $sorted_residual_trait_names_array_1, $rr_unique_traits_hash_1, $rr_residual_unique_traits_hash_1, $statistics_cmd_1, $cmd_f90_1, $number_traits_1, $trait_to_time_map_hash_1,
-                
-                $result_blup_data_original_1, $result_blup_data_delta_original_1, $result_blup_spatial_data_original_1, $result_blup_pe_data_original_1, $result_blup_pe_data_delta_original_1, $result_residual_data_original_1, $result_fitted_data_original_1, $fixed_effects_original_hash_1, 
-                $rr_genetic_coefficients_original_hash_1, $rr_temporal_coefficients_original_hash_1, 
+
+                $result_blup_data_original_1, $result_blup_data_delta_original_1, $result_blup_spatial_data_original_1, $result_blup_pe_data_original_1, $result_blup_pe_data_delta_original_1, $result_residual_data_original_1, $result_fitted_data_original_1, $fixed_effects_original_hash_1,
+                $rr_genetic_coefficients_original_hash_1, $rr_temporal_coefficients_original_hash_1,
                 $rr_coeff_genetic_covariance_original_array_1, $rr_coeff_env_covariance_original_array_1, $rr_coeff_genetic_correlation_original_array_1, $rr_coeff_env_correlation_original_array_1, $rr_residual_variance_original_1, $varcomp_original_array_1,
                 $model_sum_square_residual_original_1, $genetic_effect_min_original_1, $genetic_effect_max_original_1, $env_effect_min_original_1, $env_effect_max_original_1, $genetic_effect_sum_square_original_1, $genetic_effect_sum_original_1, $env_effect_sum_square_original_1, $env_effect_sum_original_1, $residual_sum_square_original_1, $residual_sum_original_1,
-                
+
                 $phenotype_data_altered_hash_1, $data_matrix_altered_array_1, $data_matrix_phenotypes_altered_array_1, $phenotype_min_altered_1, $phenotype_max_altered_1,
-                $result_blup_data_altered_1, $result_blup_data_delta_altered_1, $result_blup_spatial_data_altered_1, $result_blup_pe_data_altered_1, $result_blup_pe_data_delta_altered_1, $result_residual_data_altered_1, $result_fitted_data_altered_1, $fixed_effects_altered_hash_1, 
-                $rr_genetic_coefficients_altered_hash_1, $rr_temporal_coefficients_altered_hash_1, 
+                $result_blup_data_altered_1, $result_blup_data_delta_altered_1, $result_blup_spatial_data_altered_1, $result_blup_pe_data_altered_1, $result_blup_pe_data_delta_altered_1, $result_residual_data_altered_1, $result_fitted_data_altered_1, $fixed_effects_altered_hash_1,
+                $rr_genetic_coefficients_altered_hash_1, $rr_temporal_coefficients_altered_hash_1,
                 $rr_coeff_genetic_covariance_altered_array_1, $rr_coeff_env_covariance_altered_array_1, $rr_coeff_genetic_correlation_altered_array_1, $rr_coeff_env_correlation_altered_array_1, $rr_residual_variance_altered_1, $varcomp_altered_array_1,
                 $model_sum_square_residual_altered_1, $genetic_effect_min_altered_1, $genetic_effect_max_altered_1, $env_effect_min_altered_1, $env_effect_max_altered_1, $genetic_effect_sum_square_altered_1, $genetic_effect_sum_altered_1, $env_effect_sum_square_altered_1, $env_effect_sum_altered_1, $residual_sum_square_altered_1, $residual_sum_altered_1,
-                
+
                 $phenotype_data_altered_env_hash_1_1, $data_matrix_altered_env_array_1_1, $data_matrix_phenotypes_altered_env_array_1_1, $phenotype_min_altered_env_1_1, $phenotype_max_altered_env_1_1, $env_sim_min_1_1, $env_sim_max_1_1, $sim_data_hash_1_1,
-                $result_blup_data_altered_env_1_1, $result_blup_data_delta_altered_env_1_1, $result_blup_spatial_data_altered_env_1_1, $result_blup_pe_data_altered_env_1_1, $result_blup_pe_data_delta_altered_env_1_1, $result_residual_data_altered_env_1_1, $result_fitted_data_altered_env_1_1, $fixed_effects_altered_env_hash_1_1, 
-                $rr_genetic_coefficients_altered_env_hash_1_1, $rr_temporal_coefficients_altered_env_hash_1_1, 
+                $result_blup_data_altered_env_1_1, $result_blup_data_delta_altered_env_1_1, $result_blup_spatial_data_altered_env_1_1, $result_blup_pe_data_altered_env_1_1, $result_blup_pe_data_delta_altered_env_1_1, $result_residual_data_altered_env_1_1, $result_fitted_data_altered_env_1_1, $fixed_effects_altered_env_hash_1_1,
+                $rr_genetic_coefficients_altered_env_hash_1_1, $rr_temporal_coefficients_altered_env_hash_1_1,
                 $rr_coeff_genetic_covariance_altered_env_array_1_1, $rr_coeff_env_covariance_altered_env_array_1_1, $rr_coeff_genetic_correlation_altered_env_array_1_1, $rr_coeff_env_correlation_altered_env_array_1_1, $rr_residual_variance_altered_env_1_1, $varcomp_altered_array_env_1_1,
                 $model_sum_square_residual_altered_env_1_1, $genetic_effect_min_altered_env_1_1, $genetic_effect_max_altered_env_1_1, $env_effect_min_altered_env_1_1, $env_effect_max_altered_env_1_1, $genetic_effect_sum_square_altered_env_1_1, $genetic_effect_sum_altered_env_1_1, $env_effect_sum_square_altered_env_1_1, $env_effect_sum_altered_env_1_1, $residual_sum_square_altered_env_1_1, $residual_sum_altered_env_1_1,
-                
+
                 $phenotype_data_altered_env_hash_2_1, $data_matrix_altered_env_array_2_1, $data_matrix_phenotypes_altered_env_array_2_1, $phenotype_min_altered_env_2_1, $phenotype_max_altered_env_2_1, $env_sim_min_2_1, $env_sim_max_2_1, $sim_data_hash_2_1,
-                $result_blup_data_altered_env_2_1, $result_blup_data_delta_altered_env_2_1, $result_blup_spatial_data_altered_env_2_1, $result_blup_pe_data_altered_env_2_1, $result_blup_pe_data_delta_altered_env_2_1, $result_residual_data_altered_env_2_1, $result_fitted_data_altered_env_2_1, $fixed_effects_altered_env_hash_2_1, $rr_genetic_coefficients_altered_env_hash_2_1, $rr_temporal_coefficients_altered_env_hash_2_1, 
+                $result_blup_data_altered_env_2_1, $result_blup_data_delta_altered_env_2_1, $result_blup_spatial_data_altered_env_2_1, $result_blup_pe_data_altered_env_2_1, $result_blup_pe_data_delta_altered_env_2_1, $result_residual_data_altered_env_2_1, $result_fitted_data_altered_env_2_1, $fixed_effects_altered_env_hash_2_1, $rr_genetic_coefficients_altered_env_hash_2_1, $rr_temporal_coefficients_altered_env_hash_2_1,
                 $rr_coeff_genetic_covariance_altered_env_array_2_1, $rr_coeff_env_covariance_altered_env_array_2_1, $rr_coeff_genetic_correlation_altered_env_array_2_1, $rr_coeff_env_correlation_altered_env_array_2_1, $rr_residual_variance_altered_env_2_1, $varcomp_altered_array_env_2_1,
                 $model_sum_square_residual_altered_env_2_1, $genetic_effect_min_altered_env_2_1, $genetic_effect_max_altered_env_2_1, $env_effect_min_altered_env_2_1, $env_effect_max_altered_env_2_1, $genetic_effect_sum_square_altered_env_2_1, $genetic_effect_sum_altered_env_2_1, $env_effect_sum_square_altered_env_2_1, $env_effect_sum_altered_env_2_1, $residual_sum_square_altered_env_2_1, $residual_sum_altered_env_2_1,
-                
+
                 $phenotype_data_altered_env_hash_3_1, $data_matrix_altered_env_array_3_1, $data_matrix_phenotypes_altered_env_array_3_1, $phenotype_min_altered_env_3_1, $phenotype_max_altered_env_3_1, $env_sim_min_3_1, $env_sim_max_3_1, $sim_data_hash_3_1,
-                $result_blup_data_altered_env_3_1, $result_blup_data_delta_altered_env_3_1, $result_blup_spatial_data_altered_env_3_1, $result_blup_pe_data_altered_env_3_1, $result_blup_pe_data_delta_altered_env_3_1, $result_residual_data_altered_env_3_1, $result_fitted_data_altered_env_3_1, $fixed_effects_altered_env_hash_3_1, $rr_genetic_coefficients_altered_env_hash_3_1, $rr_temporal_coefficients_altered_env_hash_3_1, 
+                $result_blup_data_altered_env_3_1, $result_blup_data_delta_altered_env_3_1, $result_blup_spatial_data_altered_env_3_1, $result_blup_pe_data_altered_env_3_1, $result_blup_pe_data_delta_altered_env_3_1, $result_residual_data_altered_env_3_1, $result_fitted_data_altered_env_3_1, $fixed_effects_altered_env_hash_3_1, $rr_genetic_coefficients_altered_env_hash_3_1, $rr_temporal_coefficients_altered_env_hash_3_1,
                 $rr_coeff_genetic_covariance_altered_env_array_3_1, $rr_coeff_env_covariance_altered_env_array_3_1, $rr_coeff_genetic_correlation_altered_env_array_3_1, $rr_coeff_env_correlation_altered_env_array_3_1, $rr_residual_variance_altered_env_3_1, $varcomp_altered_array_env_3_1,
                 $model_sum_square_residual_altered_env_3_1, $genetic_effect_min_altered_env_3_1, $genetic_effect_max_altered_env_3_1, $env_effect_min_altered_env_3_1, $env_effect_max_altered_env_3_1, $genetic_effect_sum_square_altered_env_3_1, $genetic_effect_sum_altered_env_3_1, $env_effect_sum_square_altered_env_3_1, $env_effect_sum_altered_env_3_1, $residual_sum_square_altered_env_3_1, $residual_sum_altered_env_3_1,
-                
+
                 $phenotype_data_altered_env_hash_4_1, $data_matrix_altered_env_array_4_1, $data_matrix_phenotypes_altered_env_array_4_1, $phenotype_min_altered_env_4_1, $phenotype_max_altered_env_4_1, $env_sim_min_4_1, $env_sim_max_4_1, $sim_data_hash_4_1,
-                $result_blup_data_altered_env_4_1, $result_blup_data_delta_altered_env_4_1, $result_blup_spatial_data_altered_env_4_1, $result_blup_pe_data_altered_env_4_1, $result_blup_pe_data_delta_altered_env_4_1, $result_residual_data_altered_env_4_1, $result_fitted_data_altered_env_4_1, $fixed_effects_altered_env_hash_4_1, $rr_genetic_coefficients_altered_env_hash_4_1, $rr_temporal_coefficients_altered_env_hash_4_1, 
+                $result_blup_data_altered_env_4_1, $result_blup_data_delta_altered_env_4_1, $result_blup_spatial_data_altered_env_4_1, $result_blup_pe_data_altered_env_4_1, $result_blup_pe_data_delta_altered_env_4_1, $result_residual_data_altered_env_4_1, $result_fitted_data_altered_env_4_1, $fixed_effects_altered_env_hash_4_1, $rr_genetic_coefficients_altered_env_hash_4_1, $rr_temporal_coefficients_altered_env_hash_4_1,
                 $rr_coeff_genetic_covariance_altered_env_array_4_1, $rr_coeff_env_covariance_altered_env_array_4_1, $rr_coeff_genetic_correlation_altered_env_array_4_1, $rr_coeff_env_correlation_altered_env_array_4_1, $rr_residual_variance_altered_env_4_1, $varcomp_altered_array_env_4_1,
                 $model_sum_square_residual_altered_env_4_1, $genetic_effect_min_altered_env_4_1, $genetic_effect_max_altered_env_4_1, $env_effect_min_altered_env_4_1, $env_effect_max_altered_env_4_1, $genetic_effect_sum_square_altered_env_4_1, $genetic_effect_sum_altered_env_4_1, $env_effect_sum_square_altered_env_4_1, $env_effect_sum_altered_env_4_1, $residual_sum_square_altered_env_4_1, $residual_sum_altered_env_4_1,
-                
+
                 $phenotype_data_altered_env_hash_5_1, $data_matrix_altered_env_array_5_1, $data_matrix_phenotypes_altered_env_array_5_1, $phenotype_min_altered_env_5_1, $phenotype_max_altered_env_5_1, $env_sim_min_5_1, $env_sim_max_5_1, $sim_data_hash_5_1,
-                $result_blup_data_altered_env_5_1, $result_blup_data_delta_altered_env_5_1, $result_blup_spatial_data_altered_env_5_1, $result_blup_pe_data_altered_env_5_1, $result_blup_pe_data_delta_altered_env_5_1, $result_residual_data_altered_env_5_1, $result_fitted_data_altered_env_5_1, $fixed_effects_altered_env_hash_5_1, $rr_genetic_coefficients_altered_env_hash_5_1, $rr_temporal_coefficients_altered_env_hash_5_1, 
+                $result_blup_data_altered_env_5_1, $result_blup_data_delta_altered_env_5_1, $result_blup_spatial_data_altered_env_5_1, $result_blup_pe_data_altered_env_5_1, $result_blup_pe_data_delta_altered_env_5_1, $result_residual_data_altered_env_5_1, $result_fitted_data_altered_env_5_1, $fixed_effects_altered_env_hash_5_1, $rr_genetic_coefficients_altered_env_hash_5_1, $rr_temporal_coefficients_altered_env_hash_5_1,
                 $rr_coeff_genetic_covariance_altered_env_array_5_1, $rr_coeff_env_covariance_altered_env_array_5_1, $rr_coeff_genetic_correlation_altered_env_array_5_1, $rr_coeff_env_correlation_altered_env_array_5_1, $rr_residual_variance_altered_env_5_1, $varcomp_altered_array_env_5_1,
                 $model_sum_square_residual_altered_env_5_1, $genetic_effect_min_altered_env_5_1, $genetic_effect_max_altered_env_5_1, $env_effect_min_altered_env_5_1, $env_effect_max_altered_env_5_1, $genetic_effect_sum_square_altered_env_5_1, $genetic_effect_sum_altered_env_5_1, $env_effect_sum_square_altered_env_5_1, $env_effect_sum_altered_env_5_1, $residual_sum_square_altered_env_5_1, $residual_sum_altered_env_5_1,
-                
+
                 $phenotype_data_altered_env_hash_6_1, $data_matrix_altered_env_array_6_1, $data_matrix_phenotypes_altered_env_array_6_1, $phenotype_min_altered_env_6_1, $phenotype_max_altered_env_6_1, $env_sim_min_6_1, $env_sim_max_6_1, $sim_data_hash_6_1,
-                $result_blup_data_altered_env_6_1, $result_blup_data_delta_altered_env_6_1, $result_blup_spatial_data_altered_env_6_1, $result_blup_pe_data_altered_env_6_1, $result_blup_pe_data_delta_altered_env_6_1, $result_residual_data_altered_env_6_1, $result_fitted_data_altered_env_6_1, $fixed_effects_altered_env_hash_6_1, $rr_genetic_coefficients_altered_env_hash_6_1, $rr_temporal_coefficients_altered_env_hash_6_1, 
+                $result_blup_data_altered_env_6_1, $result_blup_data_delta_altered_env_6_1, $result_blup_spatial_data_altered_env_6_1, $result_blup_pe_data_altered_env_6_1, $result_blup_pe_data_delta_altered_env_6_1, $result_residual_data_altered_env_6_1, $result_fitted_data_altered_env_6_1, $fixed_effects_altered_env_hash_6_1, $rr_genetic_coefficients_altered_env_hash_6_1, $rr_temporal_coefficients_altered_env_hash_6_1,
                 $rr_coeff_genetic_covariance_altered_env_array_6_1, $rr_coeff_env_covariance_altered_env_array_6_1, $rr_coeff_genetic_correlation_altered_env_array_6_1, $rr_coeff_env_correlation_altered_env_array_6_1, $rr_residual_variance_altered_env_6_1, $varcomp_altered_array_env_6_1,
                 $model_sum_square_residual_altered_env_6_1, $genetic_effect_min_altered_env_6_1, $genetic_effect_max_altered_env_6_1, $env_effect_min_altered_env_6_1, $env_effect_max_altered_env_6_1, $genetic_effect_sum_square_altered_env_6_1, $genetic_effect_sum_altered_env_6_1, $env_effect_sum_square_altered_env_6_1, $env_effect_sum_altered_env_6_1, $residual_sum_square_altered_env_6_1, $residual_sum_altered_env_6_1
-                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder, \%trait_name_encoder_rev, \%stock_info, \%plot_id_map, \@sorted_trait_names, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
+                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder, \%trait_name_encoder_rev, \%stock_info, \%plot_id_map, \@sorted_trait_names, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_out_cv_predict_tempfile, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
                     print STDERR "PLOTTING CORRELATION\n";
@@ -2227,7 +2228,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                 eval {
                     my @plot_corr_full_vals;
-                    
+
                     my @original_pheno_vals;
                     my ($phenotypes_original_heatmap_tempfile_fh, $phenotypes_original_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
                     open(my $F_pheno, ">", $phenotypes_original_heatmap_tempfile) || die "Can't open file ".$phenotypes_original_heatmap_tempfile;
@@ -4251,13 +4252,13 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'vegetative') {
-                            
+
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'reproductive') {
-                            
+
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'mature') {
-                            
+
                         }
                         else {
                             $c->stash->{rest} = { error => "The value of $compute_relationship_matrix_from_htp_phenotypes_time_points htp_pheno_rel_matrix_time_points is not valid!" };
@@ -4390,48 +4391,48 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 };
 
                 my ($statistical_ontology_term_2, $analysis_model_training_data_file_type_2, $analysis_model_language_2, $sorted_residual_trait_names_array_2, $rr_unique_traits_hash_2, $rr_residual_unique_traits_hash_2, $statistics_cmd_2, $cmd_f90_2, $number_traits_2, $trait_to_time_map_hash_2,
-                
-                $result_blup_data_original_2, $result_blup_data_delta_original_2, $result_blup_spatial_data_original_2, $result_blup_pe_data_original_2, $result_blup_pe_data_delta_original_2, $result_residual_data_original_2, $result_fitted_data_original_2, $fixed_effects_original_hash_2, 
-                $rr_genetic_coefficients_original_hash_2, $rr_temporal_coefficients_original_hash_2, 
+
+                $result_blup_data_original_2, $result_blup_data_delta_original_2, $result_blup_spatial_data_original_2, $result_blup_pe_data_original_2, $result_blup_pe_data_delta_original_2, $result_residual_data_original_2, $result_fitted_data_original_2, $fixed_effects_original_hash_2,
+                $rr_genetic_coefficients_original_hash_2, $rr_temporal_coefficients_original_hash_2,
                 $rr_coeff_genetic_covariance_original_array_2, $rr_coeff_env_covariance_original_array_2, $rr_coeff_genetic_correlation_original_array_2, $rr_coeff_env_correlation_original_array_2, $rr_residual_variance_original_2, $varcomp_original_array_2,
                 $model_sum_square_residual_original_2, $genetic_effect_min_original_2, $genetic_effect_max_original_2, $env_effect_min_original_2, $env_effect_max_original_2, $genetic_effect_sum_square_original_2, $genetic_effect_sum_original_2, $env_effect_sum_square_original_2, $env_effect_sum_original_2, $residual_sum_square_original_2, $residual_sum_original_2,
-                
+
                 $phenotype_data_altered_hash_2, $data_matrix_altered_array_2, $data_matrix_phenotypes_altered_array_2, $phenotype_min_altered_2, $phenotype_max_altered_2,
-                $result_blup_data_altered_2, $result_blup_data_delta_altered_2, $result_blup_spatial_data_altered_2, $result_blup_pe_data_altered_2, $result_blup_pe_data_delta_altered_2, $result_residual_data_altered_2, $result_fitted_data_altered_2, $fixed_effects_altered_hash_2, 
-                $rr_genetic_coefficients_altered_hash_2, $rr_temporal_coefficients_altered_hash_2, 
+                $result_blup_data_altered_2, $result_blup_data_delta_altered_2, $result_blup_spatial_data_altered_2, $result_blup_pe_data_altered_2, $result_blup_pe_data_delta_altered_2, $result_residual_data_altered_2, $result_fitted_data_altered_2, $fixed_effects_altered_hash_2,
+                $rr_genetic_coefficients_altered_hash_2, $rr_temporal_coefficients_altered_hash_2,
                 $rr_coeff_genetic_covariance_altered_array_2, $rr_coeff_env_covariance_altered_array_2, $rr_coeff_genetic_correlation_altered_array_2, $rr_coeff_env_correlation_altered_array_2, $rr_residual_variance_altered_2, $varcomp_altered_array_2,
                 $model_sum_square_residual_altered_2, $genetic_effect_min_altered_2, $genetic_effect_max_altered_2, $env_effect_min_altered_2, $env_effect_max_altered_2, $genetic_effect_sum_square_altered_2, $genetic_effect_sum_altered_2, $env_effect_sum_square_altered_2, $env_effect_sum_altered_2, $residual_sum_square_altered_2, $residual_sum_altered_2,
-                
+
                 $phenotype_data_altered_env_hash_1_2, $data_matrix_altered_env_array_1_2, $data_matrix_phenotypes_altered_env_array_1_2, $phenotype_min_altered_env_1_2, $phenotype_max_altered_env_1_2, $env_sim_min_1_2, $env_sim_max_1_2, $sim_data_hash_1_2,
-                $result_blup_data_altered_env_1_2, $result_blup_data_delta_altered_env_1_2, $result_blup_spatial_data_altered_env_1_2, $result_blup_pe_data_altered_env_1_2, $result_blup_pe_data_delta_altered_env_1_2, $result_residual_data_altered_env_1_2, $result_fitted_data_altered_env_1_2, $fixed_effects_altered_env_hash_1_2, $rr_genetic_coefficients_altered_env_hash_1_2, $rr_temporal_coefficients_altered_env_hash_1_2, 
+                $result_blup_data_altered_env_1_2, $result_blup_data_delta_altered_env_1_2, $result_blup_spatial_data_altered_env_1_2, $result_blup_pe_data_altered_env_1_2, $result_blup_pe_data_delta_altered_env_1_2, $result_residual_data_altered_env_1_2, $result_fitted_data_altered_env_1_2, $fixed_effects_altered_env_hash_1_2, $rr_genetic_coefficients_altered_env_hash_1_2, $rr_temporal_coefficients_altered_env_hash_1_2,
                 $rr_coeff_genetic_covariance_altered_env_array_1_2, $rr_coeff_env_covariance_altered_env_array_1_2, $rr_coeff_genetic_correlation_altered_env_array_1_2, $rr_coeff_env_correlation_altered_env_array_1_2, $rr_residual_variance_altered_env_1_2, $varcomp_altered_array_env_1_2,
                 $model_sum_square_residual_altered_env_1_2, $genetic_effect_min_altered_env_1_2, $genetic_effect_max_altered_env_1_2, $env_effect_min_altered_env_1_2, $env_effect_max_altered_env_1_2, $genetic_effect_sum_square_altered_env_1_2, $genetic_effect_sum_altered_env_1_2, $env_effect_sum_square_altered_env_1_2, $env_effect_sum_altered_env_1_2, $residual_sum_square_altered_env_1_2, $residual_sum_altered_env_1_2,
-                
+
                 $phenotype_data_altered_env_hash_2_2, $data_matrix_altered_env_array_2_2, $data_matrix_phenotypes_altered_env_array_2_2, $phenotype_min_altered_env_2_2, $phenotype_max_altered_env_2_2, $env_sim_min_2_2, $env_sim_max_2_2, $sim_data_hash_2_2,
-                $result_blup_data_altered_env_2_2, $result_blup_data_delta_altered_env_2_2, $result_blup_spatial_data_altered_env_2_2, $result_blup_pe_data_altered_env_2_2, $result_blup_pe_data_delta_altered_env_2_2, $result_residual_data_altered_env_2_2, $result_fitted_data_altered_env_2_2, $fixed_effects_altered_env_hash_2_2, $rr_genetic_coefficients_altered_env_hash_2_2, $rr_temporal_coefficients_altered_env_hash_2_2, 
+                $result_blup_data_altered_env_2_2, $result_blup_data_delta_altered_env_2_2, $result_blup_spatial_data_altered_env_2_2, $result_blup_pe_data_altered_env_2_2, $result_blup_pe_data_delta_altered_env_2_2, $result_residual_data_altered_env_2_2, $result_fitted_data_altered_env_2_2, $fixed_effects_altered_env_hash_2_2, $rr_genetic_coefficients_altered_env_hash_2_2, $rr_temporal_coefficients_altered_env_hash_2_2,
                 $rr_coeff_genetic_covariance_altered_env_array_2_2, $rr_coeff_env_covariance_altered_env_array_2_2, $rr_coeff_genetic_correlation_altered_env_array_2_2, $rr_coeff_env_correlation_altered_env_array_2_2, $rr_residual_variance_altered_env_2_2, $varcomp_altered_array_env_2_2,
                 $model_sum_square_residual_altered_env_2_2, $genetic_effect_min_altered_env_2_2, $genetic_effect_max_altered_env_2_2, $env_effect_min_altered_env_2_2, $env_effect_max_altered_env_2_2, $genetic_effect_sum_square_altered_env_2_2, $genetic_effect_sum_altered_env_2_2, $env_effect_sum_square_altered_env_2_2, $env_effect_sum_altered_env_2_2, $residual_sum_square_altered_env_2_2, $residual_sum_altered_env_2_2,
-                
+
                 $phenotype_data_altered_env_hash_3_2, $data_matrix_altered_env_array_3_2, $data_matrix_phenotypes_altered_env_array_3_2, $phenotype_min_altered_env_3_2, $phenotype_max_altered_env_3_2, $env_sim_min_3_2, $env_sim_max_3_2, $sim_data_hash_3_2,
-                $result_blup_data_altered_env_3_2, $result_blup_data_delta_altered_env_3_2, $result_blup_spatial_data_altered_env_3_2, $result_blup_pe_data_altered_env_3_2, $result_blup_pe_data_delta_altered_env_3_2, $result_residual_data_altered_env_3_2, $result_fitted_data_altered_env_3_2, $fixed_effects_altered_env_hash_3_2, $rr_genetic_coefficients_altered_env_hash_3_2, $rr_temporal_coefficients_altered_env_hash_3_2, 
+                $result_blup_data_altered_env_3_2, $result_blup_data_delta_altered_env_3_2, $result_blup_spatial_data_altered_env_3_2, $result_blup_pe_data_altered_env_3_2, $result_blup_pe_data_delta_altered_env_3_2, $result_residual_data_altered_env_3_2, $result_fitted_data_altered_env_3_2, $fixed_effects_altered_env_hash_3_2, $rr_genetic_coefficients_altered_env_hash_3_2, $rr_temporal_coefficients_altered_env_hash_3_2,
                 $rr_coeff_genetic_covariance_altered_env_array_3_2, $rr_coeff_env_covariance_altered_env_array_3_2, $rr_coeff_genetic_correlation_altered_env_array_3_2, $rr_coeff_env_correlation_altered_env_array_3_2, $rr_residual_variance_altered_env_3_2, $varcomp_altered_array_env_3_2,
                 $model_sum_square_residual_altered_env_3_2, $genetic_effect_min_altered_env_3_2, $genetic_effect_max_altered_env_3_2, $env_effect_min_altered_env_3_2, $env_effect_max_altered_env_3_2, $genetic_effect_sum_square_altered_env_3_2, $genetic_effect_sum_altered_env_3_2, $env_effect_sum_square_altered_env_3_2, $env_effect_sum_altered_env_3_2, $residual_sum_square_altered_env_3_2, $residual_sum_altered_env_3_2,
-                
+
                 $phenotype_data_altered_env_hash_4_2, $data_matrix_altered_env_array_4_2, $data_matrix_phenotypes_altered_env_array_4_2, $phenotype_min_altered_env_4_2, $phenotype_max_altered_env_4_2, $env_sim_min_4_2, $env_sim_max_4_2, $sim_data_hash_4_2,
-                $result_blup_data_altered_env_4_2, $result_blup_data_delta_altered_env_4_2, $result_blup_spatial_data_altered_env_4_2, $result_blup_pe_data_altered_env_4_2, $result_blup_pe_data_delta_altered_env_4_2, $result_residual_data_altered_env_4_2, $result_fitted_data_altered_env_4_2, $fixed_effects_altered_env_hash_4_2, $rr_genetic_coefficients_altered_env_hash_4_2, $rr_temporal_coefficients_altered_env_hash_4_2, 
+                $result_blup_data_altered_env_4_2, $result_blup_data_delta_altered_env_4_2, $result_blup_spatial_data_altered_env_4_2, $result_blup_pe_data_altered_env_4_2, $result_blup_pe_data_delta_altered_env_4_2, $result_residual_data_altered_env_4_2, $result_fitted_data_altered_env_4_2, $fixed_effects_altered_env_hash_4_2, $rr_genetic_coefficients_altered_env_hash_4_2, $rr_temporal_coefficients_altered_env_hash_4_2,
                 $rr_coeff_genetic_covariance_altered_env_array_4_2, $rr_coeff_env_covariance_altered_env_array_4_2, $rr_coeff_genetic_correlation_altered_env_array_4_2, $rr_coeff_env_correlation_altered_env_array_4_2, $rr_residual_variance_altered_env_4_2, $varcomp_altered_array_env_4_2,
                 $model_sum_square_residual_altered_env_4_2, $genetic_effect_min_altered_env_4_2, $genetic_effect_max_altered_env_4_2, $env_effect_min_altered_env_4_2, $env_effect_max_altered_env_4_2, $genetic_effect_sum_square_altered_env_4_2, $genetic_effect_sum_altered_env_4_2, $env_effect_sum_square_altered_env_4_2, $env_effect_sum_altered_env_4_2, $residual_sum_square_altered_env_4_2, $residual_sum_altered_env_4_2,
-                
+
                 $phenotype_data_altered_env_hash_5_2, $data_matrix_altered_env_array_5_2, $data_matrix_phenotypes_altered_env_array_5_2, $phenotype_min_altered_env_5_2, $phenotype_max_altered_env_5_2, $env_sim_min_5_2, $env_sim_max_5_2, $sim_data_hash_5_2,
-                $result_blup_data_altered_env_5_2, $result_blup_data_delta_altered_env_5_2, $result_blup_spatial_data_altered_env_5_2, $result_blup_pe_data_altered_env_5_2, $result_blup_pe_data_delta_altered_env_5_2, $result_residual_data_altered_env_5_2, $result_fitted_data_altered_env_5_2, $fixed_effects_altered_env_hash_5_2, $rr_genetic_coefficients_altered_env_hash_5_2, $rr_temporal_coefficients_altered_env_hash_5_2, 
+                $result_blup_data_altered_env_5_2, $result_blup_data_delta_altered_env_5_2, $result_blup_spatial_data_altered_env_5_2, $result_blup_pe_data_altered_env_5_2, $result_blup_pe_data_delta_altered_env_5_2, $result_residual_data_altered_env_5_2, $result_fitted_data_altered_env_5_2, $fixed_effects_altered_env_hash_5_2, $rr_genetic_coefficients_altered_env_hash_5_2, $rr_temporal_coefficients_altered_env_hash_5_2,
                 $rr_coeff_genetic_covariance_altered_env_array_5_2, $rr_coeff_env_covariance_altered_env_array_5_2, $rr_coeff_genetic_correlation_altered_env_array_5_2, $rr_coeff_env_correlation_altered_env_array_5_2, $rr_residual_variance_altered_env_5_2, $varcomp_altered_array_env_5_2,
                 $model_sum_square_residual_altered_env_5_2, $genetic_effect_min_altered_env_5_2, $genetic_effect_max_altered_env_5_2, $env_effect_min_altered_env_5_2, $env_effect_max_altered_env_5_2, $genetic_effect_sum_square_altered_env_5_2, $genetic_effect_sum_altered_env_5_2, $env_effect_sum_square_altered_env_5_2, $env_effect_sum_altered_env_5_2, $residual_sum_square_altered_env_5_2, $residual_sum_altered_env_5_2,
-                
+
                 $phenotype_data_altered_env_hash_6_2, $data_matrix_altered_env_array_6_2, $data_matrix_phenotypes_altered_env_array_6_2, $phenotype_min_altered_env_6_2, $phenotype_max_altered_env_6_2, $env_sim_min_6_2, $env_sim_max_6_2, $sim_data_hash_6_2,
-                $result_blup_data_altered_env_6_2, $result_blup_data_delta_altered_env_6_2, $result_blup_spatial_data_altered_env_6_2, $result_blup_pe_data_altered_env_6_2, $result_blup_pe_data_delta_altered_env_6_2, $result_residual_data_altered_env_6_2, $result_fitted_data_altered_env_6_2, $fixed_effects_altered_env_hash_6_2, $rr_genetic_coefficients_altered_env_hash_6_2, $rr_temporal_coefficients_altered_env_hash_6_2, 
+                $result_blup_data_altered_env_6_2, $result_blup_data_delta_altered_env_6_2, $result_blup_spatial_data_altered_env_6_2, $result_blup_pe_data_altered_env_6_2, $result_blup_pe_data_delta_altered_env_6_2, $result_residual_data_altered_env_6_2, $result_fitted_data_altered_env_6_2, $fixed_effects_altered_env_hash_6_2, $rr_genetic_coefficients_altered_env_hash_6_2, $rr_temporal_coefficients_altered_env_hash_6_2,
                 $rr_coeff_genetic_covariance_altered_env_array_6_2, $rr_coeff_env_covariance_altered_env_array_6_2, $rr_coeff_genetic_correlation_altered_env_array_6_2, $rr_coeff_env_correlation_altered_env_array_6_2, $rr_residual_variance_altered_env_6_2, $varcomp_altered_array_env_6_2,
                 $model_sum_square_residual_altered_env_6_2, $genetic_effect_min_altered_env_6_2, $genetic_effect_max_altered_env_6_2, $env_effect_min_altered_env_6_2, $env_effect_max_altered_env_6_2, $genetic_effect_sum_square_altered_env_6_2, $genetic_effect_sum_altered_env_6_2, $env_effect_sum_square_altered_env_6_2, $env_effect_sum_altered_env_6_2, $residual_sum_square_altered_env_6_2, $residual_sum_altered_env_6_2
-                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_2, \%trait_name_encoder_rev_2, \%stock_info_2, \%plot_id_map, \@sorted_trait_names_2, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_2, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_2, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_2, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
+                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_2, \%trait_name_encoder_rev_2, \%stock_info_2, \%plot_id_map, \@sorted_trait_names_2, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_2, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_2, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_out_cv_predict_tempfile, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_2, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
                     print STDERR "PLOTTING CORRELATION\n";
@@ -4516,7 +4517,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                 eval {
                     my @plot_corr_full_vals;
-                    
+
                     my @original_pheno_vals;
                     my ($phenotypes_original_heatmap_tempfile_fh, $phenotypes_original_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
                     open(my $F_pheno, ">", $phenotypes_original_heatmap_tempfile) || die "Can't open file ".$phenotypes_original_heatmap_tempfile;
@@ -6505,13 +6506,13 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'vegetative') {
-                            
+
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'reproductive') {
-                            
+
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'mature') {
-                            
+
                         }
                         else {
                             $c->stash->{rest} = { error => "The value of $compute_relationship_matrix_from_htp_phenotypes_time_points htp_pheno_rel_matrix_time_points is not valid!" };
@@ -6644,48 +6645,48 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 };
 
                 my ($statistical_ontology_term_3, $analysis_model_training_data_file_type_3, $analysis_model_language_3, $sorted_residual_trait_names_array_3, $rr_unique_traits_hash_3, $rr_residual_unique_traits_hash_3, $statistics_cmd_3, $cmd_f90_3, $number_traits_3, $trait_to_time_map_hash_3,
-                
-                $result_blup_data_original_3, $result_blup_data_delta_original_3, $result_blup_spatial_data_original_3, $result_blup_pe_data_original_3, $result_blup_pe_data_delta_original_3, $result_residual_data_original_3, $result_fitted_data_original_3, $fixed_effects_original_hash_3, 
-                $rr_genetic_coefficients_original_hash_3, $rr_temporal_coefficients_original_hash_3, 
+
+                $result_blup_data_original_3, $result_blup_data_delta_original_3, $result_blup_spatial_data_original_3, $result_blup_pe_data_original_3, $result_blup_pe_data_delta_original_3, $result_residual_data_original_3, $result_fitted_data_original_3, $fixed_effects_original_hash_3,
+                $rr_genetic_coefficients_original_hash_3, $rr_temporal_coefficients_original_hash_3,
                 $rr_coeff_genetic_covariance_original_array_3, $rr_coeff_env_covariance_original_array_3, $rr_coeff_genetic_correlation_original_array_3, $rr_coeff_env_correlation_original_array_3, $rr_residual_variance_original_3, $varcomp_original_array_3,
                 $model_sum_square_residual_original_3, $genetic_effect_min_original_3, $genetic_effect_max_original_3, $env_effect_min_original_3, $env_effect_max_original_3, $genetic_effect_sum_square_original_3, $genetic_effect_sum_original_3, $env_effect_sum_square_original_3, $env_effect_sum_original_3, $residual_sum_square_original_3, $residual_sum_original_3,
-                
+
                 $phenotype_data_altered_hash_3, $data_matrix_altered_array_3, $data_matrix_phenotypes_altered_array_3, $phenotype_min_altered_3, $phenotype_max_altered_3,
-                $result_blup_data_altered_3, $result_blup_data_delta_altered_3, $result_blup_spatial_data_altered_3, $result_blup_pe_data_altered_3, $result_blup_pe_data_delta_altered_3, $result_residual_data_altered_3, $result_fitted_data_altered_3, $fixed_effects_altered_hash_3, 
-                $rr_genetic_coefficients_altered_hash_3, $rr_temporal_coefficients_altered_hash_3, 
+                $result_blup_data_altered_3, $result_blup_data_delta_altered_3, $result_blup_spatial_data_altered_3, $result_blup_pe_data_altered_3, $result_blup_pe_data_delta_altered_3, $result_residual_data_altered_3, $result_fitted_data_altered_3, $fixed_effects_altered_hash_3,
+                $rr_genetic_coefficients_altered_hash_3, $rr_temporal_coefficients_altered_hash_3,
                 $rr_coeff_genetic_covariance_altered_array_3, $rr_coeff_env_covariance_altered_array_3, $rr_coeff_genetic_correlation_altered_array_3, $rr_coeff_env_correlation_altered_array_3, $rr_residual_variance_altered_3, $varcomp_altered_array_3,
                 $model_sum_square_residual_altered_3, $genetic_effect_min_altered_3, $genetic_effect_max_altered_3, $env_effect_min_altered_3, $env_effect_max_altered_3, $genetic_effect_sum_square_altered_3, $genetic_effect_sum_altered_3, $env_effect_sum_square_altered_3, $env_effect_sum_altered_3, $residual_sum_square_altered_3, $residual_sum_altered_3,
-                
+
                 $phenotype_data_altered_env_hash_1_3, $data_matrix_altered_env_array_1_3, $data_matrix_phenotypes_altered_env_array_1_3, $phenotype_min_altered_env_1_3, $phenotype_max_altered_env_1_3, $env_sim_min_1_3, $env_sim_max_1_3, $sim_data_hash_1_3,
-                $result_blup_data_altered_env_1_3, $result_blup_data_delta_altered_env_1_3, $result_blup_spatial_data_altered_env_1_3, $result_blup_pe_data_altered_env_1_3, $result_blup_pe_data_delta_altered_env_1_3, $result_residual_data_altered_env_1_3, $result_fitted_data_altered_env_1_3, $fixed_effects_altered_env_hash_1_3, $rr_genetic_coefficients_altered_env_hash_1_3, $rr_temporal_coefficients_altered_env_hash_1_3, 
+                $result_blup_data_altered_env_1_3, $result_blup_data_delta_altered_env_1_3, $result_blup_spatial_data_altered_env_1_3, $result_blup_pe_data_altered_env_1_3, $result_blup_pe_data_delta_altered_env_1_3, $result_residual_data_altered_env_1_3, $result_fitted_data_altered_env_1_3, $fixed_effects_altered_env_hash_1_3, $rr_genetic_coefficients_altered_env_hash_1_3, $rr_temporal_coefficients_altered_env_hash_1_3,
                 $rr_coeff_genetic_covariance_altered_env_array_1_3, $rr_coeff_env_covariance_altered_env_array_1_3, $rr_coeff_genetic_correlation_altered_env_array_1_3, $rr_coeff_env_correlation_altered_env_array_1_3, $rr_residual_variance_altered_env_1_3, $varcomp_altered_array_env_1_3,
                 $model_sum_square_residual_altered_env_1_3, $genetic_effect_min_altered_env_1_3, $genetic_effect_max_altered_env_1_3, $env_effect_min_altered_env_1_3, $env_effect_max_altered_env_1_3, $genetic_effect_sum_square_altered_env_1_3, $genetic_effect_sum_altered_env_1_3, $env_effect_sum_square_altered_env_1_3, $env_effect_sum_altered_env_1_3, $residual_sum_square_altered_env_1_3, $residual_sum_altered_env_1_3,
-                
+
                 $phenotype_data_altered_env_hash_2_3, $data_matrix_altered_env_array_2_3, $data_matrix_phenotypes_altered_env_array_2_3, $phenotype_min_altered_env_2_3, $phenotype_max_altered_env_2_3, $env_sim_min_2_3, $env_sim_max_2_3, $sim_data_hash_2_3,
-                $result_blup_data_altered_env_2_3, $result_blup_data_delta_altered_env_2_3, $result_blup_spatial_data_altered_env_2_3, $result_blup_pe_data_altered_env_2_3, $result_blup_pe_data_delta_altered_env_2_3, $result_residual_data_altered_env_2_3, $result_fitted_data_altered_env_2_3, $fixed_effects_altered_env_hash_2_3, $rr_genetic_coefficients_altered_env_hash_2_3, $rr_temporal_coefficients_altered_env_hash_2_3, 
+                $result_blup_data_altered_env_2_3, $result_blup_data_delta_altered_env_2_3, $result_blup_spatial_data_altered_env_2_3, $result_blup_pe_data_altered_env_2_3, $result_blup_pe_data_delta_altered_env_2_3, $result_residual_data_altered_env_2_3, $result_fitted_data_altered_env_2_3, $fixed_effects_altered_env_hash_2_3, $rr_genetic_coefficients_altered_env_hash_2_3, $rr_temporal_coefficients_altered_env_hash_2_3,
                 $rr_coeff_genetic_covariance_altered_env_array_2_3, $rr_coeff_env_covariance_altered_env_array_2_3, $rr_coeff_genetic_correlation_altered_env_array_2_3, $rr_coeff_env_correlation_altered_env_array_2_3, $rr_residual_variance_altered_env_2_3, $varcomp_altered_array_env_2_3,
                 $model_sum_square_residual_altered_env_2_3, $genetic_effect_min_altered_env_2_3, $genetic_effect_max_altered_env_2_3, $env_effect_min_altered_env_2_3, $env_effect_max_altered_env_2_3, $genetic_effect_sum_square_altered_env_2_3, $genetic_effect_sum_altered_env_2_3, $env_effect_sum_square_altered_env_2_3, $env_effect_sum_altered_env_2_3, $residual_sum_square_altered_env_2_3, $residual_sum_altered_env_2_3,
-                
+
                 $phenotype_data_altered_env_hash_3_3, $data_matrix_altered_env_array_3_3, $data_matrix_phenotypes_altered_env_array_3_3, $phenotype_min_altered_env_3_3, $phenotype_max_altered_env_3_3, $env_sim_min_3_3, $env_sim_max_3_3, $sim_data_hash_3_3,
-                $result_blup_data_altered_env_3_3, $result_blup_data_delta_altered_env_3_3, $result_blup_spatial_data_altered_env_3_3, $result_blup_pe_data_altered_env_3_3, $result_blup_pe_data_delta_altered_env_3_3, $result_residual_data_altered_env_3_3, $result_fitted_data_altered_env_3_3, $fixed_effects_altered_env_hash_3_3, $rr_genetic_coefficients_altered_env_hash_3_3, $rr_temporal_coefficients_altered_env_hash_3_3, 
+                $result_blup_data_altered_env_3_3, $result_blup_data_delta_altered_env_3_3, $result_blup_spatial_data_altered_env_3_3, $result_blup_pe_data_altered_env_3_3, $result_blup_pe_data_delta_altered_env_3_3, $result_residual_data_altered_env_3_3, $result_fitted_data_altered_env_3_3, $fixed_effects_altered_env_hash_3_3, $rr_genetic_coefficients_altered_env_hash_3_3, $rr_temporal_coefficients_altered_env_hash_3_3,
                 $rr_coeff_genetic_covariance_altered_env_array_3_3, $rr_coeff_env_covariance_altered_env_array_3_3, $rr_coeff_genetic_correlation_altered_env_array_3_3, $rr_coeff_env_correlation_altered_env_array_3_3, $rr_residual_variance_altered_env_3_3, $varcomp_altered_array_env_3_3,
                 $model_sum_square_residual_altered_env_3_3, $genetic_effect_min_altered_env_3_3, $genetic_effect_max_altered_env_3_3, $env_effect_min_altered_env_3_3, $env_effect_max_altered_env_3_3, $genetic_effect_sum_square_altered_env_3_3, $genetic_effect_sum_altered_env_3_3, $env_effect_sum_square_altered_env_3_3, $env_effect_sum_altered_env_3_3, $residual_sum_square_altered_env_3_3, $residual_sum_altered_env_3_3,
-                
+
                 $phenotype_data_altered_env_hash_4_3, $data_matrix_altered_env_array_4_3, $data_matrix_phenotypes_altered_env_array_4_3, $phenotype_min_altered_env_4_3, $phenotype_max_altered_env_4_3, $env_sim_min_4_3, $env_sim_max_4_3, $sim_data_hash_4_3,
-                $result_blup_data_altered_env_4_3, $result_blup_data_delta_altered_env_4_3, $result_blup_spatial_data_altered_env_4_3, $result_blup_pe_data_altered_env_4_3, $result_blup_pe_data_delta_altered_env_4_3, $result_residual_data_altered_env_4_3, $result_fitted_data_altered_env_4_3, $fixed_effects_altered_env_hash_4_3, $rr_genetic_coefficients_altered_env_hash_4_3, $rr_temporal_coefficients_altered_env_hash_4_3, 
+                $result_blup_data_altered_env_4_3, $result_blup_data_delta_altered_env_4_3, $result_blup_spatial_data_altered_env_4_3, $result_blup_pe_data_altered_env_4_3, $result_blup_pe_data_delta_altered_env_4_3, $result_residual_data_altered_env_4_3, $result_fitted_data_altered_env_4_3, $fixed_effects_altered_env_hash_4_3, $rr_genetic_coefficients_altered_env_hash_4_3, $rr_temporal_coefficients_altered_env_hash_4_3,
                 $rr_coeff_genetic_covariance_altered_env_array_4_3, $rr_coeff_env_covariance_altered_env_array_4_3, $rr_coeff_genetic_correlation_altered_env_array_4_3, $rr_coeff_env_correlation_altered_env_array_4_3, $rr_residual_variance_altered_env_4_3, $varcomp_altered_array_env_4_3,
                 $model_sum_square_residual_altered_env_4_3, $genetic_effect_min_altered_env_4_3, $genetic_effect_max_altered_env_4_3, $env_effect_min_altered_env_4_3, $env_effect_max_altered_env_4_3, $genetic_effect_sum_square_altered_env_4_3, $genetic_effect_sum_altered_env_4_3, $env_effect_sum_square_altered_env_4_3, $env_effect_sum_altered_env_4_3, $residual_sum_square_altered_env_4_3, $residual_sum_altered_env_4_3,
-                
+
                 $phenotype_data_altered_env_hash_5_3, $data_matrix_altered_env_array_5_3, $data_matrix_phenotypes_altered_env_array_5_3, $phenotype_min_altered_env_5_3, $phenotype_max_altered_env_5_3, $env_sim_min_5_3, $env_sim_max_5_3, $sim_data_hash_5_3,
-                $result_blup_data_altered_env_5_3, $result_blup_data_delta_altered_env_5_3, $result_blup_spatial_data_altered_env_5_3, $result_blup_pe_data_altered_env_5_3, $result_blup_pe_data_delta_altered_env_5_3, $result_residual_data_altered_env_5_3, $result_fitted_data_altered_env_5_3, $fixed_effects_altered_env_hash_5_3, $rr_genetic_coefficients_altered_env_hash_5_3, $rr_temporal_coefficients_altered_env_hash_5_3, 
+                $result_blup_data_altered_env_5_3, $result_blup_data_delta_altered_env_5_3, $result_blup_spatial_data_altered_env_5_3, $result_blup_pe_data_altered_env_5_3, $result_blup_pe_data_delta_altered_env_5_3, $result_residual_data_altered_env_5_3, $result_fitted_data_altered_env_5_3, $fixed_effects_altered_env_hash_5_3, $rr_genetic_coefficients_altered_env_hash_5_3, $rr_temporal_coefficients_altered_env_hash_5_3,
                 $rr_coeff_genetic_covariance_altered_env_array_5_3, $rr_coeff_env_covariance_altered_env_array_5_3, $rr_coeff_genetic_correlation_altered_env_array_5_3, $rr_coeff_env_correlation_altered_env_array_5_3, $rr_residual_variance_altered_env_5_3, $varcomp_altered_array_env_5_3,
                 $model_sum_square_residual_altered_env_5_3, $genetic_effect_min_altered_env_5_3, $genetic_effect_max_altered_env_5_3, $env_effect_min_altered_env_5_3, $env_effect_max_altered_env_5_3, $genetic_effect_sum_square_altered_env_5_3, $genetic_effect_sum_altered_env_5_3, $env_effect_sum_square_altered_env_5_3, $env_effect_sum_altered_env_5_3, $residual_sum_square_altered_env_5_3, $residual_sum_altered_env_5_3,
-                
+
                 $phenotype_data_altered_env_hash_6_3, $data_matrix_altered_env_array_6_3, $data_matrix_phenotypes_altered_env_array_6_3, $phenotype_min_altered_env_6_3, $phenotype_max_altered_env_6_3, $env_sim_min_6_3, $env_sim_max_6_3, $sim_data_hash_6_3,
-                $result_blup_data_altered_env_6_3, $result_blup_data_delta_altered_env_6_3, $result_blup_spatial_data_altered_env_6_3, $result_blup_pe_data_altered_env_6_3, $result_blup_pe_data_delta_altered_env_6_3, $result_residual_data_altered_env_6_3, $result_fitted_data_altered_env_6_3, $fixed_effects_altered_env_hash_6_3, $rr_genetic_coefficients_altered_env_hash_6_3, $rr_temporal_coefficients_altered_env_hash_6_3, 
+                $result_blup_data_altered_env_6_3, $result_blup_data_delta_altered_env_6_3, $result_blup_spatial_data_altered_env_6_3, $result_blup_pe_data_altered_env_6_3, $result_blup_pe_data_delta_altered_env_6_3, $result_residual_data_altered_env_6_3, $result_fitted_data_altered_env_6_3, $fixed_effects_altered_env_hash_6_3, $rr_genetic_coefficients_altered_env_hash_6_3, $rr_temporal_coefficients_altered_env_hash_6_3,
                 $rr_coeff_genetic_covariance_altered_env_array_6_3, $rr_coeff_env_covariance_altered_env_array_6_3, $rr_coeff_genetic_correlation_altered_env_array_6_3, $rr_coeff_env_correlation_altered_env_array_6_3, $rr_residual_variance_altered_env_6_3, $varcomp_altered_array_env_6_3,
                 $model_sum_square_residual_altered_env_6_3, $genetic_effect_min_altered_env_6_3, $genetic_effect_max_altered_env_6_3, $env_effect_min_altered_env_6_3, $env_effect_max_altered_env_6_3, $genetic_effect_sum_square_altered_env_6_3, $genetic_effect_sum_altered_env_6_3, $env_effect_sum_square_altered_env_6_3, $env_effect_sum_altered_env_6_3, $residual_sum_square_altered_env_6_3, $residual_sum_altered_env_6_3
-                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_2, \%trait_name_encoder_rev_2, \%stock_info_2, \%plot_id_map, \@sorted_trait_names_2, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_2, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_2, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_2, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
+                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_2, \%trait_name_encoder_rev_2, \%stock_info_2, \%plot_id_map, \@sorted_trait_names_2, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_2, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_2, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_out_cv_predict_tempfile, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_2, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
                     print STDERR "PLOTTING CORRELATION\n";
@@ -6771,7 +6772,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                 eval {
                     my @plot_corr_full_vals;
-                    
+
                     my @original_pheno_vals;
                     my ($phenotypes_original_heatmap_tempfile_fh, $phenotypes_original_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
                     open(my $F_pheno, ">", $phenotypes_original_heatmap_tempfile) || die "Can't open file ".$phenotypes_original_heatmap_tempfile;
@@ -8857,13 +8858,13 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'vegetative') {
-                            
+
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'reproductive') {
-                            
+
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'mature') {
-                            
+
                         }
                         else {
                             $c->stash->{rest} = { error => "The value of $compute_relationship_matrix_from_htp_phenotypes_time_points htp_pheno_rel_matrix_time_points is not valid!" };
@@ -9004,48 +9005,48 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 };
 
                 my ($statistical_ontology_term_5, $analysis_model_training_data_file_type_5, $analysis_model_language_5, $sorted_residual_trait_names_array_5, $rr_unique_traits_hash_5, $rr_residual_unique_traits_hash_5, $statistics_cmd_5, $cmd_f90_5, $number_traits_5, $trait_to_time_map_hash_5,
-                
-                $result_blup_data_original_5, $result_blup_data_delta_original_5, $result_blup_spatial_data_original_5, $result_blup_pe_data_original_5, $result_blup_pe_data_delta_original_5, $result_residual_data_original_5, $result_fitted_data_original_5, $fixed_effects_original_hash_5, 
-                $rr_genetic_coefficients_original_hash_5, $rr_temporal_coefficients_original_hash_5, 
+
+                $result_blup_data_original_5, $result_blup_data_delta_original_5, $result_blup_spatial_data_original_5, $result_blup_pe_data_original_5, $result_blup_pe_data_delta_original_5, $result_residual_data_original_5, $result_fitted_data_original_5, $fixed_effects_original_hash_5,
+                $rr_genetic_coefficients_original_hash_5, $rr_temporal_coefficients_original_hash_5,
                 $rr_coeff_genetic_covariance_original_array_5, $rr_coeff_env_covariance_original_array_5, $rr_coeff_genetic_correlation_original_array_5, $rr_coeff_env_correlation_original_array_5, $rr_residual_variance_original_5, $varcomp_original_array_5,
                 $model_sum_square_residual_original_5, $genetic_effect_min_original_5, $genetic_effect_max_original_5, $env_effect_min_original_5, $env_effect_max_original_5, $genetic_effect_sum_square_original_5, $genetic_effect_sum_original_5, $env_effect_sum_square_original_5, $env_effect_sum_original_5, $residual_sum_square_original_5, $residual_sum_original_5,
-                
+
                 $phenotype_data_altered_hash_5, $data_matrix_altered_array_5, $data_matrix_phenotypes_altered_array_5, $phenotype_min_altered_5, $phenotype_max_altered_5,
-                $result_blup_data_altered_5, $result_blup_data_delta_altered_5, $result_blup_spatial_data_altered_5, $result_blup_pe_data_altered_5, $result_blup_pe_data_delta_altered_5, $result_residual_data_altered_5, $result_fitted_data_altered_5, $fixed_effects_altered_hash_5, 
-                $rr_genetic_coefficients_altered_hash_5, $rr_temporal_coefficients_altered_hash_5, 
+                $result_blup_data_altered_5, $result_blup_data_delta_altered_5, $result_blup_spatial_data_altered_5, $result_blup_pe_data_altered_5, $result_blup_pe_data_delta_altered_5, $result_residual_data_altered_5, $result_fitted_data_altered_5, $fixed_effects_altered_hash_5,
+                $rr_genetic_coefficients_altered_hash_5, $rr_temporal_coefficients_altered_hash_5,
                 $rr_coeff_genetic_covariance_altered_array_5, $rr_coeff_env_covariance_altered_array_5, $rr_coeff_genetic_correlation_altered_array_5, $rr_coeff_env_correlation_altered_array_5, $rr_residual_variance_altered_5, $varcomp_altered_array_5,
                 $model_sum_square_residual_altered_5, $genetic_effect_min_altered_5, $genetic_effect_max_altered_5, $env_effect_min_altered_5, $env_effect_max_altered_5, $genetic_effect_sum_square_altered_5, $genetic_effect_sum_altered_5, $env_effect_sum_square_altered_5, $env_effect_sum_altered_5, $residual_sum_square_altered_5, $residual_sum_altered_5,
-                
+
                 $phenotype_data_altered_env_hash_1_5, $data_matrix_altered_env_array_1_5, $data_matrix_phenotypes_altered_env_array_1_5, $phenotype_min_altered_env_1_5, $phenotype_max_altered_env_1_5, $env_sim_min_1_5, $env_sim_max_1_5, $sim_data_hash_1_5,
-                $result_blup_data_altered_env_1_5, $result_blup_data_delta_altered_env_1_5, $result_blup_spatial_data_altered_env_1_5, $result_blup_pe_data_altered_env_1_5, $result_blup_pe_data_delta_altered_env_1_5, $result_residual_data_altered_env_1_5, $result_fitted_data_altered_env_1_5, $fixed_effects_altered_env_hash_1_5, $rr_genetic_coefficients_altered_env_hash_1_5, $rr_temporal_coefficients_altered_env_hash_1_5, 
+                $result_blup_data_altered_env_1_5, $result_blup_data_delta_altered_env_1_5, $result_blup_spatial_data_altered_env_1_5, $result_blup_pe_data_altered_env_1_5, $result_blup_pe_data_delta_altered_env_1_5, $result_residual_data_altered_env_1_5, $result_fitted_data_altered_env_1_5, $fixed_effects_altered_env_hash_1_5, $rr_genetic_coefficients_altered_env_hash_1_5, $rr_temporal_coefficients_altered_env_hash_1_5,
                 $rr_coeff_genetic_covariance_altered_env_array_1_5, $rr_coeff_env_covariance_altered_env_array_1_5, $rr_coeff_genetic_correlation_altered_env_array_1_5, $rr_coeff_env_correlation_altered_env_array_1_5, $rr_residual_variance_altered_env_1_5, $varcomp_altered_array_env_1_5,
                 $model_sum_square_residual_altered_env_1_5, $genetic_effect_min_altered_env_1_5, $genetic_effect_max_altered_env_1_5, $env_effect_min_altered_env_1_5, $env_effect_max_altered_env_1_5, $genetic_effect_sum_square_altered_env_1_5, $genetic_effect_sum_altered_env_1_5, $env_effect_sum_square_altered_env_1_5, $env_effect_sum_altered_env_1_5, $residual_sum_square_altered_env_1_5, $residual_sum_altered_env_1_5,
-                
+
                 $phenotype_data_altered_env_hash_2_5, $data_matrix_altered_env_array_2_5, $data_matrix_phenotypes_altered_env_array_2_5, $phenotype_min_altered_env_2_5, $phenotype_max_altered_env_2_5, $env_sim_min_2_5, $env_sim_max_2_5, $sim_data_hash_2_5,
-                $result_blup_data_altered_env_2_5, $result_blup_data_delta_altered_env_2_5, $result_blup_spatial_data_altered_env_2_5, $result_blup_pe_data_altered_env_2_5, $result_blup_pe_data_delta_altered_env_2_5, $result_residual_data_altered_env_2_5, $result_fitted_data_altered_env_2_5, $fixed_effects_altered_env_hash_2_5, $rr_genetic_coefficients_altered_env_hash_2_5, $rr_temporal_coefficients_altered_env_hash_2_5, 
+                $result_blup_data_altered_env_2_5, $result_blup_data_delta_altered_env_2_5, $result_blup_spatial_data_altered_env_2_5, $result_blup_pe_data_altered_env_2_5, $result_blup_pe_data_delta_altered_env_2_5, $result_residual_data_altered_env_2_5, $result_fitted_data_altered_env_2_5, $fixed_effects_altered_env_hash_2_5, $rr_genetic_coefficients_altered_env_hash_2_5, $rr_temporal_coefficients_altered_env_hash_2_5,
                 $rr_coeff_genetic_covariance_altered_env_array_2_5, $rr_coeff_env_covariance_altered_env_array_2_5, $rr_coeff_genetic_correlation_altered_env_array_2_5, $rr_coeff_env_correlation_altered_env_array_2_5, $rr_residual_variance_altered_env_2_5, $varcomp_altered_array_env_2_5,
                 $model_sum_square_residual_altered_env_2_5, $genetic_effect_min_altered_env_2_5, $genetic_effect_max_altered_env_2_5, $env_effect_min_altered_env_2_5, $env_effect_max_altered_env_2_5, $genetic_effect_sum_square_altered_env_2_5, $genetic_effect_sum_altered_env_2_5, $env_effect_sum_square_altered_env_2_5, $env_effect_sum_altered_env_2_5, $residual_sum_square_altered_env_2_5, $residual_sum_altered_env_2_5,
-                
+
                 $phenotype_data_altered_env_hash_3_5, $data_matrix_altered_env_array_3_5, $data_matrix_phenotypes_altered_env_array_3_5, $phenotype_min_altered_env_3_5, $phenotype_max_altered_env_3_5, $env_sim_min_3_5, $env_sim_max_3_5, $sim_data_hash_3_5,
-                $result_blup_data_altered_env_3_5, $result_blup_data_delta_altered_env_3_5, $result_blup_spatial_data_altered_env_3_5, $result_blup_pe_data_altered_env_3_5, $result_blup_pe_data_delta_altered_env_3_5, $result_residual_data_altered_env_3_5, $result_fitted_data_altered_env_3_5, $fixed_effects_altered_env_hash_3_5, $rr_genetic_coefficients_altered_env_hash_3_5, $rr_temporal_coefficients_altered_env_hash_3_5, 
+                $result_blup_data_altered_env_3_5, $result_blup_data_delta_altered_env_3_5, $result_blup_spatial_data_altered_env_3_5, $result_blup_pe_data_altered_env_3_5, $result_blup_pe_data_delta_altered_env_3_5, $result_residual_data_altered_env_3_5, $result_fitted_data_altered_env_3_5, $fixed_effects_altered_env_hash_3_5, $rr_genetic_coefficients_altered_env_hash_3_5, $rr_temporal_coefficients_altered_env_hash_3_5,
                 $rr_coeff_genetic_covariance_altered_env_array_3_5, $rr_coeff_env_covariance_altered_env_array_3_5, $rr_coeff_genetic_correlation_altered_env_array_3_5, $rr_coeff_env_correlation_altered_env_array_3_5, $rr_residual_variance_altered_env_3_5, $varcomp_altered_array_env_3_5,
                 $model_sum_square_residual_altered_env_3_5, $genetic_effect_min_altered_env_3_5, $genetic_effect_max_altered_env_3_5, $env_effect_min_altered_env_3_5, $env_effect_max_altered_env_3_5, $genetic_effect_sum_square_altered_env_3_5, $genetic_effect_sum_altered_env_3_5, $env_effect_sum_square_altered_env_3_5, $env_effect_sum_altered_env_3_5, $residual_sum_square_altered_env_3_5, $residual_sum_altered_env_3_5,
-                
+
                 $phenotype_data_altered_env_hash_4_5, $data_matrix_altered_env_array_4_5, $data_matrix_phenotypes_altered_env_array_4_5, $phenotype_min_altered_env_4_5, $phenotype_max_altered_env_4_5, $env_sim_min_4_5, $env_sim_max_4_5, $sim_data_hash_4_5,
-                $result_blup_data_altered_env_4_5, $result_blup_data_delta_altered_env_4_5, $result_blup_spatial_data_altered_env_4_5, $result_blup_pe_data_altered_env_4_5, $result_blup_pe_data_delta_altered_env_4_5, $result_residual_data_altered_env_4_5, $result_fitted_data_altered_env_4_5, $fixed_effects_altered_env_hash_4_5, $rr_genetic_coefficients_altered_env_hash_4_5, $rr_temporal_coefficients_altered_env_hash_4_5, 
+                $result_blup_data_altered_env_4_5, $result_blup_data_delta_altered_env_4_5, $result_blup_spatial_data_altered_env_4_5, $result_blup_pe_data_altered_env_4_5, $result_blup_pe_data_delta_altered_env_4_5, $result_residual_data_altered_env_4_5, $result_fitted_data_altered_env_4_5, $fixed_effects_altered_env_hash_4_5, $rr_genetic_coefficients_altered_env_hash_4_5, $rr_temporal_coefficients_altered_env_hash_4_5,
                 $rr_coeff_genetic_covariance_altered_env_array_4_5, $rr_coeff_env_covariance_altered_env_array_4_5, $rr_coeff_genetic_correlation_altered_env_array_4_5, $rr_coeff_env_correlation_altered_env_array_4_5, $rr_residual_variance_altered_env_4_5, $varcomp_altered_array_env_4_5,
                 $model_sum_square_residual_altered_env_4_5, $genetic_effect_min_altered_env_4_5, $genetic_effect_max_altered_env_4_5, $env_effect_min_altered_env_4_5, $env_effect_max_altered_env_4_5, $genetic_effect_sum_square_altered_env_4_5, $genetic_effect_sum_altered_env_4_5, $env_effect_sum_square_altered_env_4_5, $env_effect_sum_altered_env_4_5, $residual_sum_square_altered_env_4_5, $residual_sum_altered_env_4_5,
-                
+
                 $phenotype_data_altered_env_hash_5_5, $data_matrix_altered_env_array_5_5, $data_matrix_phenotypes_altered_env_array_5_5, $phenotype_min_altered_env_5_5, $phenotype_max_altered_env_5_5, $env_sim_min_5_5, $env_sim_max_5_5, $sim_data_hash_5_5,
-                $result_blup_data_altered_env_5_5, $result_blup_data_delta_altered_env_5_5, $result_blup_spatial_data_altered_env_5_5, $result_blup_pe_data_altered_env_5_5, $result_blup_pe_data_delta_altered_env_5_5, $result_residual_data_altered_env_5_5, $result_fitted_data_altered_env_5_5, $fixed_effects_altered_env_hash_5_5, $rr_genetic_coefficients_altered_env_hash_5_5, $rr_temporal_coefficients_altered_env_hash_5_5, 
+                $result_blup_data_altered_env_5_5, $result_blup_data_delta_altered_env_5_5, $result_blup_spatial_data_altered_env_5_5, $result_blup_pe_data_altered_env_5_5, $result_blup_pe_data_delta_altered_env_5_5, $result_residual_data_altered_env_5_5, $result_fitted_data_altered_env_5_5, $fixed_effects_altered_env_hash_5_5, $rr_genetic_coefficients_altered_env_hash_5_5, $rr_temporal_coefficients_altered_env_hash_5_5,
                 $rr_coeff_genetic_covariance_altered_env_array_5_5, $rr_coeff_env_covariance_altered_env_array_5_5, $rr_coeff_genetic_correlation_altered_env_array_5_5, $rr_coeff_env_correlation_altered_env_array_5_5, $rr_residual_variance_altered_env_5_5, $varcomp_altered_array_env_5_5,
                 $model_sum_square_residual_altered_env_5_5, $genetic_effect_min_altered_env_5_5, $genetic_effect_max_altered_env_5_5, $env_effect_min_altered_env_5_5, $env_effect_max_altered_env_5_5, $genetic_effect_sum_square_altered_env_5_5, $genetic_effect_sum_altered_env_5_5, $env_effect_sum_square_altered_env_5_5, $env_effect_sum_altered_env_5_5, $residual_sum_square_altered_env_5_5, $residual_sum_altered_env_5_5,
-                
+
                 $phenotype_data_altered_env_hash_6_5, $data_matrix_altered_env_array_6_5, $data_matrix_phenotypes_altered_env_array_6_5, $phenotype_min_altered_env_6_5, $phenotype_max_altered_env_6_5, $env_sim_min_6_5, $env_sim_max_6_5, $sim_data_hash_6_5,
-                $result_blup_data_altered_env_6_5, $result_blup_data_delta_altered_env_6_5, $result_blup_spatial_data_altered_env_6_5, $result_blup_pe_data_altered_env_6_5, $result_blup_pe_data_delta_altered_env_6_5, $result_residual_data_altered_env_6_5, $result_fitted_data_altered_env_6_5, $fixed_effects_altered_env_hash_6_5, $rr_genetic_coefficients_altered_env_hash_6_5, $rr_temporal_coefficients_altered_env_hash_6_5, 
+                $result_blup_data_altered_env_6_5, $result_blup_data_delta_altered_env_6_5, $result_blup_spatial_data_altered_env_6_5, $result_blup_pe_data_altered_env_6_5, $result_blup_pe_data_delta_altered_env_6_5, $result_residual_data_altered_env_6_5, $result_fitted_data_altered_env_6_5, $fixed_effects_altered_env_hash_6_5, $rr_genetic_coefficients_altered_env_hash_6_5, $rr_temporal_coefficients_altered_env_hash_6_5,
                 $rr_coeff_genetic_covariance_altered_env_array_6_5, $rr_coeff_env_covariance_altered_env_array_6_5, $rr_coeff_genetic_correlation_altered_env_array_6_5, $rr_coeff_env_correlation_altered_env_array_6_5, $rr_residual_variance_altered_env_6_5, $varcomp_altered_array_env_6_5,
                 $model_sum_square_residual_altered_env_6_5, $genetic_effect_min_altered_env_6_5, $genetic_effect_max_altered_env_6_5, $env_effect_min_altered_env_6_5, $env_effect_max_altered_env_6_5, $genetic_effect_sum_square_altered_env_6_5, $genetic_effect_sum_altered_env_6_5, $env_effect_sum_square_altered_env_6_5, $env_effect_sum_altered_env_6_5, $residual_sum_square_altered_env_6_5, $residual_sum_altered_env_6_5
-                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_5, \%trait_name_encoder_rev_5, \%stock_info_5, \%plot_id_map, \@sorted_trait_names_5, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_5, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_5, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_5, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
+                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_5, \%trait_name_encoder_rev_5, \%stock_info_5, \%plot_id_map, \@sorted_trait_names_5, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_5, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_5, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_out_cv_predict_tempfile, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_5, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
                     print STDERR "PLOTTING CORRELATION\n";
@@ -9129,7 +9130,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                 eval {
                     my @plot_corr_full_vals;
-                    
+
                     my @original_pheno_vals;
                     my ($phenotypes_original_heatmap_tempfile_fh, $phenotypes_original_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
                     open(my $F_pheno, ">", $phenotypes_original_heatmap_tempfile) || die "Can't open file ".$phenotypes_original_heatmap_tempfile;
@@ -11212,13 +11213,13 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'vegetative') {
-                            
+
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'reproductive') {
-                            
+
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'mature') {
-                            
+
                         }
                         else {
                             $c->stash->{rest} = { error => "The value of $compute_relationship_matrix_from_htp_phenotypes_time_points htp_pheno_rel_matrix_time_points is not valid!" };
@@ -11361,48 +11362,48 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 };
 
                 my ($statistical_ontology_term_6, $analysis_model_training_data_file_type_6, $analysis_model_language_6, $sorted_residual_trait_names_array_6, $rr_unique_traits_hash_6, $rr_residual_unique_traits_hash_6, $statistics_cmd_6, $cmd_f90_6, $number_traits_6, $trait_to_time_map_hash_6,
-                
-                $result_blup_data_original_6, $result_blup_data_delta_original_6, $result_blup_spatial_data_original_6, $result_blup_pe_data_original_6, $result_blup_pe_data_delta_original_6, $result_residual_data_original_6, $result_fitted_data_original_6, $fixed_effects_original_hash_6, 
-                $rr_genetic_coefficients_original_hash_6, $rr_temporal_coefficients_original_hash_6, 
+
+                $result_blup_data_original_6, $result_blup_data_delta_original_6, $result_blup_spatial_data_original_6, $result_blup_pe_data_original_6, $result_blup_pe_data_delta_original_6, $result_residual_data_original_6, $result_fitted_data_original_6, $fixed_effects_original_hash_6,
+                $rr_genetic_coefficients_original_hash_6, $rr_temporal_coefficients_original_hash_6,
                 $rr_coeff_genetic_covariance_original_array_6, $rr_coeff_env_covariance_original_array_6, $rr_coeff_genetic_correlation_original_array_6, $rr_coeff_env_correlation_original_array_6, $rr_residual_variance_original_6, $varcomp_original_array_6,
                 $model_sum_square_residual_original_6, $genetic_effect_min_original_6, $genetic_effect_max_original_6, $env_effect_min_original_6, $env_effect_max_original_6, $genetic_effect_sum_square_original_6, $genetic_effect_sum_original_6, $env_effect_sum_square_original_6, $env_effect_sum_original_6, $residual_sum_square_original_6, $residual_sum_original_6,
-                
+
                 $phenotype_data_altered_hash_6, $data_matrix_altered_array_6, $data_matrix_phenotypes_altered_array_6, $phenotype_min_altered_6, $phenotype_max_altered_6,
-                $result_blup_data_altered_6, $result_blup_data_delta_altered_6, $result_blup_spatial_data_altered_6, $result_blup_pe_data_altered_6, $result_blup_pe_data_delta_altered_6, $result_residual_data_altered_6, $result_fitted_data_altered_6, $fixed_effects_altered_hash_6, 
-                $rr_genetic_coefficients_altered_hash_6, $rr_temporal_coefficients_altered_hash_6, 
+                $result_blup_data_altered_6, $result_blup_data_delta_altered_6, $result_blup_spatial_data_altered_6, $result_blup_pe_data_altered_6, $result_blup_pe_data_delta_altered_6, $result_residual_data_altered_6, $result_fitted_data_altered_6, $fixed_effects_altered_hash_6,
+                $rr_genetic_coefficients_altered_hash_6, $rr_temporal_coefficients_altered_hash_6,
                 $rr_coeff_genetic_covariance_altered_array_6, $rr_coeff_env_covariance_altered_array_6, $rr_coeff_genetic_correlation_altered_array_6, $rr_coeff_env_correlation_altered_array_6, $rr_residual_variance_altered_6, $varcomp_altered_array_6,
                 $model_sum_square_residual_altered_6, $genetic_effect_min_altered_6, $genetic_effect_max_altered_6, $env_effect_min_altered_6, $env_effect_max_altered_6, $genetic_effect_sum_square_altered_6, $genetic_effect_sum_altered_6, $env_effect_sum_square_altered_6, $env_effect_sum_altered_6, $residual_sum_square_altered_6, $residual_sum_altered_6,
-                
+
                 $phenotype_data_altered_env_hash_1_6, $data_matrix_altered_env_array_1_6, $data_matrix_phenotypes_altered_env_array_1_6, $phenotype_min_altered_env_1_6, $phenotype_max_altered_env_1_6, $env_sim_min_1_6, $env_sim_max_1_6, $sim_data_hash_1_6,
-                $result_blup_data_altered_env_1_6, $result_blup_data_delta_altered_env_1_6, $result_blup_spatial_data_altered_env_1_6, $result_blup_pe_data_altered_env_1_6, $result_blup_pe_data_delta_altered_env_1_6, $result_residual_data_altered_env_1_6, $result_fitted_data_altered_env_1_6, $fixed_effects_altered_env_hash_1_6, $rr_genetic_coefficients_altered_env_hash_1_6, $rr_temporal_coefficients_altered_env_hash_1_6, 
+                $result_blup_data_altered_env_1_6, $result_blup_data_delta_altered_env_1_6, $result_blup_spatial_data_altered_env_1_6, $result_blup_pe_data_altered_env_1_6, $result_blup_pe_data_delta_altered_env_1_6, $result_residual_data_altered_env_1_6, $result_fitted_data_altered_env_1_6, $fixed_effects_altered_env_hash_1_6, $rr_genetic_coefficients_altered_env_hash_1_6, $rr_temporal_coefficients_altered_env_hash_1_6,
                 $rr_coeff_genetic_covariance_altered_env_array_1_6, $rr_coeff_env_covariance_altered_env_array_1_6, $rr_coeff_genetic_correlation_altered_env_array_1_6, $rr_coeff_env_correlation_altered_env_array_1_6, $rr_residual_variance_altered_env_1_6, $varcomp_altered_array_env_1_6,
                 $model_sum_square_residual_altered_env_1_6, $genetic_effect_min_altered_env_1_6, $genetic_effect_max_altered_env_1_6, $env_effect_min_altered_env_1_6, $env_effect_max_altered_env_1_6, $genetic_effect_sum_square_altered_env_1_6, $genetic_effect_sum_altered_env_1_6, $env_effect_sum_square_altered_env_1_6, $env_effect_sum_altered_env_1_6, $residual_sum_square_altered_env_1_6, $residual_sum_altered_env_1_6,
-                
+
                 $phenotype_data_altered_env_hash_2_6, $data_matrix_altered_env_array_2_6, $data_matrix_phenotypes_altered_env_array_2_6, $phenotype_min_altered_env_2_6, $phenotype_max_altered_env_2_6, $env_sim_min_2_6, $env_sim_max_2_6, $sim_data_hash_2_6,
-                $result_blup_data_altered_env_2_6, $result_blup_data_delta_altered_env_2_6, $result_blup_spatial_data_altered_env_2_6, $result_blup_pe_data_altered_env_2_6, $result_blup_pe_data_delta_altered_env_2_6, $result_residual_data_altered_env_2_6, $result_fitted_data_altered_env_2_6, $fixed_effects_altered_env_hash_2_6, $rr_genetic_coefficients_altered_env_hash_2_6, $rr_temporal_coefficients_altered_env_hash_2_6, 
+                $result_blup_data_altered_env_2_6, $result_blup_data_delta_altered_env_2_6, $result_blup_spatial_data_altered_env_2_6, $result_blup_pe_data_altered_env_2_6, $result_blup_pe_data_delta_altered_env_2_6, $result_residual_data_altered_env_2_6, $result_fitted_data_altered_env_2_6, $fixed_effects_altered_env_hash_2_6, $rr_genetic_coefficients_altered_env_hash_2_6, $rr_temporal_coefficients_altered_env_hash_2_6,
                 $rr_coeff_genetic_covariance_altered_env_array_2_6, $rr_coeff_env_covariance_altered_env_array_2_6, $rr_coeff_genetic_correlation_altered_env_array_2_6, $rr_coeff_env_correlation_altered_env_array_2_6, $rr_residual_variance_altered_env_2_6, $varcomp_altered_array_env_2_6,
                 $model_sum_square_residual_altered_env_2_6, $genetic_effect_min_altered_env_2_6, $genetic_effect_max_altered_env_2_6, $env_effect_min_altered_env_2_6, $env_effect_max_altered_env_2_6, $genetic_effect_sum_square_altered_env_2_6, $genetic_effect_sum_altered_env_2_6, $env_effect_sum_square_altered_env_2_6, $env_effect_sum_altered_env_2_6, $residual_sum_square_altered_env_2_6, $residual_sum_altered_env_2_6,
-                
+
                 $phenotype_data_altered_env_hash_3_6, $data_matrix_altered_env_array_3_6, $data_matrix_phenotypes_altered_env_array_3_6, $phenotype_min_altered_env_3_6, $phenotype_max_altered_env_3_6, $env_sim_min_3_6, $env_sim_max_3_6, $sim_data_hash_3_6,
-                $result_blup_data_altered_env_3_6, $result_blup_data_delta_altered_env_3_6, $result_blup_spatial_data_altered_env_3_6, $result_blup_pe_data_altered_env_3_6, $result_blup_pe_data_delta_altered_env_3_6, $result_residual_data_altered_env_3_6, $result_fitted_data_altered_env_3_6, $fixed_effects_altered_env_hash_3_6, $rr_genetic_coefficients_altered_env_hash_3_6, $rr_temporal_coefficients_altered_env_hash_3_6, 
+                $result_blup_data_altered_env_3_6, $result_blup_data_delta_altered_env_3_6, $result_blup_spatial_data_altered_env_3_6, $result_blup_pe_data_altered_env_3_6, $result_blup_pe_data_delta_altered_env_3_6, $result_residual_data_altered_env_3_6, $result_fitted_data_altered_env_3_6, $fixed_effects_altered_env_hash_3_6, $rr_genetic_coefficients_altered_env_hash_3_6, $rr_temporal_coefficients_altered_env_hash_3_6,
                 $rr_coeff_genetic_covariance_altered_env_array_3_6, $rr_coeff_env_covariance_altered_env_array_3_6, $rr_coeff_genetic_correlation_altered_env_array_3_6, $rr_coeff_env_correlation_altered_env_array_3_6, $rr_residual_variance_altered_env_3_6, $varcomp_altered_array_env_3_6,
                 $model_sum_square_residual_altered_env_3_6, $genetic_effect_min_altered_env_3_6, $genetic_effect_max_altered_env_3_6, $env_effect_min_altered_env_3_6, $env_effect_max_altered_env_3_6, $genetic_effect_sum_square_altered_env_3_6, $genetic_effect_sum_altered_env_3_6, $env_effect_sum_square_altered_env_3_6, $env_effect_sum_altered_env_3_6, $residual_sum_square_altered_env_3_6, $residual_sum_altered_env_3_6,
-                
+
                 $phenotype_data_altered_env_hash_4_6, $data_matrix_altered_env_array_4_6, $data_matrix_phenotypes_altered_env_array_4_6, $phenotype_min_altered_env_4_6, $phenotype_max_altered_env_4_6, $env_sim_min_4_6, $env_sim_max_4_6, $sim_data_hash_4_6,
-                $result_blup_data_altered_env_4_6, $result_blup_data_delta_altered_env_4_6, $result_blup_spatial_data_altered_env_4_6, $result_blup_pe_data_altered_env_4_6, $result_blup_pe_data_delta_altered_env_4_6, $result_residual_data_altered_env_4_6, $result_fitted_data_altered_env_4_6, $fixed_effects_altered_env_hash_4_6, $rr_genetic_coefficients_altered_env_hash_4_6, $rr_temporal_coefficients_altered_env_hash_4_6, 
+                $result_blup_data_altered_env_4_6, $result_blup_data_delta_altered_env_4_6, $result_blup_spatial_data_altered_env_4_6, $result_blup_pe_data_altered_env_4_6, $result_blup_pe_data_delta_altered_env_4_6, $result_residual_data_altered_env_4_6, $result_fitted_data_altered_env_4_6, $fixed_effects_altered_env_hash_4_6, $rr_genetic_coefficients_altered_env_hash_4_6, $rr_temporal_coefficients_altered_env_hash_4_6,
                 $rr_coeff_genetic_covariance_altered_env_array_4_6, $rr_coeff_env_covariance_altered_env_array_4_6, $rr_coeff_genetic_correlation_altered_env_array_4_6, $rr_coeff_env_correlation_altered_env_array_4_6, $rr_residual_variance_altered_env_4_6, $varcomp_altered_array_env_4_6,
                 $model_sum_square_residual_altered_env_4_6, $genetic_effect_min_altered_env_4_6, $genetic_effect_max_altered_env_4_6, $env_effect_min_altered_env_4_6, $env_effect_max_altered_env_4_6, $genetic_effect_sum_square_altered_env_4_6, $genetic_effect_sum_altered_env_4_6, $env_effect_sum_square_altered_env_4_6, $env_effect_sum_altered_env_4_6, $residual_sum_square_altered_env_4_6, $residual_sum_altered_env_4_6,
-                
+
                 $phenotype_data_altered_env_hash_5_6, $data_matrix_altered_env_array_5_6, $data_matrix_phenotypes_altered_env_array_5_6, $phenotype_min_altered_env_5_6, $phenotype_max_altered_env_5_6, $env_sim_min_5_6, $env_sim_max_5_6, $sim_data_hash_5_6,
-                $result_blup_data_altered_env_5_6, $result_blup_data_delta_altered_env_5_6, $result_blup_spatial_data_altered_env_5_6, $result_blup_pe_data_altered_env_5_6, $result_blup_pe_data_delta_altered_env_5_6, $result_residual_data_altered_env_5_6, $result_fitted_data_altered_env_5_6, $fixed_effects_altered_env_hash_5_6, $rr_genetic_coefficients_altered_env_hash_5_6, $rr_temporal_coefficients_altered_env_hash_5_6, 
+                $result_blup_data_altered_env_5_6, $result_blup_data_delta_altered_env_5_6, $result_blup_spatial_data_altered_env_5_6, $result_blup_pe_data_altered_env_5_6, $result_blup_pe_data_delta_altered_env_5_6, $result_residual_data_altered_env_5_6, $result_fitted_data_altered_env_5_6, $fixed_effects_altered_env_hash_5_6, $rr_genetic_coefficients_altered_env_hash_5_6, $rr_temporal_coefficients_altered_env_hash_5_6,
                 $rr_coeff_genetic_covariance_altered_env_array_5_6, $rr_coeff_env_covariance_altered_env_array_5_6, $rr_coeff_genetic_correlation_altered_env_array_5_6, $rr_coeff_env_correlation_altered_env_array_5_6, $rr_residual_variance_altered_env_5_6, $varcomp_altered_array_env_5_6,
                 $model_sum_square_residual_altered_env_5_6, $genetic_effect_min_altered_env_5_6, $genetic_effect_max_altered_env_5_6, $env_effect_min_altered_env_5_6, $env_effect_max_altered_env_5_6, $genetic_effect_sum_square_altered_env_5_6, $genetic_effect_sum_altered_env_5_6, $env_effect_sum_square_altered_env_5_6, $env_effect_sum_altered_env_5_6, $residual_sum_square_altered_env_5_6, $residual_sum_altered_env_5_6,
-                
+
                 $phenotype_data_altered_env_hash_6_6, $data_matrix_altered_env_array_6_6, $data_matrix_phenotypes_altered_env_array_6_6, $phenotype_min_altered_env_6_6, $phenotype_max_altered_env_6_6, $env_sim_min_6_6, $env_sim_max_6_6, $sim_data_hash_6_6,
-                $result_blup_data_altered_env_6_6, $result_blup_data_delta_altered_env_6_6, $result_blup_spatial_data_altered_env_6_6, $result_blup_pe_data_altered_env_6_6, $result_blup_pe_data_delta_altered_env_6_6, $result_residual_data_altered_env_6_6, $result_fitted_data_altered_env_6_6, $fixed_effects_altered_env_hash_6_6, $rr_genetic_coefficients_altered_env_hash_6_6, $rr_temporal_coefficients_altered_env_hash_6_6, 
+                $result_blup_data_altered_env_6_6, $result_blup_data_delta_altered_env_6_6, $result_blup_spatial_data_altered_env_6_6, $result_blup_pe_data_altered_env_6_6, $result_blup_pe_data_delta_altered_env_6_6, $result_residual_data_altered_env_6_6, $result_fitted_data_altered_env_6_6, $fixed_effects_altered_env_hash_6_6, $rr_genetic_coefficients_altered_env_hash_6_6, $rr_temporal_coefficients_altered_env_hash_6_6,
                 $rr_coeff_genetic_covariance_altered_env_array_6_6, $rr_coeff_env_covariance_altered_env_array_6_6, $rr_coeff_genetic_correlation_altered_env_array_6_6, $rr_coeff_env_correlation_altered_env_array_6_6, $rr_residual_variance_altered_env_6_6, $varcomp_altered_array_env_6_6,
                 $model_sum_square_residual_altered_env_6_6, $genetic_effect_min_altered_env_6_6, $genetic_effect_max_altered_env_6_6, $env_effect_min_altered_env_6_6, $env_effect_max_altered_env_6_6, $genetic_effect_sum_square_altered_env_6_6, $genetic_effect_sum_altered_env_6_6, $env_effect_sum_square_altered_env_6_6, $env_effect_sum_altered_env_6_6, $residual_sum_square_altered_env_6_6, $residual_sum_altered_env_6_6
-                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_6, \%trait_name_encoder_rev_6, \%stock_info_6, \%plot_id_map, \@sorted_trait_names_6, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_6, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_6, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_6, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
+                ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_6, \%trait_name_encoder_rev_6, \%stock_info_6, \%plot_id_map, \@sorted_trait_names_6, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_6, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_6, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_out_cv_predict_tempfile, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_6, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
                     print STDERR "PLOTTING CORRELATION\n";
@@ -11486,7 +11487,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                 eval {
                     my @plot_corr_full_vals;
-                    
+
                     my @original_pheno_vals;
                     my ($phenotypes_original_heatmap_tempfile_fh, $phenotypes_original_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
                     open(my $F_pheno, ">", $phenotypes_original_heatmap_tempfile) || die "Can't open file ".$phenotypes_original_heatmap_tempfile;
@@ -12947,7 +12948,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 }
 
 sub _perform_drone_imagery_analytics {
-    my ($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, $legendre_coeff_exec_array, $trait_name_encoder_hash, $trait_name_encoder_rev_hash, $stock_info_hash, $plot_id_map_hash, $sorted_trait_names_array, $accession_id_factor_map_hash, $rep_time_factors_array, $ind_rep_factors_array, $unique_accession_names_array, $plot_id_count_map_reverse_hash, $sorted_scaled_ln_times_array, $time_count_map_reverse_hash, $accession_id_factor_map_reverse_hash, $seen_times_hash, $plot_id_factor_map_reverse_hash, $trait_to_time_map_hash, $unique_plot_names_array, $stock_name_row_col_hash, $phenotype_data_original_hash, $plot_rep_time_factor_map_hash, $stock_row_col_hash, $stock_row_col_id_hash, $polynomial_map_hash, $plot_ids_ordered_array, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type) = @_;
+    my ($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, $legendre_coeff_exec_array, $trait_name_encoder_hash, $trait_name_encoder_rev_hash, $stock_info_hash, $plot_id_map_hash, $sorted_trait_names_array, $accession_id_factor_map_hash, $rep_time_factors_array, $ind_rep_factors_array, $unique_accession_names_array, $plot_id_count_map_reverse_hash, $sorted_scaled_ln_times_array, $time_count_map_reverse_hash, $accession_id_factor_map_reverse_hash, $seen_times_hash, $plot_id_factor_map_reverse_hash, $trait_to_time_map_hash, $unique_plot_names_array, $stock_name_row_col_hash, $phenotype_data_original_hash, $plot_rep_time_factor_map_hash, $stock_row_col_hash, $stock_row_col_id_hash, $polynomial_map_hash, $plot_ids_ordered_array, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_out_cv_predict_tempfile, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type) = @_;
     my @legendre_coeff_exec = @$legendre_coeff_exec_array;
     my %trait_name_encoder = %$trait_name_encoder_hash;
     my %trait_name_encoder_rev = %$trait_name_encoder_rev_hash;
@@ -12988,6 +12989,7 @@ sub _perform_drone_imagery_analytics {
     my (@rr_coeff_genetic_covariance_original, @rr_coeff_env_covariance_original, @rr_coeff_genetic_correlation_original, @rr_coeff_env_correlation_original, $rr_residual_variance_original);
     my (@varcomp_original);
     my $model_sum_square_residual_original = 0;
+    my $model_sum_square_cv_original = 0;
     my $genetic_effect_min_original = 1000000000;
     my $genetic_effect_max_original = -1000000000;
     my $env_effect_min_original = 1000000000;
@@ -13048,9 +13050,36 @@ sub _perform_drone_imagery_analytics {
             $trait_index++;
         }
         $statistics_cmd .= 'write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        ';
+        my @encoded_traits_cv;
+        my @encoded_traits_cv_check;
+        my @encoded_traits_cv_save;
+        foreach my $t_coded (@encoded_traits) {
+            my $t_coded_cv = $t_coded.'_CV1';
+            push @encoded_traits_cv, $t_coded_cv;
+            $statistics_cmd .= 'mat\$'.$t_coded_cv.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv.'[sample(length(mat\$'.$t_coded_cv.'))[1:round(length(mat\$'.$t_coded_cv.')*0.1)]] <- NA;
+            ';
+            push @encoded_traits_cv_save, $t_coded_cv.' = mat\$'.$t_coded_cv;
+            push @encoded_traits_cv_check, $t_coded.' = mat\$'.$t_coded;
+        }
+        my $encoded_trait_cv_string = join ',', @encoded_traits_cv;
+        my $cbind_string_cv = $number_traits > 1 ? "cbind($encoded_trait_cv_string)" : $encoded_trait_cv_string;
+        if ($statistics_select eq 'sommer_grm_spatial_genetic_blups') {
+            $statistics_cmd .= 'mix_cv <- mmer('.$cbind_string_cv.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            ';
+        }
+        elsif ($statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
+            $statistics_cmd .= 'mix_cv <- mmer('.$cbind_string_cv.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            ';
+        }
+        my $encoded_traits_cv_save = join ',', @encoded_traits_cv_save;
+        my $encoded_traits_cv_check = join ',', @encoded_traits_cv_check;
+        $statistics_cmd .= '
+            write.table(data.frame(plot_id = mix_cv\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save.', residuals = mix_cv\$residuals, fitted = mix_cv\$fitted), file=\''.$stats_out_cv_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         }
         "';
-        # print STDERR Dumper $statistics_cmd;
+        print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
         };
@@ -13174,6 +13203,32 @@ sub _perform_drone_imagery_analytics {
                 }
             close($fh_residual);
 
+            open(my $fh_cv, '<', $stats_out_cv_predict_tempfile) or die "Could not open file '$stats_out_cv_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv_predict_tempfile\n";
+                my $header_cv = <$fh_cv>;
+                my @header_cols_cv;
+                if ($csv->parse($header_cv)) {
+                    @header_cols_cv = $csv->fields();
+                }
+                while (my $row = <$fh_cv>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv_original = $model_sum_square_cv_original + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_residual);
+
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
                 my $header_varcomp = <$fh_varcomp>;
@@ -13241,9 +13296,24 @@ sub _perform_drone_imagery_analytics {
             blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
             spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            ';
+            my $t_coded_cv = $t.'_CV1';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv.'[sample(length(mat\$'.$t_coded_cv.'))[1:round(length(mat\$'.$t_coded_cv.')*0.1)]] <- NA;
+            ';
+            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
+                $statistics_cmd .= 'mix_cv <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
+                $statistics_cmd .= 'mix_cv <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            $statistics_cmd .= '
+                write.table(data.frame(plot_id = mix_cv\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv.' = mat\$'.$t_coded_cv.', residuals = mix_cv\$residuals, fitted = mix_cv\$fitted), file=\''.$stats_out_cv_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             }
             "';
-            # print STDERR Dumper $statistics_cmd;
+            print STDERR Dumper $statistics_cmd;
             eval {
                 my $status = system($statistics_cmd);
             };
@@ -13369,6 +13439,30 @@ sub _perform_drone_imagery_analytics {
                     }
                 close($fh_residual);
 
+                open(my $fh_cv, '<', $stats_out_cv_predict_tempfile) or die "Could not open file '$stats_out_cv_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv_predict_tempfile\n";
+                    my $header_cv = <$fh_cv>;
+                    my @header_cols_cv;
+                    if ($csv->parse($header_cv)) {
+                        @header_cols_cv = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv_original = $model_sum_square_cv_original + ($true_value-$fitted)**2;
+                    }
+                close($fh_residual);
+
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
                     my $header_varcomp = <$fh_varcomp>;
@@ -13402,7 +13496,7 @@ sub _perform_drone_imagery_analytics {
         $analysis_model_language = "F90";
 
         $statistical_ontology_term = "Multivariate linear mixed model genetic BLUPs using genetic relationship matrix and temporal Legendre polynomial random regression on days after planting computed using Sommer R|SGNSTAT:0000004"; #In the JS this is set to either the genetic of permanent environment BLUP term (Multivariate linear mixed model permanent environment BLUPs using genetic relationship matrix and temporal Legendre polynomial random regression on days after planting computed using Sommer R|SGNSTAT:0000005) when saving results
-    
+
         if ($statistics_select eq 'blupf90_grm_random_regression_gdd_blups') {
             $analysis_model_training_data_file_type = "nicksmixedmodelsanalytics_v1.01_blupf90_grm_temporal_leg_random_regression_GDD_genetic_blups_phenotype_file";
         }
@@ -13587,6 +13681,7 @@ sub _perform_drone_imagery_analytics {
             'OPTION hetres_pos '.$hetres_group_string,
             'OPTION hetres_pol '.$hetres_pol_string,
             'OPTION conv_crit '.$tolparinv,
+            'OPTION missing -999',
             'OPTION residual',
         );
 
@@ -13875,7 +13970,7 @@ sub _perform_drone_imagery_analytics {
         $analysis_model_language = "R";
 
         $statistical_ontology_term = "Univariate linear mixed model 2D spline genetic BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000038"; #In the JS this is set to either Univariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000039
-    
+
         $analysis_model_training_data_file_type = "nicksmixedmodelsanalytics_v1.01_asreml_grm_univariate_spatial_genetic_blups_phenotype_file";
 
         my @grm_old;
@@ -13937,14 +14032,14 @@ sub _perform_drone_imagery_analytics {
         #         '',
         #         "t$time ~ mu replicate !r grm1(id_factor) ar1(rowNumber).ar1v(colNumber)",
         #     );
-        # 
+        #
         #     open(my $Fp, ">", $parameter_asreml_tempfile) || die "Can't open file ".$parameter_asreml_tempfile;
         #         print STDERR "WRITE ASREML PARAMFILE $parameter_asreml_tempfile\n";
         #         foreach (@param_file_rows) {
         #             print $Fp "$_\n";
         #         }
         #     close($Fp);
-        # 
+        #
         #     my $parameter_asreml_tempfile_basename = basename($parameter_asreml_tempfile);
         #     $stats_out_tempfile .= '.log';
         #     $cmd_asreml = 'cd '.$tmp_stats_dir.'; asreml '.$parameter_asreml_tempfile_basename.' > '.$stats_out_tempfile;
@@ -14116,7 +14211,7 @@ sub _perform_drone_imagery_analytics {
         $analysis_model_language = "R";
 
         $statistical_ontology_term = "Univariate linear mixed model 2D spline genetic BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000038"; #In the JS this is set to either Univariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000039
-    
+
         $analysis_model_training_data_file_type = "nicksmixedmodelsanalytics_v1.01_asreml_grm_univariate_spatial_genetic_blups_phenotype_file";
 
         my @grm_old;
@@ -14313,7 +14408,7 @@ sub _perform_drone_imagery_analytics {
         $analysis_model_language = "R";
 
         $statistical_ontology_term = "Multivariate linear mixed model 2D spline genetic BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000038"; #In the JS this is set to either Univariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000039
-    
+
         $analysis_model_training_data_file_type = "nicksmixedmodelsanalytics_v1.01_asreml_grm_multivariate_spatial_genetic_blups_phenotype_file";
 
         my @grm_old;
@@ -14414,7 +14509,7 @@ sub _perform_drone_imagery_analytics {
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                
+
                     my $stock_id = $columns[0];
                     my $residual = $columns[1];
                     my $fitted = $columns[2];
@@ -14543,7 +14638,7 @@ sub _perform_drone_imagery_analytics {
     }
     print STDERR "ORIGINAL $statistics_select GENETIC EFFECT SUM $genetic_effect_sum_original\n";
     print STDERR "ORIGINAL $statistics_select ENV EFFECT SUM $env_effect_sum_original\n";
-    print STDERR Dumper [$genetic_effect_min_original, $genetic_effect_max_original, $env_effect_min_original, $env_effect_max_original];
+    print STDERR Dumper [$genetic_effect_min_original, $genetic_effect_max_original, $env_effect_min_original, $env_effect_max_original, $model_sum_square_cv_original];
 
     my (%phenotype_data_altered, @data_matrix_altered, @data_matrix_phenotypes_altered, @phenotype_data_altered_values);
     my $phenotype_min_altered = 1000000000;
@@ -15685,7 +15780,7 @@ sub _perform_drone_imagery_analytics {
         $analysis_model_language = "R";
 
         $statistical_ontology_term = "Univariate linear mixed model 2D spline genetic BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000038"; #In the JS this is set to either Univariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000039
-    
+
         $analysis_model_training_data_file_type = "nicksmixedmodelsanalytics_v1.01_asreml_grm_univariate_spatial_genetic_blups_phenotype_file";
 
         my @grm_old;
@@ -15908,7 +16003,7 @@ sub _perform_drone_imagery_analytics {
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                
+
                     my $stock_id = $columns[0];
                     my $residual = $columns[1];
                     my $fitted = $columns[2];
@@ -16089,7 +16184,7 @@ sub _perform_drone_imagery_analytics {
                     print $sim_change_f $_."\n";
                 }
             close($sim_change_f);
-            
+
             my $sim_change_cmd = 'R -e "library(data.table);
             mat <- fread(\''.$sim_env_changing_mat_tempfile.'\', header=FALSE, sep=\'\t\');
             x1 <- mat\$V1;
@@ -16127,7 +16222,7 @@ sub _perform_drone_imagery_analytics {
                     foreach my $sim_val (@columns) {
                         my $t = $sorted_trait_names[$sim_change_trait_counter];
                         $sim_data_check_1_times{$t}->{$row_number}->{$col_number} = $sim_val;
-                        
+
                         if ($sim_val < $env_sim_min) {
                             $env_sim_min = $sim_val;
                         }
@@ -17354,7 +17449,7 @@ sub _perform_drone_imagery_analytics {
         $analysis_model_language = "R";
 
         $statistical_ontology_term = "Univariate linear mixed model 2D spline genetic BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000038"; #In the JS this is set to either Univariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000039
-    
+
         $analysis_model_training_data_file_type = "nicksmixedmodelsanalytics_v1.01_asreml_grm_univariate_spatial_genetic_blups_phenotype_file";
 
         my @grm_old;
@@ -17577,7 +17672,7 @@ sub _perform_drone_imagery_analytics {
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                
+
                     my $stock_id = $columns[0];
                     my $residual = $columns[1];
                     my $fitted = $columns[2];
@@ -17751,7 +17846,7 @@ sub _perform_drone_imagery_analytics {
                     print $sim_change_f $_."\n";
                 }
             close($sim_change_f);
-            
+
             my $sim_change_cmd = 'R -e "library(data.table);
             mat <- fread(\''.$sim_env_changing_mat_tempfile.'\', header=FALSE, sep=\'\t\');
             x1 <- mat\$V1;
@@ -19014,7 +19109,7 @@ sub _perform_drone_imagery_analytics {
         $analysis_model_language = "R";
 
         $statistical_ontology_term = "Univariate linear mixed model 2D spline genetic BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000038"; #In the JS this is set to either Univariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000039
-    
+
         $analysis_model_training_data_file_type = "nicksmixedmodelsanalytics_v1.01_asreml_grm_univariate_spatial_genetic_blups_phenotype_file";
 
         my @grm_old;
@@ -19237,7 +19332,7 @@ sub _perform_drone_imagery_analytics {
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                
+
                     my $stock_id = $columns[0];
                     my $residual = $columns[1];
                     my $fitted = $columns[2];
@@ -19412,7 +19507,7 @@ sub _perform_drone_imagery_analytics {
                     print $sim_change_f $_."\n";
                 }
             close($sim_change_f);
-            
+
             my $sim_change_cmd = 'R -e "library(data.table);
             mat <- fread(\''.$sim_env_changing_mat_tempfile.'\', header=FALSE, sep=\'\t\');
             x1 <- mat\$V1;
@@ -20675,7 +20770,7 @@ sub _perform_drone_imagery_analytics {
         $analysis_model_language = "R";
 
         $statistical_ontology_term = "Univariate linear mixed model 2D spline genetic BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000038"; #In the JS this is set to either Univariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000039
-    
+
         $analysis_model_training_data_file_type = "nicksmixedmodelsanalytics_v1.01_asreml_grm_univariate_spatial_genetic_blups_phenotype_file";
 
         my @grm_old;
@@ -20898,7 +20993,7 @@ sub _perform_drone_imagery_analytics {
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                
+
                     my $stock_id = $columns[0];
                     my $residual = $columns[1];
                     my $fitted = $columns[2];
@@ -21065,7 +21160,7 @@ sub _perform_drone_imagery_analytics {
                     print $sim_change_f $_."\n";
                 }
             close($sim_change_f);
-            
+
             my $sim_change_cmd = 'R -e "library(data.table);
             mat <- fread(\''.$sim_env_changing_mat_tempfile.'\', header=FALSE, sep=\'\t\');
             x1 <- mat\$V1;
@@ -22333,7 +22428,7 @@ sub _perform_drone_imagery_analytics {
         $analysis_model_language = "R";
 
         $statistical_ontology_term = "Univariate linear mixed model 2D spline genetic BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000038"; #In the JS this is set to either Univariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000039
-    
+
         $analysis_model_training_data_file_type = "nicksmixedmodelsanalytics_v1.01_asreml_grm_univariate_spatial_genetic_blups_phenotype_file";
 
         my @grm_old;
@@ -22556,7 +22651,7 @@ sub _perform_drone_imagery_analytics {
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                
+
                     my $stock_id = $columns[0];
                     my $residual = $columns[1];
                     my $fitted = $columns[2];
@@ -23785,16 +23880,16 @@ sub _perform_drone_imagery_analytics {
                     $value += eval $eval_string;
                     $coeff_counter++;
                 }
-    
+
                 $result_blup_pe_data_delta_altered_env_5->{$plot_name}->{$time_term} = [$value, $timestamp, $user_name, '', ''];
-    
+
                 if ($value < $env_effect_min_altered_env_5) {
                     $env_effect_min_altered_env_5 = $value;
                 }
                 elsif ($value >= $env_effect_max_altered_env_5) {
                     $env_effect_max_altered_env_5 = $value;
                 }
-    
+
                 $env_effect_sum_altered_env_5 += abs($value);
                 $env_effect_sum_square_altered_env_5 = $env_effect_sum_square_altered_env_5 + $value*$value;
             }
@@ -23959,7 +24054,7 @@ sub _perform_drone_imagery_analytics {
         $analysis_model_language = "R";
 
         $statistical_ontology_term = "Univariate linear mixed model 2D spline genetic BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000038"; #In the JS this is set to either Univariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000039
-    
+
         $analysis_model_training_data_file_type = "nicksmixedmodelsanalytics_v1.01_asreml_grm_univariate_spatial_genetic_blups_phenotype_file";
 
         my @grm_old;
@@ -24182,7 +24277,7 @@ sub _perform_drone_imagery_analytics {
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                
+
                     my $stock_id = $columns[0];
                     my $residual = $columns[1];
                     my $fitted = $columns[2];
@@ -24377,7 +24472,7 @@ sub _perform_drone_imagery_analytics {
                     print $sim_change_f $_."\n";
                 }
             close($sim_change_f);
-            
+
             my $sim_change_cmd = 'R -e "library(data.table);
             mat <- fread(\''.$sim_env_changing_mat_tempfile.'\', header=FALSE, sep=\'\t\');
             x1 <- mat\$V1;
@@ -25639,7 +25734,7 @@ sub _perform_drone_imagery_analytics {
         $analysis_model_language = "R";
 
         $statistical_ontology_term = "Univariate linear mixed model 2D spline genetic BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000038"; #In the JS this is set to either Univariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000039
-    
+
         $analysis_model_training_data_file_type = "nicksmixedmodelsanalytics_v1.01_asreml_grm_univariate_spatial_genetic_blups_phenotype_file";
 
         my @grm_old;
@@ -25862,7 +25957,7 @@ sub _perform_drone_imagery_analytics {
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                
+
                     my $stock_id = $columns[0];
                     my $residual = $columns[1];
                     my $fitted = $columns[2];
@@ -25994,49 +26089,49 @@ sub _perform_drone_imagery_analytics {
     print STDERR Dumper [$genetic_effect_min_altered_env_6, $genetic_effect_max_altered_env_6, $env_effect_min_altered_env_6, $env_effect_max_altered_env_6];
 
     return ($statistical_ontology_term, $analysis_model_training_data_file_type, $analysis_model_language, \@sorted_residual_trait_names, \%rr_unique_traits, \%rr_residual_unique_traits, $statistics_cmd, $cmd_f90, $number_traits, \%trait_to_time_map,
-    
+
     $result_blup_data_original, $result_blup_data_delta_original, $result_blup_spatial_data_original, $result_blup_pe_data_original, $result_blup_pe_data_delta_original, $result_residual_data_original, $result_fitted_data_original, \%fixed_effects_original, \%rr_genetic_coefficients_original, \%rr_temporal_coefficients_original, \@rr_coeff_genetic_covariance_original, \@rr_coeff_env_covariance_original, \@rr_coeff_genetic_correlation_original, \@rr_coeff_env_correlation_original, $rr_residual_variance_original, \@varcomp_original,
-    
+
     $model_sum_square_residual_original, $genetic_effect_min_original, $genetic_effect_max_original, $env_effect_min_original, $env_effect_max_original, $genetic_effect_sum_square_original, $genetic_effect_sum_original, $env_effect_sum_square_original, $env_effect_sum_original, $residual_sum_square_original, $residual_sum_original,
-    
+
     \%phenotype_data_altered, \@data_matrix_altered, \@data_matrix_phenotypes_altered, $phenotype_min_altered, $phenotype_max_altered,
-    
+
     $result_blup_data_altered, $result_blup_data_delta_altered, $result_blup_spatial_data_altered, $result_blup_pe_data_altered, $result_blup_pe_data_delta_altered, $result_residual_data_altered, $result_fitted_data_altered, \%fixed_effects_altered, \%rr_genetic_coefficients_altered, \%rr_temporal_coefficients_altered, \@rr_coeff_genetic_covariance_altered, \@rr_coeff_env_covariance_altered, \@rr_coeff_genetic_correlation_altered, \@rr_coeff_env_correlation_altered, $rr_residual_variance_altered, \@varcomp_altered,
-    
+
     $model_sum_square_residual_altered, $genetic_effect_min_altered, $genetic_effect_max_altered, $env_effect_min_altered, $env_effect_max_altered, $genetic_effect_sum_square_altered, $genetic_effect_sum_altered, $env_effect_sum_square_altered, $env_effect_sum_altered, $residual_sum_square_altered, $residual_sum_altered,
-    
+
     \%phenotype_data_altered_env, \@data_matrix_altered_env, \@data_matrix_phenotypes_altered_env, $phenotype_min_altered_env, $phenotype_max_altered_env, $env_sim_min, $env_sim_max, \%sim_data,
-    
+
     $result_blup_data_altered_env, $result_blup_data_delta_altered_env, $result_blup_spatial_data_altered_env, $result_blup_pe_data_altered_env, $result_blup_pe_data_delta_altered_env, $result_residual_data_altered_env, $result_fitted_data_altered_env, \%fixed_effects_altered_env, \%rr_genetic_coefficients_altered_env, \%rr_temporal_coefficients_altered_env, \@rr_coeff_genetic_covariance_altered_env, \@rr_coeff_env_covariance_altered_env, \@rr_coeff_genetic_correlation_altered_env, \@rr_coeff_env_correlation_altered_env, $rr_residual_variance_altered_env, \@varcomp_altered_env,
-    
+
     $model_sum_square_residual_altered_env, $genetic_effect_min_altered_env, $genetic_effect_max_altered_env, $env_effect_min_altered_env, $env_effect_max_altered_env, $genetic_effect_sum_square_altered_env, $genetic_effect_sum_altered_env, $env_effect_sum_square_altered_env, $env_effect_sum_altered_env, $residual_sum_square_altered_env, $residual_sum_altered_env,
-    
+
     \%phenotype_data_altered_env_2, \@data_matrix_altered_env_2, \@data_matrix_phenotypes_altered_env_2, $phenotype_min_altered_env_2, $phenotype_max_altered_env_2, $env_sim_min_2, $env_sim_max_2, \%sim_data_2,
-    
+
     $result_blup_data_altered_env_2, $result_blup_data_delta_altered_env_2, $result_blup_spatial_data_altered_env_2, $result_blup_pe_data_altered_env_2, $result_blup_pe_data_delta_altered_env_2, $result_residual_data_altered_env_2, $result_fitted_data_altered_env_2, \%fixed_effects_altered_env_2, \%rr_genetic_coefficients_altered_env_2, \%rr_temporal_coefficients_altered_env_2, \@rr_coeff_genetic_covariance_altered_env_2, \@rr_coeff_env_covariance_altered_env_2, \@rr_coeff_genetic_correlation_altered_env_2, \@rr_coeff_env_correlation_altered_env_2, $rr_residual_variance_altered_env_2, \@varcomp_altered_env_2,
 
     $model_sum_square_residual_altered_env_2, $genetic_effect_min_altered_env_2, $genetic_effect_max_altered_env_2, $env_effect_min_altered_env_2, $env_effect_max_altered_env_2, $genetic_effect_sum_square_altered_env_2, $genetic_effect_sum_altered_env_2, $env_effect_sum_square_altered_env_2, $env_effect_sum_altered_env_2, $residual_sum_square_altered_env_2, $residual_sum_altered_env_2,
-    
+
     \%phenotype_data_altered_env_3, \@data_matrix_altered_env_3, \@data_matrix_phenotypes_altered_env_3, $phenotype_min_altered_env_3, $phenotype_max_altered_env_3, $env_sim_min_3, $env_sim_max_3, \%sim_data_3,
-    
+
     $result_blup_data_altered_env_3, $result_blup_data_delta_altered_env_3, $result_blup_spatial_data_altered_env_3, $result_blup_pe_data_altered_env_3, $result_blup_pe_data_delta_altered_env_3, $result_residual_data_altered_env_3, $result_fitted_data_altered_env_3, \%fixed_effects_altered_env_3, \%rr_genetic_coefficients_altered_env_3, \%rr_temporal_coefficients_altered_env_3, \@rr_coeff_genetic_covariance_altered_env_3, \@rr_coeff_env_covariance_altered_env_3, \@rr_coeff_genetic_correlation_altered_env_3, \@rr_coeff_env_correlation_altered_env_3, $rr_residual_variance_altered_env_3, \@varcomp_altered_env_3,
-    
+
     $model_sum_square_residual_altered_env_3, $genetic_effect_min_altered_env_3, $genetic_effect_max_altered_env_3, $env_effect_min_altered_env_3, $env_effect_max_altered_env_3, $genetic_effect_sum_square_altered_env_3, $genetic_effect_sum_altered_env_3, $env_effect_sum_square_altered_env_3, $env_effect_sum_altered_env_3, $residual_sum_square_altered_env_3, $residual_sum_altered_env_3,
-    
+
     \%phenotype_data_altered_env_4, \@data_matrix_altered_env_4, \@data_matrix_phenotypes_altered_env_4, $phenotype_min_altered_env_4, $phenotype_max_altered_env_4, $env_sim_min_4, $env_sim_max_4, \%sim_data_4,
-    
+
     $result_blup_data_altered_env_4, $result_blup_data_delta_altered_env_4, $result_blup_spatial_data_altered_env_4, $result_blup_pe_data_altered_env_4, $result_blup_pe_data_delta_altered_env_4, $result_residual_data_altered_env_4, $result_fitted_data_altered_env_4, \%fixed_effects_altered_env_4, \%rr_genetic_coefficients_altered_env_4, \%rr_temporal_coefficients_altered_env_4, \@rr_coeff_genetic_covariance_altered_env_4, \@rr_coeff_env_covariance_altered_env_4, \@rr_coeff_genetic_correlation_altered_env_4, \@rr_coeff_env_correlation_altered_env_4, $rr_residual_variance_altered_env_4, \@varcomp_altered_env_4,
 
     $model_sum_square_residual_altered_env_4, $genetic_effect_min_altered_env_4, $genetic_effect_max_altered_env_4, $env_effect_min_altered_env_4, $env_effect_max_altered_env_4, $genetic_effect_sum_square_altered_env_4, $genetic_effect_sum_altered_env_4, $env_effect_sum_square_altered_env_4, $env_effect_sum_altered_env_4, $residual_sum_square_altered_env_4, $residual_sum_altered_env_4,
-    
+
     \%phenotype_data_altered_env_5, \@data_matrix_altered_env_5, \@data_matrix_phenotypes_altered_env_5, $phenotype_min_altered_env_5, $phenotype_max_altered_env_5, $env_sim_min_5, $env_sim_max_5, \%sim_data_5,
-    
+
     $result_blup_data_altered_env_5, $result_blup_data_delta_altered_env_5, $result_blup_spatial_data_altered_env_5, $result_blup_pe_data_altered_env_5, $result_blup_pe_data_delta_altered_env_5, $result_residual_data_altered_env_5, $result_fitted_data_altered_env_5, \%fixed_effects_altered_env_5, \%rr_genetic_coefficients_altered_env_5, \%rr_temporal_coefficients_altered_env_5, \@rr_coeff_genetic_covariance_altered_env_5, \@rr_coeff_env_covariance_altered_env_5, \@rr_coeff_genetic_correlation_altered_env_5, \@rr_coeff_env_correlation_altered_env_5, $rr_residual_variance_altered_env_5, \@varcomp_altered_env_5,
 
     $model_sum_square_residual_altered_env_5, $genetic_effect_min_altered_env_5, $genetic_effect_max_altered_env_5, $env_effect_min_altered_env_5, $env_effect_max_altered_env_5, $genetic_effect_sum_square_altered_env_5, $genetic_effect_sum_altered_env_5, $env_effect_sum_square_altered_env_5, $env_effect_sum_altered_env_5, $residual_sum_square_altered_env_5, $residual_sum_altered_env_5,
-    
+
     \%phenotype_data_altered_env_6, \@data_matrix_altered_env_6, \@data_matrix_phenotypes_altered_env_6, $phenotype_min_altered_env_6, $phenotype_max_altered_env_6, $env_sim_min_6, $env_sim_max_6, \%sim_data_6,
-    
+
     $result_blup_data_altered_env_6, $result_blup_data_delta_altered_env_6, $result_blup_spatial_data_altered_env_6, $result_blup_pe_data_altered_env_6, $result_blup_pe_data_delta_altered_env_6, $result_residual_data_altered_env_6, $result_fitted_data_altered_env_6, \%fixed_effects_altered_env_6, \%rr_genetic_coefficients_altered_env_6, \%rr_temporal_coefficients_altered_env_6, \@rr_coeff_genetic_covariance_altered_env_6, \@rr_coeff_env_covariance_altered_env_6, \@rr_coeff_genetic_correlation_altered_env_6, \@rr_coeff_env_correlation_altered_env_6, $rr_residual_variance_altered_env_6, \@varcomp_altered_env_6,
 
     $model_sum_square_residual_altered_env_6, $genetic_effect_min_altered_env_6, $genetic_effect_max_altered_env_6, $env_effect_min_altered_env_6, $env_effect_max_altered_env_6, $genetic_effect_sum_square_altered_env_6, $genetic_effect_sum_altered_env_6, $env_effect_sum_square_altered_env_6, $env_effect_sum_altered_env_6, $residual_sum_square_altered_env_6, $residual_sum_altered_env_6
