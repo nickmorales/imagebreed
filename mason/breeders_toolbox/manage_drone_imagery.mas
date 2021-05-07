@@ -16,7 +16,7 @@
 
 <div id="manage_drone_imagery_top_div">
 
-    <& /page/page_title.mas, title=>"Manage Drone Imagery" &>
+    <& /page/page_title.mas, title=>"Manage Aerial Imagery" &>
 
     <div class="well well-sm">
         <center><h4>Please use the Brave or Chrome web-browsers to view these image tools. In the future, other browsers may be supported.</h4></center>
@@ -28,7 +28,7 @@
 my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='upload_drone_imagery_link'>Upload Imagery</button><button class='btn btn-success' style='margin:3px' id='keras_cnn_drone_imagery_link'>CNN Models</button><button class='btn btn-success' style='margin:3px' id='drone_imagery_calculate_statistics_link'>Calculate Statistics</button><button class='btn btn-success' style='margin:3px' id='drone_imagery_analytics_link'>Analytics</button><button class='btn btn-default' style='margin:3px' id='drone_imagery_view_imaging_vehicles_link'>Imaging Vehicles</button><button class='btn btn-default' style='margin:3px' id='download_phenotypes_drone_imagery_link'>Download Image-Phenotype File</button><button class='btn btn-default' style='margin:3px' id='export_drone_imagery_events'>Export Imaging Events</button>";
 </%perl>
 
-    <& /page/detail_page_2_col_section.mas, info_section_collapsed => 0, info_section_title => "<h4 style='display:inline'>Drone Imagery</h4>", info_section_subtitle => 'Please cite <a href="https://acsess.onlinelibrary.wiley.com/doi/full/10.1002/ppj2.20004" target=_blank>ImageBreed</a> if you find any of these tools useful', buttons_html => $buttons_html, icon_class => undef, col1_width_class => "col-sm-0", col2_width_class => "col-sm-12", info_section_id => "manage_drone_imagery_main" &>
+    <& /page/detail_page_2_col_section.mas, info_section_collapsed => 0, info_section_title => "<h4 style='display:inline'>Aerial Imagery</h4>", info_section_subtitle => 'Please cite <a href="https://acsess.onlinelibrary.wiley.com/doi/full/10.1002/ppj2.20004" target=_blank>ImageBreed</a> if you find any of these tools useful', buttons_html => $buttons_html, icon_class => undef, col1_width_class => "col-sm-0", col2_width_class => "col-sm-12", info_section_id => "manage_drone_imagery_main" &>
 
 </div>
 
@@ -39,22 +39,22 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
 <div id="manage_drone_imagery_standard_process_div" style="display:none">
 
-    <& /page/page_title.mas, title=>"Manage Drone Imagery: Run A Standard Process On Orthophotomosaics" &>
+    <& /page/page_title.mas, title=>"Manage Aerial Imagery: Run A Standard Process On Orthophotomosaics" &>
 
     <&| /util/workflow.mas, id=> "manage_drone_imagery_standard_process_workflow" &>
         <&| /util/workflow.mas:step, title=> "Intro" &>
             <& /page/page_title.mas, title=>"This workflow will guide you through applying a standard process to your aerial imaging bands" &>
-            <p>Here you can take one of the drone run bands you uploaded all the way through the process to plot image saving. This will require manual steps such as image rotation, cropping, and plot polygon templating. After you have completed this process for one drone run band, you can apply it to all other drone run bands and other calculated vegetative indices.</p>
+            <p>Here you can take one of the imaging event bands you uploaded all the way through the process to plot image saving. This will require manual steps such as image rotation, cropping, and plot polygon templating. After you have completed this process for one imaging event band, you can apply it to all other imaging event bands and other calculated vegetative indices.</p>
             <br/><br/>
             <center>
             <button class="btn btn-primary" onclick="Workflow.complete(this); return false;">Go to Next Step</button>
             </center>
         </&>
-        <&| /util/workflow.mas:step, title=> "Drone Run Band" &>
-            <& /page/page_title.mas, title=>"Select a drone run band" &>
+        <&| /util/workflow.mas:step, title=> "Imaging Event Band" &>
+            <& /page/page_title.mas, title=>"Select a imaging event band" &>
 
             <div class="well well-sm">
-                <p>Please select one drone run band to take through the process. It is recommended to select a band that has high contrast, such as a NIR band.</p>
+                <p>Please select one imaging event band to take through the process. It is recommended to select a band that has high contrast, such as a NIR band.</p>
             </div>
 
             <div class="well well-sm">
@@ -64,12 +64,12 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                             <thead>
                                 <tr>
                                     <th>Select</th>
-                                    <th>Drone Run Band Name</th>
-                                    <th>Drone Run Band Description</th>
-                                    <th>Drone Run Band Type</th>
-                                    <th>Drone Run Name</th>
-                                    <th>Drone Run Description</th>
-                                    <th>Drone Run Date</th>
+                                    <th>Imaging Event Band Name</th>
+                                    <th>Band Description</th>
+                                    <th>Band Type</th>
+                                    <th>Imaging Event Name</th>
+                                    <th>Imaging Event Description</th>
+                                    <th>Imaging Event Date</th>
                                     <th>Field Trial Name</th>
                                     <th>Field Trial Description</th>
                                 </tr>
@@ -173,11 +173,11 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
         </&>
         <&| /util/workflow.mas:step, title=> "Rotate" &>
-            <& /page/page_title.mas, title=>"Rotate your selected drone run band" &>
+            <& /page/page_title.mas, title=>"Rotate your selected imaging event band" &>
 
             <div class="well well-sm">
                 <ul>
-                    <li>Here you can do a rotation of your drone run image.</li>
+                    <li>Here you can do a rotation of your imaging event image.</li>
                     <li>You can zoom out on your browser (Cntrl + -).</li>
                     <li>Your image should have precise row-to-row parallel alignment.</li>
                 </ul>
@@ -208,7 +208,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
         </&>
         <&| /util/workflow.mas:step, title=> "Cropping" &>
-            <& /page/page_title.mas, title=>"Crop your drone run band to specific area" &>
+            <& /page/page_title.mas, title=>"Crop your imaging event band to specific area of interest" &>
 
             <div class="well well-sm">
                 <ul>
@@ -247,7 +247,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
         </&>
         <&| /util/workflow.mas:step, title=> "Thresholding" &>
-            <& /page/page_title.mas, title=>"Threshold your drone run band to remove background" &>
+            <& /page/page_title.mas, title=>"Threshold your imaging event band to remove background" &>
 
             <div class="well">
                 <&| /page/info_section.mas, title => 'Remove Background Using Percentage Threshold', collapsible=>1, collapsed => 0, subtitle=> 'Remove the background by specifying percentage threshold value' &>
@@ -341,11 +341,11 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
         </&>
         <&| /util/workflow.mas:step, title=> "Apply" &>
-            <& /page/page_title.mas, title=>"Apply these same steps to other drone run bands in the current drone run" &>
+            <& /page/page_title.mas, title=>"Apply these same steps to other imaging event bands in the current imaging event" &>
 
             <div class="well well-sm">
                 <ul>
-                    <li>Here you can apply the same actions you did for the previous steps 1 to 6, to additional drone run bands in this drone run.</li>
+                    <li>Here you can apply the same actions you did for the previous steps 1 to 6, to additional imaging event bands in this imaging event.</li>
                     <li>Thresholding will be done dynamically, by removing the top and bottom 20% of pixel values.</li>
                 </ul>
             </div>
@@ -357,12 +357,12 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                             <thead>
                                 <tr>
                                     <th>Select</th>
-                                    <th>Drone Run Band Name</th>
-                                    <th>Drone Run Band Description</th>
-                                    <th>Drone Run Band Type</th>
-                                    <th>Drone Run Name</th>
-                                    <th>Drone Run Description</th>
-                                    <th>Drone Run Date</th>
+                                    <th>Imaging Event Band Name</th>
+                                    <th>Band Description</th>
+                                    <th>Band Type</th>
+                                    <th>Imaging Event Name</th>
+                                    <th>Imaging Event Description</th>
+                                    <th>Imaging Event Date</th>
                                     <th>Field Trial Name</th>
                                     <th>Field Trial Description</th>
                                 </tr>
@@ -435,7 +435,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
 <div id="project_drone_imagery_ground_control_points_div" style="display:none">
 
-    <& /page/page_title.mas, title=>"Manage Drone Imagery: Save Ground Control Points" &>
+    <& /page/page_title.mas, title=>"Manage Aerial Imagery: Save Ground Control Points" &>
 
     <div id="project_drone_imagery_ground_control_points_title_div"></div>
 
@@ -520,7 +520,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
 <div id="manage_drone_imagery_standard_process_raw_images_div" style="display:none">
 
-    <& /page/page_title.mas, title=>"Manage Drone Imagery: Run A Standard Process On Raw Images" &>
+    <& /page/page_title.mas, title=>"Manage Aerial Imagery: Run A Standard Process On Raw Images" &>
 
     <&| /util/workflow.mas, id=> "manage_drone_imagery_standard_process_raw_images_workflow" &>
         <&| /util/workflow.mas:step, title=> "Intro" &>
@@ -647,7 +647,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
 <div id="manage_drone_imagery_rotate_div" style="display:none">
 
-    <& /page/page_title.mas, title=>"Manage Drone Imagery: Rotate Stitched Image" &>
+    <& /page/page_title.mas, title=>"Manage Aerial Imagery: Rotate Stitched Image" &>
 
     <div class="well well-sm">
         <ul>
@@ -684,7 +684,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
 <div id="manage_drone_imagery_crop_div" style="display:none">
 
-    <& /page/page_title.mas, title=>"Manage Drone Imagery: Crop Stitched Image To Field Experiment" &>
+    <& /page/page_title.mas, title=>"Manage Aerial Imagery: Crop Stitched Image To Field Experiment" &>
 
     <div class="well well-sm">
         <ul>
@@ -723,7 +723,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
 <div id="manage_drone_imagery_vegetative_index_div" style="display:none">
 
-    <& /page/page_title.mas, title=>"Manage Drone Imagery: Convert to Vegetative Index" &>
+    <& /page/page_title.mas, title=>"Manage Aerial Imagery: Convert to Vegetative Index" &>
 
     <div class="well well-sm">
         <ul>
@@ -768,7 +768,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
 <div id="manage_drone_imagery_remove_background_div" style="display:none">
 
-    <& /page/page_title.mas, title=>"Manage Drone Imagery: Remove Background" &>
+    <& /page/page_title.mas, title=>"Manage Aerial Imagery: Remove Background" &>
 
     <div class="well">
         <&| /page/info_section.mas, title => 'Remove Background Using Graphical Threshold', collapsible=>1, collapsed => 1, subtitle=> 'Remove the background using a simple threshold value' &>
@@ -865,7 +865,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
 <div id="manage_drone_imagery_plot_polygons_div" style="display:none">
 
-    <& /page/page_title.mas, title=>"Manage Drone Imagery: Define Plot Polygons" &>
+    <& /page/page_title.mas, title=>"Manage Aerial Imagery: Define Plot Polygons" &>
 
     <div id="manage_drone_imagery_plot_polygons_div_title"></div>
 
@@ -895,7 +895,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
 <div id="manage_drone_imagery_calculate_phenotypes_div" style="display:none">
 
-    <& /page/page_title.mas, title=>"Manage Drone Imagery: Calculate Phenotypes" &>
+    <& /page/page_title.mas, title=>"Manage Aerial Imagery: Calculate Phenotypes" &>
 
     <div class="well well-sm">
         <ul>
@@ -920,7 +920,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
 <div id="manage_drone_imagery_quality_control_div" style="display:none">
 
-    <& /page/page_title.mas, title=>"Manage Drone Imagery: Quality Control Plot Images" &>
+    <& /page/page_title.mas, title=>"Manage Aerial Imagery: Quality Control Plot Images" &>
 
     <div class="well well-sm">
         <ul>
@@ -935,7 +935,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
 <div id="manage_drone_imagery_field_trial_time_series_div" style="display:none">
 
-    <& /page/page_title.mas, title=>"Manage Drone Imagery: Field Trial Image TimeSeries" &>
+    <& /page/page_title.mas, title=>"Manage Aerial Imagery: Field Trial Image TimeSeries" &>
 
     <div id="manage_drone_imagery_field_trial_time_series_div_title"></div>
 
@@ -1056,7 +1056,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="droneImageryMergeChannelsDialog">Merge Drone Run Bands Into Single 3-channel image</h4>
+        <h4 class="modal-title" id="droneImageryMergeChannelsDialog">Merge Imaging Event Bands Into Single 3-channel image</h4>
       </div>
       <div class="modal-body">
         <div class="container-fluid">
@@ -1135,22 +1135,22 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="droneImageryDeleteDroneRunDialog">Delete a Drone Run</h4>
+        <h4 class="modal-title" id="droneImageryDeleteDroneRunDialog">Delete a Imaging Event</h4>
       </div>
       <div class="modal-body">
         <div class="container-fluid">
             <div class="well">
                 <ul>
-                    <li>Deleting a drone run will remove the drone run and all drone run bands permanently.</li>
-                    <li>All images in the drone run will be deleted (obsoleted).</li>
-                    <li>Phenotypes that were generated for plots in this drone run will be deleted permanently.</li>
+                    <li>Deleting an imaging event will remove the imaging event and all image bands permanently.</li>
+                    <li>All images in the imaging event will be deleted (obsoleted).</li>
+                    <li>Phenotypes that were generated for plots in this imaging event will be deleted permanently.</li>
                 </ul>
             </div>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="drone_imagery_delete_drone_run_confirm">Delete Drone Run</button>
+        <button type="button" class="btn btn-primary" id="drone_imagery_delete_drone_run_confirm">Delete Imaging Event</button>
       </div>
     </div>
   </div>
@@ -1388,18 +1388,18 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                     <button class="btn btn-primary" id="drone_imagery_train_keras_model_population_select_step">Go to Next Step</button>
                     </center>
                 </&>
-                <&| /util/workflow.mas:step, title=> "Drone Run Selection" &>
-                    <& /page/page_title.mas, title=>"Select the drone runs you are interested in using in the model" &>
+                <&| /util/workflow.mas:step, title=> "Imaging Event Selection" &>
+                    <& /page/page_title.mas, title=>"Select the imaging event(s) you are interested in using in the model" &>
 
                     <table class="table table-bordered table-hover" id="drone_image_train_keras_drone_runs_table">
                         <thead>
                             <tr>
                                 <th>Select <br/><input type="checkbox" id="drone_image_train_keras_drone_runs_table_select_all" checked>Select All</th>
-                                <th>Drone Run Name</th>
-                                <th>Drone Run Type</th>
-                                <th>Drone Run Description</th>
-                                <th>Drone Run Date</th>
-                                <th>Drone Run GDD</th>
+                                <th>Imaging Event Name</th>
+                                <th>Imaging Event Type</th>
+                                <th>Description</th>
+                                <th>Imaging Event Date</th>
+                                <th>Imaging Event GDD</th>
                                 <th>Camera Type</th>
                                 <th>Field Trial Name</th>
                                 <th>Field Trial Description</th>
@@ -1421,9 +1421,9 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                                 <!--th>Select <br/><input type="checkbox" id="drone_image_train_keras_plot_polygon_image_type_table_select_all" checked>Select All</th-->
                                 <th>Select</th>
                                 <th>Field Trial</th>
-                                <th>Drone Run Name</th>
-                                <th>Drone Run Band Name</th>
-                                <th>Drone Run Band Type</th>
+                                <th>Imaging Event Name</th>
+                                <th>Imaging Event Band Name</th>
+                                <th>Imaging Event Band Type</th>
                                 <th>Plot Polygon Type</th>
                                 <th>Number of Images</th>
                             </tr>
@@ -1578,18 +1578,18 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                     <button class="btn btn-primary" id="drone_imagery_predict_keras_model_population_select_step">Go to Next Step</button>
                     </center>
                 </&>
-                <&| /util/workflow.mas:step, title=> "Drone Run Selection" &>
-                    <& /page/page_title.mas, title=>"Select the drone runs you are interested in sourcing images from for prediction" &>
+                <&| /util/workflow.mas:step, title=> "Imaging Event Selection" &>
+                    <& /page/page_title.mas, title=>"Select the imaging event(s) you are interested in sourcing images from for prediction" &>
 
                     <table class="table table-bordered table-hover" id="drone_image_predict_keras_drone_runs_table">
                         <thead>
                             <tr>
                                 <th>Select <br/><input type="checkbox" id="drone_image_predict_keras_drone_runs_table_select_all" checked>Select All</th>
-                                <th>Drone Run Name</th>
-                                <th>Drone Run Type</th>
-                                <th>Drone Run Description</th>
-                                <th>Drone Run Date</th>
-                                <th>Drone Run GDD</th>
+                                <th>Imaging Event Name</th>
+                                <th>Imaging Event Type</th>
+                                <th>Description</th>
+                                <th>Imaging Event Date</th>
+                                <th>Imaging Event GDD</th>
                                 <th>Camera Type</th>
                                 <th>Field Trial Name</th>
                                 <th>Field Trial Description</th>
@@ -1611,9 +1611,9 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                                 <!--th>Select <br/><input type="checkbox" id="drone_image_predict_keras_plot_polygon_image_type_table_select_all" checked>Select All</th-->
                                 <th>Select</th>
                                 <th>Field Trial</th>
-                                <th>Drone Run Name</th>
-                                <th>Drone Run Band Name</th>
-                                <th>Drone Run Band Type</th>
+                                <th>Imaging Event Name</th>
+                                <th>Imaging Event Band Name</th>
+                                <th>Imaging Event Band Type</th>
                                 <th>Plot Polygon Type</th>
                                 <th>Number of Images</th>
                             </tr>
@@ -1698,18 +1698,18 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                     <button class="btn btn-primary" id="drone_imagery_autoencoder_keras_vi_model_field_trial_training_select_step">Go to Next Step</button>
                     </center>
                 </&>
-                <&| /util/workflow.mas:step, title=> "Drone Run Training" &>
-                    <& /page/page_title.mas, title=>"Select the drone runs you are interested in sourcing images from for training" &>
+                <&| /util/workflow.mas:step, title=> "Training" &>
+                    <& /page/page_title.mas, title=>"Select the imaging event(s) you are interested in sourcing images from for training" &>
 
                     <table class="table table-bordered table-hover" id="drone_image_autoencoder_keras_vi_drone_runs_training_table">
                         <thead>
                             <tr>
                                 <th>Select <br/><input type="checkbox" id="drone_image_autoencoder_keras_vi_drone_runs_training_table_select_all" checked>Select All</th>
-                                <th>Drone Run Name</th>
-                                <th>Drone Run Type</th>
-                                <th>Drone Run Description</th>
-                                <th>Drone Run Date</th>
-                                <th>Drone Run GDD</th>
+                                <th>Imaging Event Name</th>
+                                <th>Imaging Event Type</th>
+                                <th>Description</th>
+                                <th>Imaging Event Date</th>
+                                <th>Imaging Event GDD</th>
                                 <th>Camera Type</th>
                                 <th>Field Trial Name</th>
                                 <th>Field Trial Description</th>
@@ -1731,9 +1731,9 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                                 <!--th>Select <br/><input type="checkbox" id="drone_image_autoencoder_keras_vi_plot_polygon_image_type_training_table_select_all" checked>Select All</th-->
                                 <th>Select</th>
                                 <th>Field Trial</th>
-                                <th>Drone Run Name</th>
-                                <th>Drone Run Band Name</th>
-                                <th>Drone Run Band Type</th>
+                                <th>Imaging Event Name</th>
+                                <th>Imaging Event Band Name</th>
+                                <th>Imaging Event Band Type</th>
                                 <th>Plot Polygon Type</th>
                                 <th>Number of Images</th>
                             </tr>
@@ -1761,18 +1761,18 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                     <button class="btn btn-primary" id="drone_imagery_autoencoder_keras_vi_model_field_trial_select_step">Go to Next Step</button>
                     </center>
                 </&>
-                <&| /util/workflow.mas:step, title=> "Drone Run Prediction" &>
-                    <& /page/page_title.mas, title=>"Select the drone runs you are interested in sourcing images from for prediction" &>
+                <&| /util/workflow.mas:step, title=> "Prediction" &>
+                    <& /page/page_title.mas, title=>"Select the imaging event(s) you are interested in sourcing images from for prediction" &>
 
                     <table class="table table-bordered table-hover" id="drone_image_autoencoder_keras_vi_drone_runs_table">
                         <thead>
                             <tr>
                                 <th>Select <br/><input type="checkbox" id="drone_image_autoencoder_keras_vi_drone_runs_table_select_all" checked>Select All</th>
-                                <th>Drone Run Name</th>
-                                <th>Drone Run Type</th>
-                                <th>Drone Run Description</th>
-                                <th>Drone Run Date</th>
-                                <th>Drone Run GDD</th>
+                                <th>Imaging Event Name</th>
+                                <th>Imaging Event Type</th>
+                                <th>Description</th>
+                                <th>Imaging Event Date</th>
+                                <th>Imaging Event GDD</th>
                                 <th>Camera Type</th>
                                 <th>Field Trial Name</th>
                                 <th>Field Trial Description</th>
@@ -1794,9 +1794,9 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                                 <!--th>Select <br/><input type="checkbox" id="drone_image_autoencoder_keras_vi_plot_polygon_image_type_table_select_all" checked>Select All</th-->
                                 <th>Select</th>
                                 <th>Field Trial</th>
-                                <th>Drone Run Name</th>
-                                <th>Drone Run Band Name</th>
-                                <th>Drone Run Band Type</th>
+                                <th>Imaging Event Name</th>
+                                <th>Imaging Event Band Name</th>
+                                <th>Imaging Event Band Type</th>
                                 <th>Plot Polygon Type</th>
                                 <th>Number of Images</th>
                             </tr>
@@ -1852,7 +1852,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
         <div class="container-fluid">
             <p>
                 <span class="ui-icon ui-icon-circle-check" style="float: left; margin: 0 7px 50px 0;"></span>
-                It will take time to finish processing your drone run and calculating phenotypes for all plot polygon images, vegetative indices, and processing combinations. Once it is complete, the "Processing Icon" on the Manage->Drone Imagery page will disappear from the drone run.
+                It will take time to finish processing your imaging event and calculating phenotypes for all plot polygon images, vegetative indices, and processing combinations. Once it is complete, the "Processing Icon" on the Manage->Aerial Imagery page will disappear for the imaging event.
             </p>
         </div>
       </div>
@@ -2031,11 +2031,11 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                         <thead>
                             <tr>
                                 <th>Select</th>
-                                <th>Drone Run Name</th>
-                                <th>Drone Run Type</th>
-                                <th>Drone Run Description</th>
-                                <th>Drone Run Date</th>
-                                <th>Drone Run GDD</th>
+                                <th>Imaging Event Name</th>
+                                <th>Imaging Event Type</th>
+                                <th>Description</th>
+                                <th>Imaging Event Date</th>
+                                <th>Imaging Event GDD</th>
                                 <th>Camera Type</th>
                                 <th>Field Trial Name</th>
                                 <th>Field Trial Description</th>
@@ -2056,11 +2056,11 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                         <thead>
                             <tr>
                                 <th>Select</th>
-                                <th>Drone Run Name</th>
-                                <th>Drone Run Type</th>
-                                <th>Drone Run Description</th>
-                                <th>Drone Run Date</th>
-                                <th>Drone Run GDD</th>
+                                <th>Imaging Event Name</th>
+                                <th>Imaging Event Type</th>
+                                <th>Description</th>
+                                <th>Imaging Event Date</th>
+                                <th>Imaging Event GDD</th>
                                 <th>Camera Type</th>
                                 <th>Field Trial Name</th>
                                 <th>Field Trial Description</th>
@@ -2082,9 +2082,9 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                             <tr>
                                 <th>Select</th>
                                 <th>Field Trial</th>
-                                <th>Drone Run Name</th>
-                                <th>Drone Run Band Name</th>
-                                <th>Drone Run Band Type</th>
+                                <th>Imaging Event Name</th>
+                                <th>Band Name</th>
+                                <th>Band Type</th>
                                 <th>Plot Polygon Type</th>
                                 <th>Number of Images</th>
                             </tr>
@@ -2250,7 +2250,7 @@ jQuery(document).ready(function() {
     })
 
     //
-    // Standard Process for Drone Runs
+    // Standard Process for Imaging Events
     //
 
     var manage_drone_imagery_standard_process_field_trial_id;
@@ -2294,10 +2294,10 @@ jQuery(document).ready(function() {
             selected.push([jQuery(this).val(), jQuery(this).data('background_removed_threshold_type')]);
         });
         if (selected.length < 1){
-            alert('Please select at least one drone run band! Preferably one with high contrast such as NIR.');
+            alert('Please select at least one imaging event band! Preferably one with high contrast such as NIR.');
             return false;
         } else if (selected.length > 1){
-            alert('Please select only one drone run band! Preferably one with high contrast such as NIR.');
+            alert('Please select only one imaging event band! Preferably one with high contrast such as NIR.');
             return false;
         } else {
             manage_drone_imagery_standard_process_drone_run_band_project_id = selected[0][0];
@@ -2469,7 +2469,7 @@ jQuery(document).ready(function() {
                     alert('Error doing standard process with ground control points confirmation!');
                 }
             });
-            alert('The standard process will continue in the background and may take some time. You can check the indicator on the manage drone imagery page to see when it is complete.');
+            alert('The standard process will continue in the background and may take some time. You can check the indicator on the manage aerial imagery page to see when it is complete.');
             location.reload();
         }
     });
@@ -2517,7 +2517,7 @@ jQuery(document).ready(function() {
                         }
                     });
 
-                    alert('The standard process will continue in the background and may take some time. You can check the indicator on the manage drone imagery page to see when it is complete.');
+                    alert('The standard process will continue in the background and may take some time. You can check the indicator on the manage aerial imagery page to see when it is complete.');
                     location.reload();
                 },
                 error: function(response){
@@ -2920,7 +2920,7 @@ jQuery(document).ready(function() {
             manage_drone_imagery_standard_process_apply_drone_run_band_project_ids.push(jQuery(this).val());
         });
         if (manage_drone_imagery_standard_process_apply_drone_run_band_project_ids.length < 1){
-            alert('Please select at least one other drone run band!');
+            alert('Please select at least one other imaging event band!');
             return false;
         } else {
             Workflow.complete("#manage_drone_imagery_standard_process_drone_run_band_apply_step");
@@ -2951,7 +2951,7 @@ jQuery(document).ready(function() {
                         alert(response.error);
                     }
 
-                    var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Drone Run Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
+                    var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Imaging Event Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
                     jQuery('#drone_imagery_standard_process_week_term_div').html(html);
 
                     manage_drone_imagery_standard_process_phenotype_time = response.time_ontology_day_cvterm_id;
@@ -3391,7 +3391,7 @@ jQuery(document).ready(function() {
                 jQuery('#manage_drone_imagery_standard_process_assigned_plot_images').DataTable();
             },
             error: function(response){
-                alert('Error retrieving drone run image counts!')
+                alert('Error retrieving imaging event image counts!')
             }
         });
     });
@@ -3758,7 +3758,7 @@ jQuery(document).ready(function() {
                             jQuery('#manage_drone_imagery_standard_process_assigned_plot_images').DataTable();
                         },
                         error: function(response){
-                            alert('Error retrieving drone run image counts!')
+                            alert('Error retrieving imaging event image counts!')
                         }
                     });
 
@@ -3983,7 +3983,7 @@ jQuery(document).ready(function() {
                     alert(response.error);
                 }
 
-                var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Drone Run Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
+                var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Imaging Event Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
                 jQuery('#drone_imagery_week_term_div').html(html);
 
                 manage_drone_imagery_standard_process_phenotype_time = response.time_ontology_day_cvterm_id;
@@ -4050,7 +4050,7 @@ jQuery(document).ready(function() {
                     alert(response.error);
                 }
 
-                var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Drone Run Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
+                var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Imaging Event Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
                 jQuery('#drone_imagery_minimal_vi_standard_process_week_term_div').html(html);
                 manage_drone_imagery_standard_process_minimal_vi_phenotype_time = response.time_ontology_day_cvterm_id;
             },
@@ -4133,7 +4133,7 @@ jQuery(document).ready(function() {
                     alert(response.error);
                 }
 
-                var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Drone Run Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
+                var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Imaging Event Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
                 jQuery('#drone_imagery_extended_standard_process_week_term_div').html(html);
                 manage_drone_imagery_standard_process_extended_phenotype_time = response.time_ontology_day_cvterm_id;
             },
@@ -4258,7 +4258,7 @@ jQuery(document).ready(function() {
             url : '/api/drone_imagery/get_weeks_after_planting_date?drone_run_project_id='+manage_drone_imagery_calculate_gdd_drone_run_project_id,
             success: function(response){
                 console.log(response);
-                var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Drone Run Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
+                var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Imaging Event Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
                 jQuery('#drone_imagery_calculate_gdd_time_div').html(html);
                 manage_drone_imagery_calculate_gdd_phenotype_time = response.time_ontology_day_cvterm_id;
 
@@ -4306,7 +4306,7 @@ jQuery(document).ready(function() {
             url : '/api/drone_imagery/get_weeks_after_planting_date?drone_run_project_id='+manage_drone_imagery_calculate_precipitation_drone_run_project_id,
             success: function(response){
                 console.log(response);
-                var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Drone Run Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
+                var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Imaging Event Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
                 jQuery('#drone_imagery_calculate_precipitation_time_div').html(html);
                 manage_drone_imagery_calculate_precipitation_phenotype_time = response.time_ontology_day_cvterm_id;
 
@@ -4431,7 +4431,7 @@ jQuery(document).ready(function() {
             manage_drone_imagery_train_keras_drone_run_ids.push(jQuery(this).val());
         });
         if (manage_drone_imagery_train_keras_drone_run_ids.length < 1){
-            alert('Please select at least one drone run!');
+            alert('Please select at least one imaging event!');
         } else {
 
             jQuery('#drone_image_train_keras_plot_polygon_image_type_table').DataTable({
@@ -4644,7 +4644,7 @@ jQuery(document).ready(function() {
             manage_drone_imagery_predict_keras_drone_run_ids.push(jQuery(this).val());
         });
         if (manage_drone_imagery_predict_keras_drone_run_ids.length < 1){
-            alert('Please select at least one drone run!');
+            alert('Please select at least one imaging event!');
         } else {
 
             jQuery('#drone_image_predict_keras_plot_polygon_image_type_table').DataTable({
@@ -4781,7 +4781,7 @@ jQuery(document).ready(function() {
             manage_drone_imagery_autoencoder_keras_vi_drone_run_ids_training.push(jQuery(this).val());
         });
         if (manage_drone_imagery_autoencoder_keras_vi_drone_run_ids_training.length < 1){
-            alert('Please select atleast one drone run!');
+            alert('Please select atleast one imaging event!');
         } else {
 
             jQuery('#drone_image_autoencoder_keras_vi_plot_polygon_image_type_training_table').DataTable({
@@ -4849,9 +4849,9 @@ jQuery(document).ready(function() {
             manage_drone_imagery_autoencoder_keras_vi_drone_run_ids.push(jQuery(this).val());
         });
         if (manage_drone_imagery_autoencoder_keras_vi_drone_run_ids.length < 1){
-            alert('Please select one drone run!');
+            alert('Please select one imaging event!');
         } else if (manage_drone_imagery_autoencoder_keras_vi_drone_run_ids.length > 1){
-            alert('Please select only one drone run!');
+            alert('Please select only one imaging event!');
         } else {
 
             jQuery.ajax({
@@ -7350,7 +7350,7 @@ jQuery(document).ready(function() {
                     alert(response.error);
                 }
 
-                var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Drone Run Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
+                var html = "<center><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Imaging Event Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<br/><br/></center>";
                 jQuery('#drone_imagery_calculate_phenotypes_zonal_stats_week_term_div').html(html);
                 manage_drone_image_calculate_phenotypes_zonal_time_cvterm_id = response.time_ontology_day_cvterm_id;
             },
@@ -7799,9 +7799,9 @@ jQuery(document).ready(function() {
             drone_imagery_compare_images_drone_run_ids.push(jQuery(this).val());
         });
         if (drone_imagery_compare_images_drone_run_ids.length < 1){
-            alert('Please select at least one drone run!');
+            alert('Please select at least one imaging event!');
         } else if (drone_imagery_compare_images_drone_run_ids.length > 2){
-            alert('Please select a maximum of two drone runs, given that we can only compare two images at a time here.');
+            alert('Please select a maximum of two imaging events, given that we can only compare two images at a time here.');
         } else {
             jQuery('#drone_image_compare_images_drone_run_bands_table').DataTable({
                 destroy : true,
@@ -7820,9 +7820,9 @@ jQuery(document).ready(function() {
             drone_imagery_compare_images_drone_run_band_ids.push(jQuery(this).val());
         });
         if (drone_imagery_compare_images_drone_run_band_ids.length < 1){
-            alert('Please select at least one drone run band!');
+            alert('Please select at least one imaging event band!');
         } else if (drone_imagery_compare_images_drone_run_band_ids.length > 2){
-            alert('Please select a maximum of two drone run bands, given that we can only compare two images at a time here.');
+            alert('Please select a maximum of two imaging event bands, given that we can only compare two images at a time here.');
         } else {
             jQuery('#drone_imagery_compare_images_images_type_table').DataTable({
                 destroy : true,
@@ -7871,7 +7871,7 @@ jQuery(document).ready(function() {
     });
 
     //
-    // Delete drone run
+    // Delete imaging event
     //
 
     var manage_drone_imagery_delete_drone_run_project_id;
@@ -7895,13 +7895,13 @@ jQuery(document).ready(function() {
                     alert(response.error);
                 }
                 if(response.success) {
-                    alert('Drone run deleted successfully!');
+                    alert('Imaging event deleted successfully!');
                 }
                 location.reload();
             },
             error: function(response){
                 jQuery("#working_modal").modal("hide");
-                alert('Error deleting drone run!')
+                alert('Error deleting imaging event!')
             }
         });
     });
