@@ -13892,15 +13892,71 @@ sub _perform_drone_imagery_analytics {
         my $stats_tempfile_2_basename = basename($stats_tempfile_2);
         my $grm_file_basename = basename($grm_rename_tempfile);
         my $permanent_environment_structure_file_basename = basename($permanent_environment_structure_tempfile);
-        #my @phenotype_header = ("id", "plot_id", "replicate", "time", "replicate_time", "ind_replicate", @sorted_trait_names, "phenotype");
+        #my @phenotype_header = ("id", "plot_id", "replicate", "time", "replicate_time", "ind_replicate", @legendre_coeffs, "phenotype");
 
         my $effect_1_levels = scalar(@rep_time_factors);
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
 
+        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $stats_out_cv1_predict_tempfile .= '.dat';
+        $stats_out_cv2_predict_tempfile .= '.dat';
+        $stats_out_cv3_predict_tempfile .= '.dat';
+        $stats_out_cv4_predict_tempfile .= '.dat';
+        $stats_out_cv5_predict_tempfile .= '.dat';
+
+        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $parameter_tempfile_cv1 .= '.f90';
+        $parameter_tempfile_cv2 .= '.f90';
+        $parameter_tempfile_cv3 .= '.f90';
+        $parameter_tempfile_cv4 .= '.f90';
+        $parameter_tempfile_cv5 .= '.f90';
+
+        print STDERR Dumper $stats_tempfile_2;
+        my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
+        randomized_positions <- sample(length(mat[,1]));
+        cv_step_size <- length(mat[,1]) %/% 5;
+        cv_step_size_modulo <- length(mat[,1]) %% 5;
+        mat_CV1 <- mat;
+        mat_CV2 <- mat;
+        mat_CV3 <- mat;
+        mat_CV4 <- mat;
+        mat_CV5 <- mat;
+        mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        "';
+        my $status_cv_files = system($data_cv_cmd);
+
+        my $stats_out_cv1_predict_tempfile_basename = basename($stats_out_cv1_predict_tempfile);
+        my $stats_out_cv2_predict_tempfile_basename = basename($stats_out_cv2_predict_tempfile);
+        my $stats_out_cv3_predict_tempfile_basename = basename($stats_out_cv3_predict_tempfile);
+        my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
+        my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
+
+        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
+        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
+        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
+        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
+        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
+        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
         my @param_file_rows = (
-            'DATAFILE',
-            $stats_tempfile_2_basename,
             'NUMBER_OF_TRAITS',
             '1',
             'NUMBER_OF_EFFECTS',
@@ -14001,10 +14057,40 @@ sub _perform_drone_imagery_analytics {
         );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach (@param_file_rows) {
+            foreach ((@param_file_rows_data, @param_file_rows)) {
                 print $Fp "$_\n";
             }
         close($Fp);
+
+        open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+                print $Fp_cv1 "$_\n";
+            }
+        close($Fp_cv1);
+
+        open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+                print $Fp_cv2 "$_\n";
+            }
+        close($Fp_cv2);
+
+        open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+                print $Fp_cv3 "$_\n";
+            }
+        close($Fp_cv3);
+
+        open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+                print $Fp_cv4 "$_\n";
+            }
+        close($Fp_cv4);
+
+        open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+                print $Fp_cv5 "$_\n";
+            }
+        close($Fp_cv5);
 
         my $command_name = '';
         if ($statistics_select eq 'blupf90_grm_random_regression_gdd_blups' || $statistics_select eq 'blupf90_grm_random_regression_dap_blups') {
@@ -14015,6 +14101,12 @@ sub _perform_drone_imagery_analytics {
         }
 
         my $parameter_tempfile_basename = basename($parameter_tempfile);
+        my $parameter_tempfile_cv1_basename = basename($parameter_tempfile_cv1);
+        my $parameter_tempfile_cv2_basename = basename($parameter_tempfile_cv2);
+        my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
+        my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
+        my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
+
         $stats_out_tempfile .= '.log';
         $cmd_f90 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_basename.' | '.$command_name.' > '.$stats_out_tempfile;
         print STDERR Dumper $cmd_f90;
@@ -14280,6 +14372,126 @@ sub _perform_drone_imagery_analytics {
                 $env_effect_sum_square_original = $env_effect_sum_square_original + $value*$value;
             }
         }
+
+        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1;
+        my $status_cv1 = system($cmd_f90_cv1);
+
+        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1);
+
+        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+
+            while (my $row = <$fh_yhat_res_cv1>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_original = $model_sum_square_cv1_original + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1);
+
+        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2;
+        my $status_cv2 = system($cmd_f90_cv2);
+
+        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2);
+
+        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+
+            while (my $row = <$fh_yhat_res_cv2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_original = $model_sum_square_cv2_original + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2);
+
+        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3;
+        my $status_cv3 = system($cmd_f90_cv3);
+
+        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3);
+
+        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+
+            while (my $row = <$fh_yhat_res_cv3>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_original = $model_sum_square_cv3_original + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3);
+
+        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4;
+        my $status_cv4 = system($cmd_f90_cv4);
+
+        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4);
+
+        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+
+            while (my $row = <$fh_yhat_res_cv4>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_original = $model_sum_square_cv4_original + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4);
+
+        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5;
+        my $status_cv5 = system($cmd_f90_cv5);
+
+        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5);
+
+        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+
+            while (my $row = <$fh_yhat_res_cv5>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_original = $model_sum_square_cv5_original + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         $analysis_model_language = "R";
@@ -15601,9 +15813,65 @@ sub _perform_drone_imagery_analytics {
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
 
+        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $stats_out_cv1_predict_tempfile .= '.dat';
+        $stats_out_cv2_predict_tempfile .= '.dat';
+        $stats_out_cv3_predict_tempfile .= '.dat';
+        $stats_out_cv4_predict_tempfile .= '.dat';
+        $stats_out_cv5_predict_tempfile .= '.dat';
+
+        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $parameter_tempfile_cv1 .= '.f90';
+        $parameter_tempfile_cv2 .= '.f90';
+        $parameter_tempfile_cv3 .= '.f90';
+        $parameter_tempfile_cv4 .= '.f90';
+        $parameter_tempfile_cv5 .= '.f90';
+
+        print STDERR Dumper $stats_tempfile_2;
+        my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
+        randomized_positions <- sample(length(mat[,1]));
+        cv_step_size <- length(mat[,1]) %/% 5;
+        cv_step_size_modulo <- length(mat[,1]) %% 5;
+        mat_CV1 <- mat;
+        mat_CV2 <- mat;
+        mat_CV3 <- mat;
+        mat_CV4 <- mat;
+        mat_CV5 <- mat;
+        mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        "';
+        my $status_cv_files = system($data_cv_cmd);
+
+        my $stats_out_cv1_predict_tempfile_basename = basename($stats_out_cv1_predict_tempfile);
+        my $stats_out_cv2_predict_tempfile_basename = basename($stats_out_cv2_predict_tempfile);
+        my $stats_out_cv3_predict_tempfile_basename = basename($stats_out_cv3_predict_tempfile);
+        my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
+        my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
+
+        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
+        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
+        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
+        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
+        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
+        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
         my @param_file_rows = (
-            'DATAFILE',
-            $stats_tempfile_2_basename,
             'NUMBER_OF_TRAITS',
             '1',
             'NUMBER_OF_EFFECTS',
@@ -15686,14 +15954,60 @@ sub _perform_drone_imagery_analytics {
             'OPTION hetres_pos '.$hetres_group_string,
             'OPTION hetres_pol '.$hetres_pol_string,
             'OPTION conv_crit '.$tolparinv,
+            'OPTION missing -999',
             'OPTION residual',
         );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach (@param_file_rows) {
+            foreach ((@param_file_rows_data, @param_file_rows)) {
                 print $Fp "$_\n";
             }
         close($Fp);
+
+        open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+                print $Fp_cv1 "$_\n";
+            }
+        close($Fp_cv1);
+
+        open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+                print $Fp_cv2 "$_\n";
+            }
+        close($Fp_cv2);
+
+        open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+                print $Fp_cv3 "$_\n";
+            }
+        close($Fp_cv3);
+
+        open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+                print $Fp_cv4 "$_\n";
+            }
+        close($Fp_cv4);
+
+        open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+                print $Fp_cv5 "$_\n";
+            }
+        close($Fp_cv5);
+
+        my $command_name = '';
+        if ($statistics_select eq 'blupf90_grm_random_regression_gdd_blups' || $statistics_select eq 'blupf90_grm_random_regression_dap_blups') {
+            $command_name = 'blupf90';
+        }
+        elsif ($statistics_select eq 'airemlf90_grm_random_regression_gdd_blups' || $statistics_select eq 'airemlf90_grm_random_regression_dap_blups') {
+            $command_name = 'airemlf90';
+        }
+
+        my $parameter_tempfile_basename = basename($parameter_tempfile);
+        my $parameter_tempfile_cv1_basename = basename($parameter_tempfile_cv1);
+        my $parameter_tempfile_cv2_basename = basename($parameter_tempfile_cv2);
+        my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
+        my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
+        my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -15729,8 +16043,7 @@ sub _perform_drone_imagery_analytics {
         my $h_time = $schema->storage->dbh()->prepare($q_time);
 
         $yhat_residual_tempfile = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res, '<', $yhat_residual_tempfile)
-            or die "Could not open file '$yhat_residual_tempfile' $!";
+        open(my $fh_yhat_res, '<', $yhat_residual_tempfile) or die "Could not open file '$yhat_residual_tempfile' $!";
             print STDERR "Opened $yhat_residual_tempfile\n";
 
             my $pred_res_counter = 0;
@@ -15759,8 +16072,7 @@ sub _perform_drone_imagery_analytics {
         close($fh_yhat_res);
 
         $blupf90_solutions_tempfile = $tmp_stats_dir."/solutions";
-        open(my $fh_sol, '<', $blupf90_solutions_tempfile)
-            or die "Could not open file '$blupf90_solutions_tempfile' $!";
+        open(my $fh_sol, '<', $blupf90_solutions_tempfile) or die "Could not open file '$blupf90_solutions_tempfile' $!";
             print STDERR "Opened $blupf90_solutions_tempfile\n";
 
             my $head = <$fh_sol>;
@@ -15951,6 +16263,126 @@ sub _perform_drone_imagery_analytics {
                 $env_effect_sum_square_altered = $env_effect_sum_square_altered + $value*$value;
             }
         }
+
+        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1;
+        my $status_cv1 = system($cmd_f90_cv1);
+
+        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1);
+
+        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+
+            while (my $row = <$fh_yhat_res_cv1>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_altered = $model_sum_square_cv1_altered + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1);
+
+        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2;
+        my $status_cv2 = system($cmd_f90_cv2);
+
+        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2);
+
+        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+
+            while (my $row = <$fh_yhat_res_cv2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_altered = $model_sum_square_cv2_altered + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2);
+
+        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3;
+        my $status_cv3 = system($cmd_f90_cv3);
+
+        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3);
+
+        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+
+            while (my $row = <$fh_yhat_res_cv3>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_altered = $model_sum_square_cv3_altered + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3);
+
+        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4;
+        my $status_cv4 = system($cmd_f90_cv4);
+
+        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4);
+
+        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+
+            while (my $row = <$fh_yhat_res_cv4>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_altered = $model_sum_square_cv4_altered + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4);
+
+        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5;
+        my $status_cv5 = system($cmd_f90_cv5);
+
+        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5);
+
+        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+
+            while (my $row = <$fh_yhat_res_cv5>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_altered = $model_sum_square_cv5_altered + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
 
@@ -17281,9 +17713,65 @@ sub _perform_drone_imagery_analytics {
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
 
+        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $stats_out_cv1_predict_tempfile .= '.dat';
+        $stats_out_cv2_predict_tempfile .= '.dat';
+        $stats_out_cv3_predict_tempfile .= '.dat';
+        $stats_out_cv4_predict_tempfile .= '.dat';
+        $stats_out_cv5_predict_tempfile .= '.dat';
+
+        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $parameter_tempfile_cv1 .= '.f90';
+        $parameter_tempfile_cv2 .= '.f90';
+        $parameter_tempfile_cv3 .= '.f90';
+        $parameter_tempfile_cv4 .= '.f90';
+        $parameter_tempfile_cv5 .= '.f90';
+
+        print STDERR Dumper $stats_tempfile_2;
+        my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
+        randomized_positions <- sample(length(mat[,1]));
+        cv_step_size <- length(mat[,1]) %/% 5;
+        cv_step_size_modulo <- length(mat[,1]) %% 5;
+        mat_CV1 <- mat;
+        mat_CV2 <- mat;
+        mat_CV3 <- mat;
+        mat_CV4 <- mat;
+        mat_CV5 <- mat;
+        mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        "';
+        my $status_cv_files = system($data_cv_cmd);
+
+        my $stats_out_cv1_predict_tempfile_basename = basename($stats_out_cv1_predict_tempfile);
+        my $stats_out_cv2_predict_tempfile_basename = basename($stats_out_cv2_predict_tempfile);
+        my $stats_out_cv3_predict_tempfile_basename = basename($stats_out_cv3_predict_tempfile);
+        my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
+        my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
+
+        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
+        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
+        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
+        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
+        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
+        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
         my @param_file_rows = (
-            'DATAFILE',
-            $stats_tempfile_2_basename,
             'NUMBER_OF_TRAITS',
             '1',
             'NUMBER_OF_EFFECTS',
@@ -17373,14 +17861,60 @@ sub _perform_drone_imagery_analytics {
             'OPTION hetres_pos '.$hetres_group_string,
             'OPTION hetres_pol '.$hetres_pol_string,
             'OPTION conv_crit '.$tolparinv,
+            'OPTION missing -999',
             'OPTION residual',
         );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach (@param_file_rows) {
+            foreach ((@param_file_rows_data, @param_file_rows)) {
                 print $Fp "$_\n";
             }
         close($Fp);
+
+        open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+                print $Fp_cv1 "$_\n";
+            }
+        close($Fp_cv1);
+
+        open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+                print $Fp_cv2 "$_\n";
+            }
+        close($Fp_cv2);
+
+        open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+                print $Fp_cv3 "$_\n";
+            }
+        close($Fp_cv3);
+
+        open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+                print $Fp_cv4 "$_\n";
+            }
+        close($Fp_cv4);
+
+        open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+                print $Fp_cv5 "$_\n";
+            }
+        close($Fp_cv5);
+
+        my $command_name = '';
+        if ($statistics_select eq 'blupf90_grm_random_regression_gdd_blups' || $statistics_select eq 'blupf90_grm_random_regression_dap_blups') {
+            $command_name = 'blupf90';
+        }
+        elsif ($statistics_select eq 'airemlf90_grm_random_regression_gdd_blups' || $statistics_select eq 'airemlf90_grm_random_regression_dap_blups') {
+            $command_name = 'airemlf90';
+        }
+
+        my $parameter_tempfile_basename = basename($parameter_tempfile);
+        my $parameter_tempfile_cv1_basename = basename($parameter_tempfile_cv1);
+        my $parameter_tempfile_cv2_basename = basename($parameter_tempfile_cv2);
+        my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
+        my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
+        my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -17416,8 +17950,7 @@ sub _perform_drone_imagery_analytics {
         my $h_time = $schema->storage->dbh()->prepare($q_time);
 
         $yhat_residual_tempfile = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res, '<', $yhat_residual_tempfile)
-            or die "Could not open file '$yhat_residual_tempfile' $!";
+        open(my $fh_yhat_res, '<', $yhat_residual_tempfile) or die "Could not open file '$yhat_residual_tempfile' $!";
             print STDERR "Opened $yhat_residual_tempfile\n";
 
             my $pred_res_counter = 0;
@@ -17446,8 +17979,7 @@ sub _perform_drone_imagery_analytics {
         close($fh_yhat_res);
 
         $blupf90_solutions_tempfile = $tmp_stats_dir."/solutions";
-        open(my $fh_sol, '<', $blupf90_solutions_tempfile)
-            or die "Could not open file '$blupf90_solutions_tempfile' $!";
+        open(my $fh_sol, '<', $blupf90_solutions_tempfile) or die "Could not open file '$blupf90_solutions_tempfile' $!";
             print STDERR "Opened $blupf90_solutions_tempfile\n";
 
             my $head = <$fh_sol>;
@@ -17638,6 +18170,126 @@ sub _perform_drone_imagery_analytics {
                 $env_effect_sum_square_altered_env = $env_effect_sum_square_altered_env + $value*$value;
             }
         }
+
+        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1;
+        my $status_cv1 = system($cmd_f90_cv1);
+
+        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1);
+
+        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+
+            while (my $row = <$fh_yhat_res_cv1>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_altered_env = $model_sum_square_cv1_altered_env + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1);
+
+        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2;
+        my $status_cv2 = system($cmd_f90_cv2);
+
+        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2);
+
+        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+
+            while (my $row = <$fh_yhat_res_cv2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_altered_env = $model_sum_square_cv2_altered_env + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2);
+
+        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3;
+        my $status_cv3 = system($cmd_f90_cv3);
+
+        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3);
+
+        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+
+            while (my $row = <$fh_yhat_res_cv3>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_altered_env = $model_sum_square_cv3_altered_env + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3);
+
+        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4;
+        my $status_cv4 = system($cmd_f90_cv4);
+
+        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4);
+
+        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+
+            while (my $row = <$fh_yhat_res_cv4>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_altered_env = $model_sum_square_cv4_altered_env + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4);
+
+        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5;
+        my $status_cv5 = system($cmd_f90_cv5);
+
+        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5);
+
+        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+
+            while (my $row = <$fh_yhat_res_cv5>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_altered_env = $model_sum_square_cv5_altered_env + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -18934,8 +19586,7 @@ sub _perform_drone_imagery_analytics {
         my $status_r = system($statistics_cmd);
 
         my @pheno_var;
-        open(my $fh_r, '<', $stats_out_param_tempfile)
-            or die "Could not open file '$stats_out_param_tempfile' $!";
+        open(my $fh_r, '<', $stats_out_param_tempfile) or die "Could not open file '$stats_out_param_tempfile' $!";
             print STDERR "Opened $stats_out_param_tempfile\n";
 
             while (my $row = <$fh_r>) {
@@ -18958,9 +19609,65 @@ sub _perform_drone_imagery_analytics {
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
 
+        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $stats_out_cv1_predict_tempfile .= '.dat';
+        $stats_out_cv2_predict_tempfile .= '.dat';
+        $stats_out_cv3_predict_tempfile .= '.dat';
+        $stats_out_cv4_predict_tempfile .= '.dat';
+        $stats_out_cv5_predict_tempfile .= '.dat';
+
+        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $parameter_tempfile_cv1 .= '.f90';
+        $parameter_tempfile_cv2 .= '.f90';
+        $parameter_tempfile_cv3 .= '.f90';
+        $parameter_tempfile_cv4 .= '.f90';
+        $parameter_tempfile_cv5 .= '.f90';
+
+        print STDERR Dumper $stats_tempfile_2;
+        my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
+        randomized_positions <- sample(length(mat[,1]));
+        cv_step_size <- length(mat[,1]) %/% 5;
+        cv_step_size_modulo <- length(mat[,1]) %% 5;
+        mat_CV1 <- mat;
+        mat_CV2 <- mat;
+        mat_CV3 <- mat;
+        mat_CV4 <- mat;
+        mat_CV5 <- mat;
+        mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        "';
+        my $status_cv_files = system($data_cv_cmd);
+
+        my $stats_out_cv1_predict_tempfile_basename = basename($stats_out_cv1_predict_tempfile);
+        my $stats_out_cv2_predict_tempfile_basename = basename($stats_out_cv2_predict_tempfile);
+        my $stats_out_cv3_predict_tempfile_basename = basename($stats_out_cv3_predict_tempfile);
+        my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
+        my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
+
+        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
+        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
+        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
+        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
+        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
+        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
         my @param_file_rows = (
-            'DATAFILE',
-            $stats_tempfile_2_basename,
             'NUMBER_OF_TRAITS',
             '1',
             'NUMBER_OF_EFFECTS',
@@ -19050,14 +19757,60 @@ sub _perform_drone_imagery_analytics {
             'OPTION hetres_pos '.$hetres_group_string,
             'OPTION hetres_pol '.$hetres_pol_string,
             'OPTION conv_crit '.$tolparinv,
+            'OPTION missing -999',
             'OPTION residual',
         );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach (@param_file_rows) {
+            foreach ((@param_file_rows_data, @param_file_rows)) {
                 print $Fp "$_\n";
             }
         close($Fp);
+
+        open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+                print $Fp_cv1 "$_\n";
+            }
+        close($Fp_cv1);
+
+        open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+                print $Fp_cv2 "$_\n";
+            }
+        close($Fp_cv2);
+
+        open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+                print $Fp_cv3 "$_\n";
+            }
+        close($Fp_cv3);
+
+        open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+                print $Fp_cv4 "$_\n";
+            }
+        close($Fp_cv4);
+
+        open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+                print $Fp_cv5 "$_\n";
+            }
+        close($Fp_cv5);
+
+        my $command_name = '';
+        if ($statistics_select eq 'blupf90_grm_random_regression_gdd_blups' || $statistics_select eq 'blupf90_grm_random_regression_dap_blups') {
+            $command_name = 'blupf90';
+        }
+        elsif ($statistics_select eq 'airemlf90_grm_random_regression_gdd_blups' || $statistics_select eq 'airemlf90_grm_random_regression_dap_blups') {
+            $command_name = 'airemlf90';
+        }
+
+        my $parameter_tempfile_basename = basename($parameter_tempfile);
+        my $parameter_tempfile_cv1_basename = basename($parameter_tempfile_cv1);
+        my $parameter_tempfile_cv2_basename = basename($parameter_tempfile_cv2);
+        my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
+        my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
+        my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -19093,8 +19846,7 @@ sub _perform_drone_imagery_analytics {
         my $h_time = $schema->storage->dbh()->prepare($q_time);
 
         $yhat_residual_tempfile = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res, '<', $yhat_residual_tempfile)
-            or die "Could not open file '$yhat_residual_tempfile' $!";
+        open(my $fh_yhat_res, '<', $yhat_residual_tempfile) or die "Could not open file '$yhat_residual_tempfile' $!";
             print STDERR "Opened $yhat_residual_tempfile\n";
 
             my $pred_res_counter = 0;
@@ -19123,8 +19875,7 @@ sub _perform_drone_imagery_analytics {
         close($fh_yhat_res);
 
         $blupf90_solutions_tempfile = $tmp_stats_dir."/solutions";
-        open(my $fh_sol, '<', $blupf90_solutions_tempfile)
-            or die "Could not open file '$blupf90_solutions_tempfile' $!";
+        open(my $fh_sol, '<', $blupf90_solutions_tempfile) or die "Could not open file '$blupf90_solutions_tempfile' $!";
             print STDERR "Opened $blupf90_solutions_tempfile\n";
 
             my $head = <$fh_sol>;
@@ -19315,6 +20066,126 @@ sub _perform_drone_imagery_analytics {
                 $env_effect_sum_square_altered_env_2 = $env_effect_sum_square_altered_env_2 + $value*$value;
             }
         }
+
+        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1;
+        my $status_cv1 = system($cmd_f90_cv1);
+
+        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1);
+
+        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+
+            while (my $row = <$fh_yhat_res_cv1>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_altered_env_2 = $model_sum_square_cv1_altered_env_2 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1);
+
+        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2;
+        my $status_cv2 = system($cmd_f90_cv2);
+
+        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2);
+
+        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+
+            while (my $row = <$fh_yhat_res_cv2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_altered_env_2 = $model_sum_square_cv2_altered_env_2 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2);
+
+        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3;
+        my $status_cv3 = system($cmd_f90_cv3);
+
+        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3);
+
+        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+
+            while (my $row = <$fh_yhat_res_cv3>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_altered_env_2 = $model_sum_square_cv3_altered_env_2 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3);
+
+        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4;
+        my $status_cv4 = system($cmd_f90_cv4);
+
+        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4);
+
+        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+
+            while (my $row = <$fh_yhat_res_cv4>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_altered_env_2 = $model_sum_square_cv4_altered_env_2 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4);
+
+        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5;
+        my $status_cv5 = system($cmd_f90_cv5);
+
+        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5);
+
+        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+
+            while (my $row = <$fh_yhat_res_cv5>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_altered_env_2 = $model_sum_square_cv5_altered_env_2 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -20612,8 +21483,7 @@ sub _perform_drone_imagery_analytics {
         my $status_r = system($statistics_cmd);
 
         my @pheno_var;
-        open(my $fh_r, '<', $stats_out_param_tempfile)
-            or die "Could not open file '$stats_out_param_tempfile' $!";
+        open(my $fh_r, '<', $stats_out_param_tempfile) or die "Could not open file '$stats_out_param_tempfile' $!";
             print STDERR "Opened $stats_out_param_tempfile\n";
 
             while (my $row = <$fh_r>) {
@@ -20636,9 +21506,65 @@ sub _perform_drone_imagery_analytics {
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
 
+        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $stats_out_cv1_predict_tempfile .= '.dat';
+        $stats_out_cv2_predict_tempfile .= '.dat';
+        $stats_out_cv3_predict_tempfile .= '.dat';
+        $stats_out_cv4_predict_tempfile .= '.dat';
+        $stats_out_cv5_predict_tempfile .= '.dat';
+
+        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $parameter_tempfile_cv1 .= '.f90';
+        $parameter_tempfile_cv2 .= '.f90';
+        $parameter_tempfile_cv3 .= '.f90';
+        $parameter_tempfile_cv4 .= '.f90';
+        $parameter_tempfile_cv5 .= '.f90';
+
+        print STDERR Dumper $stats_tempfile_2;
+        my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
+        randomized_positions <- sample(length(mat[,1]));
+        cv_step_size <- length(mat[,1]) %/% 5;
+        cv_step_size_modulo <- length(mat[,1]) %% 5;
+        mat_CV1 <- mat;
+        mat_CV2 <- mat;
+        mat_CV3 <- mat;
+        mat_CV4 <- mat;
+        mat_CV5 <- mat;
+        mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        "';
+        my $status_cv_files = system($data_cv_cmd);
+
+        my $stats_out_cv1_predict_tempfile_basename = basename($stats_out_cv1_predict_tempfile);
+        my $stats_out_cv2_predict_tempfile_basename = basename($stats_out_cv2_predict_tempfile);
+        my $stats_out_cv3_predict_tempfile_basename = basename($stats_out_cv3_predict_tempfile);
+        my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
+        my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
+
+        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
+        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
+        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
+        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
+        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
+        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
         my @param_file_rows = (
-            'DATAFILE',
-            $stats_tempfile_2_basename,
             'NUMBER_OF_TRAITS',
             '1',
             'NUMBER_OF_EFFECTS',
@@ -20728,14 +21654,60 @@ sub _perform_drone_imagery_analytics {
             'OPTION hetres_pos '.$hetres_group_string,
             'OPTION hetres_pol '.$hetres_pol_string,
             'OPTION conv_crit '.$tolparinv,
+            'OPTION missing -999',
             'OPTION residual',
         );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach (@param_file_rows) {
+            foreach ((@param_file_rows_data, @param_file_rows)) {
                 print $Fp "$_\n";
             }
         close($Fp);
+
+        open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+                print $Fp_cv1 "$_\n";
+            }
+        close($Fp_cv1);
+
+        open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+                print $Fp_cv2 "$_\n";
+            }
+        close($Fp_cv2);
+
+        open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+                print $Fp_cv3 "$_\n";
+            }
+        close($Fp_cv3);
+
+        open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+                print $Fp_cv4 "$_\n";
+            }
+        close($Fp_cv4);
+
+        open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+                print $Fp_cv5 "$_\n";
+            }
+        close($Fp_cv5);
+
+        my $command_name = '';
+        if ($statistics_select eq 'blupf90_grm_random_regression_gdd_blups' || $statistics_select eq 'blupf90_grm_random_regression_dap_blups') {
+            $command_name = 'blupf90';
+        }
+        elsif ($statistics_select eq 'airemlf90_grm_random_regression_gdd_blups' || $statistics_select eq 'airemlf90_grm_random_regression_dap_blups') {
+            $command_name = 'airemlf90';
+        }
+
+        my $parameter_tempfile_basename = basename($parameter_tempfile);
+        my $parameter_tempfile_cv1_basename = basename($parameter_tempfile_cv1);
+        my $parameter_tempfile_cv2_basename = basename($parameter_tempfile_cv2);
+        my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
+        my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
+        my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -20771,8 +21743,7 @@ sub _perform_drone_imagery_analytics {
         my $h_time = $schema->storage->dbh()->prepare($q_time);
 
         $yhat_residual_tempfile = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res, '<', $yhat_residual_tempfile)
-            or die "Could not open file '$yhat_residual_tempfile' $!";
+        open(my $fh_yhat_res, '<', $yhat_residual_tempfile) or die "Could not open file '$yhat_residual_tempfile' $!";
             print STDERR "Opened $yhat_residual_tempfile\n";
 
             my $pred_res_counter = 0;
@@ -20801,8 +21772,7 @@ sub _perform_drone_imagery_analytics {
         close($fh_yhat_res);
 
         $blupf90_solutions_tempfile = $tmp_stats_dir."/solutions";
-        open(my $fh_sol, '<', $blupf90_solutions_tempfile)
-            or die "Could not open file '$blupf90_solutions_tempfile' $!";
+        open(my $fh_sol, '<', $blupf90_solutions_tempfile) or die "Could not open file '$blupf90_solutions_tempfile' $!";
             print STDERR "Opened $blupf90_solutions_tempfile\n";
 
             my $head = <$fh_sol>;
@@ -20993,6 +21963,126 @@ sub _perform_drone_imagery_analytics {
                 $env_effect_sum_square_altered_env_3 = $env_effect_sum_square_altered_env_3 + $value*$value;
             }
         }
+
+        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1;
+        my $status_cv1 = system($cmd_f90_cv1);
+
+        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1);
+
+        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+
+            while (my $row = <$fh_yhat_res_cv1>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_altered_env_3 = $model_sum_square_cv1_altered_env_3 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1);
+
+        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2;
+        my $status_cv2 = system($cmd_f90_cv2);
+
+        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2);
+
+        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+
+            while (my $row = <$fh_yhat_res_cv2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_altered_env_3 = $model_sum_square_cv2_altered_env_3 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2);
+
+        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3;
+        my $status_cv3 = system($cmd_f90_cv3);
+
+        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3);
+
+        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+
+            while (my $row = <$fh_yhat_res_cv3>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_altered_env_3 = $model_sum_square_cv3_altered_env_3 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3);
+
+        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4;
+        my $status_cv4 = system($cmd_f90_cv4);
+
+        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4);
+
+        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+
+            while (my $row = <$fh_yhat_res_cv4>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_altered_env_3 = $model_sum_square_cv4_altered_env_3 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4);
+
+        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5;
+        my $status_cv5 = system($cmd_f90_cv5);
+
+        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5);
+
+        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+
+            while (my $row = <$fh_yhat_res_cv5>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_altered_env_3 = $model_sum_square_cv5_altered_env_3 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -22287,8 +23377,7 @@ sub _perform_drone_imagery_analytics {
         my $status_r = system($statistics_cmd);
 
         my @pheno_var;
-        open(my $fh_r, '<', $stats_out_param_tempfile)
-            or die "Could not open file '$stats_out_param_tempfile' $!";
+        open(my $fh_r, '<', $stats_out_param_tempfile) or die "Could not open file '$stats_out_param_tempfile' $!";
             print STDERR "Opened $stats_out_param_tempfile\n";
 
             while (defined(my $row = <$fh_r>)) {
@@ -22311,9 +23400,65 @@ sub _perform_drone_imagery_analytics {
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
 
+        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $stats_out_cv1_predict_tempfile .= '.dat';
+        $stats_out_cv2_predict_tempfile .= '.dat';
+        $stats_out_cv3_predict_tempfile .= '.dat';
+        $stats_out_cv4_predict_tempfile .= '.dat';
+        $stats_out_cv5_predict_tempfile .= '.dat';
+
+        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $parameter_tempfile_cv1 .= '.f90';
+        $parameter_tempfile_cv2 .= '.f90';
+        $parameter_tempfile_cv3 .= '.f90';
+        $parameter_tempfile_cv4 .= '.f90';
+        $parameter_tempfile_cv5 .= '.f90';
+
+        print STDERR Dumper $stats_tempfile_2;
+        my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
+        randomized_positions <- sample(length(mat[,1]));
+        cv_step_size <- length(mat[,1]) %/% 5;
+        cv_step_size_modulo <- length(mat[,1]) %% 5;
+        mat_CV1 <- mat;
+        mat_CV2 <- mat;
+        mat_CV3 <- mat;
+        mat_CV4 <- mat;
+        mat_CV5 <- mat;
+        mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        "';
+        my $status_cv_files = system($data_cv_cmd);
+
+        my $stats_out_cv1_predict_tempfile_basename = basename($stats_out_cv1_predict_tempfile);
+        my $stats_out_cv2_predict_tempfile_basename = basename($stats_out_cv2_predict_tempfile);
+        my $stats_out_cv3_predict_tempfile_basename = basename($stats_out_cv3_predict_tempfile);
+        my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
+        my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
+
+        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
+        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
+        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
+        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
+        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
+        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
         my @param_file_rows = (
-            'DATAFILE',
-            $stats_tempfile_2_basename,
             'NUMBER_OF_TRAITS',
             '1',
             'NUMBER_OF_EFFECTS',
@@ -22403,14 +23548,60 @@ sub _perform_drone_imagery_analytics {
             'OPTION hetres_pos '.$hetres_group_string,
             'OPTION hetres_pol '.$hetres_pol_string,
             'OPTION conv_crit '.$tolparinv,
+            'OPTION missing -999',
             'OPTION residual',
         );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach (@param_file_rows) {
+            foreach ((@param_file_rows_data, @param_file_rows)) {
                 print $Fp "$_\n";
             }
         close($Fp);
+
+        open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+                print $Fp_cv1 "$_\n";
+            }
+        close($Fp_cv1);
+
+        open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+                print $Fp_cv2 "$_\n";
+            }
+        close($Fp_cv2);
+
+        open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+                print $Fp_cv3 "$_\n";
+            }
+        close($Fp_cv3);
+
+        open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+                print $Fp_cv4 "$_\n";
+            }
+        close($Fp_cv4);
+
+        open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+                print $Fp_cv5 "$_\n";
+            }
+        close($Fp_cv5);
+
+        my $command_name = '';
+        if ($statistics_select eq 'blupf90_grm_random_regression_gdd_blups' || $statistics_select eq 'blupf90_grm_random_regression_dap_blups') {
+            $command_name = 'blupf90';
+        }
+        elsif ($statistics_select eq 'airemlf90_grm_random_regression_gdd_blups' || $statistics_select eq 'airemlf90_grm_random_regression_dap_blups') {
+            $command_name = 'airemlf90';
+        }
+
+        my $parameter_tempfile_basename = basename($parameter_tempfile);
+        my $parameter_tempfile_cv1_basename = basename($parameter_tempfile_cv1);
+        my $parameter_tempfile_cv2_basename = basename($parameter_tempfile_cv2);
+        my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
+        my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
+        my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -22446,8 +23637,7 @@ sub _perform_drone_imagery_analytics {
         my $h_time = $schema->storage->dbh()->prepare($q_time);
 
         $yhat_residual_tempfile = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res, '<', $yhat_residual_tempfile)
-            or die "Could not open file '$yhat_residual_tempfile' $!";
+        open(my $fh_yhat_res, '<', $yhat_residual_tempfile) or die "Could not open file '$yhat_residual_tempfile' $!";
             print STDERR "Opened $yhat_residual_tempfile\n";
 
             my $pred_res_counter = 0;
@@ -22476,8 +23666,7 @@ sub _perform_drone_imagery_analytics {
         close($fh_yhat_res);
 
         $blupf90_solutions_tempfile = $tmp_stats_dir."/solutions";
-        open(my $fh_sol, '<', $blupf90_solutions_tempfile)
-            or die "Could not open file '$blupf90_solutions_tempfile' $!";
+        open(my $fh_sol, '<', $blupf90_solutions_tempfile) or die "Could not open file '$blupf90_solutions_tempfile' $!";
             print STDERR "Opened $blupf90_solutions_tempfile\n";
 
             my $head = <$fh_sol>;
@@ -22668,6 +23857,126 @@ sub _perform_drone_imagery_analytics {
                 $env_effect_sum_square_altered_env_4 = $env_effect_sum_square_altered_env_4 + $value*$value;
             }
         }
+
+        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1;
+        my $status_cv1 = system($cmd_f90_cv1);
+
+        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1);
+
+        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+
+            while (my $row = <$fh_yhat_res_cv1>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_altered_env_4 = $model_sum_square_cv1_altered_env_4 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1);
+
+        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2;
+        my $status_cv2 = system($cmd_f90_cv2);
+
+        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2);
+
+        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+
+            while (my $row = <$fh_yhat_res_cv2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_altered_env_4 = $model_sum_square_cv2_altered_env_4 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2);
+
+        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3;
+        my $status_cv3 = system($cmd_f90_cv3);
+
+        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3);
+
+        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+
+            while (my $row = <$fh_yhat_res_cv3>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_altered_env_4 = $model_sum_square_cv3_altered_env_4 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3);
+
+        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4;
+        my $status_cv4 = system($cmd_f90_cv4);
+
+        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4);
+
+        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+
+            while (my $row = <$fh_yhat_res_cv4>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_altered_env_4 = $model_sum_square_cv4_altered_env_4 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4);
+
+        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5;
+        my $status_cv5 = system($cmd_f90_cv5);
+
+        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5);
+
+        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+
+            while (my $row = <$fh_yhat_res_cv5>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_altered_env_4 = $model_sum_square_cv5_altered_env_4 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -23956,9 +25265,65 @@ sub _perform_drone_imagery_analytics {
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
 
+        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $stats_out_cv1_predict_tempfile .= '.dat';
+        $stats_out_cv2_predict_tempfile .= '.dat';
+        $stats_out_cv3_predict_tempfile .= '.dat';
+        $stats_out_cv4_predict_tempfile .= '.dat';
+        $stats_out_cv5_predict_tempfile .= '.dat';
+
+        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $parameter_tempfile_cv1 .= '.f90';
+        $parameter_tempfile_cv2 .= '.f90';
+        $parameter_tempfile_cv3 .= '.f90';
+        $parameter_tempfile_cv4 .= '.f90';
+        $parameter_tempfile_cv5 .= '.f90';
+
+        print STDERR Dumper $stats_tempfile_2;
+        my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
+        randomized_positions <- sample(length(mat[,1]));
+        cv_step_size <- length(mat[,1]) %/% 5;
+        cv_step_size_modulo <- length(mat[,1]) %% 5;
+        mat_CV1 <- mat;
+        mat_CV2 <- mat;
+        mat_CV3 <- mat;
+        mat_CV4 <- mat;
+        mat_CV5 <- mat;
+        mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        "';
+        my $status_cv_files = system($data_cv_cmd);
+
+        my $stats_out_cv1_predict_tempfile_basename = basename($stats_out_cv1_predict_tempfile);
+        my $stats_out_cv2_predict_tempfile_basename = basename($stats_out_cv2_predict_tempfile);
+        my $stats_out_cv3_predict_tempfile_basename = basename($stats_out_cv3_predict_tempfile);
+        my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
+        my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
+
+        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
+        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
+        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
+        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
+        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
+        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
         my @param_file_rows = (
-            'DATAFILE',
-            $stats_tempfile_2_basename,
             'NUMBER_OF_TRAITS',
             '1',
             'NUMBER_OF_EFFECTS',
@@ -24048,14 +25413,60 @@ sub _perform_drone_imagery_analytics {
             'OPTION hetres_pos '.$hetres_group_string,
             'OPTION hetres_pol '.$hetres_pol_string,
             'OPTION conv_crit '.$tolparinv,
+            'OPTION missing -999',
             'OPTION residual',
         );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach (@param_file_rows) {
+            foreach ((@param_file_rows_data, @param_file_rows)) {
                 print $Fp "$_\n";
             }
         close($Fp);
+
+        open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+                print $Fp_cv1 "$_\n";
+            }
+        close($Fp_cv1);
+
+        open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+                print $Fp_cv2 "$_\n";
+            }
+        close($Fp_cv2);
+
+        open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+                print $Fp_cv3 "$_\n";
+            }
+        close($Fp_cv3);
+
+        open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+                print $Fp_cv4 "$_\n";
+            }
+        close($Fp_cv4);
+
+        open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+                print $Fp_cv5 "$_\n";
+            }
+        close($Fp_cv5);
+
+        my $command_name = '';
+        if ($statistics_select eq 'blupf90_grm_random_regression_gdd_blups' || $statistics_select eq 'blupf90_grm_random_regression_dap_blups') {
+            $command_name = 'blupf90';
+        }
+        elsif ($statistics_select eq 'airemlf90_grm_random_regression_gdd_blups' || $statistics_select eq 'airemlf90_grm_random_regression_dap_blups') {
+            $command_name = 'airemlf90';
+        }
+
+        my $parameter_tempfile_basename = basename($parameter_tempfile);
+        my $parameter_tempfile_cv1_basename = basename($parameter_tempfile_cv1);
+        my $parameter_tempfile_cv2_basename = basename($parameter_tempfile_cv2);
+        my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
+        my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
+        my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -24311,6 +25722,126 @@ sub _perform_drone_imagery_analytics {
                 $env_effect_sum_square_altered_env_5 = $env_effect_sum_square_altered_env_5 + $value*$value;
             }
         }
+
+        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1;
+        my $status_cv1 = system($cmd_f90_cv1);
+
+        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1);
+
+        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+
+            while (my $row = <$fh_yhat_res_cv1>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_altered_env_5 = $model_sum_square_cv1_altered_env_5 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1);
+
+        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2;
+        my $status_cv2 = system($cmd_f90_cv2);
+
+        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2);
+
+        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+
+            while (my $row = <$fh_yhat_res_cv2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_altered_env_5 = $model_sum_square_cv2_altered_env_5 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2);
+
+        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3;
+        my $status_cv3 = system($cmd_f90_cv3);
+
+        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3);
+
+        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+
+            while (my $row = <$fh_yhat_res_cv3>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_altered_env_5 = $model_sum_square_cv3_altered_env_5 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3);
+
+        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4;
+        my $status_cv4 = system($cmd_f90_cv4);
+
+        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4);
+
+        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+
+            while (my $row = <$fh_yhat_res_cv4>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_altered_env_5 = $model_sum_square_cv4_altered_env_5 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4);
+
+        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5;
+        my $status_cv5 = system($cmd_f90_cv5);
+
+        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5);
+
+        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+
+            while (my $row = <$fh_yhat_res_cv5>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_altered_env_5 = $model_sum_square_cv5_altered_env_5 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -25653,9 +27184,65 @@ sub _perform_drone_imagery_analytics {
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
 
+        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $stats_out_cv1_predict_tempfile .= '.dat';
+        $stats_out_cv2_predict_tempfile .= '.dat';
+        $stats_out_cv3_predict_tempfile .= '.dat';
+        $stats_out_cv4_predict_tempfile .= '.dat';
+        $stats_out_cv5_predict_tempfile .= '.dat';
+
+        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        $parameter_tempfile_cv1 .= '.f90';
+        $parameter_tempfile_cv2 .= '.f90';
+        $parameter_tempfile_cv3 .= '.f90';
+        $parameter_tempfile_cv4 .= '.f90';
+        $parameter_tempfile_cv5 .= '.f90';
+
+        print STDERR Dumper $stats_tempfile_2;
+        my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
+        randomized_positions <- sample(length(mat[,1]));
+        cv_step_size <- length(mat[,1]) %/% 5;
+        cv_step_size_modulo <- length(mat[,1]) %% 5;
+        mat_CV1 <- mat;
+        mat_CV2 <- mat;
+        mat_CV3 <- mat;
+        mat_CV4 <- mat;
+        mat_CV5 <- mat;
+        mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        "';
+        my $status_cv_files = system($data_cv_cmd);
+
+        my $stats_out_cv1_predict_tempfile_basename = basename($stats_out_cv1_predict_tempfile);
+        my $stats_out_cv2_predict_tempfile_basename = basename($stats_out_cv2_predict_tempfile);
+        my $stats_out_cv3_predict_tempfile_basename = basename($stats_out_cv3_predict_tempfile);
+        my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
+        my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
+
+        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
+        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
+        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
+        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
+        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
+        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
         my @param_file_rows = (
-            'DATAFILE',
-            $stats_tempfile_2_basename,
             'NUMBER_OF_TRAITS',
             '1',
             'NUMBER_OF_EFFECTS',
@@ -25745,14 +27332,60 @@ sub _perform_drone_imagery_analytics {
             'OPTION hetres_pos '.$hetres_group_string,
             'OPTION hetres_pol '.$hetres_pol_string,
             'OPTION conv_crit '.$tolparinv,
+            'OPTION missing -999',
             'OPTION residual',
         );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach (@param_file_rows) {
+            foreach ((@param_file_rows_data, @param_file_rows)) {
                 print $Fp "$_\n";
             }
         close($Fp);
+
+        open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+                print $Fp_cv1 "$_\n";
+            }
+        close($Fp_cv1);
+
+        open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+                print $Fp_cv2 "$_\n";
+            }
+        close($Fp_cv2);
+
+        open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+                print $Fp_cv3 "$_\n";
+            }
+        close($Fp_cv3);
+
+        open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+                print $Fp_cv4 "$_\n";
+            }
+        close($Fp_cv4);
+
+        open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+                print $Fp_cv5 "$_\n";
+            }
+        close($Fp_cv5);
+
+        my $command_name = '';
+        if ($statistics_select eq 'blupf90_grm_random_regression_gdd_blups' || $statistics_select eq 'blupf90_grm_random_regression_dap_blups') {
+            $command_name = 'blupf90';
+        }
+        elsif ($statistics_select eq 'airemlf90_grm_random_regression_gdd_blups' || $statistics_select eq 'airemlf90_grm_random_regression_dap_blups') {
+            $command_name = 'airemlf90';
+        }
+
+        my $parameter_tempfile_basename = basename($parameter_tempfile);
+        my $parameter_tempfile_cv1_basename = basename($parameter_tempfile_cv1);
+        my $parameter_tempfile_cv2_basename = basename($parameter_tempfile_cv2);
+        my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
+        my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
+        my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -26008,6 +27641,126 @@ sub _perform_drone_imagery_analytics {
                 $env_effect_sum_square_altered_env_6 = $env_effect_sum_square_altered_env_6 + $value*$value;
             }
         }
+
+        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1;
+        my $status_cv1 = system($cmd_f90_cv1);
+
+        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1);
+
+        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+
+            while (my $row = <$fh_yhat_res_cv1>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_altered_env_6 = $model_sum_square_cv1_altered_env_6 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1);
+
+        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2;
+        my $status_cv2 = system($cmd_f90_cv2);
+
+        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2);
+
+        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+
+            while (my $row = <$fh_yhat_res_cv2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_altered_env_6 = $model_sum_square_cv2_altered_env_6 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2);
+
+        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3;
+        my $status_cv3 = system($cmd_f90_cv3);
+
+        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3);
+
+        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+
+            while (my $row = <$fh_yhat_res_cv3>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_altered_env_6 = $model_sum_square_cv3_altered_env_6 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3);
+
+        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4;
+        my $status_cv4 = system($cmd_f90_cv4);
+
+        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4);
+
+        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+
+            while (my $row = <$fh_yhat_res_cv4>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_altered_env_6 = $model_sum_square_cv4_altered_env_6 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4);
+
+        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5;
+        my $status_cv5 = system($cmd_f90_cv5);
+
+        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5);
+
+        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+
+            while (my $row = <$fh_yhat_res_cv5>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_altered_env_6 = $model_sum_square_cv5_altered_env_6 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
