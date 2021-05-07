@@ -13004,6 +13004,18 @@ sub _perform_drone_imagery_analytics {
     my $residual_sum_square_original = 0;
     my $residual_sum_original = 0;
 
+    my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
+    my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
     print STDERR "RUN FIRST ENV ESTIMATION\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
         $statistical_ontology_term = "Multivariate linear mixed model genetic BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000001"; #In the JS this is set to either the genetic or spatial BLUP term (Multivariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000003) when saving analysis results
@@ -13067,12 +13079,6 @@ sub _perform_drone_imagery_analytics {
         my @encoded_traits_cv_save_4;
         my @encoded_traits_cv_5;
         my @encoded_traits_cv_save_5;
-
-        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
 
         foreach my $t_coded (@encoded_traits) {
             $statistics_cmd .= 'randomized_positions <- sample(length(mat\$plot_id));';
@@ -13479,12 +13485,6 @@ sub _perform_drone_imagery_analytics {
             cv_step_size <- length(mat\$plot_id) %/% 5;
             cv_step_size_modulo <- length(mat\$plot_id) %% 5;
             ';
-
-            my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-            my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-            my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-            my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-            my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
 
             my $t_coded_cv1 = $t.'_CV1';
             $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
@@ -13898,22 +13898,12 @@ sub _perform_drone_imagery_analytics {
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
 
-        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
         $stats_out_cv1_predict_tempfile .= '.dat';
         $stats_out_cv2_predict_tempfile .= '.dat';
         $stats_out_cv3_predict_tempfile .= '.dat';
         $stats_out_cv4_predict_tempfile .= '.dat';
         $stats_out_cv5_predict_tempfile .= '.dat';
 
-        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
         $parameter_tempfile_cv1 .= '.f90';
         $parameter_tempfile_cv2 .= '.f90';
         $parameter_tempfile_cv3 .= '.f90';
@@ -15568,6 +15558,136 @@ sub _perform_drone_imagery_analytics {
                 }
             close($fh_residual);
 
+            open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                my $header_cv1 = <$fh_cv1>;
+                my @header_cols_cv1;
+                if ($csv->parse($header_cv1)) {
+                    @header_cols_cv1 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered = $model_sum_square_cv1_altered + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv1);
+
+            open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                my $header_cv2 = <$fh_cv2>;
+                my @header_cols_cv2;
+                if ($csv->parse($header_cv2)) {
+                    @header_cols_cv2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered = $model_sum_square_cv2_altered + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv2);
+
+            open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                my $header_cv3 = <$fh_cv3>;
+                my @header_cols_cv3;
+                if ($csv->parse($header_cv3)) {
+                    @header_cols_cv3 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered = $model_sum_square_cv3_altered + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv3);
+
+            open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                my $header_cv4 = <$fh_cv4>;
+                my @header_cols_cv4;
+                if ($csv->parse($header_cv4)) {
+                    @header_cols_cv4 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered = $model_sum_square_cv4_altered + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv4);
+
+            open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                my $header_cv5 = <$fh_cv5>;
+                my @header_cols_cv5;
+                if ($csv->parse($header_cv5)) {
+                    @header_cols_cv5 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered = $model_sum_square_cv5_altered + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv5);
+
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
                 my $header_varcomp = <$fh_varcomp>;
@@ -15629,8 +15749,58 @@ sub _perform_drone_imagery_analytics {
             blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
             spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            randomized_positions <- sample(length(mat\$plot_id));
+            cv_step_size <- length(mat\$plot_id) %/% 5;
+            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
+            ';
+
+            my $t_coded_cv1 = $t.'_CV1';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
+            ';
+            my $t_coded_cv2 = $t.'_CV2';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv3 = $t.'_CV3';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv4 = $t.'_CV4';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv5 = $t.'_CV5';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            ';
+            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            $statistics_cmd .= '
+                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             }
             "';
+
             # print STDERR Dumper $statistics_cmd;
             eval {
                 my $status = system($statistics_cmd);
@@ -15757,6 +15927,126 @@ sub _perform_drone_imagery_analytics {
                     }
                 close($fh_residual);
 
+                open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                    my $header_cv1 = <$fh_cv1>;
+                    my @header_cols_cv1;
+                    if ($csv->parse($header_cv1)) {
+                        @header_cols_cv1 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered = $model_sum_square_cv1_altered + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv1);
+
+                open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                    my $header_cv2 = <$fh_cv2>;
+                    my @header_cols_cv2;
+                    if ($csv->parse($header_cv2)) {
+                        @header_cols_cv2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered = $model_sum_square_cv2_altered + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv2);
+
+                open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                    my $header_cv3 = <$fh_cv3>;
+                    my @header_cols_cv3;
+                    if ($csv->parse($header_cv3)) {
+                        @header_cols_cv3 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered = $model_sum_square_cv3_altered + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv3);
+
+                open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                    my $header_cv4 = <$fh_cv4>;
+                    my @header_cols_cv4;
+                    if ($csv->parse($header_cv4)) {
+                        @header_cols_cv4 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered = $model_sum_square_cv4_altered + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv4);
+
+                open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                    my $header_cv5 = <$fh_cv5>;
+                    my @header_cols_cv5;
+                    if ($csv->parse($header_cv5)) {
+                        @header_cols_cv5 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered = $model_sum_square_cv5_altered + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv5);
+
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
                     my $header_varcomp = <$fh_varcomp>;
@@ -15812,28 +16102,6 @@ sub _perform_drone_imagery_analytics {
         my $effect_1_levels = scalar(@rep_time_factors);
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
-
-        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $stats_out_cv1_predict_tempfile .= '.dat';
-        $stats_out_cv2_predict_tempfile .= '.dat';
-        $stats_out_cv3_predict_tempfile .= '.dat';
-        $stats_out_cv4_predict_tempfile .= '.dat';
-        $stats_out_cv5_predict_tempfile .= '.dat';
-
-        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $parameter_tempfile_cv1 .= '.f90';
-        $parameter_tempfile_cv2 .= '.f90';
-        $parameter_tempfile_cv3 .= '.f90';
-        $parameter_tempfile_cv4 .= '.f90';
-        $parameter_tempfile_cv5 .= '.f90';
 
         print STDERR Dumper $stats_tempfile_2;
         my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
@@ -17467,6 +17735,136 @@ sub _perform_drone_imagery_analytics {
                 }
             close($fh_residual);
 
+            open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                my $header_cv1 = <$fh_cv1>;
+                my @header_cols_cv1;
+                if ($csv->parse($header_cv1)) {
+                    @header_cols_cv1 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered_env = $model_sum_square_cv1_altered_env + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv1);
+
+            open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                my $header_cv2 = <$fh_cv2>;
+                my @header_cols_cv2;
+                if ($csv->parse($header_cv2)) {
+                    @header_cols_cv2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered_env = $model_sum_square_cv2_altered_env + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv2);
+
+            open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                my $header_cv3 = <$fh_cv3>;
+                my @header_cols_cv3;
+                if ($csv->parse($header_cv3)) {
+                    @header_cols_cv3 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered_env = $model_sum_square_cv3_altered_env + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv3);
+
+            open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                my $header_cv4 = <$fh_cv4>;
+                my @header_cols_cv4;
+                if ($csv->parse($header_cv4)) {
+                    @header_cols_cv4 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered_env = $model_sum_square_cv4_altered_env + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv4);
+
+            open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                my $header_cv5 = <$fh_cv5>;
+                my @header_cols_cv5;
+                if ($csv->parse($header_cv5)) {
+                    @header_cols_cv5 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered_env = $model_sum_square_cv5_altered_env + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv5);
+
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
                 my $header_varcomp = <$fh_varcomp>;
@@ -17528,8 +17926,58 @@ sub _perform_drone_imagery_analytics {
             blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
             spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            randomized_positions <- sample(length(mat\$plot_id));
+            cv_step_size <- length(mat\$plot_id) %/% 5;
+            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
+            ';
+
+            my $t_coded_cv1 = $t.'_CV1';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
+            ';
+            my $t_coded_cv2 = $t.'_CV2';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv3 = $t.'_CV3';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv4 = $t.'_CV4';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv5 = $t.'_CV5';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            ';
+            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            $statistics_cmd .= '
+                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             }
             "';
+
             # print STDERR Dumper $statistics_cmd;
             eval {
                 my $status = system($statistics_cmd);
@@ -17656,6 +18104,126 @@ sub _perform_drone_imagery_analytics {
                     }
                 close($fh_residual);
 
+                open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                    my $header_cv1 = <$fh_cv1>;
+                    my @header_cols_cv1;
+                    if ($csv->parse($header_cv1)) {
+                        @header_cols_cv1 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered_env = $model_sum_square_cv1_altered_env + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv1);
+
+                open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                    my $header_cv2 = <$fh_cv2>;
+                    my @header_cols_cv2;
+                    if ($csv->parse($header_cv2)) {
+                        @header_cols_cv2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered_env = $model_sum_square_cv2_altered_env + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv2);
+
+                open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                    my $header_cv3 = <$fh_cv3>;
+                    my @header_cols_cv3;
+                    if ($csv->parse($header_cv3)) {
+                        @header_cols_cv3 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered_env = $model_sum_square_cv3_altered_env + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv3);
+
+                open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                    my $header_cv4 = <$fh_cv4>;
+                    my @header_cols_cv4;
+                    if ($csv->parse($header_cv4)) {
+                        @header_cols_cv4 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered_env = $model_sum_square_cv4_altered_env + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv4);
+
+                open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                    my $header_cv5 = <$fh_cv5>;
+                    my @header_cols_cv5;
+                    if ($csv->parse($header_cv5)) {
+                        @header_cols_cv5 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered_env = $model_sum_square_cv5_altered_env + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv5);
+
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
                     my $header_varcomp = <$fh_varcomp>;
@@ -17712,28 +18280,6 @@ sub _perform_drone_imagery_analytics {
         my $effect_1_levels = scalar(@rep_time_factors);
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
-
-        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $stats_out_cv1_predict_tempfile .= '.dat';
-        $stats_out_cv2_predict_tempfile .= '.dat';
-        $stats_out_cv3_predict_tempfile .= '.dat';
-        $stats_out_cv4_predict_tempfile .= '.dat';
-        $stats_out_cv5_predict_tempfile .= '.dat';
-
-        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $parameter_tempfile_cv1 .= '.f90';
-        $parameter_tempfile_cv2 .= '.f90';
-        $parameter_tempfile_cv3 .= '.f90';
-        $parameter_tempfile_cv4 .= '.f90';
-        $parameter_tempfile_cv5 .= '.f90';
 
         print STDERR Dumper $stats_tempfile_2;
         my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
@@ -19363,6 +19909,136 @@ sub _perform_drone_imagery_analytics {
                 }
             close($fh_residual);
 
+            open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                my $header_cv1 = <$fh_cv1>;
+                my @header_cols_cv1;
+                if ($csv->parse($header_cv1)) {
+                    @header_cols_cv1 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered_env_2 = $model_sum_square_cv1_altered_env_2 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv1);
+
+            open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                my $header_cv2 = <$fh_cv2>;
+                my @header_cols_cv2;
+                if ($csv->parse($header_cv2)) {
+                    @header_cols_cv2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered_env_2 = $model_sum_square_cv2_altered_env_2 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv2);
+
+            open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                my $header_cv3 = <$fh_cv3>;
+                my @header_cols_cv3;
+                if ($csv->parse($header_cv3)) {
+                    @header_cols_cv3 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered_env_2 = $model_sum_square_cv3_altered_env_2 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv3);
+
+            open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                my $header_cv4 = <$fh_cv4>;
+                my @header_cols_cv4;
+                if ($csv->parse($header_cv4)) {
+                    @header_cols_cv4 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered_env_2 = $model_sum_square_cv4_altered_env_2 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv4);
+
+            open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                my $header_cv5 = <$fh_cv5>;
+                my @header_cols_cv5;
+                if ($csv->parse($header_cv5)) {
+                    @header_cols_cv5 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered_env_2 = $model_sum_square_cv5_altered_env_2 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv5);
+
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
                 my $header_varcomp = <$fh_varcomp>;
@@ -19424,8 +20100,58 @@ sub _perform_drone_imagery_analytics {
             blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
             spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            randomized_positions <- sample(length(mat\$plot_id));
+            cv_step_size <- length(mat\$plot_id) %/% 5;
+            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
+            ';
+
+            my $t_coded_cv1 = $t.'_CV1';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
+            ';
+            my $t_coded_cv2 = $t.'_CV2';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv3 = $t.'_CV3';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv4 = $t.'_CV4';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv5 = $t.'_CV5';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            ';
+            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            $statistics_cmd .= '
+                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             }
             "';
+
             # print STDERR Dumper $statistics_cmd;
             eval {
                 my $status = system($statistics_cmd);
@@ -19552,6 +20278,126 @@ sub _perform_drone_imagery_analytics {
                     }
                 close($fh_residual);
 
+                open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                    my $header_cv1 = <$fh_cv1>;
+                    my @header_cols_cv1;
+                    if ($csv->parse($header_cv1)) {
+                        @header_cols_cv1 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered_env_2 = $model_sum_square_cv1_altered_env_2 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv1);
+
+                open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                    my $header_cv2 = <$fh_cv2>;
+                    my @header_cols_cv2;
+                    if ($csv->parse($header_cv2)) {
+                        @header_cols_cv2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered_env_2 = $model_sum_square_cv2_altered_env_2 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv2);
+
+                open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                    my $header_cv3 = <$fh_cv3>;
+                    my @header_cols_cv3;
+                    if ($csv->parse($header_cv3)) {
+                        @header_cols_cv3 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered_env_2 = $model_sum_square_cv3_altered_env_2 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv3);
+
+                open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                    my $header_cv4 = <$fh_cv4>;
+                    my @header_cols_cv4;
+                    if ($csv->parse($header_cv4)) {
+                        @header_cols_cv4 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered_env_2 = $model_sum_square_cv4_altered_env_2 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv4);
+
+                open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                    my $header_cv5 = <$fh_cv5>;
+                    my @header_cols_cv5;
+                    if ($csv->parse($header_cv5)) {
+                        @header_cols_cv5 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered_env_2 = $model_sum_square_cv5_altered_env_2 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv5);
+
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
                     my $header_varcomp = <$fh_varcomp>;
@@ -19608,28 +20454,6 @@ sub _perform_drone_imagery_analytics {
         my $effect_1_levels = scalar(@rep_time_factors);
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
-
-        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $stats_out_cv1_predict_tempfile .= '.dat';
-        $stats_out_cv2_predict_tempfile .= '.dat';
-        $stats_out_cv3_predict_tempfile .= '.dat';
-        $stats_out_cv4_predict_tempfile .= '.dat';
-        $stats_out_cv5_predict_tempfile .= '.dat';
-
-        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $parameter_tempfile_cv1 .= '.f90';
-        $parameter_tempfile_cv2 .= '.f90';
-        $parameter_tempfile_cv3 .= '.f90';
-        $parameter_tempfile_cv4 .= '.f90';
-        $parameter_tempfile_cv5 .= '.f90';
 
         print STDERR Dumper $stats_tempfile_2;
         my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
@@ -21260,6 +22084,136 @@ sub _perform_drone_imagery_analytics {
                 }
             close($fh_residual);
 
+            open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                my $header_cv1 = <$fh_cv1>;
+                my @header_cols_cv1;
+                if ($csv->parse($header_cv1)) {
+                    @header_cols_cv1 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered_env_3 = $model_sum_square_cv1_altered_env_3 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv1);
+
+            open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                my $header_cv2 = <$fh_cv2>;
+                my @header_cols_cv2;
+                if ($csv->parse($header_cv2)) {
+                    @header_cols_cv2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered_env_3 = $model_sum_square_cv2_altered_env_3 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv2);
+
+            open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                my $header_cv3 = <$fh_cv3>;
+                my @header_cols_cv3;
+                if ($csv->parse($header_cv3)) {
+                    @header_cols_cv3 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered_env_3 = $model_sum_square_cv3_altered_env_3 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv3);
+
+            open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                my $header_cv4 = <$fh_cv4>;
+                my @header_cols_cv4;
+                if ($csv->parse($header_cv4)) {
+                    @header_cols_cv4 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered_env_3 = $model_sum_square_cv4_altered_env_3 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv4);
+
+            open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                my $header_cv5 = <$fh_cv5>;
+                my @header_cols_cv5;
+                if ($csv->parse($header_cv5)) {
+                    @header_cols_cv5 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered_env_3 = $model_sum_square_cv5_altered_env_3 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv5);
+
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
                 my $header_varcomp = <$fh_varcomp>;
@@ -21321,8 +22275,58 @@ sub _perform_drone_imagery_analytics {
             blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
             spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            randomized_positions <- sample(length(mat\$plot_id));
+            cv_step_size <- length(mat\$plot_id) %/% 5;
+            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
+            ';
+
+            my $t_coded_cv1 = $t.'_CV1';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
+            ';
+            my $t_coded_cv2 = $t.'_CV2';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv3 = $t.'_CV3';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv4 = $t.'_CV4';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv5 = $t.'_CV5';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            ';
+            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            $statistics_cmd .= '
+                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             }
             "';
+
             # print STDERR Dumper $statistics_cmd;
             eval {
                 my $status = system($statistics_cmd);
@@ -21449,6 +22453,126 @@ sub _perform_drone_imagery_analytics {
                     }
                 close($fh_residual);
 
+                open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                    my $header_cv1 = <$fh_cv1>;
+                    my @header_cols_cv1;
+                    if ($csv->parse($header_cv1)) {
+                        @header_cols_cv1 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered_env_3 = $model_sum_square_cv1_altered_env_3 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv1);
+
+                open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                    my $header_cv2 = <$fh_cv2>;
+                    my @header_cols_cv2;
+                    if ($csv->parse($header_cv2)) {
+                        @header_cols_cv2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered_env_3 = $model_sum_square_cv2_altered_env_3 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv2);
+
+                open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                    my $header_cv3 = <$fh_cv3>;
+                    my @header_cols_cv3;
+                    if ($csv->parse($header_cv3)) {
+                        @header_cols_cv3 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered_env_3 = $model_sum_square_cv3_altered_env_3 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv3);
+
+                open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                    my $header_cv4 = <$fh_cv4>;
+                    my @header_cols_cv4;
+                    if ($csv->parse($header_cv4)) {
+                        @header_cols_cv4 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered_env_3 = $model_sum_square_cv4_altered_env_3 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv4);
+
+                open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                    my $header_cv5 = <$fh_cv5>;
+                    my @header_cols_cv5;
+                    if ($csv->parse($header_cv5)) {
+                        @header_cols_cv5 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered_env_3 = $model_sum_square_cv5_altered_env_3 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv5);
+
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
                     my $header_varcomp = <$fh_varcomp>;
@@ -21505,28 +22629,6 @@ sub _perform_drone_imagery_analytics {
         my $effect_1_levels = scalar(@rep_time_factors);
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
-
-        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $stats_out_cv1_predict_tempfile .= '.dat';
-        $stats_out_cv2_predict_tempfile .= '.dat';
-        $stats_out_cv3_predict_tempfile .= '.dat';
-        $stats_out_cv4_predict_tempfile .= '.dat';
-        $stats_out_cv5_predict_tempfile .= '.dat';
-
-        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $parameter_tempfile_cv1 .= '.f90';
-        $parameter_tempfile_cv2 .= '.f90';
-        $parameter_tempfile_cv3 .= '.f90';
-        $parameter_tempfile_cv4 .= '.f90';
-        $parameter_tempfile_cv5 .= '.f90';
 
         print STDERR Dumper $stats_tempfile_2;
         my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
@@ -23154,6 +24256,136 @@ sub _perform_drone_imagery_analytics {
                 }
             close($fh_residual);
 
+            open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                my $header_cv1 = <$fh_cv1>;
+                my @header_cols_cv1;
+                if ($csv->parse($header_cv1)) {
+                    @header_cols_cv1 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered_env_4 = $model_sum_square_cv1_altered_env_4 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv1);
+
+            open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                my $header_cv2 = <$fh_cv2>;
+                my @header_cols_cv2;
+                if ($csv->parse($header_cv2)) {
+                    @header_cols_cv2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered_env_4 = $model_sum_square_cv2_altered_env_4 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv2);
+
+            open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                my $header_cv3 = <$fh_cv3>;
+                my @header_cols_cv3;
+                if ($csv->parse($header_cv3)) {
+                    @header_cols_cv3 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered_env_4 = $model_sum_square_cv3_altered_env_4 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv3);
+
+            open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                my $header_cv4 = <$fh_cv4>;
+                my @header_cols_cv4;
+                if ($csv->parse($header_cv4)) {
+                    @header_cols_cv4 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered_env_4 = $model_sum_square_cv4_altered_env_4 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv4);
+
+            open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                my $header_cv5 = <$fh_cv5>;
+                my @header_cols_cv5;
+                if ($csv->parse($header_cv5)) {
+                    @header_cols_cv5 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered_env_4 = $model_sum_square_cv5_altered_env_4 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv5);
+
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
                 my $header_varcomp = <$fh_varcomp>;
@@ -23215,8 +24447,58 @@ sub _perform_drone_imagery_analytics {
             blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
             spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            randomized_positions <- sample(length(mat\$plot_id));
+            cv_step_size <- length(mat\$plot_id) %/% 5;
+            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
+            ';
+
+            my $t_coded_cv1 = $t.'_CV1';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
+            ';
+            my $t_coded_cv2 = $t.'_CV2';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv3 = $t.'_CV3';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv4 = $t.'_CV4';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv5 = $t.'_CV5';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            ';
+            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            $statistics_cmd .= '
+                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             }
             "';
+
             # print STDERR Dumper $statistics_cmd;
             eval {
                 my $status = system($statistics_cmd);
@@ -23343,6 +24625,126 @@ sub _perform_drone_imagery_analytics {
                     }
                 close($fh_residual);
 
+                open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                    my $header_cv1 = <$fh_cv1>;
+                    my @header_cols_cv1;
+                    if ($csv->parse($header_cv1)) {
+                        @header_cols_cv1 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered_env_4 = $model_sum_square_cv1_altered_env_4 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv1);
+
+                open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                    my $header_cv2 = <$fh_cv2>;
+                    my @header_cols_cv2;
+                    if ($csv->parse($header_cv2)) {
+                        @header_cols_cv2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered_env_4 = $model_sum_square_cv2_altered_env_4 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv2);
+
+                open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                    my $header_cv3 = <$fh_cv3>;
+                    my @header_cols_cv3;
+                    if ($csv->parse($header_cv3)) {
+                        @header_cols_cv3 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered_env_4 = $model_sum_square_cv3_altered_env_4 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv3);
+
+                open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                    my $header_cv4 = <$fh_cv4>;
+                    my @header_cols_cv4;
+                    if ($csv->parse($header_cv4)) {
+                        @header_cols_cv4 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered_env_4 = $model_sum_square_cv4_altered_env_4 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv4);
+
+                open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                    my $header_cv5 = <$fh_cv5>;
+                    my @header_cols_cv5;
+                    if ($csv->parse($header_cv5)) {
+                        @header_cols_cv5 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered_env_4 = $model_sum_square_cv5_altered_env_4 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv5);
+
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
                     my $header_varcomp = <$fh_varcomp>;
@@ -23399,28 +24801,6 @@ sub _perform_drone_imagery_analytics {
         my $effect_1_levels = scalar(@rep_time_factors);
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
-
-        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $stats_out_cv1_predict_tempfile .= '.dat';
-        $stats_out_cv2_predict_tempfile .= '.dat';
-        $stats_out_cv3_predict_tempfile .= '.dat';
-        $stats_out_cv4_predict_tempfile .= '.dat';
-        $stats_out_cv5_predict_tempfile .= '.dat';
-
-        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $parameter_tempfile_cv1 .= '.f90';
-        $parameter_tempfile_cv2 .= '.f90';
-        $parameter_tempfile_cv3 .= '.f90';
-        $parameter_tempfile_cv4 .= '.f90';
-        $parameter_tempfile_cv5 .= '.f90';
 
         print STDERR Dumper $stats_tempfile_2;
         my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
@@ -25017,6 +26397,136 @@ sub _perform_drone_imagery_analytics {
                 }
             close($fh_residual);
 
+            open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                my $header_cv1 = <$fh_cv1>;
+                my @header_cols_cv1;
+                if ($csv->parse($header_cv1)) {
+                    @header_cols_cv1 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered_env_5 = $model_sum_square_cv1_altered_env_5 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv1);
+
+            open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                my $header_cv2 = <$fh_cv2>;
+                my @header_cols_cv2;
+                if ($csv->parse($header_cv2)) {
+                    @header_cols_cv2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered_env_5 = $model_sum_square_cv2_altered_env_5 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv2);
+
+            open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                my $header_cv3 = <$fh_cv3>;
+                my @header_cols_cv3;
+                if ($csv->parse($header_cv3)) {
+                    @header_cols_cv3 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered_env_5 = $model_sum_square_cv3_altered_env_5 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv3);
+
+            open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                my $header_cv4 = <$fh_cv4>;
+                my @header_cols_cv4;
+                if ($csv->parse($header_cv4)) {
+                    @header_cols_cv4 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered_env_5 = $model_sum_square_cv4_altered_env_5 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv4);
+
+            open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                my $header_cv5 = <$fh_cv5>;
+                my @header_cols_cv5;
+                if ($csv->parse($header_cv5)) {
+                    @header_cols_cv5 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered_env_5 = $model_sum_square_cv5_altered_env_5 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv5);
+
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
                 my $header_varcomp = <$fh_varcomp>;
@@ -25078,8 +26588,58 @@ sub _perform_drone_imagery_analytics {
             blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
             spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            randomized_positions <- sample(length(mat\$plot_id));
+            cv_step_size <- length(mat\$plot_id) %/% 5;
+            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
+            ';
+
+            my $t_coded_cv1 = $t.'_CV1';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
+            ';
+            my $t_coded_cv2 = $t.'_CV2';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv3 = $t.'_CV3';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv4 = $t.'_CV4';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv5 = $t.'_CV5';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            ';
+            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            $statistics_cmd .= '
+                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             }
             "';
+
             # print STDERR Dumper $statistics_cmd;
             eval {
                 my $status = system($statistics_cmd);
@@ -25208,6 +26768,126 @@ sub _perform_drone_imagery_analytics {
                     }
                 close($fh_residual);
 
+                open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                    my $header_cv1 = <$fh_cv1>;
+                    my @header_cols_cv1;
+                    if ($csv->parse($header_cv1)) {
+                        @header_cols_cv1 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered_env_5 = $model_sum_square_cv1_altered_env_5 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv1);
+
+                open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                    my $header_cv2 = <$fh_cv2>;
+                    my @header_cols_cv2;
+                    if ($csv->parse($header_cv2)) {
+                        @header_cols_cv2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered_env_5 = $model_sum_square_cv2_altered_env_5 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv2);
+
+                open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                    my $header_cv3 = <$fh_cv3>;
+                    my @header_cols_cv3;
+                    if ($csv->parse($header_cv3)) {
+                        @header_cols_cv3 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered_env_5 = $model_sum_square_cv3_altered_env_5 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv3);
+
+                open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                    my $header_cv4 = <$fh_cv4>;
+                    my @header_cols_cv4;
+                    if ($csv->parse($header_cv4)) {
+                        @header_cols_cv4 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered_env_5 = $model_sum_square_cv4_altered_env_5 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv4);
+
+                open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                    my $header_cv5 = <$fh_cv5>;
+                    my @header_cols_cv5;
+                    if ($csv->parse($header_cv5)) {
+                        @header_cols_cv5 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered_env_5 = $model_sum_square_cv5_altered_env_5 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv5);
+
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
                     my $header_varcomp = <$fh_varcomp>;
@@ -25264,28 +26944,6 @@ sub _perform_drone_imagery_analytics {
         my $effect_1_levels = scalar(@rep_time_factors);
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
-
-        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $stats_out_cv1_predict_tempfile .= '.dat';
-        $stats_out_cv2_predict_tempfile .= '.dat';
-        $stats_out_cv3_predict_tempfile .= '.dat';
-        $stats_out_cv4_predict_tempfile .= '.dat';
-        $stats_out_cv5_predict_tempfile .= '.dat';
-
-        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $parameter_tempfile_cv1 .= '.f90';
-        $parameter_tempfile_cv2 .= '.f90';
-        $parameter_tempfile_cv3 .= '.f90';
-        $parameter_tempfile_cv4 .= '.f90';
-        $parameter_tempfile_cv5 .= '.f90';
 
         print STDERR Dumper $stats_tempfile_2;
         my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
@@ -26936,6 +28594,136 @@ sub _perform_drone_imagery_analytics {
                 }
             close($fh_residual);
 
+            open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                my $header_cv1 = <$fh_cv1>;
+                my @header_cols_cv1;
+                if ($csv->parse($header_cv1)) {
+                    @header_cols_cv1 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered_env_6 = $model_sum_square_cv1_altered_env_6 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv1);
+
+            open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                my $header_cv2 = <$fh_cv2>;
+                my @header_cols_cv2;
+                if ($csv->parse($header_cv2)) {
+                    @header_cols_cv2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered_env_6 = $model_sum_square_cv2_altered_env_6 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv2);
+
+            open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                my $header_cv3 = <$fh_cv3>;
+                my @header_cols_cv3;
+                if ($csv->parse($header_cv3)) {
+                    @header_cols_cv3 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered_env_6 = $model_sum_square_cv3_altered_env_6 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv3);
+
+            open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                my $header_cv4 = <$fh_cv4>;
+                my @header_cols_cv4;
+                if ($csv->parse($header_cv4)) {
+                    @header_cols_cv4 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered_env_6 = $model_sum_square_cv4_altered_env_6 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv4);
+
+            open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                my $header_cv5 = <$fh_cv5>;
+                my @header_cols_cv5;
+                if ($csv->parse($header_cv5)) {
+                    @header_cols_cv5 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered_env_6 = $model_sum_square_cv5_altered_env_6 + ($true_value-$fitted)**2;
+                    }
+                }
+            close($fh_cv5);
+
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
                 my $header_varcomp = <$fh_varcomp>;
@@ -26997,8 +28785,58 @@ sub _perform_drone_imagery_analytics {
             blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
             spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            randomized_positions <- sample(length(mat\$plot_id));
+            cv_step_size <- length(mat\$plot_id) %/% 5;
+            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
+            ';
+
+            my $t_coded_cv1 = $t.'_CV1';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
+            ';
+            my $t_coded_cv2 = $t.'_CV2';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv3 = $t.'_CV3';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv4 = $t.'_CV4';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv5 = $t.'_CV5';
+            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            ';
+            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
+                $statistics_cmd .= '
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                ';
+            }
+            $statistics_cmd .= '
+                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             }
             "';
+
             # print STDERR Dumper $statistics_cmd;
             eval {
                 my $status = system($statistics_cmd);
@@ -27127,6 +28965,126 @@ sub _perform_drone_imagery_analytics {
                     }
                 close($fh_residual);
 
+                open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
+                    my $header_cv1 = <$fh_cv1>;
+                    my @header_cols_cv1;
+                    if ($csv->parse($header_cv1)) {
+                        @header_cols_cv1 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_altered_env_6 = $model_sum_square_cv1_altered_env_6 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv1);
+
+                open(my $fh_cv2, '<', $stats_out_cv2_predict_tempfile) or die "Could not open file '$stats_out_cv2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_predict_tempfile\n";
+                    my $header_cv2 = <$fh_cv2>;
+                    my @header_cols_cv2;
+                    if ($csv->parse($header_cv2)) {
+                        @header_cols_cv2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_altered_env_6 = $model_sum_square_cv2_altered_env_6 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv2);
+
+                open(my $fh_cv3, '<', $stats_out_cv3_predict_tempfile) or die "Could not open file '$stats_out_cv3_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_predict_tempfile\n";
+                    my $header_cv3 = <$fh_cv3>;
+                    my @header_cols_cv3;
+                    if ($csv->parse($header_cv3)) {
+                        @header_cols_cv3 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_altered_env_6 = $model_sum_square_cv3_altered_env_6 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv3);
+
+                open(my $fh_cv4, '<', $stats_out_cv4_predict_tempfile) or die "Could not open file '$stats_out_cv4_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_predict_tempfile\n";
+                    my $header_cv4 = <$fh_cv4>;
+                    my @header_cols_cv4;
+                    if ($csv->parse($header_cv4)) {
+                        @header_cols_cv4 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_altered_env_6 = $model_sum_square_cv4_altered_env_6 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv4);
+
+                open(my $fh_cv5, '<', $stats_out_cv5_predict_tempfile) or die "Could not open file '$stats_out_cv5_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_predict_tempfile\n";
+                    my $header_cv5 = <$fh_cv5>;
+                    my @header_cols_cv5;
+                    if ($csv->parse($header_cv5)) {
+                        @header_cols_cv5 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_altered_env_6 = $model_sum_square_cv5_altered_env_6 + ($true_value-$fitted)**2;
+                    }
+                close($fh_cv5);
+
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
                     my $header_varcomp = <$fh_varcomp>;
@@ -27183,28 +29141,6 @@ sub _perform_drone_imagery_analytics {
         my $effect_1_levels = scalar(@rep_time_factors);
         my $effect_grm_levels = scalar(@unique_accession_names);
         my $effect_pe_levels = scalar(@ind_rep_factors);
-
-        my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv3_predict_tempfile_fh, $stats_out_cv3_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $stats_out_cv1_predict_tempfile .= '.dat';
-        $stats_out_cv2_predict_tempfile .= '.dat';
-        $stats_out_cv3_predict_tempfile .= '.dat';
-        $stats_out_cv4_predict_tempfile .= '.dat';
-        $stats_out_cv5_predict_tempfile .= '.dat';
-
-        my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-        $parameter_tempfile_cv1 .= '.f90';
-        $parameter_tempfile_cv2 .= '.f90';
-        $parameter_tempfile_cv3 .= '.f90';
-        $parameter_tempfile_cv4 .= '.f90';
-        $parameter_tempfile_cv5 .= '.f90';
 
         print STDERR Dumper $stats_tempfile_2;
         my $data_cv_cmd = 'R -e "mat <- read.csv(\''.$stats_tempfile_2.'\', header=FALSE, sep=\' \');
