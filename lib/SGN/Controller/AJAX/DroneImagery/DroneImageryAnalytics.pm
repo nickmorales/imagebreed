@@ -12981,7 +12981,7 @@ sub _perform_drone_imagery_analytics {
     my $number_plots = scalar(@unique_plot_names);
     my $number_traits = scalar(@sorted_trait_names);
 
-    my ($statistical_ontology_term, $analysis_model_training_data_file_type, $analysis_model_language, @sorted_residual_trait_names, %rr_unique_traits, %rr_residual_unique_traits, $statistics_cmd, $cmd_f90, $cmd_asreml, $number_accessions);
+    my ($statistical_ontology_term, $analysis_model_training_data_file_type, $analysis_model_language, @sorted_residual_trait_names, %rr_unique_traits, %rr_residual_unique_traits, $statistics_cmd, $cmd_f90, $cmd_asreml, $statistics_cmd_reading, $prepare_file_cv_cmd, $statistics_cmd_cv_1, $statistics_cmd_cv_2, $number_accessions);
     my $tolparinv_10 = $tolparinv*10;
     my $legendre_order_number_env_var_pos = $legendre_order_number+1+2;
     my ($result_blup_data_original, $result_blup_data_delta_original, $result_blup_spatial_data_original, $result_blup_pe_data_original, $result_blup_pe_data_delta_original, $result_residual_data_original, $result_fitted_data_original, %fixed_effects_original, %rr_genetic_coefficients_original, %rr_temporal_coefficients_original);
@@ -13046,43 +13046,8 @@ sub _perform_drone_imagery_analytics {
         $number_traits = scalar(@encoded_traits);
         my $cbind_string = $number_traits > 1 ? "cbind($encoded_trait_string)" : $encoded_trait_string;
 
-        $statistics_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+        $prepare_file_cv_cmd = 'R -e "library(data.table);
         mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
-        geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
-        geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
-        geno_mat[is.na(geno_mat)] <- 0;
-        mat\$rowNumber <- as.numeric(mat\$rowNumber);
-        mat\$colNumber <- as.numeric(mat\$colNumber);
-        mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-        mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-        ';
-        if ($statistics_select eq 'sommer_grm_spatial_genetic_blups') {
-            $statistics_cmd .= 'mix <- mmer('.$cbind_string.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
-            ';
-        }
-        elsif ($statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
-            $statistics_cmd .= 'mix <- mmer('.$cbind_string.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
-            ';
-        }
-        $statistics_cmd .= 'if (!is.null(mix\$U)) {
-        #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-        write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-        write.table(mix\$U\$\`u:rowNumberFactor\`, file=\''.$stats_out_tempfile_row.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-        write.table(mix\$U\$\`u:colNumberFactor\`, file=\''.$stats_out_tempfile_col.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-        write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-        write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-        X <- with(mat, spl2D(rowNumber, colNumber));
-        spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-        ';
-        my $trait_index = 1;
-        foreach my $enc_trait_name (@encoded_traits) {
-            $statistics_cmd .= '
-        blups'.$trait_index.' <- mix\$U\$\`u:rowNumber\`\$'.$enc_trait_name.';
-        spatial_blup_results\$'.$enc_trait_name.' <- data.matrix(X) %*% data.matrix(blups'.$trait_index.');
-            ';
-            $trait_index++;
-        }
-        $statistics_cmd .= 'write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         cv_step_size <- length(mat\$plot_id) %/% 5;
         cv_step_size_modulo <- length(mat\$plot_id) %% 5;
         ';
@@ -13099,45 +13064,94 @@ sub _perform_drone_imagery_analytics {
         my @encoded_traits_cv_save_5;
 
         foreach my $t_coded (@encoded_traits) {
-            $statistics_cmd .= 'randomized_positions <- sample(length(mat\$plot_id));';
+            $prepare_file_cv_cmd .= 'randomized_positions <- sample(length(mat\$plot_id));';
 
             push @encoded_traits_cv_check, $t_coded.' = mat\$'.$t_coded;
 
             my $t_coded_cv1 = $t_coded.'_CV1';
             push @encoded_traits_cv_1, $t_coded_cv1;
-            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t_coded.';
+            $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t_coded.';
             mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
             ';
             push @encoded_traits_cv_save_1, $t_coded_cv1.' = mat\$'.$t_coded_cv1;
 
             my $t_coded_cv2 = $t_coded.'_CV2';
             push @encoded_traits_cv_2, $t_coded_cv2;
-            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t_coded.';
+            $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t_coded.';
             mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
             ';
             push @encoded_traits_cv_save_2, $t_coded_cv2.' = mat\$'.$t_coded_cv2;
 
             my $t_coded_cv3 = $t_coded.'_CV3';
             push @encoded_traits_cv_3, $t_coded_cv3;
-            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t_coded.';
+            $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t_coded.';
             mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
             ';
             push @encoded_traits_cv_save_3, $t_coded_cv3.' = mat\$'.$t_coded_cv3;
 
             my $t_coded_cv4 = $t_coded.'_CV4';
             push @encoded_traits_cv_4, $t_coded_cv4;
-            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t_coded.';
+            $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t_coded.';
             mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
             ';
             push @encoded_traits_cv_save_4, $t_coded_cv4.' = mat\$'.$t_coded_cv4;
 
             my $t_coded_cv5 = $t_coded.'_CV5';
             push @encoded_traits_cv_5, $t_coded_cv5;
-            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t_coded.';
+            $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t_coded.';
             mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
             ';
             push @encoded_traits_cv_save_5, $t_coded_cv5.' = mat\$'.$t_coded_cv5;
         }
+        $prepare_file_cv_cmd .= '
+            write.table(mat, file=\''.$stats_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+        }
+        "';
+        print STDERR Dumper $prepare_file_cv_cmd;
+        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+
+        $statistics_cmd_reading = 'R -e "library(sommer); library(data.table); library(reshape2);
+        mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+        geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+        geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+        geno_mat[is.na(geno_mat)] <- 0;
+        mat\$rowNumber <- as.numeric(mat\$rowNumber);
+        mat\$colNumber <- as.numeric(mat\$colNumber);
+        mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+        mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+        ';
+        my $statistics_cmd_model = '';
+        if ($statistics_select eq 'sommer_grm_spatial_genetic_blups') {
+            $statistics_cmd_model .= 'mix <- mmer('.$cbind_string.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            ';
+        }
+        elsif ($statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
+            $statistics_cmd_model .= 'mix <- mmer('.$cbind_string.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            ';
+        }
+        $statistics_cmd_model .= 'if (!is.null(mix\$U)) {
+        #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+        write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+        write.table(mix\$U\$\`u:rowNumberFactor\`, file=\''.$stats_out_tempfile_row.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+        write.table(mix\$U\$\`u:colNumberFactor\`, file=\''.$stats_out_tempfile_col.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+        write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+        X <- with(mat, spl2D(rowNumber, colNumber));
+        spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
+        ';
+        my $trait_index = 1;
+        foreach my $enc_trait_name (@encoded_traits) {
+            $statistics_cmd_model .= '
+        blups'.$trait_index.' <- mix\$U\$\`u:rowNumber\`\$'.$enc_trait_name.';
+        spatial_blup_results\$'.$enc_trait_name.' <- data.matrix(X) %*% data.matrix(blups'.$trait_index.');
+            ';
+            $trait_index++;
+        }
+        $statistics_cmd_model .= 'write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        }
+        "';
+        $statistics_cmd = $statistics_cmd_reading.$statistics_cmd_model;
+
         my $encoded_trait_cv_string_1 = join ',', @encoded_traits_cv_1;
         my $cbind_string_cv_1 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_1)" : $encoded_trait_cv_string_1;
         my $encoded_trait_cv_string_2 = join ',', @encoded_traits_cv_2;
@@ -13148,20 +13162,34 @@ sub _perform_drone_imagery_analytics {
         my $cbind_string_cv_4 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_4)" : $encoded_trait_cv_string_4;
         my $encoded_trait_cv_string_5 = join ',', @encoded_traits_cv_5;
         my $cbind_string_cv_5 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_5)" : $encoded_trait_cv_string_5;
+        $statistics_cmd_cv_1 = '';
+        $statistics_cmd_cv_2 = '';
         if ($statistics_select eq 'sommer_grm_spatial_genetic_blups') {
-            $statistics_cmd .= 'mix_cv_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            $statistics_cmd_cv_1 .= 'mix_cv_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
             mix_cv_2 <- mmer('.$cbind_string_cv_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
             mix_cv_3 <- mmer('.$cbind_string_cv_3.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
             mix_cv_4 <- mmer('.$cbind_string_cv_4.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
             mix_cv_5 <- mmer('.$cbind_string_cv_5.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
             ';
+            $statistics_cmd_cv_2 .= 'mix_cv_2_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_2 <- mmer('.$cbind_string_cv_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_3 <- mmer('.$cbind_string_cv_3.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_4 <- mmer('.$cbind_string_cv_4.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_5 <- mmer('.$cbind_string_cv_5.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            ';
         }
         elsif ($statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
-            $statistics_cmd .= 'mix_cv_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            $statistics_cmd_cv_1 .= 'mix_cv_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
             mix_cv_2 <- mmer('.$cbind_string_cv_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
             mix_cv_3 <- mmer('.$cbind_string_cv_3.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
             mix_cv_4 <- mmer('.$cbind_string_cv_4.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
             mix_cv_5 <- mmer('.$cbind_string_cv_5.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+            ';
+            $statistics_cmd_cv_2 .= 'mix_cv_2_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_2 <- mmer('.$cbind_string_cv_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_3 <- mmer('.$cbind_string_cv_3.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_4 <- mmer('.$cbind_string_cv_4.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_5 <- mmer('.$cbind_string_cv_5.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
             ';
         }
         my $encoded_traits_cv_save_1 = join ',', @encoded_traits_cv_save_1;
@@ -13170,13 +13198,22 @@ sub _perform_drone_imagery_analytics {
         my $encoded_traits_cv_save_4 = join ',', @encoded_traits_cv_save_4;
         my $encoded_traits_cv_save_5 = join ',', @encoded_traits_cv_save_5;
         my $encoded_traits_cv_check = join ',', @encoded_traits_cv_check;
-        $statistics_cmd .= '
-            write.table(data.frame(plot_id = mix_cv_1\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_1.', residuals = mix_cv_1\$residuals, fitted = mix_cv_1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(data.frame(plot_id = mix_cv_2\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_2.', residuals = mix_cv_2\$residuals, fitted = mix_cv_2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(data.frame(plot_id = mix_cv_3\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_3.', residuals = mix_cv_3\$residuals, fitted = mix_cv_3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(data.frame(plot_id = mix_cv_4\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_4.', residuals = mix_cv_4\$residuals, fitted = mix_cv_4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(data.frame(plot_id = mix_cv_5\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_5.', residuals = mix_cv_5\$residuals, fitted = mix_cv_5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-        }
+        $statistics_cmd_cv_1 .= 'write.table(data.frame(plot_id = mix_cv_1\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_1.', residuals = mix_cv_1\$residuals, fitted = mix_cv_1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(data.frame(plot_id = mix_cv_2\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_2.', residuals = mix_cv_2\$residuals, fitted = mix_cv_2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(data.frame(plot_id = mix_cv_3\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_3.', residuals = mix_cv_3\$residuals, fitted = mix_cv_3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(data.frame(plot_id = mix_cv_4\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_4.', residuals = mix_cv_4\$residuals, fitted = mix_cv_4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(data.frame(plot_id = mix_cv_5\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_5.', residuals = mix_cv_5\$residuals, fitted = mix_cv_5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        "';
+        $statistics_cmd_cv_2 .= 'p_cv1 <- predict.mmer(object=mix_cv_2_1, classify = c(\'id\',\'rowNumber\'), tolparinv='.$tolparinv.' );
+        p_cv2 <- predict.mmer(object=mix_cv_2_2, classify = c(\'id\',\'rowNumber\'), tolparinv='.$tolparinv.' );
+        p_cv3 <- predict.mmer(object=mix_cv_2_3, classify = c(\'id\',\'rowNumber\'), tolparinv='.$tolparinv.' );
+        p_cv4 <- predict.mmer(object=mix_cv_2_4, classify = c(\'id\',\'rowNumber\'), tolparinv='.$tolparinv.' );
+        p_cv5 <- predict.mmer(object=mix_cv_2_5, classify = c(\'id\',\'rowNumber\'), tolparinv='.$tolparinv.' );
+        write.table(p_cv1\$pvals, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(p_cv2\$pvals, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(p_cv3\$pvals, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(p_cv4\$pvals, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(p_cv5\$pvals, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         "';
         print STDERR Dumper $statistics_cmd;
         eval {
@@ -13301,6 +13338,9 @@ sub _perform_drone_imagery_analytics {
                     }
                 }
             close($fh_residual);
+
+            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
 
             open(my $fh_cv1, '<', $stats_out_cv1_predict_tempfile) or die "Could not open file '$stats_out_cv1_predict_tempfile' $!";
                 print STDERR "Opened $stats_out_cv1_predict_tempfile\n";
@@ -15915,6 +15955,7 @@ sub _perform_drone_imagery_analytics {
         variance => $model_sum_square_original_cv_2_stat->variance(),
         mean => $model_sum_square_original_cv_2_stat->mean()
     };
+    die;
 
     my (%phenotype_data_altered, @data_matrix_altered, @data_matrix_phenotypes_altered, @phenotype_data_altered_values);
     my $phenotype_min_altered = 1000000000;
@@ -16186,6 +16227,9 @@ sub _perform_drone_imagery_analytics {
 
     print STDERR "RUN ENV ESTIMATE ON ALTERED PHENO\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
+        #print STDERR Dumper $prepare_file_cv_cmd;
+        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
@@ -18929,6 +18973,9 @@ sub _perform_drone_imagery_analytics {
 
     print STDERR "RUN ENV ESTIMATE ON Altered Pheno With Sim Env linear_gradient\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
+        #print STDERR Dumper $prepare_file_cv_cmd;
+        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
@@ -21662,6 +21709,9 @@ sub _perform_drone_imagery_analytics {
 
     print STDERR "RUN ENV ESTIMATE ON Altered Pheno With Sim Env random_1d_normal_gradient\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
+        #print STDERR Dumper $prepare_file_cv_cmd;
+        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
@@ -24396,6 +24446,9 @@ sub _perform_drone_imagery_analytics {
 
     print STDERR "RUN ENV ESTIMATE ON Altered Pheno With Sim Env random_2d_normal_gradient\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
+        #print STDERR Dumper $prepare_file_cv_cmd;
+        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
@@ -27127,6 +27180,9 @@ sub _perform_drone_imagery_analytics {
 
     print STDERR "RUN ENV ESTIMATE ON Altered Pheno With Sim Env random\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
+        #print STDERR Dumper $prepare_file_cv_cmd;
+        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
@@ -29825,6 +29881,9 @@ sub _perform_drone_imagery_analytics {
 
     print STDERR "RUN ENV ESTIMATE ON Altered Pheno With Sim Env ar1xar1\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
+        #print STDERR Dumper $prepare_file_cv_cmd;
+        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
@@ -32581,6 +32640,9 @@ sub _perform_drone_imagery_analytics {
 
     print STDERR "RUN ENV ESTIMATE ON Altered Pheno With Sim Env selected_field_trial_htp_env\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
+        #print STDERR Dumper $prepare_file_cv_cmd;
+        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
