@@ -2105,44 +2105,44 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 $result_blup_data_original_1, $result_blup_data_delta_original_1, $result_blup_spatial_data_original_1, $result_blup_pe_data_original_1, $result_blup_pe_data_delta_original_1, $result_residual_data_original_1, $result_fitted_data_original_1, $fixed_effects_original_hash_1,
                 $rr_genetic_coefficients_original_hash_1, $rr_temporal_coefficients_original_hash_1,
                 $rr_coeff_genetic_covariance_original_array_1, $rr_coeff_env_covariance_original_array_1, $rr_coeff_genetic_correlation_original_array_1, $rr_coeff_env_correlation_original_array_1, $rr_residual_variance_original_1, $varcomp_original_array_1,
-                $model_sum_square_residual_original_1, $genetic_effect_min_original_1, $genetic_effect_max_original_1, $env_effect_min_original_1, $env_effect_max_original_1, $genetic_effect_sum_square_original_1, $genetic_effect_sum_original_1, $env_effect_sum_square_original_1, $env_effect_sum_original_1, $residual_sum_square_original_1, $residual_sum_original_1, $result_cv_original_1,
+                $model_sum_square_residual_original_1, $genetic_effect_min_original_1, $genetic_effect_max_original_1, $env_effect_min_original_1, $env_effect_max_original_1, $genetic_effect_sum_square_original_1, $genetic_effect_sum_original_1, $env_effect_sum_square_original_1, $env_effect_sum_original_1, $residual_sum_square_original_1, $residual_sum_original_1, $result_cv_original_1, $result_cv_2_original_1,
 
                 $phenotype_data_altered_hash_1, $data_matrix_altered_array_1, $data_matrix_phenotypes_altered_array_1, $phenotype_min_altered_1, $phenotype_max_altered_1,
                 $result_blup_data_altered_1, $result_blup_data_delta_altered_1, $result_blup_spatial_data_altered_1, $result_blup_pe_data_altered_1, $result_blup_pe_data_delta_altered_1, $result_residual_data_altered_1, $result_fitted_data_altered_1, $fixed_effects_altered_hash_1,
                 $rr_genetic_coefficients_altered_hash_1, $rr_temporal_coefficients_altered_hash_1,
                 $rr_coeff_genetic_covariance_altered_array_1, $rr_coeff_env_covariance_altered_array_1, $rr_coeff_genetic_correlation_altered_array_1, $rr_coeff_env_correlation_altered_array_1, $rr_residual_variance_altered_1, $varcomp_altered_array_1,
-                $model_sum_square_residual_altered_1, $genetic_effect_min_altered_1, $genetic_effect_max_altered_1, $env_effect_min_altered_1, $env_effect_max_altered_1, $genetic_effect_sum_square_altered_1, $genetic_effect_sum_altered_1, $env_effect_sum_square_altered_1, $env_effect_sum_altered_1, $residual_sum_square_altered_1, $residual_sum_altered_1, $result_cv_altered_1,
+                $model_sum_square_residual_altered_1, $genetic_effect_min_altered_1, $genetic_effect_max_altered_1, $env_effect_min_altered_1, $env_effect_max_altered_1, $genetic_effect_sum_square_altered_1, $genetic_effect_sum_altered_1, $env_effect_sum_square_altered_1, $env_effect_sum_altered_1, $residual_sum_square_altered_1, $residual_sum_altered_1, $result_cv_altered_1, $result_cv_2_altered_1,
 
                 $phenotype_data_altered_env_hash_1_1, $data_matrix_altered_env_array_1_1, $data_matrix_phenotypes_altered_env_array_1_1, $phenotype_min_altered_env_1_1, $phenotype_max_altered_env_1_1, $env_sim_min_1_1, $env_sim_max_1_1, $sim_data_hash_1_1,
                 $result_blup_data_altered_env_1_1, $result_blup_data_delta_altered_env_1_1, $result_blup_spatial_data_altered_env_1_1, $result_blup_pe_data_altered_env_1_1, $result_blup_pe_data_delta_altered_env_1_1, $result_residual_data_altered_env_1_1, $result_fitted_data_altered_env_1_1, $fixed_effects_altered_env_hash_1_1,
                 $rr_genetic_coefficients_altered_env_hash_1_1, $rr_temporal_coefficients_altered_env_hash_1_1,
                 $rr_coeff_genetic_covariance_altered_env_array_1_1, $rr_coeff_env_covariance_altered_env_array_1_1, $rr_coeff_genetic_correlation_altered_env_array_1_1, $rr_coeff_env_correlation_altered_env_array_1_1, $rr_residual_variance_altered_env_1_1, $varcomp_altered_array_env_1_1,
-                $model_sum_square_residual_altered_env_1_1, $genetic_effect_min_altered_env_1_1, $genetic_effect_max_altered_env_1_1, $env_effect_min_altered_env_1_1, $env_effect_max_altered_env_1_1, $genetic_effect_sum_square_altered_env_1_1, $genetic_effect_sum_altered_env_1_1, $env_effect_sum_square_altered_env_1_1, $env_effect_sum_altered_env_1_1, $residual_sum_square_altered_env_1_1, $residual_sum_altered_env_1_1, $result_cv_altered_env_1_1,
+                $model_sum_square_residual_altered_env_1_1, $genetic_effect_min_altered_env_1_1, $genetic_effect_max_altered_env_1_1, $env_effect_min_altered_env_1_1, $env_effect_max_altered_env_1_1, $genetic_effect_sum_square_altered_env_1_1, $genetic_effect_sum_altered_env_1_1, $env_effect_sum_square_altered_env_1_1, $env_effect_sum_altered_env_1_1, $residual_sum_square_altered_env_1_1, $residual_sum_altered_env_1_1, $result_cv_altered_env_1_1, $result_cv_2_altered_env_1_1,
 
                 $phenotype_data_altered_env_hash_2_1, $data_matrix_altered_env_array_2_1, $data_matrix_phenotypes_altered_env_array_2_1, $phenotype_min_altered_env_2_1, $phenotype_max_altered_env_2_1, $env_sim_min_2_1, $env_sim_max_2_1, $sim_data_hash_2_1,
                 $result_blup_data_altered_env_2_1, $result_blup_data_delta_altered_env_2_1, $result_blup_spatial_data_altered_env_2_1, $result_blup_pe_data_altered_env_2_1, $result_blup_pe_data_delta_altered_env_2_1, $result_residual_data_altered_env_2_1, $result_fitted_data_altered_env_2_1, $fixed_effects_altered_env_hash_2_1, $rr_genetic_coefficients_altered_env_hash_2_1, $rr_temporal_coefficients_altered_env_hash_2_1,
                 $rr_coeff_genetic_covariance_altered_env_array_2_1, $rr_coeff_env_covariance_altered_env_array_2_1, $rr_coeff_genetic_correlation_altered_env_array_2_1, $rr_coeff_env_correlation_altered_env_array_2_1, $rr_residual_variance_altered_env_2_1, $varcomp_altered_array_env_2_1,
-                $model_sum_square_residual_altered_env_2_1, $genetic_effect_min_altered_env_2_1, $genetic_effect_max_altered_env_2_1, $env_effect_min_altered_env_2_1, $env_effect_max_altered_env_2_1, $genetic_effect_sum_square_altered_env_2_1, $genetic_effect_sum_altered_env_2_1, $env_effect_sum_square_altered_env_2_1, $env_effect_sum_altered_env_2_1, $residual_sum_square_altered_env_2_1, $residual_sum_altered_env_2_1, $result_cv_altered_env_2_1,
+                $model_sum_square_residual_altered_env_2_1, $genetic_effect_min_altered_env_2_1, $genetic_effect_max_altered_env_2_1, $env_effect_min_altered_env_2_1, $env_effect_max_altered_env_2_1, $genetic_effect_sum_square_altered_env_2_1, $genetic_effect_sum_altered_env_2_1, $env_effect_sum_square_altered_env_2_1, $env_effect_sum_altered_env_2_1, $residual_sum_square_altered_env_2_1, $residual_sum_altered_env_2_1, $result_cv_altered_env_2_1, $result_cv_2_altered_env_2_1,
 
                 $phenotype_data_altered_env_hash_3_1, $data_matrix_altered_env_array_3_1, $data_matrix_phenotypes_altered_env_array_3_1, $phenotype_min_altered_env_3_1, $phenotype_max_altered_env_3_1, $env_sim_min_3_1, $env_sim_max_3_1, $sim_data_hash_3_1,
                 $result_blup_data_altered_env_3_1, $result_blup_data_delta_altered_env_3_1, $result_blup_spatial_data_altered_env_3_1, $result_blup_pe_data_altered_env_3_1, $result_blup_pe_data_delta_altered_env_3_1, $result_residual_data_altered_env_3_1, $result_fitted_data_altered_env_3_1, $fixed_effects_altered_env_hash_3_1, $rr_genetic_coefficients_altered_env_hash_3_1, $rr_temporal_coefficients_altered_env_hash_3_1,
                 $rr_coeff_genetic_covariance_altered_env_array_3_1, $rr_coeff_env_covariance_altered_env_array_3_1, $rr_coeff_genetic_correlation_altered_env_array_3_1, $rr_coeff_env_correlation_altered_env_array_3_1, $rr_residual_variance_altered_env_3_1, $varcomp_altered_array_env_3_1,
-                $model_sum_square_residual_altered_env_3_1, $genetic_effect_min_altered_env_3_1, $genetic_effect_max_altered_env_3_1, $env_effect_min_altered_env_3_1, $env_effect_max_altered_env_3_1, $genetic_effect_sum_square_altered_env_3_1, $genetic_effect_sum_altered_env_3_1, $env_effect_sum_square_altered_env_3_1, $env_effect_sum_altered_env_3_1, $residual_sum_square_altered_env_3_1, $residual_sum_altered_env_3_1, $result_cv_altered_env_3_1,
+                $model_sum_square_residual_altered_env_3_1, $genetic_effect_min_altered_env_3_1, $genetic_effect_max_altered_env_3_1, $env_effect_min_altered_env_3_1, $env_effect_max_altered_env_3_1, $genetic_effect_sum_square_altered_env_3_1, $genetic_effect_sum_altered_env_3_1, $env_effect_sum_square_altered_env_3_1, $env_effect_sum_altered_env_3_1, $residual_sum_square_altered_env_3_1, $residual_sum_altered_env_3_1, $result_cv_altered_env_3_1, $result_cv_2_altered_env_3_1,
 
                 $phenotype_data_altered_env_hash_4_1, $data_matrix_altered_env_array_4_1, $data_matrix_phenotypes_altered_env_array_4_1, $phenotype_min_altered_env_4_1, $phenotype_max_altered_env_4_1, $env_sim_min_4_1, $env_sim_max_4_1, $sim_data_hash_4_1,
                 $result_blup_data_altered_env_4_1, $result_blup_data_delta_altered_env_4_1, $result_blup_spatial_data_altered_env_4_1, $result_blup_pe_data_altered_env_4_1, $result_blup_pe_data_delta_altered_env_4_1, $result_residual_data_altered_env_4_1, $result_fitted_data_altered_env_4_1, $fixed_effects_altered_env_hash_4_1, $rr_genetic_coefficients_altered_env_hash_4_1, $rr_temporal_coefficients_altered_env_hash_4_1,
                 $rr_coeff_genetic_covariance_altered_env_array_4_1, $rr_coeff_env_covariance_altered_env_array_4_1, $rr_coeff_genetic_correlation_altered_env_array_4_1, $rr_coeff_env_correlation_altered_env_array_4_1, $rr_residual_variance_altered_env_4_1, $varcomp_altered_array_env_4_1,
-                $model_sum_square_residual_altered_env_4_1, $genetic_effect_min_altered_env_4_1, $genetic_effect_max_altered_env_4_1, $env_effect_min_altered_env_4_1, $env_effect_max_altered_env_4_1, $genetic_effect_sum_square_altered_env_4_1, $genetic_effect_sum_altered_env_4_1, $env_effect_sum_square_altered_env_4_1, $env_effect_sum_altered_env_4_1, $residual_sum_square_altered_env_4_1, $residual_sum_altered_env_4_1, $result_cv_altered_env_4_1,
+                $model_sum_square_residual_altered_env_4_1, $genetic_effect_min_altered_env_4_1, $genetic_effect_max_altered_env_4_1, $env_effect_min_altered_env_4_1, $env_effect_max_altered_env_4_1, $genetic_effect_sum_square_altered_env_4_1, $genetic_effect_sum_altered_env_4_1, $env_effect_sum_square_altered_env_4_1, $env_effect_sum_altered_env_4_1, $residual_sum_square_altered_env_4_1, $residual_sum_altered_env_4_1, $result_cv_altered_env_4_1, $result_cv_2_altered_env_4_1,
 
                 $phenotype_data_altered_env_hash_5_1, $data_matrix_altered_env_array_5_1, $data_matrix_phenotypes_altered_env_array_5_1, $phenotype_min_altered_env_5_1, $phenotype_max_altered_env_5_1, $env_sim_min_5_1, $env_sim_max_5_1, $sim_data_hash_5_1,
                 $result_blup_data_altered_env_5_1, $result_blup_data_delta_altered_env_5_1, $result_blup_spatial_data_altered_env_5_1, $result_blup_pe_data_altered_env_5_1, $result_blup_pe_data_delta_altered_env_5_1, $result_residual_data_altered_env_5_1, $result_fitted_data_altered_env_5_1, $fixed_effects_altered_env_hash_5_1, $rr_genetic_coefficients_altered_env_hash_5_1, $rr_temporal_coefficients_altered_env_hash_5_1,
                 $rr_coeff_genetic_covariance_altered_env_array_5_1, $rr_coeff_env_covariance_altered_env_array_5_1, $rr_coeff_genetic_correlation_altered_env_array_5_1, $rr_coeff_env_correlation_altered_env_array_5_1, $rr_residual_variance_altered_env_5_1, $varcomp_altered_array_env_5_1,
-                $model_sum_square_residual_altered_env_5_1, $genetic_effect_min_altered_env_5_1, $genetic_effect_max_altered_env_5_1, $env_effect_min_altered_env_5_1, $env_effect_max_altered_env_5_1, $genetic_effect_sum_square_altered_env_5_1, $genetic_effect_sum_altered_env_5_1, $env_effect_sum_square_altered_env_5_1, $env_effect_sum_altered_env_5_1, $residual_sum_square_altered_env_5_1, $residual_sum_altered_env_5_1, $result_cv_altered_env_5_1,
+                $model_sum_square_residual_altered_env_5_1, $genetic_effect_min_altered_env_5_1, $genetic_effect_max_altered_env_5_1, $env_effect_min_altered_env_5_1, $env_effect_max_altered_env_5_1, $genetic_effect_sum_square_altered_env_5_1, $genetic_effect_sum_altered_env_5_1, $env_effect_sum_square_altered_env_5_1, $env_effect_sum_altered_env_5_1, $residual_sum_square_altered_env_5_1, $residual_sum_altered_env_5_1, $result_cv_altered_env_5_1, $result_cv_2_altered_env_5_1,
 
                 $phenotype_data_altered_env_hash_6_1, $data_matrix_altered_env_array_6_1, $data_matrix_phenotypes_altered_env_array_6_1, $phenotype_min_altered_env_6_1, $phenotype_max_altered_env_6_1, $env_sim_min_6_1, $env_sim_max_6_1, $sim_data_hash_6_1,
                 $result_blup_data_altered_env_6_1, $result_blup_data_delta_altered_env_6_1, $result_blup_spatial_data_altered_env_6_1, $result_blup_pe_data_altered_env_6_1, $result_blup_pe_data_delta_altered_env_6_1, $result_residual_data_altered_env_6_1, $result_fitted_data_altered_env_6_1, $fixed_effects_altered_env_hash_6_1, $rr_genetic_coefficients_altered_env_hash_6_1, $rr_temporal_coefficients_altered_env_hash_6_1,
                 $rr_coeff_genetic_covariance_altered_env_array_6_1, $rr_coeff_env_covariance_altered_env_array_6_1, $rr_coeff_genetic_correlation_altered_env_array_6_1, $rr_coeff_env_correlation_altered_env_array_6_1, $rr_residual_variance_altered_env_6_1, $varcomp_altered_array_env_6_1,
-                $model_sum_square_residual_altered_env_6_1, $genetic_effect_min_altered_env_6_1, $genetic_effect_max_altered_env_6_1, $env_effect_min_altered_env_6_1, $env_effect_max_altered_env_6_1, $genetic_effect_sum_square_altered_env_6_1, $genetic_effect_sum_altered_env_6_1, $env_effect_sum_square_altered_env_6_1, $env_effect_sum_altered_env_6_1, $residual_sum_square_altered_env_6_1, $residual_sum_altered_env_6_1, $result_cv_altered_env_6_1
+                $model_sum_square_residual_altered_env_6_1, $genetic_effect_min_altered_env_6_1, $genetic_effect_max_altered_env_6_1, $env_effect_min_altered_env_6_1, $env_effect_max_altered_env_6_1, $genetic_effect_sum_square_altered_env_6_1, $genetic_effect_sum_altered_env_6_1, $env_effect_sum_square_altered_env_6_1, $env_effect_sum_altered_env_6_1, $residual_sum_square_altered_env_6_1, $residual_sum_altered_env_6_1, $result_cv_altered_env_6_1, $result_cv_2_altered_env_6_1
                 ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder, \%trait_name_encoder_rev, \%stock_info, \%plot_id_map, \@sorted_trait_names, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
@@ -4394,43 +4394,43 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 $result_blup_data_original_2, $result_blup_data_delta_original_2, $result_blup_spatial_data_original_2, $result_blup_pe_data_original_2, $result_blup_pe_data_delta_original_2, $result_residual_data_original_2, $result_fitted_data_original_2, $fixed_effects_original_hash_2,
                 $rr_genetic_coefficients_original_hash_2, $rr_temporal_coefficients_original_hash_2,
                 $rr_coeff_genetic_covariance_original_array_2, $rr_coeff_env_covariance_original_array_2, $rr_coeff_genetic_correlation_original_array_2, $rr_coeff_env_correlation_original_array_2, $rr_residual_variance_original_2, $varcomp_original_array_2,
-                $model_sum_square_residual_original_2, $genetic_effect_min_original_2, $genetic_effect_max_original_2, $env_effect_min_original_2, $env_effect_max_original_2, $genetic_effect_sum_square_original_2, $genetic_effect_sum_original_2, $env_effect_sum_square_original_2, $env_effect_sum_original_2, $residual_sum_square_original_2, $residual_sum_original_2, $result_cv_original_2,
+                $model_sum_square_residual_original_2, $genetic_effect_min_original_2, $genetic_effect_max_original_2, $env_effect_min_original_2, $env_effect_max_original_2, $genetic_effect_sum_square_original_2, $genetic_effect_sum_original_2, $env_effect_sum_square_original_2, $env_effect_sum_original_2, $residual_sum_square_original_2, $residual_sum_original_2, $result_cv_original_2, $result_cv_2_original_2,
 
                 $phenotype_data_altered_hash_2, $data_matrix_altered_array_2, $data_matrix_phenotypes_altered_array_2, $phenotype_min_altered_2, $phenotype_max_altered_2,
                 $result_blup_data_altered_2, $result_blup_data_delta_altered_2, $result_blup_spatial_data_altered_2, $result_blup_pe_data_altered_2, $result_blup_pe_data_delta_altered_2, $result_residual_data_altered_2, $result_fitted_data_altered_2, $fixed_effects_altered_hash_2,
                 $rr_genetic_coefficients_altered_hash_2, $rr_temporal_coefficients_altered_hash_2,
                 $rr_coeff_genetic_covariance_altered_array_2, $rr_coeff_env_covariance_altered_array_2, $rr_coeff_genetic_correlation_altered_array_2, $rr_coeff_env_correlation_altered_array_2, $rr_residual_variance_altered_2, $varcomp_altered_array_2,
-                $model_sum_square_residual_altered_2, $genetic_effect_min_altered_2, $genetic_effect_max_altered_2, $env_effect_min_altered_2, $env_effect_max_altered_2, $genetic_effect_sum_square_altered_2, $genetic_effect_sum_altered_2, $env_effect_sum_square_altered_2, $env_effect_sum_altered_2, $residual_sum_square_altered_2, $residual_sum_altered_2, $result_cv_altered_2,
+                $model_sum_square_residual_altered_2, $genetic_effect_min_altered_2, $genetic_effect_max_altered_2, $env_effect_min_altered_2, $env_effect_max_altered_2, $genetic_effect_sum_square_altered_2, $genetic_effect_sum_altered_2, $env_effect_sum_square_altered_2, $env_effect_sum_altered_2, $residual_sum_square_altered_2, $residual_sum_altered_2, $result_cv_altered_2, $result_cv_2_altered_2,
 
                 $phenotype_data_altered_env_hash_1_2, $data_matrix_altered_env_array_1_2, $data_matrix_phenotypes_altered_env_array_1_2, $phenotype_min_altered_env_1_2, $phenotype_max_altered_env_1_2, $env_sim_min_1_2, $env_sim_max_1_2, $sim_data_hash_1_2,
                 $result_blup_data_altered_env_1_2, $result_blup_data_delta_altered_env_1_2, $result_blup_spatial_data_altered_env_1_2, $result_blup_pe_data_altered_env_1_2, $result_blup_pe_data_delta_altered_env_1_2, $result_residual_data_altered_env_1_2, $result_fitted_data_altered_env_1_2, $fixed_effects_altered_env_hash_1_2, $rr_genetic_coefficients_altered_env_hash_1_2, $rr_temporal_coefficients_altered_env_hash_1_2,
                 $rr_coeff_genetic_covariance_altered_env_array_1_2, $rr_coeff_env_covariance_altered_env_array_1_2, $rr_coeff_genetic_correlation_altered_env_array_1_2, $rr_coeff_env_correlation_altered_env_array_1_2, $rr_residual_variance_altered_env_1_2, $varcomp_altered_array_env_1_2,
-                $model_sum_square_residual_altered_env_1_2, $genetic_effect_min_altered_env_1_2, $genetic_effect_max_altered_env_1_2, $env_effect_min_altered_env_1_2, $env_effect_max_altered_env_1_2, $genetic_effect_sum_square_altered_env_1_2, $genetic_effect_sum_altered_env_1_2, $env_effect_sum_square_altered_env_1_2, $env_effect_sum_altered_env_1_2, $residual_sum_square_altered_env_1_2, $residual_sum_altered_env_1_2, $result_cv_altered_env_1_2,
+                $model_sum_square_residual_altered_env_1_2, $genetic_effect_min_altered_env_1_2, $genetic_effect_max_altered_env_1_2, $env_effect_min_altered_env_1_2, $env_effect_max_altered_env_1_2, $genetic_effect_sum_square_altered_env_1_2, $genetic_effect_sum_altered_env_1_2, $env_effect_sum_square_altered_env_1_2, $env_effect_sum_altered_env_1_2, $residual_sum_square_altered_env_1_2, $residual_sum_altered_env_1_2, $result_cv_altered_env_1_2, $result_cv_2_altered_env_1_2,
 
                 $phenotype_data_altered_env_hash_2_2, $data_matrix_altered_env_array_2_2, $data_matrix_phenotypes_altered_env_array_2_2, $phenotype_min_altered_env_2_2, $phenotype_max_altered_env_2_2, $env_sim_min_2_2, $env_sim_max_2_2, $sim_data_hash_2_2,
                 $result_blup_data_altered_env_2_2, $result_blup_data_delta_altered_env_2_2, $result_blup_spatial_data_altered_env_2_2, $result_blup_pe_data_altered_env_2_2, $result_blup_pe_data_delta_altered_env_2_2, $result_residual_data_altered_env_2_2, $result_fitted_data_altered_env_2_2, $fixed_effects_altered_env_hash_2_2, $rr_genetic_coefficients_altered_env_hash_2_2, $rr_temporal_coefficients_altered_env_hash_2_2,
                 $rr_coeff_genetic_covariance_altered_env_array_2_2, $rr_coeff_env_covariance_altered_env_array_2_2, $rr_coeff_genetic_correlation_altered_env_array_2_2, $rr_coeff_env_correlation_altered_env_array_2_2, $rr_residual_variance_altered_env_2_2, $varcomp_altered_array_env_2_2,
-                $model_sum_square_residual_altered_env_2_2, $genetic_effect_min_altered_env_2_2, $genetic_effect_max_altered_env_2_2, $env_effect_min_altered_env_2_2, $env_effect_max_altered_env_2_2, $genetic_effect_sum_square_altered_env_2_2, $genetic_effect_sum_altered_env_2_2, $env_effect_sum_square_altered_env_2_2, $env_effect_sum_altered_env_2_2, $residual_sum_square_altered_env_2_2, $residual_sum_altered_env_2_2, $result_cv_altered_env_2_2,
+                $model_sum_square_residual_altered_env_2_2, $genetic_effect_min_altered_env_2_2, $genetic_effect_max_altered_env_2_2, $env_effect_min_altered_env_2_2, $env_effect_max_altered_env_2_2, $genetic_effect_sum_square_altered_env_2_2, $genetic_effect_sum_altered_env_2_2, $env_effect_sum_square_altered_env_2_2, $env_effect_sum_altered_env_2_2, $residual_sum_square_altered_env_2_2, $residual_sum_altered_env_2_2, $result_cv_altered_env_2_2, $result_cv_2_altered_env_2_2,
 
                 $phenotype_data_altered_env_hash_3_2, $data_matrix_altered_env_array_3_2, $data_matrix_phenotypes_altered_env_array_3_2, $phenotype_min_altered_env_3_2, $phenotype_max_altered_env_3_2, $env_sim_min_3_2, $env_sim_max_3_2, $sim_data_hash_3_2,
                 $result_blup_data_altered_env_3_2, $result_blup_data_delta_altered_env_3_2, $result_blup_spatial_data_altered_env_3_2, $result_blup_pe_data_altered_env_3_2, $result_blup_pe_data_delta_altered_env_3_2, $result_residual_data_altered_env_3_2, $result_fitted_data_altered_env_3_2, $fixed_effects_altered_env_hash_3_2, $rr_genetic_coefficients_altered_env_hash_3_2, $rr_temporal_coefficients_altered_env_hash_3_2,
                 $rr_coeff_genetic_covariance_altered_env_array_3_2, $rr_coeff_env_covariance_altered_env_array_3_2, $rr_coeff_genetic_correlation_altered_env_array_3_2, $rr_coeff_env_correlation_altered_env_array_3_2, $rr_residual_variance_altered_env_3_2, $varcomp_altered_array_env_3_2,
-                $model_sum_square_residual_altered_env_3_2, $genetic_effect_min_altered_env_3_2, $genetic_effect_max_altered_env_3_2, $env_effect_min_altered_env_3_2, $env_effect_max_altered_env_3_2, $genetic_effect_sum_square_altered_env_3_2, $genetic_effect_sum_altered_env_3_2, $env_effect_sum_square_altered_env_3_2, $env_effect_sum_altered_env_3_2, $residual_sum_square_altered_env_3_2, $residual_sum_altered_env_3_2, $result_cv_altered_env_3_2,
+                $model_sum_square_residual_altered_env_3_2, $genetic_effect_min_altered_env_3_2, $genetic_effect_max_altered_env_3_2, $env_effect_min_altered_env_3_2, $env_effect_max_altered_env_3_2, $genetic_effect_sum_square_altered_env_3_2, $genetic_effect_sum_altered_env_3_2, $env_effect_sum_square_altered_env_3_2, $env_effect_sum_altered_env_3_2, $residual_sum_square_altered_env_3_2, $residual_sum_altered_env_3_2, $result_cv_altered_env_3_2, $result_cv_2_altered_env_3_2,
 
                 $phenotype_data_altered_env_hash_4_2, $data_matrix_altered_env_array_4_2, $data_matrix_phenotypes_altered_env_array_4_2, $phenotype_min_altered_env_4_2, $phenotype_max_altered_env_4_2, $env_sim_min_4_2, $env_sim_max_4_2, $sim_data_hash_4_2,
                 $result_blup_data_altered_env_4_2, $result_blup_data_delta_altered_env_4_2, $result_blup_spatial_data_altered_env_4_2, $result_blup_pe_data_altered_env_4_2, $result_blup_pe_data_delta_altered_env_4_2, $result_residual_data_altered_env_4_2, $result_fitted_data_altered_env_4_2, $fixed_effects_altered_env_hash_4_2, $rr_genetic_coefficients_altered_env_hash_4_2, $rr_temporal_coefficients_altered_env_hash_4_2,
                 $rr_coeff_genetic_covariance_altered_env_array_4_2, $rr_coeff_env_covariance_altered_env_array_4_2, $rr_coeff_genetic_correlation_altered_env_array_4_2, $rr_coeff_env_correlation_altered_env_array_4_2, $rr_residual_variance_altered_env_4_2, $varcomp_altered_array_env_4_2,
-                $model_sum_square_residual_altered_env_4_2, $genetic_effect_min_altered_env_4_2, $genetic_effect_max_altered_env_4_2, $env_effect_min_altered_env_4_2, $env_effect_max_altered_env_4_2, $genetic_effect_sum_square_altered_env_4_2, $genetic_effect_sum_altered_env_4_2, $env_effect_sum_square_altered_env_4_2, $env_effect_sum_altered_env_4_2, $residual_sum_square_altered_env_4_2, $residual_sum_altered_env_4_2, $result_cv_altered_env_4_2,
+                $model_sum_square_residual_altered_env_4_2, $genetic_effect_min_altered_env_4_2, $genetic_effect_max_altered_env_4_2, $env_effect_min_altered_env_4_2, $env_effect_max_altered_env_4_2, $genetic_effect_sum_square_altered_env_4_2, $genetic_effect_sum_altered_env_4_2, $env_effect_sum_square_altered_env_4_2, $env_effect_sum_altered_env_4_2, $residual_sum_square_altered_env_4_2, $residual_sum_altered_env_4_2, $result_cv_altered_env_4_2, $result_cv_2_altered_env_4_2,
 
                 $phenotype_data_altered_env_hash_5_2, $data_matrix_altered_env_array_5_2, $data_matrix_phenotypes_altered_env_array_5_2, $phenotype_min_altered_env_5_2, $phenotype_max_altered_env_5_2, $env_sim_min_5_2, $env_sim_max_5_2, $sim_data_hash_5_2,
                 $result_blup_data_altered_env_5_2, $result_blup_data_delta_altered_env_5_2, $result_blup_spatial_data_altered_env_5_2, $result_blup_pe_data_altered_env_5_2, $result_blup_pe_data_delta_altered_env_5_2, $result_residual_data_altered_env_5_2, $result_fitted_data_altered_env_5_2, $fixed_effects_altered_env_hash_5_2, $rr_genetic_coefficients_altered_env_hash_5_2, $rr_temporal_coefficients_altered_env_hash_5_2,
                 $rr_coeff_genetic_covariance_altered_env_array_5_2, $rr_coeff_env_covariance_altered_env_array_5_2, $rr_coeff_genetic_correlation_altered_env_array_5_2, $rr_coeff_env_correlation_altered_env_array_5_2, $rr_residual_variance_altered_env_5_2, $varcomp_altered_array_env_5_2,
-                $model_sum_square_residual_altered_env_5_2, $genetic_effect_min_altered_env_5_2, $genetic_effect_max_altered_env_5_2, $env_effect_min_altered_env_5_2, $env_effect_max_altered_env_5_2, $genetic_effect_sum_square_altered_env_5_2, $genetic_effect_sum_altered_env_5_2, $env_effect_sum_square_altered_env_5_2, $env_effect_sum_altered_env_5_2, $residual_sum_square_altered_env_5_2, $residual_sum_altered_env_5_2, $result_cv_altered_env_5_2,
+                $model_sum_square_residual_altered_env_5_2, $genetic_effect_min_altered_env_5_2, $genetic_effect_max_altered_env_5_2, $env_effect_min_altered_env_5_2, $env_effect_max_altered_env_5_2, $genetic_effect_sum_square_altered_env_5_2, $genetic_effect_sum_altered_env_5_2, $env_effect_sum_square_altered_env_5_2, $env_effect_sum_altered_env_5_2, $residual_sum_square_altered_env_5_2, $residual_sum_altered_env_5_2, $result_cv_altered_env_5_2, $result_cv_2_altered_env_5_2,
 
                 $phenotype_data_altered_env_hash_6_2, $data_matrix_altered_env_array_6_2, $data_matrix_phenotypes_altered_env_array_6_2, $phenotype_min_altered_env_6_2, $phenotype_max_altered_env_6_2, $env_sim_min_6_2, $env_sim_max_6_2, $sim_data_hash_6_2,
                 $result_blup_data_altered_env_6_2, $result_blup_data_delta_altered_env_6_2, $result_blup_spatial_data_altered_env_6_2, $result_blup_pe_data_altered_env_6_2, $result_blup_pe_data_delta_altered_env_6_2, $result_residual_data_altered_env_6_2, $result_fitted_data_altered_env_6_2, $fixed_effects_altered_env_hash_6_2, $rr_genetic_coefficients_altered_env_hash_6_2, $rr_temporal_coefficients_altered_env_hash_6_2,
                 $rr_coeff_genetic_covariance_altered_env_array_6_2, $rr_coeff_env_covariance_altered_env_array_6_2, $rr_coeff_genetic_correlation_altered_env_array_6_2, $rr_coeff_env_correlation_altered_env_array_6_2, $rr_residual_variance_altered_env_6_2, $varcomp_altered_array_env_6_2,
-                $model_sum_square_residual_altered_env_6_2, $genetic_effect_min_altered_env_6_2, $genetic_effect_max_altered_env_6_2, $env_effect_min_altered_env_6_2, $env_effect_max_altered_env_6_2, $genetic_effect_sum_square_altered_env_6_2, $genetic_effect_sum_altered_env_6_2, $env_effect_sum_square_altered_env_6_2, $env_effect_sum_altered_env_6_2, $residual_sum_square_altered_env_6_2, $residual_sum_altered_env_6_2, $result_cv_altered_env_6_2
+                $model_sum_square_residual_altered_env_6_2, $genetic_effect_min_altered_env_6_2, $genetic_effect_max_altered_env_6_2, $env_effect_min_altered_env_6_2, $env_effect_max_altered_env_6_2, $genetic_effect_sum_square_altered_env_6_2, $genetic_effect_sum_altered_env_6_2, $env_effect_sum_square_altered_env_6_2, $env_effect_sum_altered_env_6_2, $residual_sum_square_altered_env_6_2, $residual_sum_altered_env_6_2, $result_cv_altered_env_6_2, $result_cv_2_altered_env_6_2
                 ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_2, \%trait_name_encoder_rev_2, \%stock_info_2, \%plot_id_map, \@sorted_trait_names_2, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_2, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_2, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_2, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
@@ -6648,43 +6648,43 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 $result_blup_data_original_3, $result_blup_data_delta_original_3, $result_blup_spatial_data_original_3, $result_blup_pe_data_original_3, $result_blup_pe_data_delta_original_3, $result_residual_data_original_3, $result_fitted_data_original_3, $fixed_effects_original_hash_3,
                 $rr_genetic_coefficients_original_hash_3, $rr_temporal_coefficients_original_hash_3,
                 $rr_coeff_genetic_covariance_original_array_3, $rr_coeff_env_covariance_original_array_3, $rr_coeff_genetic_correlation_original_array_3, $rr_coeff_env_correlation_original_array_3, $rr_residual_variance_original_3, $varcomp_original_array_3,
-                $model_sum_square_residual_original_3, $genetic_effect_min_original_3, $genetic_effect_max_original_3, $env_effect_min_original_3, $env_effect_max_original_3, $genetic_effect_sum_square_original_3, $genetic_effect_sum_original_3, $env_effect_sum_square_original_3, $env_effect_sum_original_3, $residual_sum_square_original_3, $residual_sum_original_3, $result_cv_original_3,
+                $model_sum_square_residual_original_3, $genetic_effect_min_original_3, $genetic_effect_max_original_3, $env_effect_min_original_3, $env_effect_max_original_3, $genetic_effect_sum_square_original_3, $genetic_effect_sum_original_3, $env_effect_sum_square_original_3, $env_effect_sum_original_3, $residual_sum_square_original_3, $residual_sum_original_3, $result_cv_original_3, $result_cv_2_original_3,
 
                 $phenotype_data_altered_hash_3, $data_matrix_altered_array_3, $data_matrix_phenotypes_altered_array_3, $phenotype_min_altered_3, $phenotype_max_altered_3,
                 $result_blup_data_altered_3, $result_blup_data_delta_altered_3, $result_blup_spatial_data_altered_3, $result_blup_pe_data_altered_3, $result_blup_pe_data_delta_altered_3, $result_residual_data_altered_3, $result_fitted_data_altered_3, $fixed_effects_altered_hash_3,
                 $rr_genetic_coefficients_altered_hash_3, $rr_temporal_coefficients_altered_hash_3,
                 $rr_coeff_genetic_covariance_altered_array_3, $rr_coeff_env_covariance_altered_array_3, $rr_coeff_genetic_correlation_altered_array_3, $rr_coeff_env_correlation_altered_array_3, $rr_residual_variance_altered_3, $varcomp_altered_array_3,
-                $model_sum_square_residual_altered_3, $genetic_effect_min_altered_3, $genetic_effect_max_altered_3, $env_effect_min_altered_3, $env_effect_max_altered_3, $genetic_effect_sum_square_altered_3, $genetic_effect_sum_altered_3, $env_effect_sum_square_altered_3, $env_effect_sum_altered_3, $residual_sum_square_altered_3, $residual_sum_altered_3, $result_cv_altered_3,
+                $model_sum_square_residual_altered_3, $genetic_effect_min_altered_3, $genetic_effect_max_altered_3, $env_effect_min_altered_3, $env_effect_max_altered_3, $genetic_effect_sum_square_altered_3, $genetic_effect_sum_altered_3, $env_effect_sum_square_altered_3, $env_effect_sum_altered_3, $residual_sum_square_altered_3, $residual_sum_altered_3, $result_cv_altered_3, $result_cv_2_altered_3,
 
                 $phenotype_data_altered_env_hash_1_3, $data_matrix_altered_env_array_1_3, $data_matrix_phenotypes_altered_env_array_1_3, $phenotype_min_altered_env_1_3, $phenotype_max_altered_env_1_3, $env_sim_min_1_3, $env_sim_max_1_3, $sim_data_hash_1_3,
                 $result_blup_data_altered_env_1_3, $result_blup_data_delta_altered_env_1_3, $result_blup_spatial_data_altered_env_1_3, $result_blup_pe_data_altered_env_1_3, $result_blup_pe_data_delta_altered_env_1_3, $result_residual_data_altered_env_1_3, $result_fitted_data_altered_env_1_3, $fixed_effects_altered_env_hash_1_3, $rr_genetic_coefficients_altered_env_hash_1_3, $rr_temporal_coefficients_altered_env_hash_1_3,
                 $rr_coeff_genetic_covariance_altered_env_array_1_3, $rr_coeff_env_covariance_altered_env_array_1_3, $rr_coeff_genetic_correlation_altered_env_array_1_3, $rr_coeff_env_correlation_altered_env_array_1_3, $rr_residual_variance_altered_env_1_3, $varcomp_altered_array_env_1_3,
-                $model_sum_square_residual_altered_env_1_3, $genetic_effect_min_altered_env_1_3, $genetic_effect_max_altered_env_1_3, $env_effect_min_altered_env_1_3, $env_effect_max_altered_env_1_3, $genetic_effect_sum_square_altered_env_1_3, $genetic_effect_sum_altered_env_1_3, $env_effect_sum_square_altered_env_1_3, $env_effect_sum_altered_env_1_3, $residual_sum_square_altered_env_1_3, $residual_sum_altered_env_1_3, $result_cv_altered_env_1_3,
+                $model_sum_square_residual_altered_env_1_3, $genetic_effect_min_altered_env_1_3, $genetic_effect_max_altered_env_1_3, $env_effect_min_altered_env_1_3, $env_effect_max_altered_env_1_3, $genetic_effect_sum_square_altered_env_1_3, $genetic_effect_sum_altered_env_1_3, $env_effect_sum_square_altered_env_1_3, $env_effect_sum_altered_env_1_3, $residual_sum_square_altered_env_1_3, $residual_sum_altered_env_1_3, $result_cv_altered_env_1_3, $result_cv_2_altered_env_1_3,
 
                 $phenotype_data_altered_env_hash_2_3, $data_matrix_altered_env_array_2_3, $data_matrix_phenotypes_altered_env_array_2_3, $phenotype_min_altered_env_2_3, $phenotype_max_altered_env_2_3, $env_sim_min_2_3, $env_sim_max_2_3, $sim_data_hash_2_3,
                 $result_blup_data_altered_env_2_3, $result_blup_data_delta_altered_env_2_3, $result_blup_spatial_data_altered_env_2_3, $result_blup_pe_data_altered_env_2_3, $result_blup_pe_data_delta_altered_env_2_3, $result_residual_data_altered_env_2_3, $result_fitted_data_altered_env_2_3, $fixed_effects_altered_env_hash_2_3, $rr_genetic_coefficients_altered_env_hash_2_3, $rr_temporal_coefficients_altered_env_hash_2_3,
                 $rr_coeff_genetic_covariance_altered_env_array_2_3, $rr_coeff_env_covariance_altered_env_array_2_3, $rr_coeff_genetic_correlation_altered_env_array_2_3, $rr_coeff_env_correlation_altered_env_array_2_3, $rr_residual_variance_altered_env_2_3, $varcomp_altered_array_env_2_3,
-                $model_sum_square_residual_altered_env_2_3, $genetic_effect_min_altered_env_2_3, $genetic_effect_max_altered_env_2_3, $env_effect_min_altered_env_2_3, $env_effect_max_altered_env_2_3, $genetic_effect_sum_square_altered_env_2_3, $genetic_effect_sum_altered_env_2_3, $env_effect_sum_square_altered_env_2_3, $env_effect_sum_altered_env_2_3, $residual_sum_square_altered_env_2_3, $residual_sum_altered_env_2_3, $result_cv_altered_env_2_3,
+                $model_sum_square_residual_altered_env_2_3, $genetic_effect_min_altered_env_2_3, $genetic_effect_max_altered_env_2_3, $env_effect_min_altered_env_2_3, $env_effect_max_altered_env_2_3, $genetic_effect_sum_square_altered_env_2_3, $genetic_effect_sum_altered_env_2_3, $env_effect_sum_square_altered_env_2_3, $env_effect_sum_altered_env_2_3, $residual_sum_square_altered_env_2_3, $residual_sum_altered_env_2_3, $result_cv_altered_env_2_3, $result_cv_2_altered_env_2_3,
 
                 $phenotype_data_altered_env_hash_3_3, $data_matrix_altered_env_array_3_3, $data_matrix_phenotypes_altered_env_array_3_3, $phenotype_min_altered_env_3_3, $phenotype_max_altered_env_3_3, $env_sim_min_3_3, $env_sim_max_3_3, $sim_data_hash_3_3,
                 $result_blup_data_altered_env_3_3, $result_blup_data_delta_altered_env_3_3, $result_blup_spatial_data_altered_env_3_3, $result_blup_pe_data_altered_env_3_3, $result_blup_pe_data_delta_altered_env_3_3, $result_residual_data_altered_env_3_3, $result_fitted_data_altered_env_3_3, $fixed_effects_altered_env_hash_3_3, $rr_genetic_coefficients_altered_env_hash_3_3, $rr_temporal_coefficients_altered_env_hash_3_3,
                 $rr_coeff_genetic_covariance_altered_env_array_3_3, $rr_coeff_env_covariance_altered_env_array_3_3, $rr_coeff_genetic_correlation_altered_env_array_3_3, $rr_coeff_env_correlation_altered_env_array_3_3, $rr_residual_variance_altered_env_3_3, $varcomp_altered_array_env_3_3,
-                $model_sum_square_residual_altered_env_3_3, $genetic_effect_min_altered_env_3_3, $genetic_effect_max_altered_env_3_3, $env_effect_min_altered_env_3_3, $env_effect_max_altered_env_3_3, $genetic_effect_sum_square_altered_env_3_3, $genetic_effect_sum_altered_env_3_3, $env_effect_sum_square_altered_env_3_3, $env_effect_sum_altered_env_3_3, $residual_sum_square_altered_env_3_3, $residual_sum_altered_env_3_3, $result_cv_altered_env_3_3,
+                $model_sum_square_residual_altered_env_3_3, $genetic_effect_min_altered_env_3_3, $genetic_effect_max_altered_env_3_3, $env_effect_min_altered_env_3_3, $env_effect_max_altered_env_3_3, $genetic_effect_sum_square_altered_env_3_3, $genetic_effect_sum_altered_env_3_3, $env_effect_sum_square_altered_env_3_3, $env_effect_sum_altered_env_3_3, $residual_sum_square_altered_env_3_3, $residual_sum_altered_env_3_3, $result_cv_altered_env_3_3, $result_cv_2_altered_env_3_3,
 
                 $phenotype_data_altered_env_hash_4_3, $data_matrix_altered_env_array_4_3, $data_matrix_phenotypes_altered_env_array_4_3, $phenotype_min_altered_env_4_3, $phenotype_max_altered_env_4_3, $env_sim_min_4_3, $env_sim_max_4_3, $sim_data_hash_4_3,
                 $result_blup_data_altered_env_4_3, $result_blup_data_delta_altered_env_4_3, $result_blup_spatial_data_altered_env_4_3, $result_blup_pe_data_altered_env_4_3, $result_blup_pe_data_delta_altered_env_4_3, $result_residual_data_altered_env_4_3, $result_fitted_data_altered_env_4_3, $fixed_effects_altered_env_hash_4_3, $rr_genetic_coefficients_altered_env_hash_4_3, $rr_temporal_coefficients_altered_env_hash_4_3,
                 $rr_coeff_genetic_covariance_altered_env_array_4_3, $rr_coeff_env_covariance_altered_env_array_4_3, $rr_coeff_genetic_correlation_altered_env_array_4_3, $rr_coeff_env_correlation_altered_env_array_4_3, $rr_residual_variance_altered_env_4_3, $varcomp_altered_array_env_4_3,
-                $model_sum_square_residual_altered_env_4_3, $genetic_effect_min_altered_env_4_3, $genetic_effect_max_altered_env_4_3, $env_effect_min_altered_env_4_3, $env_effect_max_altered_env_4_3, $genetic_effect_sum_square_altered_env_4_3, $genetic_effect_sum_altered_env_4_3, $env_effect_sum_square_altered_env_4_3, $env_effect_sum_altered_env_4_3, $residual_sum_square_altered_env_4_3, $residual_sum_altered_env_4_3, $result_cv_altered_env_4_3,
+                $model_sum_square_residual_altered_env_4_3, $genetic_effect_min_altered_env_4_3, $genetic_effect_max_altered_env_4_3, $env_effect_min_altered_env_4_3, $env_effect_max_altered_env_4_3, $genetic_effect_sum_square_altered_env_4_3, $genetic_effect_sum_altered_env_4_3, $env_effect_sum_square_altered_env_4_3, $env_effect_sum_altered_env_4_3, $residual_sum_square_altered_env_4_3, $residual_sum_altered_env_4_3, $result_cv_altered_env_4_3, $result_cv_2_altered_env_4_3,
 
                 $phenotype_data_altered_env_hash_5_3, $data_matrix_altered_env_array_5_3, $data_matrix_phenotypes_altered_env_array_5_3, $phenotype_min_altered_env_5_3, $phenotype_max_altered_env_5_3, $env_sim_min_5_3, $env_sim_max_5_3, $sim_data_hash_5_3,
                 $result_blup_data_altered_env_5_3, $result_blup_data_delta_altered_env_5_3, $result_blup_spatial_data_altered_env_5_3, $result_blup_pe_data_altered_env_5_3, $result_blup_pe_data_delta_altered_env_5_3, $result_residual_data_altered_env_5_3, $result_fitted_data_altered_env_5_3, $fixed_effects_altered_env_hash_5_3, $rr_genetic_coefficients_altered_env_hash_5_3, $rr_temporal_coefficients_altered_env_hash_5_3,
                 $rr_coeff_genetic_covariance_altered_env_array_5_3, $rr_coeff_env_covariance_altered_env_array_5_3, $rr_coeff_genetic_correlation_altered_env_array_5_3, $rr_coeff_env_correlation_altered_env_array_5_3, $rr_residual_variance_altered_env_5_3, $varcomp_altered_array_env_5_3,
-                $model_sum_square_residual_altered_env_5_3, $genetic_effect_min_altered_env_5_3, $genetic_effect_max_altered_env_5_3, $env_effect_min_altered_env_5_3, $env_effect_max_altered_env_5_3, $genetic_effect_sum_square_altered_env_5_3, $genetic_effect_sum_altered_env_5_3, $env_effect_sum_square_altered_env_5_3, $env_effect_sum_altered_env_5_3, $residual_sum_square_altered_env_5_3, $residual_sum_altered_env_5_3, $result_cv_altered_env_5_3,
+                $model_sum_square_residual_altered_env_5_3, $genetic_effect_min_altered_env_5_3, $genetic_effect_max_altered_env_5_3, $env_effect_min_altered_env_5_3, $env_effect_max_altered_env_5_3, $genetic_effect_sum_square_altered_env_5_3, $genetic_effect_sum_altered_env_5_3, $env_effect_sum_square_altered_env_5_3, $env_effect_sum_altered_env_5_3, $residual_sum_square_altered_env_5_3, $residual_sum_altered_env_5_3, $result_cv_altered_env_5_3, $result_cv_2_altered_env_5_3,
 
                 $phenotype_data_altered_env_hash_6_3, $data_matrix_altered_env_array_6_3, $data_matrix_phenotypes_altered_env_array_6_3, $phenotype_min_altered_env_6_3, $phenotype_max_altered_env_6_3, $env_sim_min_6_3, $env_sim_max_6_3, $sim_data_hash_6_3,
                 $result_blup_data_altered_env_6_3, $result_blup_data_delta_altered_env_6_3, $result_blup_spatial_data_altered_env_6_3, $result_blup_pe_data_altered_env_6_3, $result_blup_pe_data_delta_altered_env_6_3, $result_residual_data_altered_env_6_3, $result_fitted_data_altered_env_6_3, $fixed_effects_altered_env_hash_6_3, $rr_genetic_coefficients_altered_env_hash_6_3, $rr_temporal_coefficients_altered_env_hash_6_3,
                 $rr_coeff_genetic_covariance_altered_env_array_6_3, $rr_coeff_env_covariance_altered_env_array_6_3, $rr_coeff_genetic_correlation_altered_env_array_6_3, $rr_coeff_env_correlation_altered_env_array_6_3, $rr_residual_variance_altered_env_6_3, $varcomp_altered_array_env_6_3,
-                $model_sum_square_residual_altered_env_6_3, $genetic_effect_min_altered_env_6_3, $genetic_effect_max_altered_env_6_3, $env_effect_min_altered_env_6_3, $env_effect_max_altered_env_6_3, $genetic_effect_sum_square_altered_env_6_3, $genetic_effect_sum_altered_env_6_3, $env_effect_sum_square_altered_env_6_3, $env_effect_sum_altered_env_6_3, $residual_sum_square_altered_env_6_3, $residual_sum_altered_env_6_3, $result_cv_altered_env_6_3
+                $model_sum_square_residual_altered_env_6_3, $genetic_effect_min_altered_env_6_3, $genetic_effect_max_altered_env_6_3, $env_effect_min_altered_env_6_3, $env_effect_max_altered_env_6_3, $genetic_effect_sum_square_altered_env_6_3, $genetic_effect_sum_altered_env_6_3, $env_effect_sum_square_altered_env_6_3, $env_effect_sum_altered_env_6_3, $residual_sum_square_altered_env_6_3, $residual_sum_altered_env_6_3, $result_cv_altered_env_6_3, $result_cv_2_altered_env_6_3
                 ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_2, \%trait_name_encoder_rev_2, \%stock_info_2, \%plot_id_map, \@sorted_trait_names_2, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_2, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_2, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_2, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
@@ -9008,43 +9008,43 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 $result_blup_data_original_5, $result_blup_data_delta_original_5, $result_blup_spatial_data_original_5, $result_blup_pe_data_original_5, $result_blup_pe_data_delta_original_5, $result_residual_data_original_5, $result_fitted_data_original_5, $fixed_effects_original_hash_5,
                 $rr_genetic_coefficients_original_hash_5, $rr_temporal_coefficients_original_hash_5,
                 $rr_coeff_genetic_covariance_original_array_5, $rr_coeff_env_covariance_original_array_5, $rr_coeff_genetic_correlation_original_array_5, $rr_coeff_env_correlation_original_array_5, $rr_residual_variance_original_5, $varcomp_original_array_5,
-                $model_sum_square_residual_original_5, $genetic_effect_min_original_5, $genetic_effect_max_original_5, $env_effect_min_original_5, $env_effect_max_original_5, $genetic_effect_sum_square_original_5, $genetic_effect_sum_original_5, $env_effect_sum_square_original_5, $env_effect_sum_original_5, $residual_sum_square_original_5, $residual_sum_original_5, $result_cv_original_5,
+                $model_sum_square_residual_original_5, $genetic_effect_min_original_5, $genetic_effect_max_original_5, $env_effect_min_original_5, $env_effect_max_original_5, $genetic_effect_sum_square_original_5, $genetic_effect_sum_original_5, $env_effect_sum_square_original_5, $env_effect_sum_original_5, $residual_sum_square_original_5, $residual_sum_original_5, $result_cv_original_5, $result_cv_2_original_5,
 
                 $phenotype_data_altered_hash_5, $data_matrix_altered_array_5, $data_matrix_phenotypes_altered_array_5, $phenotype_min_altered_5, $phenotype_max_altered_5,
                 $result_blup_data_altered_5, $result_blup_data_delta_altered_5, $result_blup_spatial_data_altered_5, $result_blup_pe_data_altered_5, $result_blup_pe_data_delta_altered_5, $result_residual_data_altered_5, $result_fitted_data_altered_5, $fixed_effects_altered_hash_5,
                 $rr_genetic_coefficients_altered_hash_5, $rr_temporal_coefficients_altered_hash_5,
                 $rr_coeff_genetic_covariance_altered_array_5, $rr_coeff_env_covariance_altered_array_5, $rr_coeff_genetic_correlation_altered_array_5, $rr_coeff_env_correlation_altered_array_5, $rr_residual_variance_altered_5, $varcomp_altered_array_5,
-                $model_sum_square_residual_altered_5, $genetic_effect_min_altered_5, $genetic_effect_max_altered_5, $env_effect_min_altered_5, $env_effect_max_altered_5, $genetic_effect_sum_square_altered_5, $genetic_effect_sum_altered_5, $env_effect_sum_square_altered_5, $env_effect_sum_altered_5, $residual_sum_square_altered_5, $residual_sum_altered_5, $result_cv_altered_5,
+                $model_sum_square_residual_altered_5, $genetic_effect_min_altered_5, $genetic_effect_max_altered_5, $env_effect_min_altered_5, $env_effect_max_altered_5, $genetic_effect_sum_square_altered_5, $genetic_effect_sum_altered_5, $env_effect_sum_square_altered_5, $env_effect_sum_altered_5, $residual_sum_square_altered_5, $residual_sum_altered_5, $result_cv_altered_5, $result_cv_2_altered_5,
 
                 $phenotype_data_altered_env_hash_1_5, $data_matrix_altered_env_array_1_5, $data_matrix_phenotypes_altered_env_array_1_5, $phenotype_min_altered_env_1_5, $phenotype_max_altered_env_1_5, $env_sim_min_1_5, $env_sim_max_1_5, $sim_data_hash_1_5,
                 $result_blup_data_altered_env_1_5, $result_blup_data_delta_altered_env_1_5, $result_blup_spatial_data_altered_env_1_5, $result_blup_pe_data_altered_env_1_5, $result_blup_pe_data_delta_altered_env_1_5, $result_residual_data_altered_env_1_5, $result_fitted_data_altered_env_1_5, $fixed_effects_altered_env_hash_1_5, $rr_genetic_coefficients_altered_env_hash_1_5, $rr_temporal_coefficients_altered_env_hash_1_5,
                 $rr_coeff_genetic_covariance_altered_env_array_1_5, $rr_coeff_env_covariance_altered_env_array_1_5, $rr_coeff_genetic_correlation_altered_env_array_1_5, $rr_coeff_env_correlation_altered_env_array_1_5, $rr_residual_variance_altered_env_1_5, $varcomp_altered_array_env_1_5,
-                $model_sum_square_residual_altered_env_1_5, $genetic_effect_min_altered_env_1_5, $genetic_effect_max_altered_env_1_5, $env_effect_min_altered_env_1_5, $env_effect_max_altered_env_1_5, $genetic_effect_sum_square_altered_env_1_5, $genetic_effect_sum_altered_env_1_5, $env_effect_sum_square_altered_env_1_5, $env_effect_sum_altered_env_1_5, $residual_sum_square_altered_env_1_5, $residual_sum_altered_env_1_5, $result_cv_altered_env_1_5,
+                $model_sum_square_residual_altered_env_1_5, $genetic_effect_min_altered_env_1_5, $genetic_effect_max_altered_env_1_5, $env_effect_min_altered_env_1_5, $env_effect_max_altered_env_1_5, $genetic_effect_sum_square_altered_env_1_5, $genetic_effect_sum_altered_env_1_5, $env_effect_sum_square_altered_env_1_5, $env_effect_sum_altered_env_1_5, $residual_sum_square_altered_env_1_5, $residual_sum_altered_env_1_5, $result_cv_altered_env_1_5, $result_cv_2_altered_env_1_5,
 
                 $phenotype_data_altered_env_hash_2_5, $data_matrix_altered_env_array_2_5, $data_matrix_phenotypes_altered_env_array_2_5, $phenotype_min_altered_env_2_5, $phenotype_max_altered_env_2_5, $env_sim_min_2_5, $env_sim_max_2_5, $sim_data_hash_2_5,
                 $result_blup_data_altered_env_2_5, $result_blup_data_delta_altered_env_2_5, $result_blup_spatial_data_altered_env_2_5, $result_blup_pe_data_altered_env_2_5, $result_blup_pe_data_delta_altered_env_2_5, $result_residual_data_altered_env_2_5, $result_fitted_data_altered_env_2_5, $fixed_effects_altered_env_hash_2_5, $rr_genetic_coefficients_altered_env_hash_2_5, $rr_temporal_coefficients_altered_env_hash_2_5,
                 $rr_coeff_genetic_covariance_altered_env_array_2_5, $rr_coeff_env_covariance_altered_env_array_2_5, $rr_coeff_genetic_correlation_altered_env_array_2_5, $rr_coeff_env_correlation_altered_env_array_2_5, $rr_residual_variance_altered_env_2_5, $varcomp_altered_array_env_2_5,
-                $model_sum_square_residual_altered_env_2_5, $genetic_effect_min_altered_env_2_5, $genetic_effect_max_altered_env_2_5, $env_effect_min_altered_env_2_5, $env_effect_max_altered_env_2_5, $genetic_effect_sum_square_altered_env_2_5, $genetic_effect_sum_altered_env_2_5, $env_effect_sum_square_altered_env_2_5, $env_effect_sum_altered_env_2_5, $residual_sum_square_altered_env_2_5, $residual_sum_altered_env_2_5, $result_cv_altered_env_2_5,
+                $model_sum_square_residual_altered_env_2_5, $genetic_effect_min_altered_env_2_5, $genetic_effect_max_altered_env_2_5, $env_effect_min_altered_env_2_5, $env_effect_max_altered_env_2_5, $genetic_effect_sum_square_altered_env_2_5, $genetic_effect_sum_altered_env_2_5, $env_effect_sum_square_altered_env_2_5, $env_effect_sum_altered_env_2_5, $residual_sum_square_altered_env_2_5, $residual_sum_altered_env_2_5, $result_cv_altered_env_2_5, $result_cv_2_altered_env_2_5,
 
                 $phenotype_data_altered_env_hash_3_5, $data_matrix_altered_env_array_3_5, $data_matrix_phenotypes_altered_env_array_3_5, $phenotype_min_altered_env_3_5, $phenotype_max_altered_env_3_5, $env_sim_min_3_5, $env_sim_max_3_5, $sim_data_hash_3_5,
                 $result_blup_data_altered_env_3_5, $result_blup_data_delta_altered_env_3_5, $result_blup_spatial_data_altered_env_3_5, $result_blup_pe_data_altered_env_3_5, $result_blup_pe_data_delta_altered_env_3_5, $result_residual_data_altered_env_3_5, $result_fitted_data_altered_env_3_5, $fixed_effects_altered_env_hash_3_5, $rr_genetic_coefficients_altered_env_hash_3_5, $rr_temporal_coefficients_altered_env_hash_3_5,
                 $rr_coeff_genetic_covariance_altered_env_array_3_5, $rr_coeff_env_covariance_altered_env_array_3_5, $rr_coeff_genetic_correlation_altered_env_array_3_5, $rr_coeff_env_correlation_altered_env_array_3_5, $rr_residual_variance_altered_env_3_5, $varcomp_altered_array_env_3_5,
-                $model_sum_square_residual_altered_env_3_5, $genetic_effect_min_altered_env_3_5, $genetic_effect_max_altered_env_3_5, $env_effect_min_altered_env_3_5, $env_effect_max_altered_env_3_5, $genetic_effect_sum_square_altered_env_3_5, $genetic_effect_sum_altered_env_3_5, $env_effect_sum_square_altered_env_3_5, $env_effect_sum_altered_env_3_5, $residual_sum_square_altered_env_3_5, $residual_sum_altered_env_3_5, $result_cv_altered_env_3_5,
+                $model_sum_square_residual_altered_env_3_5, $genetic_effect_min_altered_env_3_5, $genetic_effect_max_altered_env_3_5, $env_effect_min_altered_env_3_5, $env_effect_max_altered_env_3_5, $genetic_effect_sum_square_altered_env_3_5, $genetic_effect_sum_altered_env_3_5, $env_effect_sum_square_altered_env_3_5, $env_effect_sum_altered_env_3_5, $residual_sum_square_altered_env_3_5, $residual_sum_altered_env_3_5, $result_cv_altered_env_3_5, $result_cv_2_altered_env_3_5,
 
                 $phenotype_data_altered_env_hash_4_5, $data_matrix_altered_env_array_4_5, $data_matrix_phenotypes_altered_env_array_4_5, $phenotype_min_altered_env_4_5, $phenotype_max_altered_env_4_5, $env_sim_min_4_5, $env_sim_max_4_5, $sim_data_hash_4_5,
                 $result_blup_data_altered_env_4_5, $result_blup_data_delta_altered_env_4_5, $result_blup_spatial_data_altered_env_4_5, $result_blup_pe_data_altered_env_4_5, $result_blup_pe_data_delta_altered_env_4_5, $result_residual_data_altered_env_4_5, $result_fitted_data_altered_env_4_5, $fixed_effects_altered_env_hash_4_5, $rr_genetic_coefficients_altered_env_hash_4_5, $rr_temporal_coefficients_altered_env_hash_4_5,
                 $rr_coeff_genetic_covariance_altered_env_array_4_5, $rr_coeff_env_covariance_altered_env_array_4_5, $rr_coeff_genetic_correlation_altered_env_array_4_5, $rr_coeff_env_correlation_altered_env_array_4_5, $rr_residual_variance_altered_env_4_5, $varcomp_altered_array_env_4_5,
-                $model_sum_square_residual_altered_env_4_5, $genetic_effect_min_altered_env_4_5, $genetic_effect_max_altered_env_4_5, $env_effect_min_altered_env_4_5, $env_effect_max_altered_env_4_5, $genetic_effect_sum_square_altered_env_4_5, $genetic_effect_sum_altered_env_4_5, $env_effect_sum_square_altered_env_4_5, $env_effect_sum_altered_env_4_5, $residual_sum_square_altered_env_4_5, $residual_sum_altered_env_4_5, $result_cv_altered_env_4_5,
+                $model_sum_square_residual_altered_env_4_5, $genetic_effect_min_altered_env_4_5, $genetic_effect_max_altered_env_4_5, $env_effect_min_altered_env_4_5, $env_effect_max_altered_env_4_5, $genetic_effect_sum_square_altered_env_4_5, $genetic_effect_sum_altered_env_4_5, $env_effect_sum_square_altered_env_4_5, $env_effect_sum_altered_env_4_5, $residual_sum_square_altered_env_4_5, $residual_sum_altered_env_4_5, $result_cv_altered_env_4_5, $result_cv_2_altered_env_4_5,
 
                 $phenotype_data_altered_env_hash_5_5, $data_matrix_altered_env_array_5_5, $data_matrix_phenotypes_altered_env_array_5_5, $phenotype_min_altered_env_5_5, $phenotype_max_altered_env_5_5, $env_sim_min_5_5, $env_sim_max_5_5, $sim_data_hash_5_5,
                 $result_blup_data_altered_env_5_5, $result_blup_data_delta_altered_env_5_5, $result_blup_spatial_data_altered_env_5_5, $result_blup_pe_data_altered_env_5_5, $result_blup_pe_data_delta_altered_env_5_5, $result_residual_data_altered_env_5_5, $result_fitted_data_altered_env_5_5, $fixed_effects_altered_env_hash_5_5, $rr_genetic_coefficients_altered_env_hash_5_5, $rr_temporal_coefficients_altered_env_hash_5_5,
                 $rr_coeff_genetic_covariance_altered_env_array_5_5, $rr_coeff_env_covariance_altered_env_array_5_5, $rr_coeff_genetic_correlation_altered_env_array_5_5, $rr_coeff_env_correlation_altered_env_array_5_5, $rr_residual_variance_altered_env_5_5, $varcomp_altered_array_env_5_5,
-                $model_sum_square_residual_altered_env_5_5, $genetic_effect_min_altered_env_5_5, $genetic_effect_max_altered_env_5_5, $env_effect_min_altered_env_5_5, $env_effect_max_altered_env_5_5, $genetic_effect_sum_square_altered_env_5_5, $genetic_effect_sum_altered_env_5_5, $env_effect_sum_square_altered_env_5_5, $env_effect_sum_altered_env_5_5, $residual_sum_square_altered_env_5_5, $residual_sum_altered_env_5_5, $result_cv_altered_env_5_5,
+                $model_sum_square_residual_altered_env_5_5, $genetic_effect_min_altered_env_5_5, $genetic_effect_max_altered_env_5_5, $env_effect_min_altered_env_5_5, $env_effect_max_altered_env_5_5, $genetic_effect_sum_square_altered_env_5_5, $genetic_effect_sum_altered_env_5_5, $env_effect_sum_square_altered_env_5_5, $env_effect_sum_altered_env_5_5, $residual_sum_square_altered_env_5_5, $residual_sum_altered_env_5_5, $result_cv_altered_env_5_5, $result_cv_2_altered_env_5_5,
 
                 $phenotype_data_altered_env_hash_6_5, $data_matrix_altered_env_array_6_5, $data_matrix_phenotypes_altered_env_array_6_5, $phenotype_min_altered_env_6_5, $phenotype_max_altered_env_6_5, $env_sim_min_6_5, $env_sim_max_6_5, $sim_data_hash_6_5,
                 $result_blup_data_altered_env_6_5, $result_blup_data_delta_altered_env_6_5, $result_blup_spatial_data_altered_env_6_5, $result_blup_pe_data_altered_env_6_5, $result_blup_pe_data_delta_altered_env_6_5, $result_residual_data_altered_env_6_5, $result_fitted_data_altered_env_6_5, $fixed_effects_altered_env_hash_6_5, $rr_genetic_coefficients_altered_env_hash_6_5, $rr_temporal_coefficients_altered_env_hash_6_5,
                 $rr_coeff_genetic_covariance_altered_env_array_6_5, $rr_coeff_env_covariance_altered_env_array_6_5, $rr_coeff_genetic_correlation_altered_env_array_6_5, $rr_coeff_env_correlation_altered_env_array_6_5, $rr_residual_variance_altered_env_6_5, $varcomp_altered_array_env_6_5,
-                $model_sum_square_residual_altered_env_6_5, $genetic_effect_min_altered_env_6_5, $genetic_effect_max_altered_env_6_5, $env_effect_min_altered_env_6_5, $env_effect_max_altered_env_6_5, $genetic_effect_sum_square_altered_env_6_5, $genetic_effect_sum_altered_env_6_5, $env_effect_sum_square_altered_env_6_5, $env_effect_sum_altered_env_6_5, $residual_sum_square_altered_env_6_5, $residual_sum_altered_env_6_5, $result_cv_altered_env_6_5
+                $model_sum_square_residual_altered_env_6_5, $genetic_effect_min_altered_env_6_5, $genetic_effect_max_altered_env_6_5, $env_effect_min_altered_env_6_5, $env_effect_max_altered_env_6_5, $genetic_effect_sum_square_altered_env_6_5, $genetic_effect_sum_altered_env_6_5, $env_effect_sum_square_altered_env_6_5, $env_effect_sum_altered_env_6_5, $residual_sum_square_altered_env_6_5, $residual_sum_altered_env_6_5, $result_cv_altered_env_6_5, $result_cv_2_altered_env_6_5
                 ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_5, \%trait_name_encoder_rev_5, \%stock_info_5, \%plot_id_map, \@sorted_trait_names_5, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_5, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_5, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_5, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
@@ -11365,43 +11365,43 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 $result_blup_data_original_6, $result_blup_data_delta_original_6, $result_blup_spatial_data_original_6, $result_blup_pe_data_original_6, $result_blup_pe_data_delta_original_6, $result_residual_data_original_6, $result_fitted_data_original_6, $fixed_effects_original_hash_6,
                 $rr_genetic_coefficients_original_hash_6, $rr_temporal_coefficients_original_hash_6,
                 $rr_coeff_genetic_covariance_original_array_6, $rr_coeff_env_covariance_original_array_6, $rr_coeff_genetic_correlation_original_array_6, $rr_coeff_env_correlation_original_array_6, $rr_residual_variance_original_6, $varcomp_original_array_6,
-                $model_sum_square_residual_original_6, $genetic_effect_min_original_6, $genetic_effect_max_original_6, $env_effect_min_original_6, $env_effect_max_original_6, $genetic_effect_sum_square_original_6, $genetic_effect_sum_original_6, $env_effect_sum_square_original_6, $env_effect_sum_original_6, $residual_sum_square_original_6, $residual_sum_original_6, $result_cv_original_6,
+                $model_sum_square_residual_original_6, $genetic_effect_min_original_6, $genetic_effect_max_original_6, $env_effect_min_original_6, $env_effect_max_original_6, $genetic_effect_sum_square_original_6, $genetic_effect_sum_original_6, $env_effect_sum_square_original_6, $env_effect_sum_original_6, $residual_sum_square_original_6, $residual_sum_original_6, $result_cv_original_6, $result_cv_2_original_6,
 
                 $phenotype_data_altered_hash_6, $data_matrix_altered_array_6, $data_matrix_phenotypes_altered_array_6, $phenotype_min_altered_6, $phenotype_max_altered_6,
                 $result_blup_data_altered_6, $result_blup_data_delta_altered_6, $result_blup_spatial_data_altered_6, $result_blup_pe_data_altered_6, $result_blup_pe_data_delta_altered_6, $result_residual_data_altered_6, $result_fitted_data_altered_6, $fixed_effects_altered_hash_6,
                 $rr_genetic_coefficients_altered_hash_6, $rr_temporal_coefficients_altered_hash_6,
                 $rr_coeff_genetic_covariance_altered_array_6, $rr_coeff_env_covariance_altered_array_6, $rr_coeff_genetic_correlation_altered_array_6, $rr_coeff_env_correlation_altered_array_6, $rr_residual_variance_altered_6, $varcomp_altered_array_6,
-                $model_sum_square_residual_altered_6, $genetic_effect_min_altered_6, $genetic_effect_max_altered_6, $env_effect_min_altered_6, $env_effect_max_altered_6, $genetic_effect_sum_square_altered_6, $genetic_effect_sum_altered_6, $env_effect_sum_square_altered_6, $env_effect_sum_altered_6, $residual_sum_square_altered_6, $residual_sum_altered_6, $result_cv_altered_6,
+                $model_sum_square_residual_altered_6, $genetic_effect_min_altered_6, $genetic_effect_max_altered_6, $env_effect_min_altered_6, $env_effect_max_altered_6, $genetic_effect_sum_square_altered_6, $genetic_effect_sum_altered_6, $env_effect_sum_square_altered_6, $env_effect_sum_altered_6, $residual_sum_square_altered_6, $residual_sum_altered_6, $result_cv_altered_6, $result_cv_2_altered_6,
 
                 $phenotype_data_altered_env_hash_1_6, $data_matrix_altered_env_array_1_6, $data_matrix_phenotypes_altered_env_array_1_6, $phenotype_min_altered_env_1_6, $phenotype_max_altered_env_1_6, $env_sim_min_1_6, $env_sim_max_1_6, $sim_data_hash_1_6,
                 $result_blup_data_altered_env_1_6, $result_blup_data_delta_altered_env_1_6, $result_blup_spatial_data_altered_env_1_6, $result_blup_pe_data_altered_env_1_6, $result_blup_pe_data_delta_altered_env_1_6, $result_residual_data_altered_env_1_6, $result_fitted_data_altered_env_1_6, $fixed_effects_altered_env_hash_1_6, $rr_genetic_coefficients_altered_env_hash_1_6, $rr_temporal_coefficients_altered_env_hash_1_6,
                 $rr_coeff_genetic_covariance_altered_env_array_1_6, $rr_coeff_env_covariance_altered_env_array_1_6, $rr_coeff_genetic_correlation_altered_env_array_1_6, $rr_coeff_env_correlation_altered_env_array_1_6, $rr_residual_variance_altered_env_1_6, $varcomp_altered_array_env_1_6,
-                $model_sum_square_residual_altered_env_1_6, $genetic_effect_min_altered_env_1_6, $genetic_effect_max_altered_env_1_6, $env_effect_min_altered_env_1_6, $env_effect_max_altered_env_1_6, $genetic_effect_sum_square_altered_env_1_6, $genetic_effect_sum_altered_env_1_6, $env_effect_sum_square_altered_env_1_6, $env_effect_sum_altered_env_1_6, $residual_sum_square_altered_env_1_6, $residual_sum_altered_env_1_6, $result_cv_altered_env_1_6,
+                $model_sum_square_residual_altered_env_1_6, $genetic_effect_min_altered_env_1_6, $genetic_effect_max_altered_env_1_6, $env_effect_min_altered_env_1_6, $env_effect_max_altered_env_1_6, $genetic_effect_sum_square_altered_env_1_6, $genetic_effect_sum_altered_env_1_6, $env_effect_sum_square_altered_env_1_6, $env_effect_sum_altered_env_1_6, $residual_sum_square_altered_env_1_6, $residual_sum_altered_env_1_6, $result_cv_altered_env_1_6, $result_cv_2_altered_env_1_6,
 
                 $phenotype_data_altered_env_hash_2_6, $data_matrix_altered_env_array_2_6, $data_matrix_phenotypes_altered_env_array_2_6, $phenotype_min_altered_env_2_6, $phenotype_max_altered_env_2_6, $env_sim_min_2_6, $env_sim_max_2_6, $sim_data_hash_2_6,
                 $result_blup_data_altered_env_2_6, $result_blup_data_delta_altered_env_2_6, $result_blup_spatial_data_altered_env_2_6, $result_blup_pe_data_altered_env_2_6, $result_blup_pe_data_delta_altered_env_2_6, $result_residual_data_altered_env_2_6, $result_fitted_data_altered_env_2_6, $fixed_effects_altered_env_hash_2_6, $rr_genetic_coefficients_altered_env_hash_2_6, $rr_temporal_coefficients_altered_env_hash_2_6,
                 $rr_coeff_genetic_covariance_altered_env_array_2_6, $rr_coeff_env_covariance_altered_env_array_2_6, $rr_coeff_genetic_correlation_altered_env_array_2_6, $rr_coeff_env_correlation_altered_env_array_2_6, $rr_residual_variance_altered_env_2_6, $varcomp_altered_array_env_2_6,
-                $model_sum_square_residual_altered_env_2_6, $genetic_effect_min_altered_env_2_6, $genetic_effect_max_altered_env_2_6, $env_effect_min_altered_env_2_6, $env_effect_max_altered_env_2_6, $genetic_effect_sum_square_altered_env_2_6, $genetic_effect_sum_altered_env_2_6, $env_effect_sum_square_altered_env_2_6, $env_effect_sum_altered_env_2_6, $residual_sum_square_altered_env_2_6, $residual_sum_altered_env_2_6, $result_cv_altered_env_2_6,
+                $model_sum_square_residual_altered_env_2_6, $genetic_effect_min_altered_env_2_6, $genetic_effect_max_altered_env_2_6, $env_effect_min_altered_env_2_6, $env_effect_max_altered_env_2_6, $genetic_effect_sum_square_altered_env_2_6, $genetic_effect_sum_altered_env_2_6, $env_effect_sum_square_altered_env_2_6, $env_effect_sum_altered_env_2_6, $residual_sum_square_altered_env_2_6, $residual_sum_altered_env_2_6, $result_cv_altered_env_2_6, $result_cv_2_altered_env_2_6,
 
                 $phenotype_data_altered_env_hash_3_6, $data_matrix_altered_env_array_3_6, $data_matrix_phenotypes_altered_env_array_3_6, $phenotype_min_altered_env_3_6, $phenotype_max_altered_env_3_6, $env_sim_min_3_6, $env_sim_max_3_6, $sim_data_hash_3_6,
                 $result_blup_data_altered_env_3_6, $result_blup_data_delta_altered_env_3_6, $result_blup_spatial_data_altered_env_3_6, $result_blup_pe_data_altered_env_3_6, $result_blup_pe_data_delta_altered_env_3_6, $result_residual_data_altered_env_3_6, $result_fitted_data_altered_env_3_6, $fixed_effects_altered_env_hash_3_6, $rr_genetic_coefficients_altered_env_hash_3_6, $rr_temporal_coefficients_altered_env_hash_3_6,
                 $rr_coeff_genetic_covariance_altered_env_array_3_6, $rr_coeff_env_covariance_altered_env_array_3_6, $rr_coeff_genetic_correlation_altered_env_array_3_6, $rr_coeff_env_correlation_altered_env_array_3_6, $rr_residual_variance_altered_env_3_6, $varcomp_altered_array_env_3_6,
-                $model_sum_square_residual_altered_env_3_6, $genetic_effect_min_altered_env_3_6, $genetic_effect_max_altered_env_3_6, $env_effect_min_altered_env_3_6, $env_effect_max_altered_env_3_6, $genetic_effect_sum_square_altered_env_3_6, $genetic_effect_sum_altered_env_3_6, $env_effect_sum_square_altered_env_3_6, $env_effect_sum_altered_env_3_6, $residual_sum_square_altered_env_3_6, $residual_sum_altered_env_3_6, $result_cv_altered_env_3_6,
+                $model_sum_square_residual_altered_env_3_6, $genetic_effect_min_altered_env_3_6, $genetic_effect_max_altered_env_3_6, $env_effect_min_altered_env_3_6, $env_effect_max_altered_env_3_6, $genetic_effect_sum_square_altered_env_3_6, $genetic_effect_sum_altered_env_3_6, $env_effect_sum_square_altered_env_3_6, $env_effect_sum_altered_env_3_6, $residual_sum_square_altered_env_3_6, $residual_sum_altered_env_3_6, $result_cv_altered_env_3_6, $result_cv_2_altered_env_3_6,
 
                 $phenotype_data_altered_env_hash_4_6, $data_matrix_altered_env_array_4_6, $data_matrix_phenotypes_altered_env_array_4_6, $phenotype_min_altered_env_4_6, $phenotype_max_altered_env_4_6, $env_sim_min_4_6, $env_sim_max_4_6, $sim_data_hash_4_6,
                 $result_blup_data_altered_env_4_6, $result_blup_data_delta_altered_env_4_6, $result_blup_spatial_data_altered_env_4_6, $result_blup_pe_data_altered_env_4_6, $result_blup_pe_data_delta_altered_env_4_6, $result_residual_data_altered_env_4_6, $result_fitted_data_altered_env_4_6, $fixed_effects_altered_env_hash_4_6, $rr_genetic_coefficients_altered_env_hash_4_6, $rr_temporal_coefficients_altered_env_hash_4_6,
                 $rr_coeff_genetic_covariance_altered_env_array_4_6, $rr_coeff_env_covariance_altered_env_array_4_6, $rr_coeff_genetic_correlation_altered_env_array_4_6, $rr_coeff_env_correlation_altered_env_array_4_6, $rr_residual_variance_altered_env_4_6, $varcomp_altered_array_env_4_6,
-                $model_sum_square_residual_altered_env_4_6, $genetic_effect_min_altered_env_4_6, $genetic_effect_max_altered_env_4_6, $env_effect_min_altered_env_4_6, $env_effect_max_altered_env_4_6, $genetic_effect_sum_square_altered_env_4_6, $genetic_effect_sum_altered_env_4_6, $env_effect_sum_square_altered_env_4_6, $env_effect_sum_altered_env_4_6, $residual_sum_square_altered_env_4_6, $residual_sum_altered_env_4_6, $result_cv_altered_env_4_6,
+                $model_sum_square_residual_altered_env_4_6, $genetic_effect_min_altered_env_4_6, $genetic_effect_max_altered_env_4_6, $env_effect_min_altered_env_4_6, $env_effect_max_altered_env_4_6, $genetic_effect_sum_square_altered_env_4_6, $genetic_effect_sum_altered_env_4_6, $env_effect_sum_square_altered_env_4_6, $env_effect_sum_altered_env_4_6, $residual_sum_square_altered_env_4_6, $residual_sum_altered_env_4_6, $result_cv_altered_env_4_6, $result_cv_2_altered_env_4_6,
 
                 $phenotype_data_altered_env_hash_5_6, $data_matrix_altered_env_array_5_6, $data_matrix_phenotypes_altered_env_array_5_6, $phenotype_min_altered_env_5_6, $phenotype_max_altered_env_5_6, $env_sim_min_5_6, $env_sim_max_5_6, $sim_data_hash_5_6,
                 $result_blup_data_altered_env_5_6, $result_blup_data_delta_altered_env_5_6, $result_blup_spatial_data_altered_env_5_6, $result_blup_pe_data_altered_env_5_6, $result_blup_pe_data_delta_altered_env_5_6, $result_residual_data_altered_env_5_6, $result_fitted_data_altered_env_5_6, $fixed_effects_altered_env_hash_5_6, $rr_genetic_coefficients_altered_env_hash_5_6, $rr_temporal_coefficients_altered_env_hash_5_6,
                 $rr_coeff_genetic_covariance_altered_env_array_5_6, $rr_coeff_env_covariance_altered_env_array_5_6, $rr_coeff_genetic_correlation_altered_env_array_5_6, $rr_coeff_env_correlation_altered_env_array_5_6, $rr_residual_variance_altered_env_5_6, $varcomp_altered_array_env_5_6,
-                $model_sum_square_residual_altered_env_5_6, $genetic_effect_min_altered_env_5_6, $genetic_effect_max_altered_env_5_6, $env_effect_min_altered_env_5_6, $env_effect_max_altered_env_5_6, $genetic_effect_sum_square_altered_env_5_6, $genetic_effect_sum_altered_env_5_6, $env_effect_sum_square_altered_env_5_6, $env_effect_sum_altered_env_5_6, $residual_sum_square_altered_env_5_6, $residual_sum_altered_env_5_6, $result_cv_altered_env_5_6,
+                $model_sum_square_residual_altered_env_5_6, $genetic_effect_min_altered_env_5_6, $genetic_effect_max_altered_env_5_6, $env_effect_min_altered_env_5_6, $env_effect_max_altered_env_5_6, $genetic_effect_sum_square_altered_env_5_6, $genetic_effect_sum_altered_env_5_6, $env_effect_sum_square_altered_env_5_6, $env_effect_sum_altered_env_5_6, $residual_sum_square_altered_env_5_6, $residual_sum_altered_env_5_6, $result_cv_altered_env_5_6, $result_cv_2_altered_env_5_6,
 
                 $phenotype_data_altered_env_hash_6_6, $data_matrix_altered_env_array_6_6, $data_matrix_phenotypes_altered_env_array_6_6, $phenotype_min_altered_env_6_6, $phenotype_max_altered_env_6_6, $env_sim_min_6_6, $env_sim_max_6_6, $sim_data_hash_6_6,
                 $result_blup_data_altered_env_6_6, $result_blup_data_delta_altered_env_6_6, $result_blup_spatial_data_altered_env_6_6, $result_blup_pe_data_altered_env_6_6, $result_blup_pe_data_delta_altered_env_6_6, $result_residual_data_altered_env_6_6, $result_fitted_data_altered_env_6_6, $fixed_effects_altered_env_hash_6_6, $rr_genetic_coefficients_altered_env_hash_6_6, $rr_temporal_coefficients_altered_env_hash_6_6,
                 $rr_coeff_genetic_covariance_altered_env_array_6_6, $rr_coeff_env_covariance_altered_env_array_6_6, $rr_coeff_genetic_correlation_altered_env_array_6_6, $rr_coeff_env_correlation_altered_env_array_6_6, $rr_residual_variance_altered_env_6_6, $varcomp_altered_array_env_6_6,
-                $model_sum_square_residual_altered_env_6_6, $genetic_effect_min_altered_env_6_6, $genetic_effect_max_altered_env_6_6, $env_effect_min_altered_env_6_6, $env_effect_max_altered_env_6_6, $genetic_effect_sum_square_altered_env_6_6, $genetic_effect_sum_altered_env_6_6, $env_effect_sum_square_altered_env_6_6, $env_effect_sum_altered_env_6_6, $residual_sum_square_altered_env_6_6, $residual_sum_altered_env_6_6, $result_cv_altered_env_6_6
+                $model_sum_square_residual_altered_env_6_6, $genetic_effect_min_altered_env_6_6, $genetic_effect_max_altered_env_6_6, $env_effect_min_altered_env_6_6, $env_effect_max_altered_env_6_6, $genetic_effect_sum_square_altered_env_6_6, $genetic_effect_sum_altered_env_6_6, $env_effect_sum_square_altered_env_6_6, $env_effect_sum_altered_env_6_6, $residual_sum_square_altered_env_6_6, $residual_sum_altered_env_6_6, $result_cv_altered_env_6_6, $result_cv_2_altered_env_6_6
                 ) = _perform_drone_imagery_analytics($c, $schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, \@legendre_coeff_exec, \%trait_name_encoder_6, \%trait_name_encoder_rev_6, \%stock_info_6, \%plot_id_map, \@sorted_trait_names_6, \%accession_id_factor_map, \@rep_time_factors, \@ind_rep_factors, \@unique_accession_names, \%plot_id_count_map_reverse, \@sorted_scaled_ln_times, \%time_count_map_reverse, \%accession_id_factor_map_reverse, \%seen_times, \%plot_id_factor_map_reverse, \%trait_to_time_map_6, \@unique_plot_names, \%stock_name_row_col, \%phenotype_data_original_6, \%plot_rep_time_factor_map, \%stock_row_col, \%stock_row_col_id, \%polynomial_map, \@plot_ids_ordered, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string_6, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type);
 
                 eval {
@@ -12993,6 +12993,11 @@ sub _perform_drone_imagery_analytics {
     my $model_sum_square_cv3_original = 0;
     my $model_sum_square_cv4_original = 0;
     my $model_sum_square_cv5_original = 0;
+    my $model_sum_square_cv1_2_original = 0;
+    my $model_sum_square_cv2_2_original = 0;
+    my $model_sum_square_cv3_2_original = 0;
+    my $model_sum_square_cv4_2_original = 0;
+    my $model_sum_square_cv5_2_original = 0;
     my $genetic_effect_min_original = 1000000000;
     my $genetic_effect_max_original = -1000000000;
     my $env_effect_min_original = 1000000000;
@@ -13003,6 +13008,7 @@ sub _perform_drone_imagery_analytics {
     my $env_effect_sum_original = 0;
     my $residual_sum_square_original = 0;
     my $residual_sum_original = 0;
+    my (@param_file_rows_data, @param_file_rows_data_cv1, @param_file_rows_data_cv2, @param_file_rows_data_cv3, @param_file_rows_data_cv4, @param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5, @param_file_rows_6, @param_file_rows_7);
 
     my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
@@ -13010,11 +13016,23 @@ sub _perform_drone_imagery_analytics {
     my ($stats_out_cv4_predict_tempfile_fh, $stats_out_cv4_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_cv5_predict_tempfile_fh, $stats_out_cv5_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
 
+    my ($stats_out_cv1_2_predict_tempfile_fh, $stats_out_cv1_2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_out_cv2_2_predict_tempfile_fh, $stats_out_cv2_2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_out_cv3_2_predict_tempfile_fh, $stats_out_cv3_2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_out_cv4_2_predict_tempfile_fh, $stats_out_cv4_2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_out_cv5_2_predict_tempfile_fh, $stats_out_cv5_2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
     my ($parameter_tempfile_cv1_fh, $parameter_tempfile_cv1) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($parameter_tempfile_cv2_fh, $parameter_tempfile_cv2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($parameter_tempfile_cv3_fh, $parameter_tempfile_cv3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($parameter_tempfile_cv4_fh, $parameter_tempfile_cv4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($parameter_tempfile_cv5_fh, $parameter_tempfile_cv5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
+    my ($parameter_tempfile_cv1_2_fh, $parameter_tempfile_cv1_2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($parameter_tempfile_cv2_2_fh, $parameter_tempfile_cv2_2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($parameter_tempfile_cv3_2_fh, $parameter_tempfile_cv3_2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($parameter_tempfile_cv4_2_fh, $parameter_tempfile_cv4_2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($parameter_tempfile_cv5_2_fh, $parameter_tempfile_cv5_2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
 
     print STDERR "RUN FIRST ENV ESTIMATION\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
@@ -13915,22 +13933,29 @@ sub _perform_drone_imagery_analytics {
         randomized_positions <- sample(length(mat[,1]));
         cv_step_size <- length(mat[,1]) %/% 5;
         cv_step_size_modulo <- length(mat[,1]) %% 5;
-        mat_CV1 <- mat;
-        mat_CV2 <- mat;
-        mat_CV3 <- mat;
-        mat_CV4 <- mat;
-        mat_CV5 <- mat;
+        mat_CV1 <- mat; mat_CV2 <- mat; mat_CV3 <- mat; mat_CV4 <- mat; mat_CV5 <- mat;
         mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV1_2 <- mat; mat_CV2_2 <- mat; mat_CV3_2 <- mat; mat_CV4_2 <- mat; mat_CV5_2 <- mat;
+        mat_CV1_2[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- -999;
+        mat_CV2_2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV3_2[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV4_2[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV5_2[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- -999;
         write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1_2, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2_2, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3_2, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4_2, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5_2, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         "';
         my $status_cv_files = system($data_cv_cmd);
 
@@ -13940,13 +13965,19 @@ sub _perform_drone_imagery_analytics {
         my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
         my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
 
-        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
-        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
-        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
-        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
-        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
-        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
-        my @param_file_rows = (
+        my $stats_out_cv1_2_predict_tempfile_basename = basename($stats_out_cv1_2_predict_tempfile);
+        my $stats_out_cv2_2_predict_tempfile_basename = basename($stats_out_cv2_2_predict_tempfile);
+        my $stats_out_cv3_2_predict_tempfile_basename = basename($stats_out_cv3_2_predict_tempfile);
+        my $stats_out_cv4_2_predict_tempfile_basename = basename($stats_out_cv4_2_predict_tempfile);
+        my $stats_out_cv5_2_predict_tempfile_basename = basename($stats_out_cv5_2_predict_tempfile);
+
+        @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
+        @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
+        @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
+        @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
+        @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
+        @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
+        @param_file_rows_1 = (
             'NUMBER_OF_TRAITS',
             '1',
             'NUMBER_OF_EFFECTS',
@@ -13960,13 +13991,13 @@ sub _perform_drone_imagery_analytics {
         );
         my $p_counter = 1;
         foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p_counter.' '.$effect_grm_levels.' cov 1';
+            push @param_file_rows_1, 6+$p_counter.' '.$effect_grm_levels.' cov 1';
             $p_counter++;
         }
         my $p2_counter = 1;
         my @hetres_group;
         foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p2_counter.' '.$effect_pe_levels.' cov 6';
+            push @param_file_rows_1, 6+$p2_counter.' '.$effect_pe_levels.' cov 6';
             push @hetres_group, 6+$p2_counter;
             $p2_counter++;
         }
@@ -13981,7 +14012,7 @@ sub _perform_drone_imagery_analytics {
         }
         my $random_group_string2 = join ' ', @random_group2;
         my $hetres_group_string = join ' ', @hetres_group;
-        push @param_file_rows, (
+        push @param_file_rows_1, (
             'RANDOM_RESIDUAL VALUES',
             '1',
             'RANDOM_GROUP',
@@ -13989,56 +14020,56 @@ sub _perform_drone_imagery_analytics {
             'RANDOM_TYPE'
         );
         if (!$protocol_id) {
-            push @param_file_rows, (
+            push @param_file_rows_1, (
                 'diagonal',
                 'FILE',
                 ''
             );
         }
         else {
-            push @param_file_rows, (
+            push @param_file_rows_1, (
                 'user_file_inv',
                 'FILE',
                 $grm_file_basename
             );
         }
-        push @param_file_rows, (
+        @param_file_rows_2 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_2, $s;
         }
-        push @param_file_rows, (
+        @param_file_rows_3 = (
             'RANDOM_GROUP',
             $random_group_string2,
             'RANDOM_TYPE'
         );
 
         if ($permanent_environment_structure eq 'identity' || $permanent_environment_structure eq 'env_corr_structure') {
-            push @param_file_rows, (
+            push @param_file_rows_3, (
                 'diagonal',
                 'FILE',
                 ''
             );
         }
         else {
-            push @param_file_rows, (
+            push @param_file_rows_3, (
                 'user_file_inv',
                 'FILE',
                 $permanent_environment_structure_file_basename
             );
         }
 
-        push @param_file_rows, (
+        @param_file_rows_4 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_4, $s;
         }
         my $hetres_pol_string = join ' ', @sorted_scaled_ln_times;
-        push @param_file_rows, (
+        @param_file_rows_5 = (
             'OPTION hetres_pos '.$hetres_group_string,
             'OPTION hetres_pol '.$hetres_pol_string,
             'OPTION conv_crit '.$tolparinv,
@@ -14047,37 +14078,37 @@ sub _perform_drone_imagery_analytics {
         );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach ((@param_file_rows_data, @param_file_rows)) {
+            foreach ((@param_file_rows_data, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp "$_\n";
             }
         close($Fp);
 
         open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
-            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv1 "$_\n";
             }
         close($Fp_cv1);
 
         open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
-            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv2 "$_\n";
             }
         close($Fp_cv2);
 
         open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
-            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv3 "$_\n";
             }
         close($Fp_cv3);
 
         open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
-            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv4 "$_\n";
             }
         close($Fp_cv4);
 
         open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
-            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv5 "$_\n";
             }
         close($Fp_cv5);
@@ -14096,6 +14127,11 @@ sub _perform_drone_imagery_analytics {
         my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
         my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
         my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
+        my $parameter_tempfile_cv1_2_basename = basename($parameter_tempfile_cv1_2);
+        my $parameter_tempfile_cv2_2_basename = basename($parameter_tempfile_cv2_2);
+        my $parameter_tempfile_cv3_2_basename = basename($parameter_tempfile_cv3_2);
+        my $parameter_tempfile_cv4_2_basename = basename($parameter_tempfile_cv4_2);
+        my $parameter_tempfile_cv5_2_basename = basename($parameter_tempfile_cv5_2);
 
         $stats_out_tempfile .= '.log';
         $cmd_f90 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_basename.' | '.$command_name.' > '.$stats_out_tempfile;
@@ -14128,6 +14164,64 @@ sub _perform_drone_imagery_analytics {
         # $rr_residual_variance_original = ($res_se_string**2)*$number_plots;
         $rr_residual_variance_original = $res_se_string;
         print STDERR Dumper $rr_residual_variance_original;
+
+        @param_file_rows_6 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_gen_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_genetic_covariance_original[$cov_gen_counter];
+                $cov_gen_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_6, $s;
+        }
+
+        @param_file_rows_7 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_env_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_env_covariance_original[$cov_env_counter];
+                $cov_env_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_7, $s;
+        }
+
+        open(my $Fp_cv1_2, ">", $parameter_tempfile_cv1_2) || die "Can't open file ".$parameter_tempfile_cv1_2;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv1_2 "$_\n";
+            }
+        close($Fp_cv1_2);
+
+        open(my $Fp_cv2_2, ">", $parameter_tempfile_cv2_2) || die "Can't open file ".$parameter_tempfile_cv2_2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv2_2 "$_\n";
+            }
+        close($Fp_cv2_2);
+
+        open(my $Fp_cv3_2, ">", $parameter_tempfile_cv3_2) || die "Can't open file ".$parameter_tempfile_cv3_2;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv3_2 "$_\n";
+            }
+        close($Fp_cv3_2);
+
+        open(my $Fp_cv4_2, ">", $parameter_tempfile_cv4_2) || die "Can't open file ".$parameter_tempfile_cv4_2;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv4_2 "$_\n";
+            }
+        close($Fp_cv4_2);
+
+        open(my $Fp_cv5_2, ">", $parameter_tempfile_cv5_2) || die "Can't open file ".$parameter_tempfile_cv5_2;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv5_2 "$_\n";
+            }
+        close($Fp_cv5_2);
 
         my $q_time = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
         my $h_time = $schema->storage->dbh()->prepare($q_time);
@@ -14482,6 +14576,126 @@ sub _perform_drone_imagery_analytics {
                 $model_sum_square_cv5_original = $model_sum_square_cv5_original + $residual*$residual;
             }
         close($fh_yhat_res_cv5);
+
+        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1_2;
+        my $status_cv1_2 = system($cmd_f90_cv1_2);
+
+        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1_2);
+
+        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+
+            while (my $row = <$fh_yhat_res_cv1_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_2_original = $model_sum_square_cv1_2_original + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1_2);
+
+        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2_2;
+        my $status_cv2_2 = system($cmd_f90_cv2_2);
+
+        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2_2);
+
+        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+
+            while (my $row = <$fh_yhat_res_cv2_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_2_original = $model_sum_square_cv2_2_original + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2_2);
+
+        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3_2;
+        my $status_cv3_2 = system($cmd_f90_cv3_2);
+
+        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3_2);
+
+        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+
+            while (my $row = <$fh_yhat_res_cv3_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_2_original = $model_sum_square_cv3_2_original + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3_2);
+
+        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4_2;
+        my $status_cv4_2 = system($cmd_f90_cv4_2);
+
+        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4_2);
+
+        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+
+            while (my $row = <$fh_yhat_res_cv4_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_2_original = $model_sum_square_cv4_2_original + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4_2);
+
+        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5_2;
+        my $status_cv5_2 = system($cmd_f90_cv5_2);
+
+        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5_2);
+
+        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+
+            while (my $row = <$fh_yhat_res_cv5_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_2_original = $model_sum_square_cv5_2_original + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5_2);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         $analysis_model_language = "R";
@@ -15684,15 +15898,22 @@ sub _perform_drone_imagery_analytics {
     print STDERR Dumper [$genetic_effect_min_original, $genetic_effect_max_original, $env_effect_min_original, $env_effect_max_original];
 
     my @model_sum_square_original_cv_values = ($model_sum_square_cv1_original, $model_sum_square_cv2_original, $model_sum_square_cv3_original, $model_sum_square_cv4_original, $model_sum_square_cv5_original);
+    my @model_sum_square_original_cv_2_values = ($model_sum_square_cv1_2_original, $model_sum_square_cv2_2_original, $model_sum_square_cv3_2_original, $model_sum_square_cv4_2_original, $model_sum_square_cv5_2_original);
     print STDERR Dumper \@model_sum_square_original_cv_values;
+    print STDERR Dumper \@model_sum_square_original_cv_2_values;
     my $model_sum_square_original_cv_stat = Statistics::Descriptive::Full->new();
     $model_sum_square_original_cv_stat->add_data(@model_sum_square_original_cv_values);
-    my $model_sum_square_original_cv_mean = $model_sum_square_original_cv_stat->mean();
-    my $model_sum_square_original_cv_variance = $model_sum_square_original_cv_stat->variance();
     my $model_sum_square_original_cv_result = {
         values => \@model_sum_square_original_cv_values,
-        variance => $model_sum_square_original_cv_variance,
-        mean => $model_sum_square_original_cv_mean
+        variance => $model_sum_square_original_cv_stat->variance(),
+        mean => $model_sum_square_original_cv_stat->mean()
+    };
+    my $model_sum_square_original_cv_2_stat = Statistics::Descriptive::Full->new();
+    $model_sum_square_original_cv_2_stat->add_data(@model_sum_square_original_cv_2_values);
+    my $model_sum_square_original_cv_2_result = {
+        values => \@model_sum_square_original_cv_2_values,
+        variance => $model_sum_square_original_cv_2_stat->variance(),
+        mean => $model_sum_square_original_cv_2_stat->mean()
     };
 
     my (%phenotype_data_altered, @data_matrix_altered, @data_matrix_phenotypes_altered, @phenotype_data_altered_values);
@@ -15947,6 +16168,11 @@ sub _perform_drone_imagery_analytics {
     my $model_sum_square_cv3_altered = 0;
     my $model_sum_square_cv4_altered = 0;
     my $model_sum_square_cv5_altered = 0;
+    my $model_sum_square_cv1_2_altered = 0;
+    my $model_sum_square_cv2_2_altered = 0;
+    my $model_sum_square_cv3_2_altered = 0;
+    my $model_sum_square_cv4_2_altered = 0;
+    my $model_sum_square_cv5_2_altered = 0;
     my $genetic_effect_min_altered = 1000000000;
     my $genetic_effect_max_altered = -1000000000;
     my $env_effect_min_altered = 1000000000;
@@ -16634,22 +16860,29 @@ sub _perform_drone_imagery_analytics {
         randomized_positions <- sample(length(mat[,1]));
         cv_step_size <- length(mat[,1]) %/% 5;
         cv_step_size_modulo <- length(mat[,1]) %% 5;
-        mat_CV1 <- mat;
-        mat_CV2 <- mat;
-        mat_CV3 <- mat;
-        mat_CV4 <- mat;
-        mat_CV5 <- mat;
+        mat_CV1 <- mat; mat_CV2 <- mat; mat_CV3 <- mat; mat_CV4 <- mat; mat_CV5 <- mat;
         mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV1_2 <- mat; mat_CV2_2 <- mat; mat_CV3_2 <- mat; mat_CV4_2 <- mat; mat_CV5_2 <- mat;
+        mat_CV1_2[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- -999;
+        mat_CV2_2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV3_2[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV4_2[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV5_2[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- -999;
         write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1_2, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2_2, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3_2, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4_2, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5_2, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         "';
         my $status_cv_files = system($data_cv_cmd);
 
@@ -16659,131 +16892,59 @@ sub _perform_drone_imagery_analytics {
         my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
         my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
 
-        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
-        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
-        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
-        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
-        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
-        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
-        my @param_file_rows = (
-            'NUMBER_OF_TRAITS',
-            '1',
-            'NUMBER_OF_EFFECTS',
-            ($legendre_order_number + 1)*2 + 1,
-            'OBSERVATION(S)',
-            $legendre_order_number + 1 + 6 + 1,
-            'WEIGHT(S)',
-            '',
-            'EFFECTS: POSITION_IN_DATAFILE NUMBER_OF_LEVELS TYPE_OF_EFFECT',
-            '5 '.$effect_1_levels.' cross',
-        );
-        my $p_counter = 1;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p_counter.' '.$effect_grm_levels.' cov 1';
-            $p_counter++;
-        }
-        my $p2_counter = 1;
-        my @hetres_group;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p2_counter.' '.$effect_pe_levels.' cov 6';
-            push @hetres_group, 6+$p2_counter;
-            $p2_counter++;
-        }
-        my @random_group1;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group1, 1+$_;
-        }
-        my $random_group_string1 = join ' ', @random_group1;
-        my @random_group2;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group2, 1+scalar(@random_group1)+$_;
-        }
-        my $random_group_string2 = join ' ', @random_group2;
-        my $hetres_group_string = join ' ', @hetres_group;
-        push @param_file_rows, (
-            'RANDOM_RESIDUAL VALUES',
-            '1',
-            'RANDOM_GROUP',
-            $random_group_string1,
-            'RANDOM_TYPE',
-            'user_file_inv',
-            'FILE',
-            $grm_file_basename,
+        my $stats_out_cv1_2_predict_tempfile_basename = basename($stats_out_cv1_2_predict_tempfile);
+        my $stats_out_cv2_2_predict_tempfile_basename = basename($stats_out_cv2_2_predict_tempfile);
+        my $stats_out_cv3_2_predict_tempfile_basename = basename($stats_out_cv3_2_predict_tempfile);
+        my $stats_out_cv4_2_predict_tempfile_basename = basename($stats_out_cv4_2_predict_tempfile);
+        my $stats_out_cv5_2_predict_tempfile_basename = basename($stats_out_cv5_2_predict_tempfile);
+
+        @param_file_rows_2 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_2, $s;
         }
-        push @param_file_rows, (
-            'RANDOM_GROUP',
-            $random_group_string2,
-            'RANDOM_TYPE'
-        );
-
-        if ($permanent_environment_structure eq 'identity' || $permanent_environment_structure eq 'env_corr_structure') {
-            push @param_file_rows, (
-                'diagonal',
-                'FILE',
-                ''
-            );
-        }
-        else {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_file_basename
-            );
-        }
-
-        push @param_file_rows, (
+        @param_file_rows_4 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_4, $s;
         }
-        my $hetres_pol_string = join ' ', @sorted_scaled_ln_times;
-        push @param_file_rows, (
-            'OPTION hetres_pos '.$hetres_group_string,
-            'OPTION hetres_pol '.$hetres_pol_string,
-            'OPTION conv_crit '.$tolparinv,
-            'OPTION missing -999',
-            'OPTION residual',
-        );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach ((@param_file_rows_data, @param_file_rows)) {
+            foreach ((@param_file_rows_data, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp "$_\n";
             }
         close($Fp);
 
         open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
-            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv1 "$_\n";
             }
         close($Fp_cv1);
 
         open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
-            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv2 "$_\n";
             }
         close($Fp_cv2);
 
         open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
-            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv3 "$_\n";
             }
         close($Fp_cv3);
 
         open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
-            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv4 "$_\n";
             }
         close($Fp_cv4);
 
         open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
-            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv5 "$_\n";
             }
         close($Fp_cv5);
@@ -16802,6 +16963,11 @@ sub _perform_drone_imagery_analytics {
         my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
         my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
         my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
+        my $parameter_tempfile_cv1_2_basename = basename($parameter_tempfile_cv1_2);
+        my $parameter_tempfile_cv2_2_basename = basename($parameter_tempfile_cv2_2);
+        my $parameter_tempfile_cv3_2_basename = basename($parameter_tempfile_cv3_2);
+        my $parameter_tempfile_cv4_2_basename = basename($parameter_tempfile_cv4_2);
+        my $parameter_tempfile_cv5_2_basename = basename($parameter_tempfile_cv5_2);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -16832,6 +16998,64 @@ sub _perform_drone_imagery_analytics {
         # $rr_residual_variance_altered = ($res_se_string**2)*$number_plots;
         $rr_residual_variance_altered = $res_se_string;
         print STDERR Dumper $rr_residual_variance_altered;
+
+        @param_file_rows_6 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_gen_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_genetic_covariance_altered[$cov_gen_counter];
+                $cov_gen_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_6, $s;
+        }
+
+        @param_file_rows_7 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_env_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_env_covariance_altered[$cov_env_counter];
+                $cov_env_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_7, $s;
+        }
+
+        open(my $Fp_cv1_2, ">", $parameter_tempfile_cv1_2) || die "Can't open file ".$parameter_tempfile_cv1_2;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv1_2 "$_\n";
+            }
+        close($Fp_cv1_2);
+
+        open(my $Fp_cv2_2, ">", $parameter_tempfile_cv2_2) || die "Can't open file ".$parameter_tempfile_cv2_2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv2_2 "$_\n";
+            }
+        close($Fp_cv2_2);
+
+        open(my $Fp_cv3_2, ">", $parameter_tempfile_cv3_2) || die "Can't open file ".$parameter_tempfile_cv3_2;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv3_2 "$_\n";
+            }
+        close($Fp_cv3_2);
+
+        open(my $Fp_cv4_2, ">", $parameter_tempfile_cv4_2) || die "Can't open file ".$parameter_tempfile_cv4_2;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv4_2 "$_\n";
+            }
+        close($Fp_cv4_2);
+
+        open(my $Fp_cv5_2, ">", $parameter_tempfile_cv5_2) || die "Can't open file ".$parameter_tempfile_cv5_2;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv5_2 "$_\n";
+            }
+        close($Fp_cv5_2);
 
         my $q_time = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
         my $h_time = $schema->storage->dbh()->prepare($q_time);
@@ -17177,6 +17401,126 @@ sub _perform_drone_imagery_analytics {
                 $model_sum_square_cv5_altered = $model_sum_square_cv5_altered + $residual*$residual;
             }
         close($fh_yhat_res_cv5);
+
+        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1_2;
+        my $status_cv1_2 = system($cmd_f90_cv1_2);
+
+        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1_2);
+
+        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+
+            while (my $row = <$fh_yhat_res_cv1_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_2_altered = $model_sum_square_cv1_2_altered + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1_2);
+
+        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2_2;
+        my $status_cv2_2 = system($cmd_f90_cv2_2);
+
+        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2_2);
+
+        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+
+            while (my $row = <$fh_yhat_res_cv2_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_2_altered = $model_sum_square_cv2_2_altered + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2_2);
+
+        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3_2;
+        my $status_cv3_2 = system($cmd_f90_cv3_2);
+
+        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3_2);
+
+        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+
+            while (my $row = <$fh_yhat_res_cv3_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_2_altered = $model_sum_square_cv3_2_altered + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3_2);
+
+        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4_2;
+        my $status_cv4_2 = system($cmd_f90_cv4_2);
+
+        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4_2);
+
+        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+
+            while (my $row = <$fh_yhat_res_cv4_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_2_altered = $model_sum_square_cv4_2_altered + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4_2);
+
+        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5_2;
+        my $status_cv5_2 = system($cmd_f90_cv5_2);
+
+        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5_2);
+
+        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+
+            while (my $row = <$fh_yhat_res_cv5_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_2_altered = $model_sum_square_cv5_2_altered + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5_2);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
 
@@ -18129,15 +18473,22 @@ sub _perform_drone_imagery_analytics {
     print STDERR Dumper [$genetic_effect_min_altered, $genetic_effect_max_altered, $env_effect_min_altered, $env_effect_max_altered];
 
     my @model_sum_square_altered_cv_values = ($model_sum_square_cv1_altered, $model_sum_square_cv2_altered, $model_sum_square_cv3_altered, $model_sum_square_cv4_altered, $model_sum_square_cv5_altered);
+    my @model_sum_square_altered_cv_2_values = ($model_sum_square_cv1_2_altered, $model_sum_square_cv2_2_altered, $model_sum_square_cv3_2_altered, $model_sum_square_cv4_2_altered, $model_sum_square_cv5_2_altered);
     print STDERR Dumper \@model_sum_square_altered_cv_values;
+    print STDERR Dumper \@model_sum_square_altered_cv_2_values;
     my $model_sum_square_altered_cv_stat = Statistics::Descriptive::Full->new();
     $model_sum_square_altered_cv_stat->add_data(@model_sum_square_altered_cv_values);
-    my $model_sum_square_altered_cv_mean = $model_sum_square_altered_cv_stat->mean();
-    my $model_sum_square_altered_cv_variance = $model_sum_square_altered_cv_stat->variance();
     my $model_sum_square_altered_cv_result = {
         values => \@model_sum_square_altered_cv_values,
-        variance => $model_sum_square_altered_cv_variance,
-        mean => $model_sum_square_altered_cv_mean
+        variance => $model_sum_square_altered_cv_stat->variance(),
+        mean => $model_sum_square_altered_cv_stat->mean()
+    };
+    my $model_sum_square_altered_cv_2_stat = Statistics::Descriptive::Full->new();
+    $model_sum_square_altered_cv_2_stat->add_data(@model_sum_square_altered_cv_2_values);
+    my $model_sum_square_altered_cv_2_result = {
+        values => \@model_sum_square_altered_cv_2_values,
+        variance => $model_sum_square_altered_cv_2_stat->variance(),
+        mean => $model_sum_square_altered_cv_2_stat->mean()
     };
 
     my @sim_env_types = ("linear_gradient", "random_1d_normal_gradient", "random_2d_normal_gradient", "random", "ar1xar1", "row_plus_col");
@@ -18560,6 +18911,11 @@ sub _perform_drone_imagery_analytics {
     my $model_sum_square_cv3_altered_env = 0;
     my $model_sum_square_cv4_altered_env = 0;
     my $model_sum_square_cv5_altered_env = 0;
+    my $model_sum_square_cv1_2_altered_env = 0;
+    my $model_sum_square_cv2_2_altered_env = 0;
+    my $model_sum_square_cv3_2_altered_env = 0;
+    my $model_sum_square_cv4_2_altered_env = 0;
+    my $model_sum_square_cv5_2_altered_env = 0;
     my $genetic_effect_min_altered_env = 1000000000;
     my $genetic_effect_max_altered_env = -1000000000;
     my $env_effect_min_altered_env = 1000000000;
@@ -19248,22 +19604,29 @@ sub _perform_drone_imagery_analytics {
         randomized_positions <- sample(length(mat[,1]));
         cv_step_size <- length(mat[,1]) %/% 5;
         cv_step_size_modulo <- length(mat[,1]) %% 5;
-        mat_CV1 <- mat;
-        mat_CV2 <- mat;
-        mat_CV3 <- mat;
-        mat_CV4 <- mat;
-        mat_CV5 <- mat;
+        mat_CV1 <- mat; mat_CV2 <- mat; mat_CV3 <- mat; mat_CV4 <- mat; mat_CV5 <- mat;
         mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV1_2 <- mat; mat_CV2_2 <- mat; mat_CV3_2 <- mat; mat_CV4_2 <- mat; mat_CV5_2 <- mat;
+        mat_CV1_2[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- -999;
+        mat_CV2_2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV3_2[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV4_2[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV5_2[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- -999;
         write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1_2, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2_2, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3_2, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4_2, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5_2, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         "';
         my $status_cv_files = system($data_cv_cmd);
 
@@ -19273,138 +19636,59 @@ sub _perform_drone_imagery_analytics {
         my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
         my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
 
-        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
-        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
-        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
-        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
-        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
-        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
-        my @param_file_rows = (
-            'NUMBER_OF_TRAITS',
-            '1',
-            'NUMBER_OF_EFFECTS',
-            ($legendre_order_number + 1)*2 + 1,
-            'OBSERVATION(S)',
-            $legendre_order_number + 1 + 6 + 1,
-            'WEIGHT(S)',
-            '',
-            'EFFECTS: POSITION_IN_DATAFILE NUMBER_OF_LEVELS TYPE_OF_EFFECT',
-            '5 '.$effect_1_levels.' cross',
-        );
-        my $p_counter = 1;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p_counter.' '.$effect_grm_levels.' cov 1';
-            $p_counter++;
-        }
-        my $p2_counter = 1;
-        my @hetres_group;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p2_counter.' '.$effect_pe_levels.' cov 6';
-            push @hetres_group, 6+$p2_counter;
-            $p2_counter++;
-        }
-        my @random_group1;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group1, 1+$_;
-        }
-        my $random_group_string1 = join ' ', @random_group1;
-        my @random_group2;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group2, 1+scalar(@random_group1)+$_;
-        }
-        my $random_group_string2 = join ' ', @random_group2;
-        my $hetres_group_string = join ' ', @hetres_group;
-        push @param_file_rows, (
-            'RANDOM_RESIDUAL VALUES',
-            '1',
-            'RANDOM_GROUP',
-            $random_group_string1,
-            'RANDOM_TYPE',
-            'user_file_inv',
-            'FILE',
-            $grm_file_basename,
+        my $stats_out_cv1_2_predict_tempfile_basename = basename($stats_out_cv1_2_predict_tempfile);
+        my $stats_out_cv2_2_predict_tempfile_basename = basename($stats_out_cv2_2_predict_tempfile);
+        my $stats_out_cv3_2_predict_tempfile_basename = basename($stats_out_cv3_2_predict_tempfile);
+        my $stats_out_cv4_2_predict_tempfile_basename = basename($stats_out_cv4_2_predict_tempfile);
+        my $stats_out_cv5_2_predict_tempfile_basename = basename($stats_out_cv5_2_predict_tempfile);
+
+        @param_file_rows_2 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_2, $s;
         }
-        push @param_file_rows, (
-            'RANDOM_GROUP',
-            $random_group_string2,
-            'RANDOM_TYPE'
-        );
-
-        if ($permanent_environment_structure eq 'identity') {
-            push @param_file_rows, (
-                'diagonal',
-                'FILE',
-                ''
-            );
-        }
-        elsif ($permanent_environment_structure eq 'env_corr_structure') {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_env_file_basename
-            );
-        }
-        else {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_file_basename
-            );
-        }
-
-        push @param_file_rows, (
+        @param_file_rows_4 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_4, $s;
         }
-        my $hetres_pol_string = join ' ', @sorted_scaled_ln_times;
-        push @param_file_rows, (
-            'OPTION hetres_pos '.$hetres_group_string,
-            'OPTION hetres_pol '.$hetres_pol_string,
-            'OPTION conv_crit '.$tolparinv,
-            'OPTION missing -999',
-            'OPTION residual',
-        );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach ((@param_file_rows_data, @param_file_rows)) {
+            foreach ((@param_file_rows_data, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp "$_\n";
             }
         close($Fp);
 
         open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
-            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv1 "$_\n";
             }
         close($Fp_cv1);
 
         open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
-            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv2 "$_\n";
             }
         close($Fp_cv2);
 
         open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
-            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv3 "$_\n";
             }
         close($Fp_cv3);
 
         open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
-            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv4 "$_\n";
             }
         close($Fp_cv4);
 
         open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
-            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv5 "$_\n";
             }
         close($Fp_cv5);
@@ -19423,6 +19707,11 @@ sub _perform_drone_imagery_analytics {
         my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
         my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
         my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
+        my $parameter_tempfile_cv1_2_basename = basename($parameter_tempfile_cv1_2);
+        my $parameter_tempfile_cv2_2_basename = basename($parameter_tempfile_cv2_2);
+        my $parameter_tempfile_cv3_2_basename = basename($parameter_tempfile_cv3_2);
+        my $parameter_tempfile_cv4_2_basename = basename($parameter_tempfile_cv4_2);
+        my $parameter_tempfile_cv5_2_basename = basename($parameter_tempfile_cv5_2);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -19453,6 +19742,64 @@ sub _perform_drone_imagery_analytics {
         # $rr_residual_variance_altered_env = ($res_se_string**2)*$number_plots;
         $rr_residual_variance_altered_env = $res_se_string;
         print STDERR Dumper $rr_residual_variance_altered_env;
+
+        @param_file_rows_6 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_gen_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_genetic_covariance_altered_env[$cov_gen_counter];
+                $cov_gen_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_6, $s;
+        }
+
+        @param_file_rows_7 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_env_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_env_covariance_altered_env[$cov_env_counter];
+                $cov_env_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_7, $s;
+        }
+
+        open(my $Fp_cv1_2, ">", $parameter_tempfile_cv1_2) || die "Can't open file ".$parameter_tempfile_cv1_2;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv1_2 "$_\n";
+            }
+        close($Fp_cv1_2);
+
+        open(my $Fp_cv2_2, ">", $parameter_tempfile_cv2_2) || die "Can't open file ".$parameter_tempfile_cv2_2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv2_2 "$_\n";
+            }
+        close($Fp_cv2_2);
+
+        open(my $Fp_cv3_2, ">", $parameter_tempfile_cv3_2) || die "Can't open file ".$parameter_tempfile_cv3_2;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv3_2 "$_\n";
+            }
+        close($Fp_cv3_2);
+
+        open(my $Fp_cv4_2, ">", $parameter_tempfile_cv4_2) || die "Can't open file ".$parameter_tempfile_cv4_2;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv4_2 "$_\n";
+            }
+        close($Fp_cv4_2);
+
+        open(my $Fp_cv5_2, ">", $parameter_tempfile_cv5_2) || die "Can't open file ".$parameter_tempfile_cv5_2;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv5_2 "$_\n";
+            }
+        close($Fp_cv5_2);
 
         my $q_time = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
         my $h_time = $schema->storage->dbh()->prepare($q_time);
@@ -19798,6 +20145,126 @@ sub _perform_drone_imagery_analytics {
                 $model_sum_square_cv5_altered_env = $model_sum_square_cv5_altered_env + $residual*$residual;
             }
         close($fh_yhat_res_cv5);
+
+        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1_2;
+        my $status_cv1_2 = system($cmd_f90_cv1_2);
+
+        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1_2);
+
+        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+
+            while (my $row = <$fh_yhat_res_cv1_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_2_altered_env = $model_sum_square_cv1_2_altered_env + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1_2);
+
+        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2_2;
+        my $status_cv2_2 = system($cmd_f90_cv2_2);
+
+        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2_2);
+
+        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+
+            while (my $row = <$fh_yhat_res_cv2_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_2_altered_env = $model_sum_square_cv2_2_altered_env + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2_2);
+
+        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3_2;
+        my $status_cv3_2 = system($cmd_f90_cv3_2);
+
+        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3_2);
+
+        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+
+            while (my $row = <$fh_yhat_res_cv3_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_2_altered_env = $model_sum_square_cv3_2_altered_env + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3_2);
+
+        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4_2;
+        my $status_cv4_2 = system($cmd_f90_cv4_2);
+
+        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4_2);
+
+        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+
+            while (my $row = <$fh_yhat_res_cv4_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_2_altered_env = $model_sum_square_cv4_2_altered_env + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4_2);
+
+        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5_2;
+        my $status_cv5_2 = system($cmd_f90_cv5_2);
+
+        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5_2);
+
+        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+
+            while (my $row = <$fh_yhat_res_cv5_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_2_altered_env = $model_sum_square_cv5_2_altered_env + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5_2);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -20749,15 +21216,22 @@ sub _perform_drone_imagery_analytics {
     print STDERR Dumper [$genetic_effect_min_altered_env, $genetic_effect_max_altered_env, $env_effect_min_altered_env, $env_effect_max_altered_env];
 
     my @model_sum_square_altered_env_cv_values = ($model_sum_square_cv1_altered_env, $model_sum_square_cv2_altered_env, $model_sum_square_cv3_altered_env, $model_sum_square_cv4_altered_env, $model_sum_square_cv5_altered_env);
+    my @model_sum_square_altered_env_cv_2_values = ($model_sum_square_cv1_2_altered_env, $model_sum_square_cv2_2_altered_env, $model_sum_square_cv3_2_altered_env, $model_sum_square_cv4_2_altered_env, $model_sum_square_cv5_2_altered_env);
     print STDERR Dumper \@model_sum_square_altered_env_cv_values;
+    print STDERR Dumper \@model_sum_square_altered_env_cv_2_values;
     my $model_sum_square_altered_env_cv_stat = Statistics::Descriptive::Full->new();
     $model_sum_square_altered_env_cv_stat->add_data(@model_sum_square_altered_env_cv_values);
-    my $model_sum_square_altered_env_cv_mean = $model_sum_square_altered_env_cv_stat->mean();
-    my $model_sum_square_altered_env_cv_variance = $model_sum_square_altered_env_cv_stat->variance();
     my $model_sum_square_altered_env_cv_result = {
         values => \@model_sum_square_altered_env_cv_values,
-        variance => $model_sum_square_altered_env_cv_variance,
-        mean => $model_sum_square_altered_env_cv_mean
+        variance => $model_sum_square_altered_env_cv_stat->variance(),
+        mean => $model_sum_square_altered_env_cv_stat->mean()
+    };
+    my $model_sum_square_altered_env_cv_2_stat = Statistics::Descriptive::Full->new();
+    $model_sum_square_altered_env_cv_2_stat->add_data(@model_sum_square_altered_env_cv_2_values);
+    my $model_sum_square_altered_env_cv_2_result = {
+        values => \@model_sum_square_altered_env_cv_2_values,
+        variance => $model_sum_square_altered_env_cv_2_stat->variance(),
+        mean => $model_sum_square_altered_env_cv_2_stat->mean()
     };
 
     $env_simulation = "random_1d_normal_gradient";
@@ -21170,6 +21644,11 @@ sub _perform_drone_imagery_analytics {
     my $model_sum_square_cv3_altered_env_2 = 0;
     my $model_sum_square_cv4_altered_env_2 = 0;
     my $model_sum_square_cv5_altered_env_2 = 0;
+    my $model_sum_square_cv1_2_altered_env_2 = 0;
+    my $model_sum_square_cv2_2_altered_env_2 = 0;
+    my $model_sum_square_cv3_2_altered_env_2 = 0;
+    my $model_sum_square_cv4_2_altered_env_2 = 0;
+    my $model_sum_square_cv5_2_altered_env_2 = 0;
     my $genetic_effect_min_altered_env_2 = 1000000000;
     my $genetic_effect_max_altered_env_2 = -1000000000;
     my $env_effect_min_altered_env_2 = 1000000000;
@@ -21858,22 +22337,29 @@ sub _perform_drone_imagery_analytics {
         randomized_positions <- sample(length(mat[,1]));
         cv_step_size <- length(mat[,1]) %/% 5;
         cv_step_size_modulo <- length(mat[,1]) %% 5;
-        mat_CV1 <- mat;
-        mat_CV2 <- mat;
-        mat_CV3 <- mat;
-        mat_CV4 <- mat;
-        mat_CV5 <- mat;
+        mat_CV1 <- mat; mat_CV2 <- mat; mat_CV3 <- mat; mat_CV4 <- mat; mat_CV5 <- mat;
         mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV1_2 <- mat; mat_CV2_2 <- mat; mat_CV3_2 <- mat; mat_CV4_2 <- mat; mat_CV5_2 <- mat;
+        mat_CV1_2[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- -999;
+        mat_CV2_2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV3_2[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV4_2[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV5_2[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- -999;
         write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1_2, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2_2, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3_2, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4_2, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5_2, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         "';
         my $status_cv_files = system($data_cv_cmd);
 
@@ -21883,138 +22369,59 @@ sub _perform_drone_imagery_analytics {
         my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
         my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
 
-        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
-        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
-        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
-        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
-        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
-        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
-        my @param_file_rows = (
-            'NUMBER_OF_TRAITS',
-            '1',
-            'NUMBER_OF_EFFECTS',
-            ($legendre_order_number + 1)*2 + 1,
-            'OBSERVATION(S)',
-            $legendre_order_number + 1 + 6 + 1,
-            'WEIGHT(S)',
-            '',
-            'EFFECTS: POSITION_IN_DATAFILE NUMBER_OF_LEVELS TYPE_OF_EFFECT',
-            '5 '.$effect_1_levels.' cross',
-        );
-        my $p_counter = 1;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p_counter.' '.$effect_grm_levels.' cov 1';
-            $p_counter++;
-        }
-        my $p2_counter = 1;
-        my @hetres_group;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p2_counter.' '.$effect_pe_levels.' cov 6';
-            push @hetres_group, 6+$p2_counter;
-            $p2_counter++;
-        }
-        my @random_group1;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group1, 1+$_;
-        }
-        my $random_group_string1 = join ' ', @random_group1;
-        my @random_group2;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group2, 1+scalar(@random_group1)+$_;
-        }
-        my $random_group_string2 = join ' ', @random_group2;
-        my $hetres_group_string = join ' ', @hetres_group;
-        push @param_file_rows, (
-            'RANDOM_RESIDUAL VALUES',
-            '1',
-            'RANDOM_GROUP',
-            $random_group_string1,
-            'RANDOM_TYPE',
-            'user_file_inv',
-            'FILE',
-            $grm_file_basename,
+        my $stats_out_cv1_2_predict_tempfile_basename = basename($stats_out_cv1_2_predict_tempfile);
+        my $stats_out_cv2_2_predict_tempfile_basename = basename($stats_out_cv2_2_predict_tempfile);
+        my $stats_out_cv3_2_predict_tempfile_basename = basename($stats_out_cv3_2_predict_tempfile);
+        my $stats_out_cv4_2_predict_tempfile_basename = basename($stats_out_cv4_2_predict_tempfile);
+        my $stats_out_cv5_2_predict_tempfile_basename = basename($stats_out_cv5_2_predict_tempfile);
+
+        @param_file_rows_2 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_2, $s;
         }
-        push @param_file_rows, (
-            'RANDOM_GROUP',
-            $random_group_string2,
-            'RANDOM_TYPE'
-        );
-
-        if ($permanent_environment_structure eq 'identity') {
-            push @param_file_rows, (
-                'diagonal',
-                'FILE',
-                ''
-            );
-        }
-        elsif ($permanent_environment_structure eq 'env_corr_structure') {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_env_file_basename
-            );
-        }
-        else {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_file_basename
-            );
-        }
-
-        push @param_file_rows, (
+        @param_file_rows_4 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_4, $s;
         }
-        my $hetres_pol_string = join ' ', @sorted_scaled_ln_times;
-        push @param_file_rows, (
-            'OPTION hetres_pos '.$hetres_group_string,
-            'OPTION hetres_pol '.$hetres_pol_string,
-            'OPTION conv_crit '.$tolparinv,
-            'OPTION missing -999',
-            'OPTION residual',
-        );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach ((@param_file_rows_data, @param_file_rows)) {
+            foreach ((@param_file_rows_data, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp "$_\n";
             }
         close($Fp);
 
         open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
-            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv1 "$_\n";
             }
         close($Fp_cv1);
 
         open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
-            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv2 "$_\n";
             }
         close($Fp_cv2);
 
         open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
-            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv3 "$_\n";
             }
         close($Fp_cv3);
 
         open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
-            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv4 "$_\n";
             }
         close($Fp_cv4);
 
         open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
-            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv5 "$_\n";
             }
         close($Fp_cv5);
@@ -22033,6 +22440,11 @@ sub _perform_drone_imagery_analytics {
         my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
         my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
         my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
+        my $parameter_tempfile_cv1_2_basename = basename($parameter_tempfile_cv1_2);
+        my $parameter_tempfile_cv2_2_basename = basename($parameter_tempfile_cv2_2);
+        my $parameter_tempfile_cv3_2_basename = basename($parameter_tempfile_cv3_2);
+        my $parameter_tempfile_cv4_2_basename = basename($parameter_tempfile_cv4_2);
+        my $parameter_tempfile_cv5_2_basename = basename($parameter_tempfile_cv5_2);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -22063,6 +22475,64 @@ sub _perform_drone_imagery_analytics {
         # $rr_residual_variance_altered_env_2 = ($res_se_string**2)*$number_plots;
         $rr_residual_variance_altered_env_2 = $res_se_string;
         print STDERR Dumper $rr_residual_variance_altered_env_2;
+
+        @param_file_rows_6 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_gen_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_genetic_covariance_altered_env_2[$cov_gen_counter];
+                $cov_gen_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_6, $s;
+        }
+
+        @param_file_rows_7 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_env_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_env_covariance_altered_env_2[$cov_env_counter];
+                $cov_env_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_7, $s;
+        }
+
+        open(my $Fp_cv1_2, ">", $parameter_tempfile_cv1_2) || die "Can't open file ".$parameter_tempfile_cv1_2;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv1_2 "$_\n";
+            }
+        close($Fp_cv1_2);
+
+        open(my $Fp_cv2_2, ">", $parameter_tempfile_cv2_2) || die "Can't open file ".$parameter_tempfile_cv2_2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv2_2 "$_\n";
+            }
+        close($Fp_cv2_2);
+
+        open(my $Fp_cv3_2, ">", $parameter_tempfile_cv3_2) || die "Can't open file ".$parameter_tempfile_cv3_2;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv3_2 "$_\n";
+            }
+        close($Fp_cv3_2);
+
+        open(my $Fp_cv4_2, ">", $parameter_tempfile_cv4_2) || die "Can't open file ".$parameter_tempfile_cv4_2;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv4_2 "$_\n";
+            }
+        close($Fp_cv4_2);
+
+        open(my $Fp_cv5_2, ">", $parameter_tempfile_cv5_2) || die "Can't open file ".$parameter_tempfile_cv5_2;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv5_2 "$_\n";
+            }
+        close($Fp_cv5_2);
 
         my $q_time = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
         my $h_time = $schema->storage->dbh()->prepare($q_time);
@@ -22408,6 +22878,126 @@ sub _perform_drone_imagery_analytics {
                 $model_sum_square_cv5_altered_env_2 = $model_sum_square_cv5_altered_env_2 + $residual*$residual;
             }
         close($fh_yhat_res_cv5);
+
+        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1_2;
+        my $status_cv1_2 = system($cmd_f90_cv1_2);
+
+        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1_2);
+
+        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+
+            while (my $row = <$fh_yhat_res_cv1_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_2_altered_env_2 = $model_sum_square_cv1_2_altered_env_2 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1_2);
+
+        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2_2;
+        my $status_cv2_2 = system($cmd_f90_cv2_2);
+
+        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2_2);
+
+        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+
+            while (my $row = <$fh_yhat_res_cv2_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_2_altered_env_2 = $model_sum_square_cv2_2_altered_env_2 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2_2);
+
+        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3_2;
+        my $status_cv3_2 = system($cmd_f90_cv3_2);
+
+        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3_2);
+
+        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+
+            while (my $row = <$fh_yhat_res_cv3_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_2_altered_env_2 = $model_sum_square_cv3_2_altered_env_2 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3_2);
+
+        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4_2;
+        my $status_cv4_2 = system($cmd_f90_cv4_2);
+
+        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4_2);
+
+        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+
+            while (my $row = <$fh_yhat_res_cv4_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_2_altered_env_2 = $model_sum_square_cv4_2_altered_env_2 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4_2);
+
+        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5_2;
+        my $status_cv5_2 = system($cmd_f90_cv5_2);
+
+        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5_2);
+
+        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+
+            while (my $row = <$fh_yhat_res_cv5_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_2_altered_env_2 = $model_sum_square_cv5_2_altered_env_2 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5_2);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -23359,15 +23949,22 @@ sub _perform_drone_imagery_analytics {
     print STDERR Dumper [$genetic_effect_min_altered_env_2, $genetic_effect_max_altered_env_2, $env_effect_min_altered_env_2, $env_effect_max_altered_env_2];
 
     my @model_sum_square_altered_env_2_cv_values = ($model_sum_square_cv1_altered_env_2, $model_sum_square_cv2_altered_env_2, $model_sum_square_cv3_altered_env_2, $model_sum_square_cv4_altered_env_2, $model_sum_square_cv5_altered_env_2);
+    my @model_sum_square_altered_env_2_cv_2_values = ($model_sum_square_cv1_2_altered_env_2, $model_sum_square_cv2_2_altered_env_2, $model_sum_square_cv3_2_altered_env_2, $model_sum_square_cv4_2_altered_env_2, $model_sum_square_cv5_2_altered_env_2);
     print STDERR Dumper \@model_sum_square_altered_env_2_cv_values;
+    print STDERR Dumper \@model_sum_square_altered_env_2_cv_2_values;
     my $model_sum_square_altered_env_2_cv_stat = Statistics::Descriptive::Full->new();
     $model_sum_square_altered_env_2_cv_stat->add_data(@model_sum_square_altered_env_2_cv_values);
-    my $model_sum_square_altered_env_cv_mean_2 = $model_sum_square_altered_env_2_cv_stat->mean();
-    my $model_sum_square_altered_env_cv_variance_2 = $model_sum_square_altered_env_2_cv_stat->variance();
     my $model_sum_square_altered_env_cv_result_2 = {
         values => \@model_sum_square_altered_env_2_cv_values,
-        variance => $model_sum_square_altered_env_cv_variance_2,
-        mean => $model_sum_square_altered_env_cv_mean_2
+        variance => $model_sum_square_altered_env_2_cv_stat->variance(),
+        mean => $model_sum_square_altered_env_2_cv_stat->mean()
+    };
+    my $model_sum_square_altered_env_2_cv_2_stat = Statistics::Descriptive::Full->new();
+    $model_sum_square_altered_env_2_cv_2_stat->add_data(@model_sum_square_altered_env_2_cv_2_values);
+    my $model_sum_square_altered_env_cv_2_result_2 = {
+        values => \@model_sum_square_altered_env_2_cv_2_values,
+        variance => $model_sum_square_altered_env_2_cv_2_stat->variance(),
+        mean => $model_sum_square_altered_env_2_cv_2_stat->mean()
     };
 
     $env_simulation = "random_2d_normal_gradient";
@@ -23781,6 +24378,11 @@ sub _perform_drone_imagery_analytics {
     my $model_sum_square_cv3_altered_env_3 = 0;
     my $model_sum_square_cv4_altered_env_3 = 0;
     my $model_sum_square_cv5_altered_env_3 = 0;
+    my $model_sum_square_cv1_2_altered_env_3 = 0;
+    my $model_sum_square_cv2_2_altered_env_3 = 0;
+    my $model_sum_square_cv3_2_altered_env_3 = 0;
+    my $model_sum_square_cv4_2_altered_env_3 = 0;
+    my $model_sum_square_cv5_2_altered_env_3 = 0;
     my $genetic_effect_min_altered_env_3 = 1000000000;
     my $genetic_effect_max_altered_env_3 = -1000000000;
     my $env_effect_min_altered_env_3 = 1000000000;
@@ -24469,22 +25071,29 @@ sub _perform_drone_imagery_analytics {
         randomized_positions <- sample(length(mat[,1]));
         cv_step_size <- length(mat[,1]) %/% 5;
         cv_step_size_modulo <- length(mat[,1]) %% 5;
-        mat_CV1 <- mat;
-        mat_CV2 <- mat;
-        mat_CV3 <- mat;
-        mat_CV4 <- mat;
-        mat_CV5 <- mat;
+        mat_CV1 <- mat; mat_CV2 <- mat; mat_CV3 <- mat; mat_CV4 <- mat; mat_CV5 <- mat;
         mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV1_2 <- mat; mat_CV2_2 <- mat; mat_CV3_2 <- mat; mat_CV4_2 <- mat; mat_CV5_2 <- mat;
+        mat_CV1_2[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- -999;
+        mat_CV2_2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV3_2[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV4_2[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV5_2[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- -999;
         write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1_2, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2_2, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3_2, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4_2, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5_2, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         "';
         my $status_cv_files = system($data_cv_cmd);
 
@@ -24494,138 +25103,59 @@ sub _perform_drone_imagery_analytics {
         my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
         my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
 
-        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
-        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
-        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
-        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
-        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
-        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
-        my @param_file_rows = (
-            'NUMBER_OF_TRAITS',
-            '1',
-            'NUMBER_OF_EFFECTS',
-            ($legendre_order_number + 1)*2 + 1,
-            'OBSERVATION(S)',
-            $legendre_order_number + 1 + 6 + 1,
-            'WEIGHT(S)',
-            '',
-            'EFFECTS: POSITION_IN_DATAFILE NUMBER_OF_LEVELS TYPE_OF_EFFECT',
-            '5 '.$effect_1_levels.' cross',
-        );
-        my $p_counter = 1;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p_counter.' '.$effect_grm_levels.' cov 1';
-            $p_counter++;
-        }
-        my $p2_counter = 1;
-        my @hetres_group;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p2_counter.' '.$effect_pe_levels.' cov 6';
-            push @hetres_group, 6+$p2_counter;
-            $p2_counter++;
-        }
-        my @random_group1;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group1, 1+$_;
-        }
-        my $random_group_string1 = join ' ', @random_group1;
-        my @random_group2;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group2, 1+scalar(@random_group1)+$_;
-        }
-        my $random_group_string2 = join ' ', @random_group2;
-        my $hetres_group_string = join ' ', @hetres_group;
-        push @param_file_rows, (
-            'RANDOM_RESIDUAL VALUES',
-            '1',
-            'RANDOM_GROUP',
-            $random_group_string1,
-            'RANDOM_TYPE',
-            'user_file_inv',
-            'FILE',
-            $grm_file_basename,
+        my $stats_out_cv1_2_predict_tempfile_basename = basename($stats_out_cv1_2_predict_tempfile);
+        my $stats_out_cv2_2_predict_tempfile_basename = basename($stats_out_cv2_2_predict_tempfile);
+        my $stats_out_cv3_2_predict_tempfile_basename = basename($stats_out_cv3_2_predict_tempfile);
+        my $stats_out_cv4_2_predict_tempfile_basename = basename($stats_out_cv4_2_predict_tempfile);
+        my $stats_out_cv5_2_predict_tempfile_basename = basename($stats_out_cv5_2_predict_tempfile);
+
+        @param_file_rows_2 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_2, $s;
         }
-        push @param_file_rows, (
-            'RANDOM_GROUP',
-            $random_group_string2,
-            'RANDOM_TYPE'
-        );
-
-        if ($permanent_environment_structure eq 'identity') {
-            push @param_file_rows, (
-                'diagonal',
-                'FILE',
-                ''
-            );
-        }
-        elsif ($permanent_environment_structure eq 'env_corr_structure') {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_env_file_basename
-            );
-        }
-        else {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_file_basename
-            );
-        }
-
-        push @param_file_rows, (
+        @param_file_rows_4 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_4, $s;
         }
-        my $hetres_pol_string = join ' ', @sorted_scaled_ln_times;
-        push @param_file_rows, (
-            'OPTION hetres_pos '.$hetres_group_string,
-            'OPTION hetres_pol '.$hetres_pol_string,
-            'OPTION conv_crit '.$tolparinv,
-            'OPTION missing -999',
-            'OPTION residual',
-        );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach ((@param_file_rows_data, @param_file_rows)) {
+            foreach ((@param_file_rows_data, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp "$_\n";
             }
         close($Fp);
 
         open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
-            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv1 "$_\n";
             }
         close($Fp_cv1);
 
         open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
-            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv2 "$_\n";
             }
         close($Fp_cv2);
 
         open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
-            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv3 "$_\n";
             }
         close($Fp_cv3);
 
         open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
-            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv4 "$_\n";
             }
         close($Fp_cv4);
 
         open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
-            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv5 "$_\n";
             }
         close($Fp_cv5);
@@ -24644,6 +25174,11 @@ sub _perform_drone_imagery_analytics {
         my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
         my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
         my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
+        my $parameter_tempfile_cv1_2_basename = basename($parameter_tempfile_cv1_2);
+        my $parameter_tempfile_cv2_2_basename = basename($parameter_tempfile_cv2_2);
+        my $parameter_tempfile_cv3_2_basename = basename($parameter_tempfile_cv3_2);
+        my $parameter_tempfile_cv4_2_basename = basename($parameter_tempfile_cv4_2);
+        my $parameter_tempfile_cv5_2_basename = basename($parameter_tempfile_cv5_2);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -24674,6 +25209,64 @@ sub _perform_drone_imagery_analytics {
         # $rr_residual_variance_altered_env_3 = ($res_se_string**2)*$number_plots;
         $rr_residual_variance_altered_env_3 = $res_se_string;
         print STDERR Dumper $rr_residual_variance_altered_env_3;
+
+        @param_file_rows_6 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_gen_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_genetic_covariance_altered_env_3[$cov_gen_counter];
+                $cov_gen_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_6, $s;
+        }
+
+        @param_file_rows_7 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_env_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_env_covariance_altered_env_3[$cov_env_counter];
+                $cov_env_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_7, $s;
+        }
+
+        open(my $Fp_cv1_2, ">", $parameter_tempfile_cv1_2) || die "Can't open file ".$parameter_tempfile_cv1_2;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv1_2 "$_\n";
+            }
+        close($Fp_cv1_2);
+
+        open(my $Fp_cv2_2, ">", $parameter_tempfile_cv2_2) || die "Can't open file ".$parameter_tempfile_cv2_2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv2_2 "$_\n";
+            }
+        close($Fp_cv2_2);
+
+        open(my $Fp_cv3_2, ">", $parameter_tempfile_cv3_2) || die "Can't open file ".$parameter_tempfile_cv3_2;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv3_2 "$_\n";
+            }
+        close($Fp_cv3_2);
+
+        open(my $Fp_cv4_2, ">", $parameter_tempfile_cv4_2) || die "Can't open file ".$parameter_tempfile_cv4_2;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv4_2 "$_\n";
+            }
+        close($Fp_cv4_2);
+
+        open(my $Fp_cv5_2, ">", $parameter_tempfile_cv5_2) || die "Can't open file ".$parameter_tempfile_cv5_2;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv5_2 "$_\n";
+            }
+        close($Fp_cv5_2);
 
         my $q_time = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
         my $h_time = $schema->storage->dbh()->prepare($q_time);
@@ -25019,6 +25612,126 @@ sub _perform_drone_imagery_analytics {
                 $model_sum_square_cv5_altered_env_3 = $model_sum_square_cv5_altered_env_3 + $residual*$residual;
             }
         close($fh_yhat_res_cv5);
+
+        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1_2;
+        my $status_cv1_2 = system($cmd_f90_cv1_2);
+
+        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1_2);
+
+        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+
+            while (my $row = <$fh_yhat_res_cv1_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_2_altered_env_3 = $model_sum_square_cv1_2_altered_env_3 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1_2);
+
+        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2_2;
+        my $status_cv2_2 = system($cmd_f90_cv2_2);
+
+        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2_2);
+
+        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+
+            while (my $row = <$fh_yhat_res_cv2_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_2_altered_env_3 = $model_sum_square_cv2_2_altered_env_3 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2_2);
+
+        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3_2;
+        my $status_cv3_2 = system($cmd_f90_cv3_2);
+
+        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3_2);
+
+        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+
+            while (my $row = <$fh_yhat_res_cv3_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_2_altered_env_3 = $model_sum_square_cv3_2_altered_env_3 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3_2);
+
+        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4_2;
+        my $status_cv4_2 = system($cmd_f90_cv4_2);
+
+        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4_2);
+
+        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+
+            while (my $row = <$fh_yhat_res_cv4_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_2_altered_env_3 = $model_sum_square_cv4_2_altered_env_3 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4_2);
+
+        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5_2;
+        my $status_cv5_2 = system($cmd_f90_cv5_2);
+
+        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5_2);
+
+        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+
+            while (my $row = <$fh_yhat_res_cv5_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_2_altered_env_3 = $model_sum_square_cv5_2_altered_env_3 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5_2);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -25970,15 +26683,22 @@ sub _perform_drone_imagery_analytics {
     print STDERR Dumper [$genetic_effect_min_altered_env_3, $genetic_effect_max_altered_env_3, $env_effect_min_altered_env_3, $env_effect_max_altered_env_3];
 
     my @model_sum_square_altered_env_3_cv_values = ($model_sum_square_cv1_altered_env_3, $model_sum_square_cv2_altered_env_3, $model_sum_square_cv3_altered_env_3, $model_sum_square_cv4_altered_env_3, $model_sum_square_cv5_altered_env_3);
+    my @model_sum_square_altered_env_3_cv_2_values = ($model_sum_square_cv1_2_altered_env_3, $model_sum_square_cv2_2_altered_env_3, $model_sum_square_cv3_2_altered_env_3, $model_sum_square_cv4_2_altered_env_3, $model_sum_square_cv5_2_altered_env_3);
     print STDERR Dumper \@model_sum_square_altered_env_3_cv_values;
+    print STDERR Dumper \@model_sum_square_altered_env_3_cv_2_values;
     my $model_sum_square_altered_env_3_cv_stat = Statistics::Descriptive::Full->new();
     $model_sum_square_altered_env_3_cv_stat->add_data(@model_sum_square_altered_env_3_cv_values);
-    my $model_sum_square_altered_env_cv_mean_3 = $model_sum_square_altered_env_3_cv_stat->mean();
-    my $model_sum_square_altered_env_cv_variance_3 = $model_sum_square_altered_env_3_cv_stat->variance();
     my $model_sum_square_altered_env_cv_result_3 = {
         values => \@model_sum_square_altered_env_3_cv_values,
-        variance => $model_sum_square_altered_env_cv_variance_3,
-        mean => $model_sum_square_altered_env_cv_mean_3
+        variance => $model_sum_square_altered_env_3_cv_stat->variance(),
+        mean => $model_sum_square_altered_env_3_cv_stat->mean()
+    };
+    my $model_sum_square_altered_env_3_cv_2_stat = Statistics::Descriptive::Full->new();
+    $model_sum_square_altered_env_3_cv_2_stat->add_data(@model_sum_square_altered_env_3_cv_2_values);
+    my $model_sum_square_altered_env_cv_2_result_3 = {
+        values => \@model_sum_square_altered_env_3_cv_2_values,
+        variance => $model_sum_square_altered_env_3_cv_2_stat->variance(),
+        mean => $model_sum_square_altered_env_3_cv_2_stat->mean()
     };
 
     $env_simulation = "random";
@@ -26389,6 +27109,11 @@ sub _perform_drone_imagery_analytics {
     my $model_sum_square_cv3_altered_env_4 = 0;
     my $model_sum_square_cv4_altered_env_4 = 0;
     my $model_sum_square_cv5_altered_env_4 = 0;
+    my $model_sum_square_cv1_2_altered_env_4 = 0;
+    my $model_sum_square_cv2_2_altered_env_4 = 0;
+    my $model_sum_square_cv3_2_altered_env_4 = 0;
+    my $model_sum_square_cv4_2_altered_env_4 = 0;
+    my $model_sum_square_cv5_2_altered_env_4 = 0;
     my $genetic_effect_min_altered_env_4 = 1000000000;
     my $genetic_effect_max_altered_env_4 = -1000000000;
     my $env_effect_min_altered_env_4 = 1000000000;
@@ -27077,22 +27802,29 @@ sub _perform_drone_imagery_analytics {
         randomized_positions <- sample(length(mat[,1]));
         cv_step_size <- length(mat[,1]) %/% 5;
         cv_step_size_modulo <- length(mat[,1]) %% 5;
-        mat_CV1 <- mat;
-        mat_CV2 <- mat;
-        mat_CV3 <- mat;
-        mat_CV4 <- mat;
-        mat_CV5 <- mat;
+        mat_CV1 <- mat; mat_CV2 <- mat; mat_CV3 <- mat; mat_CV4 <- mat; mat_CV5 <- mat;
         mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV1_2 <- mat; mat_CV2_2 <- mat; mat_CV3_2 <- mat; mat_CV4_2 <- mat; mat_CV5_2 <- mat;
+        mat_CV1_2[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- -999;
+        mat_CV2_2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV3_2[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV4_2[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV5_2[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- -999;
         write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1_2, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2_2, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3_2, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4_2, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5_2, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         "';
         my $status_cv_files = system($data_cv_cmd);
 
@@ -27102,138 +27834,59 @@ sub _perform_drone_imagery_analytics {
         my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
         my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
 
-        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
-        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
-        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
-        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
-        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
-        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
-        my @param_file_rows = (
-            'NUMBER_OF_TRAITS',
-            '1',
-            'NUMBER_OF_EFFECTS',
-            ($legendre_order_number + 1)*2 + 1,
-            'OBSERVATION(S)',
-            $legendre_order_number + 1 + 6 + 1,
-            'WEIGHT(S)',
-            '',
-            'EFFECTS: POSITION_IN_DATAFILE NUMBER_OF_LEVELS TYPE_OF_EFFECT',
-            '5 '.$effect_1_levels.' cross',
-        );
-        my $p_counter = 1;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p_counter.' '.$effect_grm_levels.' cov 1';
-            $p_counter++;
-        }
-        my $p2_counter = 1;
-        my @hetres_group;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p2_counter.' '.$effect_pe_levels.' cov 6';
-            push @hetres_group, 6+$p2_counter;
-            $p2_counter++;
-        }
-        my @random_group1;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group1, 1+$_;
-        }
-        my $random_group_string1 = join ' ', @random_group1;
-        my @random_group2;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group2, 1+scalar(@random_group1)+$_;
-        }
-        my $random_group_string2 = join ' ', @random_group2;
-        my $hetres_group_string = join ' ', @hetres_group;
-        push @param_file_rows, (
-            'RANDOM_RESIDUAL VALUES',
-            '1',
-            'RANDOM_GROUP',
-            $random_group_string1,
-            'RANDOM_TYPE',
-            'user_file_inv',
-            'FILE',
-            $grm_file_basename,
+        my $stats_out_cv1_2_predict_tempfile_basename = basename($stats_out_cv1_2_predict_tempfile);
+        my $stats_out_cv2_2_predict_tempfile_basename = basename($stats_out_cv2_2_predict_tempfile);
+        my $stats_out_cv3_2_predict_tempfile_basename = basename($stats_out_cv3_2_predict_tempfile);
+        my $stats_out_cv4_2_predict_tempfile_basename = basename($stats_out_cv4_2_predict_tempfile);
+        my $stats_out_cv5_2_predict_tempfile_basename = basename($stats_out_cv5_2_predict_tempfile);
+
+        @param_file_rows_2 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_2, $s;
         }
-        push @param_file_rows, (
-            'RANDOM_GROUP',
-            $random_group_string2,
-            'RANDOM_TYPE'
-        );
-
-        if ($permanent_environment_structure eq 'identity') {
-            push @param_file_rows, (
-                'diagonal',
-                'FILE',
-                ''
-            );
-        }
-        elsif ($permanent_environment_structure eq 'env_corr_structure') {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_env_file_basename
-            );
-        }
-        else {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_file_basename
-            );
-        }
-
-        push @param_file_rows, (
+        @param_file_rows_4 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_4, $s;
         }
-        my $hetres_pol_string = join ' ', @sorted_scaled_ln_times;
-        push @param_file_rows, (
-            'OPTION hetres_pos '.$hetres_group_string,
-            'OPTION hetres_pol '.$hetres_pol_string,
-            'OPTION conv_crit '.$tolparinv,
-            'OPTION missing -999',
-            'OPTION residual',
-        );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach ((@param_file_rows_data, @param_file_rows)) {
+            foreach ((@param_file_rows_data, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp "$_\n";
             }
         close($Fp);
 
         open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
-            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv1 "$_\n";
             }
         close($Fp_cv1);
 
         open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
-            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv2 "$_\n";
             }
         close($Fp_cv2);
 
         open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
-            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv3 "$_\n";
             }
         close($Fp_cv3);
 
         open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
-            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv4 "$_\n";
             }
         close($Fp_cv4);
 
         open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
-            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv5 "$_\n";
             }
         close($Fp_cv5);
@@ -27252,6 +27905,11 @@ sub _perform_drone_imagery_analytics {
         my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
         my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
         my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
+        my $parameter_tempfile_cv1_2_basename = basename($parameter_tempfile_cv1_2);
+        my $parameter_tempfile_cv2_2_basename = basename($parameter_tempfile_cv2_2);
+        my $parameter_tempfile_cv3_2_basename = basename($parameter_tempfile_cv3_2);
+        my $parameter_tempfile_cv4_2_basename = basename($parameter_tempfile_cv4_2);
+        my $parameter_tempfile_cv5_2_basename = basename($parameter_tempfile_cv5_2);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -27282,6 +27940,64 @@ sub _perform_drone_imagery_analytics {
         # $rr_residual_variance_altered_env_4 = ($res_se_string**2)*$number_plots;
         $rr_residual_variance_altered_env_4 = $res_se_string;
         print STDERR Dumper $rr_residual_variance_altered_env_4;
+
+        @param_file_rows_6 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_gen_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_genetic_covariance_altered_env_4[$cov_gen_counter];
+                $cov_gen_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_6, $s;
+        }
+
+        @param_file_rows_7 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_env_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_env_covariance_altered_env_4[$cov_env_counter];
+                $cov_env_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_7, $s;
+        }
+
+        open(my $Fp_cv1_2, ">", $parameter_tempfile_cv1_2) || die "Can't open file ".$parameter_tempfile_cv1_2;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv1_2 "$_\n";
+            }
+        close($Fp_cv1_2);
+
+        open(my $Fp_cv2_2, ">", $parameter_tempfile_cv2_2) || die "Can't open file ".$parameter_tempfile_cv2_2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv2_2 "$_\n";
+            }
+        close($Fp_cv2_2);
+
+        open(my $Fp_cv3_2, ">", $parameter_tempfile_cv3_2) || die "Can't open file ".$parameter_tempfile_cv3_2;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv3_2 "$_\n";
+            }
+        close($Fp_cv3_2);
+
+        open(my $Fp_cv4_2, ">", $parameter_tempfile_cv4_2) || die "Can't open file ".$parameter_tempfile_cv4_2;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv4_2 "$_\n";
+            }
+        close($Fp_cv4_2);
+
+        open(my $Fp_cv5_2, ">", $parameter_tempfile_cv5_2) || die "Can't open file ".$parameter_tempfile_cv5_2;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv5_2 "$_\n";
+            }
+        close($Fp_cv5_2);
 
         my $q_time = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
         my $h_time = $schema->storage->dbh()->prepare($q_time);
@@ -27627,6 +28343,126 @@ sub _perform_drone_imagery_analytics {
                 $model_sum_square_cv5_altered_env_4 = $model_sum_square_cv5_altered_env_4 + $residual*$residual;
             }
         close($fh_yhat_res_cv5);
+
+        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1_2;
+        my $status_cv1_2 = system($cmd_f90_cv1_2);
+
+        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1_2);
+
+        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+
+            while (my $row = <$fh_yhat_res_cv1_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_2_altered_env_4 = $model_sum_square_cv1_2_altered_env_4 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1_2);
+
+        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2_2;
+        my $status_cv2_2 = system($cmd_f90_cv2_2);
+
+        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2_2);
+
+        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+
+            while (my $row = <$fh_yhat_res_cv2_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_2_altered_env_4 = $model_sum_square_cv2_2_altered_env_4 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2_2);
+
+        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3_2;
+        my $status_cv3_2 = system($cmd_f90_cv3_2);
+
+        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3_2);
+
+        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+
+            while (my $row = <$fh_yhat_res_cv3_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_2_altered_env_4 = $model_sum_square_cv3_2_altered_env_4 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3_2);
+
+        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4_2;
+        my $status_cv4_2 = system($cmd_f90_cv4_2);
+
+        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4_2);
+
+        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+
+            while (my $row = <$fh_yhat_res_cv4_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_2_altered_env_4 = $model_sum_square_cv4_2_altered_env_4 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4_2);
+
+        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5_2;
+        my $status_cv5_2 = system($cmd_f90_cv5_2);
+
+        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5_2);
+
+        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+
+            while (my $row = <$fh_yhat_res_cv5_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_2_altered_env_4 = $model_sum_square_cv5_2_altered_env_4 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5_2);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -28578,15 +29414,22 @@ sub _perform_drone_imagery_analytics {
     print STDERR Dumper [$genetic_effect_min_altered_env_4, $genetic_effect_max_altered_env_4, $env_effect_min_altered_env_4, $env_effect_max_altered_env_4];
 
     my @model_sum_square_altered_env_4_cv_values = ($model_sum_square_cv1_altered_env_4, $model_sum_square_cv2_altered_env_4, $model_sum_square_cv3_altered_env_4, $model_sum_square_cv4_altered_env_4, $model_sum_square_cv5_altered_env_4);
+    my @model_sum_square_altered_env_4_cv_2_values = ($model_sum_square_cv1_2_altered_env_4, $model_sum_square_cv2_2_altered_env_4, $model_sum_square_cv3_2_altered_env_4, $model_sum_square_cv4_2_altered_env_4, $model_sum_square_cv5_2_altered_env_4);
     print STDERR Dumper \@model_sum_square_altered_env_4_cv_values;
+    print STDERR Dumper \@model_sum_square_altered_env_4_cv_2_values;
     my $model_sum_square_altered_env_4_cv_stat = Statistics::Descriptive::Full->new();
     $model_sum_square_altered_env_4_cv_stat->add_data(@model_sum_square_altered_env_4_cv_values);
-    my $model_sum_square_altered_env_cv_mean_4 = $model_sum_square_altered_env_4_cv_stat->mean();
-    my $model_sum_square_altered_env_cv_variance_4 = $model_sum_square_altered_env_4_cv_stat->variance();
     my $model_sum_square_altered_env_cv_result_4 = {
         values => \@model_sum_square_altered_env_4_cv_values,
-        variance => $model_sum_square_altered_env_cv_variance_4,
-        mean => $model_sum_square_altered_env_cv_mean_4
+        variance => $model_sum_square_altered_env_4_cv_stat->variance(),
+        mean => $model_sum_square_altered_env_4_cv_stat->mean()
+    };
+    my $model_sum_square_altered_env_4_cv_2_stat = Statistics::Descriptive::Full->new();
+    $model_sum_square_altered_env_4_cv_2_stat->add_data(@model_sum_square_altered_env_4_cv_2_values);
+    my $model_sum_square_altered_env_cv_2_result_4 = {
+        values => \@model_sum_square_altered_env_4_cv_2_values,
+        variance => $model_sum_square_altered_env_4_cv_2_stat->variance(),
+        mean => $model_sum_square_altered_env_4_cv_2_stat->mean()
     };
 
     $env_simulation = "ar1xar1";
@@ -28964,6 +29807,11 @@ sub _perform_drone_imagery_analytics {
     my $model_sum_square_cv3_altered_env_5 = 0;
     my $model_sum_square_cv4_altered_env_5 = 0;
     my $model_sum_square_cv5_altered_env_5 = 0;
+    my $model_sum_square_cv1_2_altered_env_5 = 0;
+    my $model_sum_square_cv2_2_altered_env_5 = 0;
+    my $model_sum_square_cv3_2_altered_env_5 = 0;
+    my $model_sum_square_cv4_2_altered_env_5 = 0;
+    my $model_sum_square_cv5_2_altered_env_5 = 0;
     my $genetic_effect_min_altered_env_5 = 1000000000;
     my $genetic_effect_max_altered_env_5 = -1000000000;
     my $env_effect_min_altered_env_5 = 1000000000;
@@ -29656,22 +30504,29 @@ sub _perform_drone_imagery_analytics {
         randomized_positions <- sample(length(mat[,1]));
         cv_step_size <- length(mat[,1]) %/% 5;
         cv_step_size_modulo <- length(mat[,1]) %% 5;
-        mat_CV1 <- mat;
-        mat_CV2 <- mat;
-        mat_CV3 <- mat;
-        mat_CV4 <- mat;
-        mat_CV5 <- mat;
+        mat_CV1 <- mat; mat_CV2 <- mat; mat_CV3 <- mat; mat_CV4 <- mat; mat_CV5 <- mat;
         mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV1_2 <- mat; mat_CV2_2 <- mat; mat_CV3_2 <- mat; mat_CV4_2 <- mat; mat_CV5_2 <- mat;
+        mat_CV1_2[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- -999;
+        mat_CV2_2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV3_2[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV4_2[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV5_2[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- -999;
         write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1_2, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2_2, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3_2, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4_2, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5_2, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         "';
         my $status_cv_files = system($data_cv_cmd);
 
@@ -29681,138 +30536,59 @@ sub _perform_drone_imagery_analytics {
         my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
         my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
 
-        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
-        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
-        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
-        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
-        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
-        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
-        my @param_file_rows = (
-            'NUMBER_OF_TRAITS',
-            '1',
-            'NUMBER_OF_EFFECTS',
-            ($legendre_order_number + 1)*2 + 1,
-            'OBSERVATION(S)',
-            $legendre_order_number + 1 + 6 + 1,
-            'WEIGHT(S)',
-            '',
-            'EFFECTS: POSITION_IN_DATAFILE NUMBER_OF_LEVELS TYPE_OF_EFFECT',
-            '5 '.$effect_1_levels.' cross',
-        );
-        my $p_counter = 1;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p_counter.' '.$effect_grm_levels.' cov 1';
-            $p_counter++;
-        }
-        my $p2_counter = 1;
-        my @hetres_group;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p2_counter.' '.$effect_pe_levels.' cov 6';
-            push @hetres_group, 6+$p2_counter;
-            $p2_counter++;
-        }
-        my @random_group1;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group1, 1+$_;
-        }
-        my $random_group_string1 = join ' ', @random_group1;
-        my @random_group2;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group2, 1+scalar(@random_group1)+$_;
-        }
-        my $random_group_string2 = join ' ', @random_group2;
-        my $hetres_group_string = join ' ', @hetres_group;
-        push @param_file_rows, (
-            'RANDOM_RESIDUAL VALUES',
-            '1',
-            'RANDOM_GROUP',
-            $random_group_string1,
-            'RANDOM_TYPE',
-            'user_file_inv',
-            'FILE',
-            $grm_file_basename,
+        my $stats_out_cv1_2_predict_tempfile_basename = basename($stats_out_cv1_2_predict_tempfile);
+        my $stats_out_cv2_2_predict_tempfile_basename = basename($stats_out_cv2_2_predict_tempfile);
+        my $stats_out_cv3_2_predict_tempfile_basename = basename($stats_out_cv3_2_predict_tempfile);
+        my $stats_out_cv4_2_predict_tempfile_basename = basename($stats_out_cv4_2_predict_tempfile);
+        my $stats_out_cv5_2_predict_tempfile_basename = basename($stats_out_cv5_2_predict_tempfile);
+
+        @param_file_rows_2 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_2, $s;
         }
-        push @param_file_rows, (
-            'RANDOM_GROUP',
-            $random_group_string2,
-            'RANDOM_TYPE'
-        );
-
-        if ($permanent_environment_structure eq 'identity') {
-            push @param_file_rows, (
-                'diagonal',
-                'FILE',
-                ''
-            );
-        }
-        elsif ($permanent_environment_structure eq 'env_corr_structure') {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_env_file_basename
-            );
-        }
-        else {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_file_basename
-            );
-        }
-
-        push @param_file_rows, (
+        @param_file_rows_4 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_4, $s;
         }
-        my $hetres_pol_string = join ' ', @sorted_scaled_ln_times;
-        push @param_file_rows, (
-            'OPTION hetres_pos '.$hetres_group_string,
-            'OPTION hetres_pol '.$hetres_pol_string,
-            'OPTION conv_crit '.$tolparinv,
-            'OPTION missing -999',
-            'OPTION residual',
-        );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach ((@param_file_rows_data, @param_file_rows)) {
+            foreach ((@param_file_rows_data, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp "$_\n";
             }
         close($Fp);
 
         open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
-            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv1 "$_\n";
             }
         close($Fp_cv1);
 
         open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
-            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv2 "$_\n";
             }
         close($Fp_cv2);
 
         open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
-            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv3 "$_\n";
             }
         close($Fp_cv3);
 
         open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
-            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv4 "$_\n";
             }
         close($Fp_cv4);
 
         open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
-            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv5 "$_\n";
             }
         close($Fp_cv5);
@@ -29831,6 +30607,11 @@ sub _perform_drone_imagery_analytics {
         my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
         my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
         my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
+        my $parameter_tempfile_cv1_2_basename = basename($parameter_tempfile_cv1_2);
+        my $parameter_tempfile_cv2_2_basename = basename($parameter_tempfile_cv2_2);
+        my $parameter_tempfile_cv3_2_basename = basename($parameter_tempfile_cv3_2);
+        my $parameter_tempfile_cv4_2_basename = basename($parameter_tempfile_cv4_2);
+        my $parameter_tempfile_cv5_2_basename = basename($parameter_tempfile_cv5_2);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -29861,6 +30642,64 @@ sub _perform_drone_imagery_analytics {
         # $rr_residual_variance_altered_env_5 = ($res_se_string**2)*$number_plots;
         $rr_residual_variance_altered_env_5 = $res_se_string;
         print STDERR Dumper $rr_residual_variance_altered_env_5;
+
+        @param_file_rows_6 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_gen_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_genetic_covariance_altered_env_5[$cov_gen_counter];
+                $cov_gen_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_6, $s;
+        }
+
+        @param_file_rows_7 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_env_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_env_covariance_altered_env_5[$cov_env_counter];
+                $cov_env_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_7, $s;
+        }
+
+        open(my $Fp_cv1_2, ">", $parameter_tempfile_cv1_2) || die "Can't open file ".$parameter_tempfile_cv1_2;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv1_2 "$_\n";
+            }
+        close($Fp_cv1_2);
+
+        open(my $Fp_cv2_2, ">", $parameter_tempfile_cv2_2) || die "Can't open file ".$parameter_tempfile_cv2_2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv2_2 "$_\n";
+            }
+        close($Fp_cv2_2);
+
+        open(my $Fp_cv3_2, ">", $parameter_tempfile_cv3_2) || die "Can't open file ".$parameter_tempfile_cv3_2;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv3_2 "$_\n";
+            }
+        close($Fp_cv3_2);
+
+        open(my $Fp_cv4_2, ">", $parameter_tempfile_cv4_2) || die "Can't open file ".$parameter_tempfile_cv4_2;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv4_2 "$_\n";
+            }
+        close($Fp_cv4_2);
+
+        open(my $Fp_cv5_2, ">", $parameter_tempfile_cv5_2) || die "Can't open file ".$parameter_tempfile_cv5_2;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv5_2 "$_\n";
+            }
+        close($Fp_cv5_2);
 
         my $q_time = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
         my $h_time = $schema->storage->dbh()->prepare($q_time);
@@ -30206,6 +31045,126 @@ sub _perform_drone_imagery_analytics {
                 $model_sum_square_cv5_altered_env_5 = $model_sum_square_cv5_altered_env_5 + $residual*$residual;
             }
         close($fh_yhat_res_cv5);
+
+        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1_2;
+        my $status_cv1_2 = system($cmd_f90_cv1_2);
+
+        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1_2);
+
+        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+
+            while (my $row = <$fh_yhat_res_cv1_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_2_altered_env_5 = $model_sum_square_cv1_2_altered_env_5 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1_2);
+
+        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2_2;
+        my $status_cv2_2 = system($cmd_f90_cv2_2);
+
+        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2_2);
+
+        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+
+            while (my $row = <$fh_yhat_res_cv2_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_2_altered_env_5 = $model_sum_square_cv2_2_altered_env_5 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2_2);
+
+        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3_2;
+        my $status_cv3_2 = system($cmd_f90_cv3_2);
+
+        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3_2);
+
+        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+
+            while (my $row = <$fh_yhat_res_cv3_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_2_altered_env_5 = $model_sum_square_cv3_2_altered_env_5 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3_2);
+
+        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4_2;
+        my $status_cv4_2 = system($cmd_f90_cv4_2);
+
+        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4_2);
+
+        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+
+            while (my $row = <$fh_yhat_res_cv4_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_2_altered_env_5 = $model_sum_square_cv4_2_altered_env_5 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4_2);
+
+        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5_2;
+        my $status_cv5_2 = system($cmd_f90_cv5_2);
+
+        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5_2);
+
+        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+
+            while (my $row = <$fh_yhat_res_cv5_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_2_altered_env_5 = $model_sum_square_cv5_2_altered_env_5 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5_2);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -31157,15 +32116,22 @@ sub _perform_drone_imagery_analytics {
     print STDERR Dumper [$genetic_effect_min_altered_env_5, $genetic_effect_max_altered_env_5, $env_effect_min_altered_env_5, $env_effect_max_altered_env_5];
 
     my @model_sum_square_altered_env_5_cv_values = ($model_sum_square_cv1_altered_env_5, $model_sum_square_cv2_altered_env_5, $model_sum_square_cv3_altered_env_5, $model_sum_square_cv4_altered_env_5, $model_sum_square_cv5_altered_env_5);
+    my @model_sum_square_altered_env_5_cv_2_values = ($model_sum_square_cv1_2_altered_env_5, $model_sum_square_cv2_2_altered_env_5, $model_sum_square_cv3_2_altered_env_5, $model_sum_square_cv4_2_altered_env_5, $model_sum_square_cv5_2_altered_env_5);
     print STDERR Dumper \@model_sum_square_altered_env_5_cv_values;
+    print STDERR Dumper \@model_sum_square_altered_env_5_cv_2_values;
     my $model_sum_square_altered_env_5_cv_stat = Statistics::Descriptive::Full->new();
     $model_sum_square_altered_env_5_cv_stat->add_data(@model_sum_square_altered_env_5_cv_values);
-    my $model_sum_square_altered_env_cv_mean_5 = $model_sum_square_altered_env_5_cv_stat->mean();
-    my $model_sum_square_altered_env_cv_variance_5 = $model_sum_square_altered_env_5_cv_stat->variance();
     my $model_sum_square_altered_env_cv_result_5 = {
         values => \@model_sum_square_altered_env_5_cv_values,
-        variance => $model_sum_square_altered_env_cv_variance_5,
-        mean => $model_sum_square_altered_env_cv_mean_5
+        variance => $model_sum_square_altered_env_5_cv_stat->variance(),
+        mean => $model_sum_square_altered_env_5_cv_stat->mean()
+    };
+    my $model_sum_square_altered_env_5_cv_2_stat = Statistics::Descriptive::Full->new();
+    $model_sum_square_altered_env_5_cv_2_stat->add_data(@model_sum_square_altered_env_5_cv_2_values);
+    my $model_sum_square_altered_env_cv_2_result_5 = {
+        values => \@model_sum_square_altered_env_5_cv_2_values,
+        variance => $model_sum_square_altered_env_5_cv_2_stat->variance(),
+        mean => $model_sum_square_altered_env_5_cv_2_stat->mean()
     };
 
     $env_simulation = "selected_field_trial_real_data_env";
@@ -31597,6 +32563,11 @@ sub _perform_drone_imagery_analytics {
     my $model_sum_square_cv3_altered_env_6 = 0;
     my $model_sum_square_cv4_altered_env_6 = 0;
     my $model_sum_square_cv5_altered_env_6 = 0;
+    my $model_sum_square_cv1_2_altered_env_6 = 0;
+    my $model_sum_square_cv2_2_altered_env_6 = 0;
+    my $model_sum_square_cv3_2_altered_env_6 = 0;
+    my $model_sum_square_cv4_2_altered_env_6 = 0;
+    my $model_sum_square_cv5_2_altered_env_6 = 0;
     my $genetic_effect_min_altered_env_6 = 1000000000;
     my $genetic_effect_max_altered_env_6 = -1000000000;
     my $env_effect_min_altered_env_6 = 1000000000;
@@ -32289,22 +33260,29 @@ sub _perform_drone_imagery_analytics {
         randomized_positions <- sample(length(mat[,1]));
         cv_step_size <- length(mat[,1]) %/% 5;
         cv_step_size_modulo <- length(mat[,1]) %% 5;
-        mat_CV1 <- mat;
-        mat_CV2 <- mat;
-        mat_CV3 <- mat;
-        mat_CV4 <- mat;
-        mat_CV5 <- mat;
+        mat_CV1 <- mat; mat_CV2 <- mat; mat_CV3 <- mat; mat_CV4 <- mat; mat_CV5 <- mat;
         mat_CV1[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV3[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV4[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- median(mat[,ncol(mat)]);
         mat_CV5[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- median(mat[,ncol(mat)]);
+        mat_CV1_2 <- mat; mat_CV2_2 <- mat; mat_CV3_2 <- mat; mat_CV4_2 <- mat; mat_CV5_2 <- mat;
+        mat_CV1_2[c(randomized_positions[1:cv_step_size]),ncol(mat)] <- -999;
+        mat_CV2_2[c(randomized_positions[(cv_step_size+1):(2*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV3_2[c(randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV4_2[c(randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]),ncol(mat)] <- -999;
+        mat_CV5_2[c(randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]),ncol(mat)] <- -999;
         write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV1, file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV2, file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV3, file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV4, file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         write.table(mat_CV5, file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV1_2, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV2_2, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV3_2, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV4_2, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
+        write.table(mat_CV5_2, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\' \');
         "';
         my $status_cv_files = system($data_cv_cmd);
 
@@ -32314,138 +33292,59 @@ sub _perform_drone_imagery_analytics {
         my $stats_out_cv4_predict_tempfile_basename = basename($stats_out_cv4_predict_tempfile);
         my $stats_out_cv5_predict_tempfile_basename = basename($stats_out_cv5_predict_tempfile);
 
-        my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
-        my @param_file_rows_data_cv1 = ('DATAFILE', $stats_out_cv1_predict_tempfile_basename);
-        my @param_file_rows_data_cv2 = ('DATAFILE', $stats_out_cv2_predict_tempfile_basename);
-        my @param_file_rows_data_cv3 = ('DATAFILE', $stats_out_cv3_predict_tempfile_basename);
-        my @param_file_rows_data_cv4 = ('DATAFILE', $stats_out_cv4_predict_tempfile_basename);
-        my @param_file_rows_data_cv5 = ('DATAFILE', $stats_out_cv5_predict_tempfile_basename);
-        my @param_file_rows = (
-            'NUMBER_OF_TRAITS',
-            '1',
-            'NUMBER_OF_EFFECTS',
-            ($legendre_order_number + 1)*2 + 1,
-            'OBSERVATION(S)',
-            $legendre_order_number + 1 + 6 + 1,
-            'WEIGHT(S)',
-            '',
-            'EFFECTS: POSITION_IN_DATAFILE NUMBER_OF_LEVELS TYPE_OF_EFFECT',
-            '5 '.$effect_1_levels.' cross',
-        );
-        my $p_counter = 1;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p_counter.' '.$effect_grm_levels.' cov 1';
-            $p_counter++;
-        }
-        my $p2_counter = 1;
-        my @hetres_group;
-        foreach (0 .. $legendre_order_number) {
-            push @param_file_rows, 6+$p2_counter.' '.$effect_pe_levels.' cov 6';
-            push @hetres_group, 6+$p2_counter;
-            $p2_counter++;
-        }
-        my @random_group1;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group1, 1+$_;
-        }
-        my $random_group_string1 = join ' ', @random_group1;
-        my @random_group2;
-        foreach (1..$legendre_order_number+1) {
-            push @random_group2, 1+scalar(@random_group1)+$_;
-        }
-        my $random_group_string2 = join ' ', @random_group2;
-        my $hetres_group_string = join ' ', @hetres_group;
-        push @param_file_rows, (
-            'RANDOM_RESIDUAL VALUES',
-            '1',
-            'RANDOM_GROUP',
-            $random_group_string1,
-            'RANDOM_TYPE',
-            'user_file_inv',
-            'FILE',
-            $grm_file_basename,
+        my $stats_out_cv1_2_predict_tempfile_basename = basename($stats_out_cv1_2_predict_tempfile);
+        my $stats_out_cv2_2_predict_tempfile_basename = basename($stats_out_cv2_2_predict_tempfile);
+        my $stats_out_cv3_2_predict_tempfile_basename = basename($stats_out_cv3_2_predict_tempfile);
+        my $stats_out_cv4_2_predict_tempfile_basename = basename($stats_out_cv4_2_predict_tempfile);
+        my $stats_out_cv5_2_predict_tempfile_basename = basename($stats_out_cv5_2_predict_tempfile);
+
+        @param_file_rows_2 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_2, $s;
         }
-        push @param_file_rows, (
-            'RANDOM_GROUP',
-            $random_group_string2,
-            'RANDOM_TYPE'
-        );
-
-        if ($permanent_environment_structure eq 'identity') {
-            push @param_file_rows, (
-                'diagonal',
-                'FILE',
-                ''
-            );
-        }
-        elsif ($permanent_environment_structure eq 'env_corr_structure') {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_env_file_basename
-            );
-        }
-        else {
-            push @param_file_rows, (
-                'user_file_inv',
-                'FILE',
-                $permanent_environment_structure_file_basename
-            );
-        }
-
-        push @param_file_rows, (
+        @param_file_rows_4 = (
             '(CO)VARIANCES'
         );
         foreach (@pheno_var) {
             my $s = join ' ', @$_;
-            push @param_file_rows, $s;
+            push @param_file_rows_4, $s;
         }
-        my $hetres_pol_string = join ' ', @sorted_scaled_ln_times;
-        push @param_file_rows, (
-            'OPTION hetres_pos '.$hetres_group_string,
-            'OPTION hetres_pol '.$hetres_pol_string,
-            'OPTION conv_crit '.$tolparinv,
-            'OPTION missing -999',
-            'OPTION residual',
-        );
 
         open(my $Fp, ">", $parameter_tempfile) || die "Can't open file ".$parameter_tempfile;
-            foreach ((@param_file_rows_data, @param_file_rows)) {
+            foreach ((@param_file_rows_data, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp "$_\n";
             }
         close($Fp);
 
         open(my $Fp_cv1, ">", $parameter_tempfile_cv1) || die "Can't open file ".$parameter_tempfile_cv1;
-            foreach ((@param_file_rows_data_cv1, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv1 "$_\n";
             }
         close($Fp_cv1);
 
         open(my $Fp_cv2, ">", $parameter_tempfile_cv2) || die "Can't open file ".$parameter_tempfile_cv2;
-            foreach ((@param_file_rows_data_cv2, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv2 "$_\n";
             }
         close($Fp_cv2);
 
         open(my $Fp_cv3, ">", $parameter_tempfile_cv3) || die "Can't open file ".$parameter_tempfile_cv3;
-            foreach ((@param_file_rows_data_cv3, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv3 "$_\n";
             }
         close($Fp_cv3);
 
         open(my $Fp_cv4, ">", $parameter_tempfile_cv4) || die "Can't open file ".$parameter_tempfile_cv4;
-            foreach ((@param_file_rows_data_cv4, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv4 "$_\n";
             }
         close($Fp_cv4);
 
         open(my $Fp_cv5, ">", $parameter_tempfile_cv5) || die "Can't open file ".$parameter_tempfile_cv5;
-            foreach ((@param_file_rows_data_cv5, @param_file_rows)) {
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5)) {
                 print $Fp_cv5 "$_\n";
             }
         close($Fp_cv5);
@@ -32464,6 +33363,11 @@ sub _perform_drone_imagery_analytics {
         my $parameter_tempfile_cv3_basename = basename($parameter_tempfile_cv3);
         my $parameter_tempfile_cv4_basename = basename($parameter_tempfile_cv4);
         my $parameter_tempfile_cv5_basename = basename($parameter_tempfile_cv5);
+        my $parameter_tempfile_cv1_2_basename = basename($parameter_tempfile_cv1_2);
+        my $parameter_tempfile_cv2_2_basename = basename($parameter_tempfile_cv2_2);
+        my $parameter_tempfile_cv3_2_basename = basename($parameter_tempfile_cv3_2);
+        my $parameter_tempfile_cv4_2_basename = basename($parameter_tempfile_cv4_2);
+        my $parameter_tempfile_cv5_2_basename = basename($parameter_tempfile_cv5_2);
 
         print STDERR Dumper $cmd_f90;
         my $status = system($cmd_f90);
@@ -32494,6 +33398,64 @@ sub _perform_drone_imagery_analytics {
         # $rr_residual_variance_altered_env_6 = ($res_se_string**2)*$number_plots;
         $rr_residual_variance_altered_env_6 = $res_se_string;
         print STDERR Dumper $rr_residual_variance_altered_env_6;
+
+        @param_file_rows_6 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_gen_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_genetic_covariance_altered_env_6[$cov_gen_counter];
+                $cov_gen_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_6, $s;
+        }
+
+        @param_file_rows_7 = (
+            '(CO)VARIANCES'
+        );
+        my $cov_env_counter = 0;
+        foreach my $i (0..$legendre_order_number) {
+            my @cov_row;
+            foreach my $j (0..$legendre_order_number) {
+                push @cov_row, $rr_coeff_env_covariance_altered_env_6[$cov_env_counter];
+                $cov_env_counter++;
+            }
+            my $s = join ' ', @cov_row;
+            push @param_file_rows_7, $s;
+        }
+
+        open(my $Fp_cv1_2, ">", $parameter_tempfile_cv1_2) || die "Can't open file ".$parameter_tempfile_cv1_2;
+            foreach ((@param_file_rows_data_cv1, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv1_2 "$_\n";
+            }
+        close($Fp_cv1_2);
+
+        open(my $Fp_cv2_2, ">", $parameter_tempfile_cv2_2) || die "Can't open file ".$parameter_tempfile_cv2_2;
+            foreach ((@param_file_rows_data_cv2, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv2_2 "$_\n";
+            }
+        close($Fp_cv2_2);
+
+        open(my $Fp_cv3_2, ">", $parameter_tempfile_cv3_2) || die "Can't open file ".$parameter_tempfile_cv3_2;
+            foreach ((@param_file_rows_data_cv3, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv3_2 "$_\n";
+            }
+        close($Fp_cv3_2);
+
+        open(my $Fp_cv4_2, ">", $parameter_tempfile_cv4_2) || die "Can't open file ".$parameter_tempfile_cv4_2;
+            foreach ((@param_file_rows_data_cv4, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv4_2 "$_\n";
+            }
+        close($Fp_cv4_2);
+
+        open(my $Fp_cv5_2, ">", $parameter_tempfile_cv5_2) || die "Can't open file ".$parameter_tempfile_cv5_2;
+            foreach ((@param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_6, @param_file_rows_3, @param_file_rows_7, @param_file_rows_5)) {
+                print $Fp_cv5_2 "$_\n";
+            }
+        close($Fp_cv5_2);
 
         my $q_time = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
         my $h_time = $schema->storage->dbh()->prepare($q_time);
@@ -32839,6 +33801,126 @@ sub _perform_drone_imagery_analytics {
                 $model_sum_square_cv5_altered_env_6 = $model_sum_square_cv5_altered_env_6 + $residual*$residual;
             }
         close($fh_yhat_res_cv5);
+
+        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv1_2;
+        my $status_cv1_2 = system($cmd_f90_cv1_2);
+
+        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv1_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv1_2);
+
+        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+
+            while (my $row = <$fh_yhat_res_cv1_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv1_2_altered_env_6 = $model_sum_square_cv1_2_altered_env_6 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv1_2);
+
+        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv2_2;
+        my $status_cv2_2 = system($cmd_f90_cv2_2);
+
+        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv2_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv2_2);
+
+        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+
+            while (my $row = <$fh_yhat_res_cv2_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv2_2_altered_env_6 = $model_sum_square_cv2_2_altered_env_6 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv2_2);
+
+        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv3_2;
+        my $status_cv3_2 = system($cmd_f90_cv3_2);
+
+        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv3_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv3_2);
+
+        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+
+            while (my $row = <$fh_yhat_res_cv3_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv3_2_altered_env_6 = $model_sum_square_cv3_2_altered_env_6 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv3_2);
+
+        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv4_2;
+        my $status_cv4_2 = system($cmd_f90_cv4_2);
+
+        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv4_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv4_2);
+
+        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+
+            while (my $row = <$fh_yhat_res_cv4_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv4_2_altered_env_6 = $model_sum_square_cv4_2_altered_env_6 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv4_2);
+
+        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+        print STDERR Dumper $cmd_f90_cv5_2;
+        my $status_cv5_2 = system($cmd_f90_cv5_2);
+
+        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            while (my $row = <$fh_log_cv5_2>) {
+                print STDERR $row;
+            }
+        close($fh_log_cv5_2);
+
+        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+
+            while (my $row = <$fh_yhat_res_cv5_2>) {
+                # print STDERR $row;
+                my @vals = split ' ', $row;
+                my $pred = $vals[0];
+                my $residual = $vals[1];
+                $model_sum_square_cv5_2_altered_env_6 = $model_sum_square_cv5_2_altered_env_6 + $residual*$residual;
+            }
+        close($fh_yhat_res_cv5_2);
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -33790,64 +34872,71 @@ sub _perform_drone_imagery_analytics {
     print STDERR Dumper [$genetic_effect_min_altered_env_6, $genetic_effect_max_altered_env_6, $env_effect_min_altered_env_6, $env_effect_max_altered_env_6];
 
     my @model_sum_square_altered_env_6_cv_values = ($model_sum_square_cv1_altered_env_6, $model_sum_square_cv2_altered_env_6, $model_sum_square_cv3_altered_env_6, $model_sum_square_cv4_altered_env_6, $model_sum_square_cv5_altered_env_6);
+    my @model_sum_square_altered_env_6_cv_2_values = ($model_sum_square_cv1_2_altered_env_6, $model_sum_square_cv2_2_altered_env_6, $model_sum_square_cv3_2_altered_env_6, $model_sum_square_cv4_2_altered_env_6, $model_sum_square_cv5_2_altered_env_6);
     print STDERR Dumper \@model_sum_square_altered_env_6_cv_values;
+    print STDERR Dumper \@model_sum_square_altered_env_6_cv_2_values;
     my $model_sum_square_altered_env_6_cv_stat = Statistics::Descriptive::Full->new();
     $model_sum_square_altered_env_6_cv_stat->add_data(@model_sum_square_altered_env_6_cv_values);
-    my $model_sum_square_altered_env_cv_mean_6 = $model_sum_square_altered_env_6_cv_stat->mean();
-    my $model_sum_square_altered_env_cv_variance_6 = $model_sum_square_altered_env_6_cv_stat->variance();
     my $model_sum_square_altered_env_cv_result_6 = {
         values => \@model_sum_square_altered_env_6_cv_values,
-        variance => $model_sum_square_altered_env_cv_variance_6,
-        mean => $model_sum_square_altered_env_cv_mean_6
+        variance => $model_sum_square_altered_env_6_cv_stat->variance(),
+        mean => $model_sum_square_altered_env_6_cv_stat->mean()
+    };
+    my $model_sum_square_altered_env_6_cv_2_stat = Statistics::Descriptive::Full->new();
+    $model_sum_square_altered_env_6_cv_2_stat->add_data(@model_sum_square_altered_env_6_cv_2_values);
+    my $model_sum_square_altered_env_cv_2_result_6 = {
+        values => \@model_sum_square_altered_env_6_cv_2_values,
+        variance => $model_sum_square_altered_env_6_cv_2_stat->variance(),
+        mean => $model_sum_square_altered_env_6_cv_2_stat->mean()
     };
 
     return ($statistical_ontology_term, $analysis_model_training_data_file_type, $analysis_model_language, \@sorted_residual_trait_names, \%rr_unique_traits, \%rr_residual_unique_traits, $statistics_cmd, $cmd_f90, $number_traits, \%trait_to_time_map,
 
     $result_blup_data_original, $result_blup_data_delta_original, $result_blup_spatial_data_original, $result_blup_pe_data_original, $result_blup_pe_data_delta_original, $result_residual_data_original, $result_fitted_data_original, \%fixed_effects_original, \%rr_genetic_coefficients_original, \%rr_temporal_coefficients_original, \@rr_coeff_genetic_covariance_original, \@rr_coeff_env_covariance_original, \@rr_coeff_genetic_correlation_original, \@rr_coeff_env_correlation_original, $rr_residual_variance_original, \@varcomp_original,
 
-    $model_sum_square_residual_original, $genetic_effect_min_original, $genetic_effect_max_original, $env_effect_min_original, $env_effect_max_original, $genetic_effect_sum_square_original, $genetic_effect_sum_original, $env_effect_sum_square_original, $env_effect_sum_original, $residual_sum_square_original, $residual_sum_original, $model_sum_square_original_cv_result,
+    $model_sum_square_residual_original, $genetic_effect_min_original, $genetic_effect_max_original, $env_effect_min_original, $env_effect_max_original, $genetic_effect_sum_square_original, $genetic_effect_sum_original, $env_effect_sum_square_original, $env_effect_sum_original, $residual_sum_square_original, $residual_sum_original, $model_sum_square_original_cv_result, $model_sum_square_original_cv_2_result,
 
     \%phenotype_data_altered, \@data_matrix_altered, \@data_matrix_phenotypes_altered, $phenotype_min_altered, $phenotype_max_altered,
 
     $result_blup_data_altered, $result_blup_data_delta_altered, $result_blup_spatial_data_altered, $result_blup_pe_data_altered, $result_blup_pe_data_delta_altered, $result_residual_data_altered, $result_fitted_data_altered, \%fixed_effects_altered, \%rr_genetic_coefficients_altered, \%rr_temporal_coefficients_altered, \@rr_coeff_genetic_covariance_altered, \@rr_coeff_env_covariance_altered, \@rr_coeff_genetic_correlation_altered, \@rr_coeff_env_correlation_altered, $rr_residual_variance_altered, \@varcomp_altered,
 
-    $model_sum_square_residual_altered, $genetic_effect_min_altered, $genetic_effect_max_altered, $env_effect_min_altered, $env_effect_max_altered, $genetic_effect_sum_square_altered, $genetic_effect_sum_altered, $env_effect_sum_square_altered, $env_effect_sum_altered, $residual_sum_square_altered, $residual_sum_altered, $model_sum_square_altered_cv_result,
+    $model_sum_square_residual_altered, $genetic_effect_min_altered, $genetic_effect_max_altered, $env_effect_min_altered, $env_effect_max_altered, $genetic_effect_sum_square_altered, $genetic_effect_sum_altered, $env_effect_sum_square_altered, $env_effect_sum_altered, $residual_sum_square_altered, $residual_sum_altered, $model_sum_square_altered_cv_result, $model_sum_square_altered_cv_2_result,
 
     \%phenotype_data_altered_env, \@data_matrix_altered_env, \@data_matrix_phenotypes_altered_env, $phenotype_min_altered_env, $phenotype_max_altered_env, $env_sim_min, $env_sim_max, \%sim_data,
 
     $result_blup_data_altered_env, $result_blup_data_delta_altered_env, $result_blup_spatial_data_altered_env, $result_blup_pe_data_altered_env, $result_blup_pe_data_delta_altered_env, $result_residual_data_altered_env, $result_fitted_data_altered_env, \%fixed_effects_altered_env, \%rr_genetic_coefficients_altered_env, \%rr_temporal_coefficients_altered_env, \@rr_coeff_genetic_covariance_altered_env, \@rr_coeff_env_covariance_altered_env, \@rr_coeff_genetic_correlation_altered_env, \@rr_coeff_env_correlation_altered_env, $rr_residual_variance_altered_env, \@varcomp_altered_env,
 
-    $model_sum_square_residual_altered_env, $genetic_effect_min_altered_env, $genetic_effect_max_altered_env, $env_effect_min_altered_env, $env_effect_max_altered_env, $genetic_effect_sum_square_altered_env, $genetic_effect_sum_altered_env, $env_effect_sum_square_altered_env, $env_effect_sum_altered_env, $residual_sum_square_altered_env, $residual_sum_altered_env, $model_sum_square_altered_env_cv_result,
+    $model_sum_square_residual_altered_env, $genetic_effect_min_altered_env, $genetic_effect_max_altered_env, $env_effect_min_altered_env, $env_effect_max_altered_env, $genetic_effect_sum_square_altered_env, $genetic_effect_sum_altered_env, $env_effect_sum_square_altered_env, $env_effect_sum_altered_env, $residual_sum_square_altered_env, $residual_sum_altered_env, $model_sum_square_altered_env_cv_result, $model_sum_square_altered_env_cv_2_result,
 
     \%phenotype_data_altered_env_2, \@data_matrix_altered_env_2, \@data_matrix_phenotypes_altered_env_2, $phenotype_min_altered_env_2, $phenotype_max_altered_env_2, $env_sim_min_2, $env_sim_max_2, \%sim_data_2,
 
     $result_blup_data_altered_env_2, $result_blup_data_delta_altered_env_2, $result_blup_spatial_data_altered_env_2, $result_blup_pe_data_altered_env_2, $result_blup_pe_data_delta_altered_env_2, $result_residual_data_altered_env_2, $result_fitted_data_altered_env_2, \%fixed_effects_altered_env_2, \%rr_genetic_coefficients_altered_env_2, \%rr_temporal_coefficients_altered_env_2, \@rr_coeff_genetic_covariance_altered_env_2, \@rr_coeff_env_covariance_altered_env_2, \@rr_coeff_genetic_correlation_altered_env_2, \@rr_coeff_env_correlation_altered_env_2, $rr_residual_variance_altered_env_2, \@varcomp_altered_env_2,
 
-    $model_sum_square_residual_altered_env_2, $genetic_effect_min_altered_env_2, $genetic_effect_max_altered_env_2, $env_effect_min_altered_env_2, $env_effect_max_altered_env_2, $genetic_effect_sum_square_altered_env_2, $genetic_effect_sum_altered_env_2, $env_effect_sum_square_altered_env_2, $env_effect_sum_altered_env_2, $residual_sum_square_altered_env_2, $residual_sum_altered_env_2, $model_sum_square_altered_env_cv_result_2,
+    $model_sum_square_residual_altered_env_2, $genetic_effect_min_altered_env_2, $genetic_effect_max_altered_env_2, $env_effect_min_altered_env_2, $env_effect_max_altered_env_2, $genetic_effect_sum_square_altered_env_2, $genetic_effect_sum_altered_env_2, $env_effect_sum_square_altered_env_2, $env_effect_sum_altered_env_2, $residual_sum_square_altered_env_2, $residual_sum_altered_env_2, $model_sum_square_altered_env_cv_result_2, $model_sum_square_altered_env_cv_2_result_2,
 
     \%phenotype_data_altered_env_3, \@data_matrix_altered_env_3, \@data_matrix_phenotypes_altered_env_3, $phenotype_min_altered_env_3, $phenotype_max_altered_env_3, $env_sim_min_3, $env_sim_max_3, \%sim_data_3,
 
     $result_blup_data_altered_env_3, $result_blup_data_delta_altered_env_3, $result_blup_spatial_data_altered_env_3, $result_blup_pe_data_altered_env_3, $result_blup_pe_data_delta_altered_env_3, $result_residual_data_altered_env_3, $result_fitted_data_altered_env_3, \%fixed_effects_altered_env_3, \%rr_genetic_coefficients_altered_env_3, \%rr_temporal_coefficients_altered_env_3, \@rr_coeff_genetic_covariance_altered_env_3, \@rr_coeff_env_covariance_altered_env_3, \@rr_coeff_genetic_correlation_altered_env_3, \@rr_coeff_env_correlation_altered_env_3, $rr_residual_variance_altered_env_3, \@varcomp_altered_env_3,
 
-    $model_sum_square_residual_altered_env_3, $genetic_effect_min_altered_env_3, $genetic_effect_max_altered_env_3, $env_effect_min_altered_env_3, $env_effect_max_altered_env_3, $genetic_effect_sum_square_altered_env_3, $genetic_effect_sum_altered_env_3, $env_effect_sum_square_altered_env_3, $env_effect_sum_altered_env_3, $residual_sum_square_altered_env_3, $residual_sum_altered_env_3, $model_sum_square_altered_env_cv_result_3,
+    $model_sum_square_residual_altered_env_3, $genetic_effect_min_altered_env_3, $genetic_effect_max_altered_env_3, $env_effect_min_altered_env_3, $env_effect_max_altered_env_3, $genetic_effect_sum_square_altered_env_3, $genetic_effect_sum_altered_env_3, $env_effect_sum_square_altered_env_3, $env_effect_sum_altered_env_3, $residual_sum_square_altered_env_3, $residual_sum_altered_env_3, $model_sum_square_altered_env_cv_result_3, $model_sum_square_altered_env_cv_2_result_3,
 
     \%phenotype_data_altered_env_4, \@data_matrix_altered_env_4, \@data_matrix_phenotypes_altered_env_4, $phenotype_min_altered_env_4, $phenotype_max_altered_env_4, $env_sim_min_4, $env_sim_max_4, \%sim_data_4,
 
     $result_blup_data_altered_env_4, $result_blup_data_delta_altered_env_4, $result_blup_spatial_data_altered_env_4, $result_blup_pe_data_altered_env_4, $result_blup_pe_data_delta_altered_env_4, $result_residual_data_altered_env_4, $result_fitted_data_altered_env_4, \%fixed_effects_altered_env_4, \%rr_genetic_coefficients_altered_env_4, \%rr_temporal_coefficients_altered_env_4, \@rr_coeff_genetic_covariance_altered_env_4, \@rr_coeff_env_covariance_altered_env_4, \@rr_coeff_genetic_correlation_altered_env_4, \@rr_coeff_env_correlation_altered_env_4, $rr_residual_variance_altered_env_4, \@varcomp_altered_env_4,
 
-    $model_sum_square_residual_altered_env_4, $genetic_effect_min_altered_env_4, $genetic_effect_max_altered_env_4, $env_effect_min_altered_env_4, $env_effect_max_altered_env_4, $genetic_effect_sum_square_altered_env_4, $genetic_effect_sum_altered_env_4, $env_effect_sum_square_altered_env_4, $env_effect_sum_altered_env_4, $residual_sum_square_altered_env_4, $residual_sum_altered_env_4, $model_sum_square_altered_env_cv_result_4,
+    $model_sum_square_residual_altered_env_4, $genetic_effect_min_altered_env_4, $genetic_effect_max_altered_env_4, $env_effect_min_altered_env_4, $env_effect_max_altered_env_4, $genetic_effect_sum_square_altered_env_4, $genetic_effect_sum_altered_env_4, $env_effect_sum_square_altered_env_4, $env_effect_sum_altered_env_4, $residual_sum_square_altered_env_4, $residual_sum_altered_env_4, $model_sum_square_altered_env_cv_result_4, $model_sum_square_altered_env_cv_2_result_4,
 
     \%phenotype_data_altered_env_5, \@data_matrix_altered_env_5, \@data_matrix_phenotypes_altered_env_5, $phenotype_min_altered_env_5, $phenotype_max_altered_env_5, $env_sim_min_5, $env_sim_max_5, \%sim_data_5,
 
     $result_blup_data_altered_env_5, $result_blup_data_delta_altered_env_5, $result_blup_spatial_data_altered_env_5, $result_blup_pe_data_altered_env_5, $result_blup_pe_data_delta_altered_env_5, $result_residual_data_altered_env_5, $result_fitted_data_altered_env_5, \%fixed_effects_altered_env_5, \%rr_genetic_coefficients_altered_env_5, \%rr_temporal_coefficients_altered_env_5, \@rr_coeff_genetic_covariance_altered_env_5, \@rr_coeff_env_covariance_altered_env_5, \@rr_coeff_genetic_correlation_altered_env_5, \@rr_coeff_env_correlation_altered_env_5, $rr_residual_variance_altered_env_5, \@varcomp_altered_env_5,
 
-    $model_sum_square_residual_altered_env_5, $genetic_effect_min_altered_env_5, $genetic_effect_max_altered_env_5, $env_effect_min_altered_env_5, $env_effect_max_altered_env_5, $genetic_effect_sum_square_altered_env_5, $genetic_effect_sum_altered_env_5, $env_effect_sum_square_altered_env_5, $env_effect_sum_altered_env_5, $residual_sum_square_altered_env_5, $residual_sum_altered_env_5, $model_sum_square_altered_env_cv_result_5,
+    $model_sum_square_residual_altered_env_5, $genetic_effect_min_altered_env_5, $genetic_effect_max_altered_env_5, $env_effect_min_altered_env_5, $env_effect_max_altered_env_5, $genetic_effect_sum_square_altered_env_5, $genetic_effect_sum_altered_env_5, $env_effect_sum_square_altered_env_5, $env_effect_sum_altered_env_5, $residual_sum_square_altered_env_5, $residual_sum_altered_env_5, $model_sum_square_altered_env_cv_result_5, $model_sum_square_altered_env_cv_2_result_5,
 
     \%phenotype_data_altered_env_6, \@data_matrix_altered_env_6, \@data_matrix_phenotypes_altered_env_6, $phenotype_min_altered_env_6, $phenotype_max_altered_env_6, $env_sim_min_6, $env_sim_max_6, \%sim_data_6,
 
     $result_blup_data_altered_env_6, $result_blup_data_delta_altered_env_6, $result_blup_spatial_data_altered_env_6, $result_blup_pe_data_altered_env_6, $result_blup_pe_data_delta_altered_env_6, $result_residual_data_altered_env_6, $result_fitted_data_altered_env_6, \%fixed_effects_altered_env_6, \%rr_genetic_coefficients_altered_env_6, \%rr_temporal_coefficients_altered_env_6, \@rr_coeff_genetic_covariance_altered_env_6, \@rr_coeff_env_covariance_altered_env_6, \@rr_coeff_genetic_correlation_altered_env_6, \@rr_coeff_env_correlation_altered_env_6, $rr_residual_variance_altered_env_6, \@varcomp_altered_env_6,
 
-    $model_sum_square_residual_altered_env_6, $genetic_effect_min_altered_env_6, $genetic_effect_max_altered_env_6, $env_effect_min_altered_env_6, $env_effect_max_altered_env_6, $genetic_effect_sum_square_altered_env_6, $genetic_effect_sum_altered_env_6, $env_effect_sum_square_altered_env_6, $env_effect_sum_altered_env_6, $residual_sum_square_altered_env_6, $residual_sum_altered_env_6, $model_sum_square_altered_env_cv_result_6
+    $model_sum_square_residual_altered_env_6, $genetic_effect_min_altered_env_6, $genetic_effect_max_altered_env_6, $env_effect_min_altered_env_6, $env_effect_max_altered_env_6, $genetic_effect_sum_square_altered_env_6, $genetic_effect_sum_altered_env_6, $env_effect_sum_square_altered_env_6, $env_effect_sum_altered_env_6, $residual_sum_square_altered_env_6, $residual_sum_altered_env_6, $model_sum_square_altered_env_cv_result_6, $model_sum_square_altered_env_cv_2_result_6
     );
 }
 
