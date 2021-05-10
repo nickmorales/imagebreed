@@ -1755,7 +1755,11 @@ sub get_cached_file_VCF {
                 }
 
                 foreach my $format_key (@format) {
-                    push @current_geno, $geno->{selected_genotype_hash}->{$m->{name}}->{$format_key};
+                    my $val = $geno->{selected_genotype_hash}->{$m->{name}}->{$format_key};
+                    if ($format_key eq 'GT' && $val eq '') {
+                        $val = './.';
+                    }
+                    push @current_geno, $val;
                 }
                 my $current_g = join ':', @current_geno;
                 $genotype_data_string .= $current_g."\t";
