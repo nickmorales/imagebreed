@@ -16068,7 +16068,6 @@ sub _perform_drone_imagery_analytics {
         variance => $model_sum_square_original_cv_2_stat->variance(),
         mean => $model_sum_square_original_cv_2_stat->mean()
     };
-    die;
 
     my (%phenotype_data_altered, @data_matrix_altered, @data_matrix_phenotypes_altered, @phenotype_data_altered_values);
     my $phenotype_min_altered = 1000000000;
@@ -16346,6 +16345,8 @@ sub _perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
+            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -16596,6 +16597,116 @@ sub _perform_drone_imagery_analytics {
                     }
                 }
             close($fh_cv5);
+
+            open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                my $header_cv1_2 = <$fh_cv1_2>;
+                my @header_cols_cv1_2;
+                if ($csv->parse($header_cv1_2)) {
+                    @header_cols_cv1_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv1_2_altered = $model_sum_square_cv1_2_altered + $error**2;
+                }
+            close($fh_cv1_2);
+
+            open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                my $header_cv2_2 = <$fh_cv2_2>;
+                my @header_cols_cv2_2;
+                if ($csv->parse($header_cv2_2)) {
+                    @header_cols_cv2_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv2_2_altered = $model_sum_square_cv2_2_altered + $error**2;
+                }
+            close($fh_cv2_2);
+
+            open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                my $header_cv3_2 = <$fh_cv3_2>;
+                my @header_cols_cv3_2;
+                if ($csv->parse($header_cv3_2)) {
+                    @header_cols_cv3_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv3_2_altered = $model_sum_square_cv3_2_altered + $error**2;
+                }
+            close($fh_cv3_2);
+
+            open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                my $header_cv4_2 = <$fh_cv4_2>;
+                my @header_cols_cv4_2;
+                if ($csv->parse($header_cv4_2)) {
+                    @header_cols_cv4_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv4_2_altered = $model_sum_square_cv4_2_altered + $error**2;
+                }
+            close($fh_cv4_2);
+
+            open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                my $header_cv5_2 = <$fh_cv5_2>;
+                my @header_cols_cv5_2;
+                if ($csv->parse($header_cv5_2)) {
+                    @header_cols_cv5_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv5_2_altered = $model_sum_square_cv5_2_altered + $error**2;
+                }
+            close($fh_cv5_2);
 
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -19092,6 +19203,8 @@ sub _perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
+            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -19342,6 +19455,116 @@ sub _perform_drone_imagery_analytics {
                     }
                 }
             close($fh_cv5);
+
+            open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                my $header_cv1_2 = <$fh_cv1_2>;
+                my @header_cols_cv1_2;
+                if ($csv->parse($header_cv1_2)) {
+                    @header_cols_cv1_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv1_2_altered_env = $model_sum_square_cv1_2_altered_env + $error**2;
+                }
+            close($fh_cv1_2);
+
+            open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                my $header_cv2_2 = <$fh_cv2_2>;
+                my @header_cols_cv2_2;
+                if ($csv->parse($header_cv2_2)) {
+                    @header_cols_cv2_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv2_2_altered_env = $model_sum_square_cv2_2_altered_env + $error**2;
+                }
+            close($fh_cv2_2);
+
+            open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                my $header_cv3_2 = <$fh_cv3_2>;
+                my @header_cols_cv3_2;
+                if ($csv->parse($header_cv3_2)) {
+                    @header_cols_cv3_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv3_2_altered_env = $model_sum_square_cv3_2_altered_env + $error**2;
+                }
+            close($fh_cv3_2);
+
+            open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                my $header_cv4_2 = <$fh_cv4_2>;
+                my @header_cols_cv4_2;
+                if ($csv->parse($header_cv4_2)) {
+                    @header_cols_cv4_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv4_2_altered_env = $model_sum_square_cv4_2_altered_env + $error**2;
+                }
+            close($fh_cv4_2);
+
+            open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                my $header_cv5_2 = <$fh_cv5_2>;
+                my @header_cols_cv5_2;
+                if ($csv->parse($header_cv5_2)) {
+                    @header_cols_cv5_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv5_2_altered_env = $model_sum_square_cv5_2_altered_env + $error**2;
+                }
+            close($fh_cv5_2);
 
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -21828,6 +22051,8 @@ sub _perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
+            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -22078,6 +22303,116 @@ sub _perform_drone_imagery_analytics {
                     }
                 }
             close($fh_cv5);
+
+            open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                my $header_cv1_2 = <$fh_cv1_2>;
+                my @header_cols_cv1_2;
+                if ($csv->parse($header_cv1_2)) {
+                    @header_cols_cv1_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv1_2_altered_env_2 = $model_sum_square_cv1_2_altered_env_2 + $error**2;
+                }
+            close($fh_cv1_2);
+
+            open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                my $header_cv2_2 = <$fh_cv2_2>;
+                my @header_cols_cv2_2;
+                if ($csv->parse($header_cv2_2)) {
+                    @header_cols_cv2_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv2_2_altered_env_2 = $model_sum_square_cv2_2_altered_env_2 + $error**2;
+                }
+            close($fh_cv2_2);
+
+            open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                my $header_cv3_2 = <$fh_cv3_2>;
+                my @header_cols_cv3_2;
+                if ($csv->parse($header_cv3_2)) {
+                    @header_cols_cv3_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv3_2_altered_env_2 = $model_sum_square_cv3_2_altered_env_2 + $error**2;
+                }
+            close($fh_cv3_2);
+
+            open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                my $header_cv4_2 = <$fh_cv4_2>;
+                my @header_cols_cv4_2;
+                if ($csv->parse($header_cv4_2)) {
+                    @header_cols_cv4_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv4_2_altered_env_2 = $model_sum_square_cv4_2_altered_env_2 + $error**2;
+                }
+            close($fh_cv4_2);
+
+            open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                my $header_cv5_2 = <$fh_cv5_2>;
+                my @header_cols_cv5_2;
+                if ($csv->parse($header_cv5_2)) {
+                    @header_cols_cv5_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv5_2_altered_env_2 = $model_sum_square_cv5_2_altered_env_2 + $error**2;
+                }
+            close($fh_cv5_2);
 
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -24565,6 +24900,8 @@ sub _perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
+            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -24815,6 +25152,116 @@ sub _perform_drone_imagery_analytics {
                     }
                 }
             close($fh_cv5);
+
+            open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                my $header_cv1_2 = <$fh_cv1_2>;
+                my @header_cols_cv1_2;
+                if ($csv->parse($header_cv1_2)) {
+                    @header_cols_cv1_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv1_2_altered_env_3 = $model_sum_square_cv1_2_altered_env_3 + $error**2;
+                }
+            close($fh_cv1_2);
+
+            open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                my $header_cv2_2 = <$fh_cv2_2>;
+                my @header_cols_cv2_2;
+                if ($csv->parse($header_cv2_2)) {
+                    @header_cols_cv2_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv2_2_altered_env_3 = $model_sum_square_cv2_2_altered_env_3 + $error**2;
+                }
+            close($fh_cv2_2);
+
+            open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                my $header_cv3_2 = <$fh_cv3_2>;
+                my @header_cols_cv3_2;
+                if ($csv->parse($header_cv3_2)) {
+                    @header_cols_cv3_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv3_2_altered_env_3 = $model_sum_square_cv3_2_altered_env_3 + $error**2;
+                }
+            close($fh_cv3_2);
+
+            open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                my $header_cv4_2 = <$fh_cv4_2>;
+                my @header_cols_cv4_2;
+                if ($csv->parse($header_cv4_2)) {
+                    @header_cols_cv4_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv4_2_altered_env_3 = $model_sum_square_cv4_2_altered_env_3 + $error**2;
+                }
+            close($fh_cv4_2);
+
+            open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                my $header_cv5_2 = <$fh_cv5_2>;
+                my @header_cols_cv5_2;
+                if ($csv->parse($header_cv5_2)) {
+                    @header_cols_cv5_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv5_2_altered_env_3 = $model_sum_square_cv5_2_altered_env_3 + $error**2;
+                }
+            close($fh_cv5_2);
 
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -27299,6 +27746,8 @@ sub _perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
+            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -27549,6 +27998,116 @@ sub _perform_drone_imagery_analytics {
                     }
                 }
             close($fh_cv5);
+
+            open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                my $header_cv1_2 = <$fh_cv1_2>;
+                my @header_cols_cv1_2;
+                if ($csv->parse($header_cv1_2)) {
+                    @header_cols_cv1_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv1_2_altered_env_4 = $model_sum_square_cv1_2_altered_env_4 + $error**2;
+                }
+            close($fh_cv1_2);
+
+            open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                my $header_cv2_2 = <$fh_cv2_2>;
+                my @header_cols_cv2_2;
+                if ($csv->parse($header_cv2_2)) {
+                    @header_cols_cv2_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv2_2_altered_env_4 = $model_sum_square_cv2_2_altered_env_4 + $error**2;
+                }
+            close($fh_cv2_2);
+
+            open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                my $header_cv3_2 = <$fh_cv3_2>;
+                my @header_cols_cv3_2;
+                if ($csv->parse($header_cv3_2)) {
+                    @header_cols_cv3_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv3_2_altered_env_4 = $model_sum_square_cv3_2_altered_env_4 + $error**2;
+                }
+            close($fh_cv3_2);
+
+            open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                my $header_cv4_2 = <$fh_cv4_2>;
+                my @header_cols_cv4_2;
+                if ($csv->parse($header_cv4_2)) {
+                    @header_cols_cv4_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv4_2_altered_env_4 = $model_sum_square_cv4_2_altered_env_4 + $error**2;
+                }
+            close($fh_cv4_2);
+
+            open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                my $header_cv5_2 = <$fh_cv5_2>;
+                my @header_cols_cv5_2;
+                if ($csv->parse($header_cv5_2)) {
+                    @header_cols_cv5_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv5_2_altered_env_4 = $model_sum_square_cv5_2_altered_env_4 + $error**2;
+                }
+            close($fh_cv5_2);
 
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -30000,6 +30559,8 @@ sub _perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
+            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -30252,6 +30813,116 @@ sub _perform_drone_imagery_analytics {
                     }
                 }
             close($fh_cv5);
+
+            open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                my $header_cv1_2 = <$fh_cv1_2>;
+                my @header_cols_cv1_2;
+                if ($csv->parse($header_cv1_2)) {
+                    @header_cols_cv1_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv1_2_altered_env_5 = $model_sum_square_cv1_2_altered_env_5 + $error**2;
+                }
+            close($fh_cv1_2);
+
+            open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                my $header_cv2_2 = <$fh_cv2_2>;
+                my @header_cols_cv2_2;
+                if ($csv->parse($header_cv2_2)) {
+                    @header_cols_cv2_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv2_2_altered_env_5 = $model_sum_square_cv2_2_altered_env_5 + $error**2;
+                }
+            close($fh_cv2_2);
+
+            open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                my $header_cv3_2 = <$fh_cv3_2>;
+                my @header_cols_cv3_2;
+                if ($csv->parse($header_cv3_2)) {
+                    @header_cols_cv3_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv3_2_altered_env_5 = $model_sum_square_cv3_2_altered_env_5 + $error**2;
+                }
+            close($fh_cv3_2);
+
+            open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                my $header_cv4_2 = <$fh_cv4_2>;
+                my @header_cols_cv4_2;
+                if ($csv->parse($header_cv4_2)) {
+                    @header_cols_cv4_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv4_2_altered_env_5 = $model_sum_square_cv4_2_altered_env_5 + $error**2;
+                }
+            close($fh_cv4_2);
+
+            open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                my $header_cv5_2 = <$fh_cv5_2>;
+                my @header_cols_cv5_2;
+                if ($csv->parse($header_cv5_2)) {
+                    @header_cols_cv5_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv5_2_altered_env_5 = $model_sum_square_cv5_2_altered_env_5 + $error**2;
+                }
+            close($fh_cv5_2);
 
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -32759,6 +33430,8 @@ sub _perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status = system($statistics_cmd);
+            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -33011,6 +33684,116 @@ sub _perform_drone_imagery_analytics {
                     }
                 }
             close($fh_cv5);
+
+            open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                my $header_cv1_2 = <$fh_cv1_2>;
+                my @header_cols_cv1_2;
+                if ($csv->parse($header_cv1_2)) {
+                    @header_cols_cv1_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv1_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv1_2_altered_env_6 = $model_sum_square_cv1_2_altered_env_6 + $error**2;
+                }
+            close($fh_cv1_2);
+
+            open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                my $header_cv2_2 = <$fh_cv2_2>;
+                my @header_cols_cv2_2;
+                if ($csv->parse($header_cv2_2)) {
+                    @header_cols_cv2_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv2_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv2_2_altered_env_6 = $model_sum_square_cv2_2_altered_env_6 + $error**2;
+                }
+            close($fh_cv2_2);
+
+            open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                my $header_cv3_2 = <$fh_cv3_2>;
+                my @header_cols_cv3_2;
+                if ($csv->parse($header_cv3_2)) {
+                    @header_cols_cv3_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv3_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv3_2_altered_env_6 = $model_sum_square_cv3_2_altered_env_6 + $error**2;
+                }
+            close($fh_cv3_2);
+
+            open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                my $header_cv4_2 = <$fh_cv4_2>;
+                my @header_cols_cv4_2;
+                if ($csv->parse($header_cv4_2)) {
+                    @header_cols_cv4_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv4_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv4_2_altered_env_6 = $model_sum_square_cv4_2_altered_env_6 + $error**2;
+                }
+            close($fh_cv4_2);
+
+            open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                my $header_cv5_2 = <$fh_cv5_2>;
+                my @header_cols_cv5_2;
+                if ($csv->parse($header_cv5_2)) {
+                    @header_cols_cv5_2 = $csv->fields();
+                }
+                while (my $row = <$fh_cv5_2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_cv = $columns[0];
+                    my $accession_id = $columns[1];
+                    my $row_number = $columns[2];
+                    my $predicted_value = $columns[3];
+                    my $error = $columns[4];
+                    $model_sum_square_cv5_2_altered_env_6 = $model_sum_square_cv5_2_altered_env_6 + $error**2;
+                }
+            close($fh_cv5_2);
 
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
