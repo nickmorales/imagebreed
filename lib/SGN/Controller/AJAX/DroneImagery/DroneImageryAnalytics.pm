@@ -12981,7 +12981,7 @@ sub _perform_drone_imagery_analytics {
     my $number_plots = scalar(@unique_plot_names);
     my $number_traits = scalar(@sorted_trait_names);
 
-    my ($statistical_ontology_term, $analysis_model_training_data_file_type, $analysis_model_language, @sorted_residual_trait_names, %rr_unique_traits, %rr_residual_unique_traits, $statistics_cmd, $cmd_f90, $cmd_asreml, $statistics_cmd_reading, $prepare_file_cv_cmd, $statistics_cmd_cv_1, $statistics_cmd_cv_2, $number_accessions);
+    my ($statistical_ontology_term, $analysis_model_training_data_file_type, $analysis_model_language, @sorted_residual_trait_names, %rr_unique_traits, %rr_residual_unique_traits, $statistics_cmd, $cmd_f90, $cmd_asreml, $statistics_cmd_reading, $prepare_file_cv_cmd, $statistics_cmd_cv_1, $statistics_cmd_cv_2, %cmd_statistics_uni, $number_accessions);
     my $tolparinv_10 = $tolparinv*10;
     my $legendre_order_number_env_var_pos = $legendre_order_number+1+2;
     my ($result_blup_data_original, $result_blup_data_delta_original, $result_blup_spatial_data_original, $result_blup_pe_data_original, $result_blup_pe_data_delta_original, $result_residual_data_original, $result_fitted_data_original, %fixed_effects_original, %rr_genetic_coefficients_original, %rr_temporal_coefficients_original);
@@ -13104,11 +13104,8 @@ sub _perform_drone_imagery_analytics {
             push @encoded_traits_cv_save_5, $t_coded_cv5.' = mat\$'.$t_coded_cv5;
         }
         $prepare_file_cv_cmd .= '
-            write.table(mat, file=\''.$stats_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-        }
+        write.table(mat, file=\''.$stats_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         "';
-        print STDERR Dumper $prepare_file_cv_cmd;
-        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
 
         $statistics_cmd_reading = 'R -e "library(sommer); library(data.table); library(reshape2);
         mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -13150,7 +13147,6 @@ sub _perform_drone_imagery_analytics {
         $statistics_cmd_model .= 'write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         }
         "';
-        $statistics_cmd = $statistics_cmd_reading.$statistics_cmd_model;
 
         my $encoded_trait_cv_string_1 = join ',', @encoded_traits_cv_1;
         my $cbind_string_cv_1 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_1)" : $encoded_trait_cv_string_1;
@@ -13219,8 +13215,13 @@ sub _perform_drone_imagery_analytics {
         write.table(p_cv4\$pvals, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         write.table(p_cv5\$pvals, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         "';
-        print STDERR Dumper $statistics_cmd;
+
+        $statistics_cmd = $statistics_cmd_reading.$statistics_cmd_model;
+
+        # print STDERR Dumper $prepare_file_cv_cmd;
+        # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -13622,7 +13623,37 @@ sub _perform_drone_imagery_analytics {
         $number_traits = scalar(@encoded_traits);
         foreach my $t (@encoded_traits) {
 
-            $statistics_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+            $prepare_file_cv_cmd = 'R -e "library(data.table);
+            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            randomized_positions <- sample(length(mat\$plot_id));
+            cv_step_size <- length(mat\$plot_id) %/% 5;
+            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
+            ';
+            my $t_coded_cv1 = $t.'_CV1';
+            $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
+            ';
+            my $t_coded_cv2 = $t.'_CV2';
+            $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv3 = $t.'_CV3';
+            $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv4 = $t.'_CV4';
+            $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            ';
+            my $t_coded_cv5 = $t.'_CV5';
+            $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            ';
+            $prepare_file_cv_cmd .= '
+            write.table(mat, file=\''.$stats_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            "';
+
+            $statistics_cmd_reading = 'R -e "library(sommer); library(data.table); library(reshape2);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
@@ -13632,15 +13663,16 @@ sub _perform_drone_imagery_analytics {
             mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
             mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             ';
+            my $statistics_cmd_model = '';
             if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                $statistics_cmd_model .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
                 ';
             }
             elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                $statistics_cmd_model .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
                 ';
             }
-            $statistics_cmd .= 'if (!is.null(mix\$U)) {
+            $statistics_cmd_model .= 'if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
             write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
             write.table(mix\$U\$\`u:rowNumberFactor\`, file=\''.$stats_out_tempfile_row.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
@@ -13652,60 +13684,86 @@ sub _perform_drone_imagery_analytics {
             blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
             spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            randomized_positions <- sample(length(mat\$plot_id));
-            cv_step_size <- length(mat\$plot_id) %/% 5;
-            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
-            ';
+            }
+            "';
 
-            my $t_coded_cv1 = $t.'_CV1';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
-            ';
-            my $t_coded_cv2 = $t.'_CV2';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv3 = $t.'_CV3';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv4 = $t.'_CV4';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv5 = $t.'_CV5';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
-            ';
+            $statistics_cmd_cv_1 = '';
+            $statistics_cmd_cv_2 = '';
+            my $cv_classify_string = '';
             if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= '
+                $statistics_cmd_cv_1 .= '
                 mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
                 mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
                 mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
                 mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
                 mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
                 ';
+
+                $statistics_cmd_cv_2 .= '
+                mix_cv_2_1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+                mix_cv_2_2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+                mix_cv_2_3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+                mix_cv_2_4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+                mix_cv_2_5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+                ';
+                $cv_classify_string = 'c(\'id\',\'rowNumber\')';
             }
             elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= '
+                $statistics_cmd_cv_1 .= '
                 mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
                 mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
                 mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
                 mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
                 mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
                 ';
+
+                $statistics_cmd_cv_2 .= '
+                mix_cv_2_1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+                mix_cv_2_2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+                mix_cv_2_3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+                mix_cv_2_4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+                mix_cv_2_5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+                ';
+                $cv_classify_string = 'c(\'id\',\'rowNumber\')';
             }
-            $statistics_cmd .= '
+            $statistics_cmd_cv_1 .= '
                 write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
                 write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
                 write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
                 write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
                 write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            }
             "';
-            print STDERR Dumper $statistics_cmd;
+            $statistics_cmd_cv_2 .= 'p_cv1 <- predict.mmer(object=mix_cv_2_1, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
+            p_cv2 <- predict.mmer(object=mix_cv_2_2, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
+            p_cv3 <- predict.mmer(object=mix_cv_2_3, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
+            p_cv4 <- predict.mmer(object=mix_cv_2_4, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
+            p_cv5 <- predict.mmer(object=mix_cv_2_5, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
+            p_cv1;
+            write.table(p_cv1\$pvals, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            write.table(p_cv2\$pvals, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            write.table(p_cv3\$pvals, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            write.table(p_cv4\$pvals, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            write.table(p_cv5\$pvals, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            "';
+
+            $statistics_cmd = $statistics_cmd_reading.$statistics_cmd_model;
+
+            $cmd_statistics_uni{$t} = {
+                prepare_file_cv_cmd => $prepare_file_cv_cmd,
+                statistics_cmd => $statistics_cmd,
+                statistics_cmd_reading => $statistics_cmd_reading,
+                statistics_cmd_model => $statistics_cmd_model,
+                statistics_cmd_cv_1 => $statistics_cmd_cv_1,
+                statistics_cmd_cv_2 => $statistics_cmd_cv_2
+            };
+
+            # print STDERR Dumper $prepare_file_cv_cmd;
+            # print STDERR Dumper $statistics_cmd;
             eval {
+                my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
             };
             my $run_stats_fault = 0;
             if ($@) {
@@ -13948,6 +14006,116 @@ sub _perform_drone_imagery_analytics {
                         $model_sum_square_cv5_original = $model_sum_square_cv5_original + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5);
+
+                open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                    my $header_cv1_2 = <$fh_cv1_2>;
+                    my @header_cols_cv1_2;
+                    if ($csv->parse($header_cv1_2)) {
+                        @header_cols_cv1_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv1_2_original = $model_sum_square_cv1_2_original + $error**2;
+                    }
+                close($fh_cv1_2);
+
+                open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                    my $header_cv2_2 = <$fh_cv2_2>;
+                    my @header_cols_cv2_2;
+                    if ($csv->parse($header_cv2_2)) {
+                        @header_cols_cv2_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv2_2_original = $model_sum_square_cv2_2_original + $error**2;
+                    }
+                close($fh_cv2_2);
+
+                open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                    my $header_cv3_2 = <$fh_cv3_2>;
+                    my @header_cols_cv3_2;
+                    if ($csv->parse($header_cv3_2)) {
+                        @header_cols_cv3_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv3_2_original = $model_sum_square_cv3_2_original + $error**2;
+                    }
+                close($fh_cv3_2);
+
+                open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                    my $header_cv4_2 = <$fh_cv4_2>;
+                    my @header_cols_cv4_2;
+                    if ($csv->parse($header_cv4_2)) {
+                        @header_cols_cv4_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv4_2_original = $model_sum_square_cv4_2_original + $error**2;
+                    }
+                close($fh_cv4_2);
+
+                open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                    my $header_cv5_2 = <$fh_cv5_2>;
+                    my @header_cols_cv5_2;
+                    if ($csv->parse($header_cv5_2)) {
+                        @header_cols_cv5_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv5_2_original = $model_sum_square_cv5_2_original + $error**2;
+                    }
+                close($fh_cv5_2);
 
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -16339,11 +16507,10 @@ sub _perform_drone_imagery_analytics {
 
     print STDERR "RUN ENV ESTIMATE ON ALTERED PHENO\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
-        #print STDERR Dumper $prepare_file_cv_cmd;
-        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
-
+        # print STDERR Dumper $prepare_file_cv_cmd;
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -16738,92 +16905,19 @@ sub _perform_drone_imagery_analytics {
     elsif ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
         my @encoded_traits = values %trait_name_encoder;
         foreach my $t (@encoded_traits) {
+            $prepare_file_cv_cmd = $cmd_statistics_uni{$t}->{prepare_file_cv_cmd};
+            $statistics_cmd = $cmd_statistics_uni{$t}->{statistics_cmd};
+            $statistics_cmd_reading = $cmd_statistics_uni{$t}->{statistics_cmd_reading};
+            $statistics_cmd_cv_1 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_1};
+            $statistics_cmd_cv_2 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_2};
 
-            $statistics_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
-            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
-            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
-            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
-            geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            $statistics_cmd .= 'if (!is.null(mix\$U)) {
-            #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-            write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:rowNumberFactor\`, file=\''.$stats_out_tempfile_row.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:colNumberFactor\`, file=\''.$stats_out_tempfile_col.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            X <- with(mat, spl2D(rowNumber, colNumber));
-            spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-            blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
-            spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
-            write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            randomized_positions <- sample(length(mat\$plot_id));
-            cv_step_size <- length(mat\$plot_id) %/% 5;
-            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
-            ';
-
-            my $t_coded_cv1 = $t.'_CV1';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
-            ';
-            my $t_coded_cv2 = $t.'_CV2';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv3 = $t.'_CV3';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv4 = $t.'_CV4';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv5 = $t.'_CV5';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            $statistics_cmd .= '
-                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            }
-            "';
-
+            # print STDERR Dumper $prepare_file_cv_cmd;
             # print STDERR Dumper $statistics_cmd;
             eval {
+                my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
             };
             my $run_stats_fault = 0;
             if ($@) {
@@ -17066,6 +17160,116 @@ sub _perform_drone_imagery_analytics {
                         $model_sum_square_cv5_altered = $model_sum_square_cv5_altered + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5);
+
+                open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                    my $header_cv1_2 = <$fh_cv1_2>;
+                    my @header_cols_cv1_2;
+                    if ($csv->parse($header_cv1_2)) {
+                        @header_cols_cv1_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv1_2_altered = $model_sum_square_cv1_2_altered + $error**2;
+                    }
+                close($fh_cv1_2);
+
+                open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                    my $header_cv2_2 = <$fh_cv2_2>;
+                    my @header_cols_cv2_2;
+                    if ($csv->parse($header_cv2_2)) {
+                        @header_cols_cv2_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv2_2_altered = $model_sum_square_cv2_2_altered + $error**2;
+                    }
+                close($fh_cv2_2);
+
+                open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                    my $header_cv3_2 = <$fh_cv3_2>;
+                    my @header_cols_cv3_2;
+                    if ($csv->parse($header_cv3_2)) {
+                        @header_cols_cv3_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv3_2_altered = $model_sum_square_cv3_2_altered + $error**2;
+                    }
+                close($fh_cv3_2);
+
+                open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                    my $header_cv4_2 = <$fh_cv4_2>;
+                    my @header_cols_cv4_2;
+                    if ($csv->parse($header_cv4_2)) {
+                        @header_cols_cv4_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv4_2_altered = $model_sum_square_cv4_2_altered + $error**2;
+                    }
+                close($fh_cv4_2);
+
+                open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                    my $header_cv5_2 = <$fh_cv5_2>;
+                    my @header_cols_cv5_2;
+                    if ($csv->parse($header_cv5_2)) {
+                        @header_cols_cv5_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv5_2_altered = $model_sum_square_cv5_2_altered + $error**2;
+                    }
+                close($fh_cv5_2);
 
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -19198,10 +19402,9 @@ sub _perform_drone_imagery_analytics {
     print STDERR "RUN ENV ESTIMATE ON Altered Pheno With Sim Env linear_gradient\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
         #print STDERR Dumper $prepare_file_cv_cmd;
-        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
-
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -19596,92 +19799,19 @@ sub _perform_drone_imagery_analytics {
     elsif ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
         my @encoded_traits = values %trait_name_encoder;
         foreach my $t (@encoded_traits) {
+            $prepare_file_cv_cmd = $cmd_statistics_uni{$t}->{prepare_file_cv_cmd};
+            $statistics_cmd = $cmd_statistics_uni{$t}->{statistics_cmd};
+            $statistics_cmd_reading = $cmd_statistics_uni{$t}->{statistics_cmd_reading};
+            $statistics_cmd_cv_1 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_1};
+            $statistics_cmd_cv_2 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_2};
 
-            $statistics_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
-            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
-            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
-            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
-            geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            $statistics_cmd .= 'if (!is.null(mix\$U)) {
-            #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-            write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:rowNumberFactor\`, file=\''.$stats_out_tempfile_row.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:colNumberFactor\`, file=\''.$stats_out_tempfile_col.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            X <- with(mat, spl2D(rowNumber, colNumber));
-            spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-            blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
-            spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
-            write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            randomized_positions <- sample(length(mat\$plot_id));
-            cv_step_size <- length(mat\$plot_id) %/% 5;
-            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
-            ';
-
-            my $t_coded_cv1 = $t.'_CV1';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
-            ';
-            my $t_coded_cv2 = $t.'_CV2';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv3 = $t.'_CV3';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv4 = $t.'_CV4';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv5 = $t.'_CV5';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            $statistics_cmd .= '
-                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            }
-            "';
-
+            # print STDERR Dumper $prepare_file_cv_cmd;
             # print STDERR Dumper $statistics_cmd;
             eval {
+                my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
             };
             my $run_stats_fault = 0;
             if ($@) {
@@ -19924,6 +20054,116 @@ sub _perform_drone_imagery_analytics {
                         $model_sum_square_cv5_altered_env = $model_sum_square_cv5_altered_env + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5);
+
+                open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                    my $header_cv1_2 = <$fh_cv1_2>;
+                    my @header_cols_cv1_2;
+                    if ($csv->parse($header_cv1_2)) {
+                        @header_cols_cv1_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv1_2_altered_env = $model_sum_square_cv1_2_altered_env + $error**2;
+                    }
+                close($fh_cv1_2);
+
+                open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                    my $header_cv2_2 = <$fh_cv2_2>;
+                    my @header_cols_cv2_2;
+                    if ($csv->parse($header_cv2_2)) {
+                        @header_cols_cv2_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv2_2_altered_env = $model_sum_square_cv2_2_altered_env + $error**2;
+                    }
+                close($fh_cv2_2);
+
+                open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                    my $header_cv3_2 = <$fh_cv3_2>;
+                    my @header_cols_cv3_2;
+                    if ($csv->parse($header_cv3_2)) {
+                        @header_cols_cv3_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv3_2_altered_env = $model_sum_square_cv3_2_altered_env + $error**2;
+                    }
+                close($fh_cv3_2);
+
+                open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                    my $header_cv4_2 = <$fh_cv4_2>;
+                    my @header_cols_cv4_2;
+                    if ($csv->parse($header_cv4_2)) {
+                        @header_cols_cv4_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv4_2_altered_env = $model_sum_square_cv4_2_altered_env + $error**2;
+                    }
+                close($fh_cv4_2);
+
+                open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                    my $header_cv5_2 = <$fh_cv5_2>;
+                    my @header_cols_cv5_2;
+                    if ($csv->parse($header_cv5_2)) {
+                        @header_cols_cv5_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv5_2_altered_env = $model_sum_square_cv5_2_altered_env + $error**2;
+                    }
+                close($fh_cv5_2);
 
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -22046,10 +22286,9 @@ sub _perform_drone_imagery_analytics {
     print STDERR "RUN ENV ESTIMATE ON Altered Pheno With Sim Env random_1d_normal_gradient\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
         #print STDERR Dumper $prepare_file_cv_cmd;
-        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
-
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -22444,92 +22683,19 @@ sub _perform_drone_imagery_analytics {
     elsif ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
         my @encoded_traits = values %trait_name_encoder;
         foreach my $t (@encoded_traits) {
+            $prepare_file_cv_cmd = $cmd_statistics_uni{$t}->{prepare_file_cv_cmd};
+            $statistics_cmd = $cmd_statistics_uni{$t}->{statistics_cmd};
+            $statistics_cmd_reading = $cmd_statistics_uni{$t}->{statistics_cmd_reading};
+            $statistics_cmd_cv_1 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_1};
+            $statistics_cmd_cv_2 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_2};
 
-            $statistics_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
-            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
-            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
-            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
-            geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            $statistics_cmd .= 'if (!is.null(mix\$U)) {
-            #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-            write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:rowNumberFactor\`, file=\''.$stats_out_tempfile_row.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:colNumberFactor\`, file=\''.$stats_out_tempfile_col.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            X <- with(mat, spl2D(rowNumber, colNumber));
-            spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-            blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
-            spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
-            write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            randomized_positions <- sample(length(mat\$plot_id));
-            cv_step_size <- length(mat\$plot_id) %/% 5;
-            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
-            ';
-
-            my $t_coded_cv1 = $t.'_CV1';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
-            ';
-            my $t_coded_cv2 = $t.'_CV2';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv3 = $t.'_CV3';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv4 = $t.'_CV4';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv5 = $t.'_CV5';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            $statistics_cmd .= '
-                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            }
-            "';
-
+            # print STDERR Dumper $prepare_file_cv_cmd;
             # print STDERR Dumper $statistics_cmd;
             eval {
+                my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
             };
             my $run_stats_fault = 0;
             if ($@) {
@@ -22772,6 +22938,116 @@ sub _perform_drone_imagery_analytics {
                         $model_sum_square_cv5_altered_env_2 = $model_sum_square_cv5_altered_env_2 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5);
+
+                open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                    my $header_cv1_2 = <$fh_cv1_2>;
+                    my @header_cols_cv1_2;
+                    if ($csv->parse($header_cv1_2)) {
+                        @header_cols_cv1_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv1_2_altered_env_2 = $model_sum_square_cv1_2_altered_env_2 + $error**2;
+                    }
+                close($fh_cv1_2);
+
+                open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                    my $header_cv2_2 = <$fh_cv2_2>;
+                    my @header_cols_cv2_2;
+                    if ($csv->parse($header_cv2_2)) {
+                        @header_cols_cv2_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv2_2_altered_env_2 = $model_sum_square_cv2_2_altered_env_2 + $error**2;
+                    }
+                close($fh_cv2_2);
+
+                open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                    my $header_cv3_2 = <$fh_cv3_2>;
+                    my @header_cols_cv3_2;
+                    if ($csv->parse($header_cv3_2)) {
+                        @header_cols_cv3_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv3_2_altered_env_2 = $model_sum_square_cv3_2_altered_env_2 + $error**2;
+                    }
+                close($fh_cv3_2);
+
+                open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                    my $header_cv4_2 = <$fh_cv4_2>;
+                    my @header_cols_cv4_2;
+                    if ($csv->parse($header_cv4_2)) {
+                        @header_cols_cv4_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv4_2_altered_env_2 = $model_sum_square_cv4_2_altered_env_2 + $error**2;
+                    }
+                close($fh_cv4_2);
+
+                open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                    my $header_cv5_2 = <$fh_cv5_2>;
+                    my @header_cols_cv5_2;
+                    if ($csv->parse($header_cv5_2)) {
+                        @header_cols_cv5_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv5_2_altered_env_2 = $model_sum_square_cv5_2_altered_env_2 + $error**2;
+                    }
+                close($fh_cv5_2);
 
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -24895,10 +25171,9 @@ sub _perform_drone_imagery_analytics {
     print STDERR "RUN ENV ESTIMATE ON Altered Pheno With Sim Env random_2d_normal_gradient\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
         #print STDERR Dumper $prepare_file_cv_cmd;
-        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
-
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -25293,93 +25568,21 @@ sub _perform_drone_imagery_analytics {
     elsif ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
         my @encoded_traits = values %trait_name_encoder;
         foreach my $t (@encoded_traits) {
+            $prepare_file_cv_cmd = $cmd_statistics_uni{$t}->{prepare_file_cv_cmd};
+            $statistics_cmd = $cmd_statistics_uni{$t}->{statistics_cmd};
+            $statistics_cmd_reading = $cmd_statistics_uni{$t}->{statistics_cmd_reading};
+            $statistics_cmd_cv_1 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_1};
+            $statistics_cmd_cv_2 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_2};
 
-            $statistics_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
-            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
-            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
-            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
-            geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            $statistics_cmd .= 'if (!is.null(mix\$U)) {
-            #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-            write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:rowNumberFactor\`, file=\''.$stats_out_tempfile_row.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:colNumberFactor\`, file=\''.$stats_out_tempfile_col.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            X <- with(mat, spl2D(rowNumber, colNumber));
-            spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-            blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
-            spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
-            write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            randomized_positions <- sample(length(mat\$plot_id));
-            cv_step_size <- length(mat\$plot_id) %/% 5;
-            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
-            ';
-
-            my $t_coded_cv1 = $t.'_CV1';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
-            ';
-            my $t_coded_cv2 = $t.'_CV2';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv3 = $t.'_CV3';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv4 = $t.'_CV4';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv5 = $t.'_CV5';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            $statistics_cmd .= '
-                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            }
-            "';
-
+            # print STDERR Dumper $prepare_file_cv_cmd;
             # print STDERR Dumper $statistics_cmd;
             eval {
+                my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
             };
+
             my $run_stats_fault = 0;
             if ($@) {
                 print STDERR "R ERROR\n";
@@ -25621,6 +25824,116 @@ sub _perform_drone_imagery_analytics {
                         $model_sum_square_cv5_altered_env_3 = $model_sum_square_cv5_altered_env_3 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5);
+
+                open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                    my $header_cv1_2 = <$fh_cv1_2>;
+                    my @header_cols_cv1_2;
+                    if ($csv->parse($header_cv1_2)) {
+                        @header_cols_cv1_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv1_2_altered_env_3 = $model_sum_square_cv1_2_altered_env_3 + $error**2;
+                    }
+                close($fh_cv1_2);
+
+                open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                    my $header_cv2_2 = <$fh_cv2_2>;
+                    my @header_cols_cv2_2;
+                    if ($csv->parse($header_cv2_2)) {
+                        @header_cols_cv2_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv2_2_altered_env_3 = $model_sum_square_cv2_2_altered_env_3 + $error**2;
+                    }
+                close($fh_cv2_2);
+
+                open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                    my $header_cv3_2 = <$fh_cv3_2>;
+                    my @header_cols_cv3_2;
+                    if ($csv->parse($header_cv3_2)) {
+                        @header_cols_cv3_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv3_2_altered_env_3 = $model_sum_square_cv3_2_altered_env_3 + $error**2;
+                    }
+                close($fh_cv3_2);
+
+                open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                    my $header_cv4_2 = <$fh_cv4_2>;
+                    my @header_cols_cv4_2;
+                    if ($csv->parse($header_cv4_2)) {
+                        @header_cols_cv4_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv4_2_altered_env_3 = $model_sum_square_cv4_2_altered_env_3 + $error**2;
+                    }
+                close($fh_cv4_2);
+
+                open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                    my $header_cv5_2 = <$fh_cv5_2>;
+                    my @header_cols_cv5_2;
+                    if ($csv->parse($header_cv5_2)) {
+                        @header_cols_cv5_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv5_2_altered_env_3 = $model_sum_square_cv5_2_altered_env_3 + $error**2;
+                    }
+                close($fh_cv5_2);
 
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -27741,10 +28054,9 @@ sub _perform_drone_imagery_analytics {
     print STDERR "RUN ENV ESTIMATE ON Altered Pheno With Sim Env random\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
         #print STDERR Dumper $prepare_file_cv_cmd;
-        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
-
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -28139,93 +28451,21 @@ sub _perform_drone_imagery_analytics {
     elsif ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
         my @encoded_traits = values %trait_name_encoder;
         foreach my $t (@encoded_traits) {
+            $prepare_file_cv_cmd = $cmd_statistics_uni{$t}->{prepare_file_cv_cmd};
+            $statistics_cmd = $cmd_statistics_uni{$t}->{statistics_cmd};
+            $statistics_cmd_reading = $cmd_statistics_uni{$t}->{statistics_cmd_reading};
+            $statistics_cmd_cv_1 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_1};
+            $statistics_cmd_cv_2 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_2};
 
-            $statistics_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
-            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
-            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
-            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
-            geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            $statistics_cmd .= 'if (!is.null(mix\$U)) {
-            #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-            write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:rowNumberFactor\`, file=\''.$stats_out_tempfile_row.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:colNumberFactor\`, file=\''.$stats_out_tempfile_col.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            X <- with(mat, spl2D(rowNumber, colNumber));
-            spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-            blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
-            spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
-            write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            randomized_positions <- sample(length(mat\$plot_id));
-            cv_step_size <- length(mat\$plot_id) %/% 5;
-            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
-            ';
-
-            my $t_coded_cv1 = $t.'_CV1';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
-            ';
-            my $t_coded_cv2 = $t.'_CV2';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv3 = $t.'_CV3';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv4 = $t.'_CV4';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv5 = $t.'_CV5';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            $statistics_cmd .= '
-                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            }
-            "';
-
+            # print STDERR Dumper $prepare_file_cv_cmd;
             # print STDERR Dumper $statistics_cmd;
             eval {
+                my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
             };
+
             my $run_stats_fault = 0;
             if ($@) {
                 print STDERR "R ERROR\n";
@@ -28467,6 +28707,116 @@ sub _perform_drone_imagery_analytics {
                         $model_sum_square_cv5_altered_env_4 = $model_sum_square_cv5_altered_env_4 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5);
+
+                open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                    my $header_cv1_2 = <$fh_cv1_2>;
+                    my @header_cols_cv1_2;
+                    if ($csv->parse($header_cv1_2)) {
+                        @header_cols_cv1_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv1_2_altered_env_4 = $model_sum_square_cv1_2_altered_env_4 + $error**2;
+                    }
+                close($fh_cv1_2);
+
+                open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                    my $header_cv2_2 = <$fh_cv2_2>;
+                    my @header_cols_cv2_2;
+                    if ($csv->parse($header_cv2_2)) {
+                        @header_cols_cv2_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv2_2_altered_env_4 = $model_sum_square_cv2_2_altered_env_4 + $error**2;
+                    }
+                close($fh_cv2_2);
+
+                open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                    my $header_cv3_2 = <$fh_cv3_2>;
+                    my @header_cols_cv3_2;
+                    if ($csv->parse($header_cv3_2)) {
+                        @header_cols_cv3_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv3_2_altered_env_4 = $model_sum_square_cv3_2_altered_env_4 + $error**2;
+                    }
+                close($fh_cv3_2);
+
+                open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                    my $header_cv4_2 = <$fh_cv4_2>;
+                    my @header_cols_cv4_2;
+                    if ($csv->parse($header_cv4_2)) {
+                        @header_cols_cv4_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv4_2_altered_env_4 = $model_sum_square_cv4_2_altered_env_4 + $error**2;
+                    }
+                close($fh_cv4_2);
+
+                open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                    my $header_cv5_2 = <$fh_cv5_2>;
+                    my @header_cols_cv5_2;
+                    if ($csv->parse($header_cv5_2)) {
+                        @header_cols_cv5_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv5_2_altered_env_4 = $model_sum_square_cv5_2_altered_env_4 + $error**2;
+                    }
+                close($fh_cv5_2);
 
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -30554,10 +30904,9 @@ sub _perform_drone_imagery_analytics {
     print STDERR "RUN ENV ESTIMATE ON Altered Pheno With Sim Env ar1xar1\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
         #print STDERR Dumper $prepare_file_cv_cmd;
-        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
-
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -30954,93 +31303,21 @@ sub _perform_drone_imagery_analytics {
     elsif ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
         my @encoded_traits = values %trait_name_encoder;
         foreach my $t (@encoded_traits) {
+            $prepare_file_cv_cmd = $cmd_statistics_uni{$t}->{prepare_file_cv_cmd};
+            $statistics_cmd = $cmd_statistics_uni{$t}->{statistics_cmd};
+            $statistics_cmd_reading = $cmd_statistics_uni{$t}->{statistics_cmd_reading};
+            $statistics_cmd_cv_1 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_1};
+            $statistics_cmd_cv_2 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_2};
 
-            $statistics_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
-            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
-            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
-            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
-            geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            $statistics_cmd .= 'if (!is.null(mix\$U)) {
-            #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-            write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:rowNumberFactor\`, file=\''.$stats_out_tempfile_row.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:colNumberFactor\`, file=\''.$stats_out_tempfile_col.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            X <- with(mat, spl2D(rowNumber, colNumber));
-            spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-            blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
-            spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
-            write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            randomized_positions <- sample(length(mat\$plot_id));
-            cv_step_size <- length(mat\$plot_id) %/% 5;
-            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
-            ';
-
-            my $t_coded_cv1 = $t.'_CV1';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
-            ';
-            my $t_coded_cv2 = $t.'_CV2';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv3 = $t.'_CV3';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv4 = $t.'_CV4';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv5 = $t.'_CV5';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            $statistics_cmd .= '
-                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            }
-            "';
-
+            # print STDERR Dumper $prepare_file_cv_cmd;
             # print STDERR Dumper $statistics_cmd;
             eval {
+                my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
             };
+
             my $run_stats_fault = 0;
             if ($@) {
                 print STDERR "R ERROR\n";
@@ -31284,6 +31561,116 @@ sub _perform_drone_imagery_analytics {
                         $model_sum_square_cv5_altered_env_5 = $model_sum_square_cv5_altered_env_5 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5);
+
+                open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                    my $header_cv1_2 = <$fh_cv1_2>;
+                    my @header_cols_cv1_2;
+                    if ($csv->parse($header_cv1_2)) {
+                        @header_cols_cv1_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv1_2_altered_env_5 = $model_sum_square_cv1_2_altered_env_5 + $error**2;
+                    }
+                close($fh_cv1_2);
+
+                open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                    my $header_cv2_2 = <$fh_cv2_2>;
+                    my @header_cols_cv2_2;
+                    if ($csv->parse($header_cv2_2)) {
+                        @header_cols_cv2_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv2_2_altered_env_5 = $model_sum_square_cv2_2_altered_env_5 + $error**2;
+                    }
+                close($fh_cv2_2);
+
+                open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                    my $header_cv3_2 = <$fh_cv3_2>;
+                    my @header_cols_cv3_2;
+                    if ($csv->parse($header_cv3_2)) {
+                        @header_cols_cv3_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv3_2_altered_env_5 = $model_sum_square_cv3_2_altered_env_5 + $error**2;
+                    }
+                close($fh_cv3_2);
+
+                open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                    my $header_cv4_2 = <$fh_cv4_2>;
+                    my @header_cols_cv4_2;
+                    if ($csv->parse($header_cv4_2)) {
+                        @header_cols_cv4_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv4_2_altered_env_5 = $model_sum_square_cv4_2_altered_env_5 + $error**2;
+                    }
+                close($fh_cv4_2);
+
+                open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                    my $header_cv5_2 = <$fh_cv5_2>;
+                    my @header_cols_cv5_2;
+                    if ($csv->parse($header_cv5_2)) {
+                        @header_cols_cv5_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv5_2_altered_env_5 = $model_sum_square_cv5_2_altered_env_5 + $error**2;
+                    }
+                close($fh_cv5_2);
 
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
@@ -33425,10 +33812,9 @@ sub _perform_drone_imagery_analytics {
     print STDERR "RUN ENV ESTIMATE ON Altered Pheno With Sim Env selected_field_trial_htp_env\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
         #print STDERR Dumper $prepare_file_cv_cmd;
-        my $status_prepare_file_cv = system($prepare_file_cv_cmd);
-
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -33825,93 +34211,21 @@ sub _perform_drone_imagery_analytics {
     elsif ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
         my @encoded_traits = values %trait_name_encoder;
         foreach my $t (@encoded_traits) {
+            $prepare_file_cv_cmd = $cmd_statistics_uni{$t}->{prepare_file_cv_cmd};
+            $statistics_cmd = $cmd_statistics_uni{$t}->{statistics_cmd};
+            $statistics_cmd_reading = $cmd_statistics_uni{$t}->{statistics_cmd_reading};
+            $statistics_cmd_cv_1 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_1};
+            $statistics_cmd_cv_2 = $cmd_statistics_uni{$t}->{statistics_cmd_cv_2};
 
-            $statistics_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
-            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
-            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
-            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
-            geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                ';
-            }
-            $statistics_cmd .= 'if (!is.null(mix\$U)) {
-            #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-            write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:rowNumberFactor\`, file=\''.$stats_out_tempfile_row.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(mix\$U\$\`u:colNumberFactor\`, file=\''.$stats_out_tempfile_col.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            X <- with(mat, spl2D(rowNumber, colNumber));
-            spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-            blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
-            spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
-            write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            randomized_positions <- sample(length(mat\$plot_id));
-            cv_step_size <- length(mat\$plot_id) %/% 5;
-            cv_step_size_modulo <- length(mat\$plot_id) %% 5;
-            ';
-
-            my $t_coded_cv1 = $t.'_CV1';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
-            ';
-            my $t_coded_cv2 = $t.'_CV2';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv3 = $t.'_CV3';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv4 = $t.'_CV4';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
-            ';
-            my $t_coded_cv5 = $t.'_CV5';
-            $statistics_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
-            ';
-            if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                ';
-            }
-            $statistics_cmd .= '
-                write.table(data.frame(plot_id = mix_cv1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3.' = mat\$'.$t_coded_cv3.', residuals = mix_cv3\$residuals, fitted = mix_cv3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-                write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            }
-            "';
-
+            # print STDERR Dumper $prepare_file_cv_cmd;
             # print STDERR Dumper $statistics_cmd;
             eval {
+                my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
             };
+
             my $run_stats_fault = 0;
             if ($@) {
                 print STDERR "R ERROR\n";
@@ -34155,6 +34469,116 @@ sub _perform_drone_imagery_analytics {
                         $model_sum_square_cv5_altered_env_6 = $model_sum_square_cv5_altered_env_6 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5);
+
+                open(my $fh_cv1_2, '<', $stats_out_cv1_2_predict_tempfile) or die "Could not open file '$stats_out_cv1_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv1_2_predict_tempfile\n";
+                    my $header_cv1_2 = <$fh_cv1_2>;
+                    my @header_cols_cv1_2;
+                    if ($csv->parse($header_cv1_2)) {
+                        @header_cols_cv1_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv1_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv1_2_altered_env_6 = $model_sum_square_cv1_2_altered_env_6 + $error**2;
+                    }
+                close($fh_cv1_2);
+
+                open(my $fh_cv2_2, '<', $stats_out_cv2_2_predict_tempfile) or die "Could not open file '$stats_out_cv2_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv2_2_predict_tempfile\n";
+                    my $header_cv2_2 = <$fh_cv2_2>;
+                    my @header_cols_cv2_2;
+                    if ($csv->parse($header_cv2_2)) {
+                        @header_cols_cv2_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv2_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv2_2_altered_env_6 = $model_sum_square_cv2_2_altered_env_6 + $error**2;
+                    }
+                close($fh_cv2_2);
+
+                open(my $fh_cv3_2, '<', $stats_out_cv3_2_predict_tempfile) or die "Could not open file '$stats_out_cv3_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv3_2_predict_tempfile\n";
+                    my $header_cv3_2 = <$fh_cv3_2>;
+                    my @header_cols_cv3_2;
+                    if ($csv->parse($header_cv3_2)) {
+                        @header_cols_cv3_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv3_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv3_2_altered_env_6 = $model_sum_square_cv3_2_altered_env_6 + $error**2;
+                    }
+                close($fh_cv3_2);
+
+                open(my $fh_cv4_2, '<', $stats_out_cv4_2_predict_tempfile) or die "Could not open file '$stats_out_cv4_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv4_2_predict_tempfile\n";
+                    my $header_cv4_2 = <$fh_cv4_2>;
+                    my @header_cols_cv4_2;
+                    if ($csv->parse($header_cv4_2)) {
+                        @header_cols_cv4_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv4_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv4_2_altered_env_6 = $model_sum_square_cv4_2_altered_env_6 + $error**2;
+                    }
+                close($fh_cv4_2);
+
+                open(my $fh_cv5_2, '<', $stats_out_cv5_2_predict_tempfile) or die "Could not open file '$stats_out_cv5_2_predict_tempfile' $!";
+                    print STDERR "Opened $stats_out_cv5_2_predict_tempfile\n";
+                    my $header_cv5_2 = <$fh_cv5_2>;
+                    my @header_cols_cv5_2;
+                    if ($csv->parse($header_cv5_2)) {
+                        @header_cols_cv5_2 = $csv->fields();
+                    }
+                    while (my $row = <$fh_cv5_2>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_cv = $columns[0];
+                        my $accession_id = $columns[1];
+                        my $row_number = $columns[2];
+                        my $predicted_value = $columns[3];
+                        my $error = $columns[4];
+                        $model_sum_square_cv5_2_altered_env_6 = $model_sum_square_cv5_2_altered_env_6 + $error**2;
+                    }
+                close($fh_cv5_2);
 
                 open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                     print STDERR "Opened $stats_out_tempfile_varcomp\n";
