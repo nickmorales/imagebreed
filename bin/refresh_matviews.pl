@@ -40,7 +40,18 @@ my $dbh = DBI->connect($dsn, $opt_U, $opt_P);
 eval {
     print STDERR "Refreshing materialized views . . ." . localtime() . "\n";
 
+    my $start_q = "UPDATE matviews SET refresh_start = now() where mv_name = ?";
+    my $end_q = "UPDATE matviews SET last_refresh = now() where mv_name = ?";
+    my $start_h = $dbh->prepare($start_q);
+    my $end_h = $dbh->prepare($end_q);
+    my $start_q_all = "UPDATE matviews SET refresh_start = now()";
+    my $end_q_all = "UPDATE matviews SET last_refresh = now()";
+    my $start_h_all = $dbh->prepare($start_q_all);
+    my $end_h_all = $dbh->prepare($end_q_all);
+
     if ($opt_m eq 'fullview'){
+        $start_h_all->execute();
+
         my $q = "UPDATE public.matviews SET currently_refreshing=?";
         my $state = 'TRUE';
         my $h = $dbh->prepare($q);
@@ -77,9 +88,13 @@ eval {
         $state = 'FALSE';
         $h = $dbh->prepare($q);
         $h->execute($state);
+
+        $end_h_all->execute();
     }
 
     if ($opt_m eq 'stockprop'){
+        $start_h->execute('materialized_stockprop');
+
         if ($opt_c) {
           $refresh = 'SELECT refresh_materialized_stockprop_concurrently()';
         } else {
@@ -88,6 +103,8 @@ eval {
 
         my $h = $dbh->prepare($refresh);
         $status = $h->execute();
+
+        $end_h->execute('materialized_stockprop');
     }
 
     print STDERR "Materialized views refreshed! Status: $status" . localtime() . "\n";
