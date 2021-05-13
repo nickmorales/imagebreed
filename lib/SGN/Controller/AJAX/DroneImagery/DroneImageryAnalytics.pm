@@ -3337,56 +3337,72 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         env_covariance => $rr_coeff_env_covariance_original_array_1,
                         residual => $rr_residual_variance_original_1,
                         genetic_correlation => $rr_coeff_genetic_correlation_original_array_1,
-                        env_correlation => $rr_coeff_env_correlation_original_array_1
+                        env_correlation => $rr_coeff_env_correlation_original_array_1,
+                        cv_1 => $result_cv_original_1,
+                        cv_2 => $result_cv_2_original_1
                     },
                     altered => {
                         genetic_covariance => $rr_coeff_genetic_covariance_altered_array_1,
                         env_covariance => $rr_coeff_env_covariance_altered_array_1,
                         residual => $rr_residual_variance_altered_1,
                         genetic_correlation => $rr_coeff_genetic_correlation_altered_array_1,
-                        env_correlation => $rr_coeff_env_correlation_altered_array_1
+                        env_correlation => $rr_coeff_env_correlation_altered_array_1,
+                        cv_1 => $result_cv_altered_1,
+                        cv_2 => $result_cv_2_altered_1
                     },
                     env_linear => {
                         genetic_covariance => $rr_coeff_genetic_covariance_altered_env_array_1_1,
                         env_covariance => $rr_coeff_env_covariance_altered_env_array_1_1,
                         residual => $rr_residual_variance_altered_env_1_1,
                         genetic_correlation => $rr_coeff_genetic_correlation_altered_env_array_1_1,
-                        env_correlation => $rr_coeff_env_correlation_altered_env_array_1_1
+                        env_correlation => $rr_coeff_env_correlation_altered_env_array_1_1,
+                        cv_1 => $result_cv_altered_env_1_1,
+                        cv_2 => $result_cv_2_altered_env_1_1
                     },
                     env_1DN  => {
                         genetic_covariance => $rr_coeff_genetic_covariance_altered_env_array_2_1,
                         env_covariance => $rr_coeff_env_covariance_altered_env_array_2_1,
                         residual => $rr_residual_variance_altered_env_2_1,
                         genetic_correlation => $rr_coeff_genetic_correlation_altered_env_array_2_1,
-                        env_correlation => $rr_coeff_env_correlation_altered_env_array_2_1
+                        env_correlation => $rr_coeff_env_correlation_altered_env_array_2_1,
+                        cv_1 => $result_cv_altered_env_2_1,
+                        cv_2 => $result_cv_2_altered_env_2_1
                     },
                     env_2DN  => {
                         genetic_covariance => $rr_coeff_genetic_covariance_altered_env_array_3_1,
                         env_covariance => $rr_coeff_env_covariance_altered_env_array_3_1,
                         residual => $rr_residual_variance_altered_env_3_1,
                         genetic_correlation => $rr_coeff_genetic_correlation_altered_env_array_3_1,
-                        env_correlation => $rr_coeff_env_correlation_altered_env_array_3_1
+                        env_correlation => $rr_coeff_env_correlation_altered_env_array_3_1,
+                        cv_1 => $result_cv_altered_env_3_1,
+                        cv_2 => $result_cv_2_altered_env_3_1
                     },
                     env_random  => {
                         genetic_covariance => $rr_coeff_genetic_covariance_altered_env_array_4_1,
                         env_covariance => $rr_coeff_env_covariance_altered_env_array_4_1,
                         residual => $rr_residual_variance_altered_env_4_1,
                         genetic_correlation => $rr_coeff_genetic_correlation_altered_env_array_4_1,
-                        env_correlation => $rr_coeff_env_correlation_altered_env_array_4_1
+                        env_correlation => $rr_coeff_env_correlation_altered_env_array_4_1,
+                        cv_1 => $result_cv_altered_env_4_1,
+                        cv_2 => $result_cv_2_altered_env_4_1
                     },
                     env_ar1xar1  => {
                         genetic_covariance => $rr_coeff_genetic_covariance_altered_env_array_5_1,
                         env_covariance => $rr_coeff_env_covariance_altered_env_array_5_1,
                         residual => $rr_residual_variance_altered_env_5_1,
                         genetic_correlation => $rr_coeff_genetic_correlation_altered_env_array_5_1,
-                        env_correlation => $rr_coeff_env_correlation_altered_env_array_5_1
+                        env_correlation => $rr_coeff_env_correlation_altered_env_array_5_1,
+                        cv_1 => $result_cv_altered_env_5_1,
+                        cv_2 => $result_cv_2_altered_env_5_1
                     },
                     env_realdata  => {
                         genetic_covariance => $rr_coeff_genetic_covariance_altered_env_array_6_1,
                         env_covariance => $rr_coeff_env_covariance_altered_env_array_6_1,
                         residual => $rr_residual_variance_altered_env_6_1,
                         genetic_correlation => $rr_coeff_genetic_correlation_altered_env_array_6_1,
-                        env_correlation => $rr_coeff_env_correlation_altered_env_array_6_1
+                        env_correlation => $rr_coeff_env_correlation_altered_env_array_6_1,
+                        cv_1 => $result_cv_altered_env_6_1,
+                        cv_2 => $result_cv_2_altered_env_6_1
                     }
                 };
             }
@@ -5633,27 +5649,43 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     env_variance => $env_variance_percent,
                     original => {
                         covariance => $varcomp_original_array_2,
+                        cv_1 => $result_cv_original_2,
+                        cv_2 => $result_cv_2_original_2
                     },
                     altered => {
                         covariance => $varcomp_altered_array_2,
+                        cv_1 => $result_cv_altered_2,
+                        cv_2 => $result_cv_2_altered_2
                     },
                     env_linear => {
-                        covariance => $varcomp_altered_array_env_1_2
+                        covariance => $varcomp_altered_array_env_1_2,
+                        cv_1 => $result_cv_altered_env_1_2,
+                        cv_2 => $result_cv_2_altered_env_1_2
                     },
                     env_1DN  => {
-                        covariance => $varcomp_altered_array_env_2_2
+                        covariance => $varcomp_altered_array_env_2_2,
+                        cv_1 => $result_cv_altered_env_2_2,
+                        cv_2 => $result_cv_2_altered_env_2_2
                     },
                     env_2DN  => {
-                        covariance => $varcomp_altered_array_env_3_2
+                        covariance => $varcomp_altered_array_env_3_2,
+                        cv_1 => $result_cv_altered_env_3_2,
+                        cv_2 => $result_cv_2_altered_env_3_2
                     },
                     env_random  => {
-                        covariance => $varcomp_altered_array_env_4_2
+                        covariance => $varcomp_altered_array_env_4_2,
+                        cv_1 => $result_cv_altered_env_4_2,
+                        cv_2 => $result_cv_2_altered_env_4_2
                     },
                     env_ar1xar1  => {
-                        covariance => $varcomp_altered_array_env_5_2
+                        covariance => $varcomp_altered_array_env_5_2,
+                        cv_1 => $result_cv_altered_env_5_2,
+                        cv_2 => $result_cv_2_altered_env_5_2
                     },
                     env_realdata  => {
-                        covariance => $varcomp_altered_array_env_6_2
+                        covariance => $varcomp_altered_array_env_6_2,
+                        cv_1 => $result_cv_altered_env_6_2,
+                        cv_2 => $result_cv_2_altered_env_6_2
                     }
                 };
             }
@@ -7893,28 +7925,44 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     correlation_between_times => $correlation_between_times,
                     env_variance => $env_variance_percent,
                     original => {
-                        covariance => $varcomp_original_array_3
+                        covariance => $varcomp_original_array_3,
+                        cv_1 => $result_cv_original_3,
+                        cv_2 => $result_cv_2_original_3
                     },
                     altered => {
-                        covariance => $varcomp_altered_array_3
+                        covariance => $varcomp_altered_array_3,
+                        cv_1 => $result_cv_altered_3,
+                        cv_2 => $result_cv_2_altered_3
                     },
                     env_linear => {
-                        covariance => $varcomp_altered_array_env_1_3
+                        covariance => $varcomp_altered_array_env_1_3,
+                        cv_1 => $result_cv_altered_env_1_3,
+                        cv_2 => $result_cv_2_altered_env_1_3
                     },
                     env_1DN  => {
-                        covariance => $varcomp_altered_array_env_2_3
+                        covariance => $varcomp_altered_array_env_2_3,
+                        cv_1 => $result_cv_altered_env_2_3,
+                        cv_2 => $result_cv_2_altered_env_2_3
                     },
                     env_2DN  => {
-                        covariance => $varcomp_altered_array_env_3_3
+                        covariance => $varcomp_altered_array_env_3_3,
+                        cv_1 => $result_cv_altered_env_3_3,
+                        cv_2 => $result_cv_2_altered_env_3_3
                     },
                     env_random  => {
-                        covariance => $varcomp_altered_array_env_4_3
+                        covariance => $varcomp_altered_array_env_4_3,
+                        cv_1 => $result_cv_altered_env_4_3,
+                        cv_2 => $result_cv_2_altered_env_4_3
                     },
                     env_ar1xar1  => {
-                        covariance => $varcomp_altered_array_env_5_3
+                        covariance => $varcomp_altered_array_env_5_3,
+                        cv_1 => $result_cv_altered_env_5_3,
+                        cv_2 => $result_cv_2_altered_env_5_3
                     },
                     env_realdata  => {
-                        covariance => $varcomp_altered_array_env_6_3
+                        covariance => $varcomp_altered_array_env_6_3,
+                        cv_1 => $result_cv_altered_env_6_3,
+                        cv_2 => $result_cv_2_altered_env_6_3
                     }
                 };
             }
@@ -10256,28 +10304,44 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     correlation_between_times => $correlation_between_times,
                     env_variance => $env_variance_percent,
                     original => {
-                        covariance => $varcomp_original_array_5
+                        covariance => $varcomp_original_array_5,
+                        cv_1 => $result_cv_original_5,
+                        cv_2 => $result_cv_2_original_5
                     },
                     altered => {
-                        covariance => $varcomp_altered_array_5
+                        covariance => $varcomp_altered_array_5,
+                        cv_1 => $result_cv_altered_5,
+                        cv_2 => $result_cv_2_altered_5
                     },
                     env_linear => {
-                        covariance => $varcomp_altered_array_env_1_5
+                        covariance => $varcomp_altered_array_env_1_5,
+                        cv_1 => $result_cv_altered_env_1_5,
+                        cv_2 => $result_cv_2_altered_env_1_5
                     },
                     env_1DN  => {
-                        covariance => $varcomp_altered_array_env_2_5
+                        covariance => $varcomp_altered_array_env_2_5,
+                        cv_1 => $result_cv_altered_env_2_5,
+                        cv_2 => $result_cv_2_altered_env_2_5
                     },
                     env_2DN  => {
-                        covariance => $varcomp_altered_array_env_3_5
+                        covariance => $varcomp_altered_array_env_3_5,
+                        cv_1 => $result_cv_altered_env_3_5,
+                        cv_2 => $result_cv_2_altered_env_3_5
                     },
                     env_random  => {
-                        covariance => $varcomp_altered_array_env_4_5
+                        covariance => $varcomp_altered_array_env_4_5,
+                        cv_1 => $result_cv_altered_env_4_5,
+                        cv_2 => $result_cv_2_altered_env_4_5
                     },
                     env_ar1xar1  => {
-                        covariance => $varcomp_altered_array_env_5_5
+                        covariance => $varcomp_altered_array_env_5_5,
+                        cv_1 => $result_cv_altered_env_5_5,
+                        cv_2 => $result_cv_2_altered_env_5_5
                     },
                     env_realdata  => {
-                        covariance => $varcomp_altered_array_env_6_5
+                        covariance => $varcomp_altered_array_env_6_5,
+                        cv_1 => $result_cv_altered_env_6_5,
+                        cv_2 => $result_cv_2_altered_env_6_5
                     }
                 };
             }
@@ -12618,28 +12682,44 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     correlation_between_times => $correlation_between_times,
                     env_variance => $env_variance_percent,
                     original => {
-                        covariance => $varcomp_original_array_6
+                        covariance => $varcomp_original_array_6,
+                        cv_1 => $result_cv_original_6,
+                        cv_2 => $result_cv_2_original_6
                     },
                     altered => {
-                        covariance => $varcomp_altered_array_6
+                        covariance => $varcomp_altered_array_6,
+                        cv_1 => $result_cv_altered_6,
+                        cv_2 => $result_cv_2_altered_6
                     },
                     env_linear => {
-                        covariance => $varcomp_altered_array_env_1_6
+                        covariance => $varcomp_altered_array_env_1_6,
+                        cv_1 => $result_cv_altered_env_1_6,
+                        cv_2 => $result_cv_2_altered_env_1_6
                     },
                     env_1DN  => {
-                        covariance => $varcomp_altered_array_env_2_6
+                        covariance => $varcomp_altered_array_env_2_6,
+                        cv_1 => $result_cv_altered_env_2_6,
+                        cv_2 => $result_cv_2_altered_env_2_6
                     },
                     env_2DN  => {
-                        covariance => $varcomp_altered_array_env_3_6
+                        covariance => $varcomp_altered_array_env_3_6,
+                        cv_1 => $result_cv_altered_env_3_6,
+                        cv_2 => $result_cv_2_altered_env_3_6
                     },
                     env_random  => {
-                        covariance => $varcomp_altered_array_env_4_6
+                        covariance => $varcomp_altered_array_env_4_6,
+                        cv_1 => $result_cv_altered_env_4_6,
+                        cv_2 => $result_cv_2_altered_env_4_6
                     },
                     env_ar1xar1  => {
-                        covariance => $varcomp_altered_array_env_5_6
+                        covariance => $varcomp_altered_array_env_5_6,
+                        cv_1 => $result_cv_altered_env_5_6,
+                        cv_2 => $result_cv_2_altered_env_5_6
                     },
                     env_realdata  => {
-                        covariance => $varcomp_altered_array_env_6_6
+                        covariance => $varcomp_altered_array_env_6_6,
+                        cv_1 => $result_cv_altered_env_6_6,
+                        cv_2 => $result_cv_2_altered_env_6_6
                     }
                 };
             }
@@ -12845,6 +12925,42 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     }
     # print STDERR Dumper \%avg_varcomps;
 
+    my %avg_cross_validation;
+    my @avg_cross_validation_display;
+    foreach (@$env_varcomps) {
+        my $type = $_->{statistics_select};
+        foreach my $t (@varcomp_keys) {
+            my $cv1 = $_->{$t}->{cv_1};
+            my $cv2 = $_->{$t}->{cv_2};
+            my $cv1_values = $cv1->{values};
+            my $cv2_values = $cv2->{values};
+            push @{$avg_cross_validation{$type}->{$t}->{cv_1}}, @$cv1_values;
+            push @{$avg_cross_validation{$type}->{$t}->{cv_2}}, @$cv2_values;
+        }
+    }
+    while (my($t, $type_obj_m) = each %avg_cross_validation) {
+        while (my($type_scenario, $type_obj) = each %$type_obj_m) {
+            my $cv1_values = $type_obj->{cv_1};
+            my $cv2_values = $type_obj->{cv_2};
+            my $stat_cv1 = Statistics::Descriptive::Full->new();
+            $stat_cv1->add_data(@$cv1_values);
+            my $cv1_std = $stat_cv1->standard_deviation();
+            my $cv1_mean = $stat_cv1->mean();
+            my $stat_cv2 = Statistics::Descriptive::Full->new();
+            $stat_cv2->add_data(@$cv2_values);
+            my $cv2_std = $stat_cv2->standard_deviation();
+            my $cv2_mean = $stat_cv2->mean();
+            push @avg_cross_validation_display, {
+                type => $t,
+                type_scenario => $type_scenario,
+                cv1_mean => $cv1_mean,
+                cv1_std => $cv1_std,
+                cv2_mean => $cv2_mean,
+                cv2_std => $cv2_std
+            };
+        }
+    }
+
     my $q_save_res = "SELECT nd_protocolprop_id, value FROM nd_protocolprop WHERE nd_protocol_id=? AND type_id=?;";
     my $h_save_res = $schema->storage->dbh()->prepare($q_save_res);
     $h_save_res->execute($analytics_protocol_id, $protocolprop_result_type_cvterm_id);
@@ -12861,7 +12977,9 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
         trait_to_time_map => \%trait_to_time_map,
         env_varcomps => $env_varcomps,
         avg_varcomps => \%avg_varcomps,
-        avg_varcomps_display => \@avg_varcomps_display
+        avg_varcomps_display => \@avg_varcomps_display,
+        avg_cross_validation => \%avg_cross_validation,
+        avg_cross_validation_display => \@avg_cross_validation_display
     };
     my $q2 = "UPDATE nd_protocolprop SET value=? WHERE nd_protocolprop_id=?;";
     my $h2 = $schema->storage->dbh()->prepare($q2);
