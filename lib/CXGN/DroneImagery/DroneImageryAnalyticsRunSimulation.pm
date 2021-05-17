@@ -840,7 +840,8 @@ sub perform_drone_imagery_analytics {
                 write.table(data.frame(plot_id = mix_cv4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4.' = mat\$'.$t_coded_cv4.', residuals = mix_cv4\$residuals, fitted = mix_cv4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
                 write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             "';
-            $statistics_cmd_cv_2 .= 'p_cv1 <- predict.mmer(object=mix_cv_2_1, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
+            $statistics_cmd_cv_2 .= '
+            p_cv1 <- predict.mmer(object=mix_cv_2_1, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
             p_cv2 <- predict.mmer(object=mix_cv_2_2, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
             p_cv3 <- predict.mmer(object=mix_cv_2_3, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
             p_cv4 <- predict.mmer(object=mix_cv_2_4, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
@@ -2323,11 +2324,11 @@ sub perform_drone_imagery_analytics {
             mix_cv_2_4 <- asreml('.$t_coded_cv4_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.');
             mix_cv_2_5 <- asreml('.$t_coded_cv5_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.');
 
-            p_cv1 <- predict.asreml(mix_cv_2_1, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
-            p_cv2 <- predict.asreml(mix_cv_2_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
-            p_cv3 <- predict.asreml(mix_cv_2_3, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
-            p_cv4 <- predict.asreml(mix_cv_2_4, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
-            p_cv5 <- predict.asreml(mix_cv_2_5, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
+            p_cv1 <- predict.asreml(mix_cv_2_1, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
+            p_cv2 <- predict.asreml(mix_cv_2_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
+            p_cv3 <- predict.asreml(mix_cv_2_3, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
+            p_cv4 <- predict.asreml(mix_cv_2_4, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
+            p_cv5 <- predict.asreml(mix_cv_2_5, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
             p_cv1;
             write.table(p_cv1\$pvals, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             write.table(p_cv2\$pvals, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
@@ -2875,11 +2876,11 @@ sub perform_drone_imagery_analytics {
             mix_cv_2_4 <- asreml('.$t_coded_cv4_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.');
             mix_cv_2_5 <- asreml('.$t_coded_cv5_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.');
 
-            p_cv1 <- predict.asreml(mix_cv_2_1, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
-            p_cv2 <- predict.asreml(mix_cv_2_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
-            p_cv3 <- predict.asreml(mix_cv_2_3, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
-            p_cv4 <- predict.asreml(mix_cv_2_4, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
-            p_cv5 <- predict.asreml(mix_cv_2_5, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
+            p_cv1 <- predict.asreml(mix_cv_2_1, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
+            p_cv2 <- predict.asreml(mix_cv_2_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
+            p_cv3 <- predict.asreml(mix_cv_2_3, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
+            p_cv4 <- predict.asreml(mix_cv_2_4, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
+            p_cv5 <- predict.asreml(mix_cv_2_5, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
             p_cv1;
             write.table(p_cv1\$pvals, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             write.table(p_cv2\$pvals, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
@@ -3535,11 +3536,11 @@ sub perform_drone_imagery_analytics {
         mix_cv_4_2 <- asreml('.$cbind_string_cv_4_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.');
         mix_cv_5_2 <- asreml('.$cbind_string_cv_5_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.');
 
-        p_cv1 <- predict.asreml(mix_cv_1_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
-        p_cv2 <- predict.asreml(mix_cv_2_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
-        p_cv3 <- predict.asreml(mix_cv_3_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
-        p_cv4 <- predict.asreml(mix_cv_4_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
-        p_cv5 <- predict.asreml(mix_cv_5_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
+        p_cv1 <- predict.asreml(mix_cv_1_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
+        p_cv2 <- predict.asreml(mix_cv_2_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
+        p_cv3 <- predict.asreml(mix_cv_3_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
+        p_cv4 <- predict.asreml(mix_cv_4_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
+        p_cv5 <- predict.asreml(mix_cv_5_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.', pworkspace=\'64gb\' );
         p_cv1;
         write.table(p_cv1\$pvals, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         write.table(p_cv2\$pvals, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
