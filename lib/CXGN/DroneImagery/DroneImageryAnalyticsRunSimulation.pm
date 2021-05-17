@@ -97,7 +97,7 @@ sub perform_drone_imagery_analytics {
     my $number_plots = scalar(@unique_plot_names);
     my $number_traits = scalar(@sorted_trait_names);
 
-    my ($statistical_ontology_term, $analysis_model_training_data_file_type, $analysis_model_language, @sorted_residual_trait_names, %rr_unique_traits, %rr_residual_unique_traits, $statistics_cmd, $cmd_f90, $cmd_asreml, $statistics_cmd_reading, $prepare_file_cv_cmd, $statistics_cmd_cv_1, $statistics_cmd_cv_2, %cmd_statistics_uni, $number_accessions);
+    my ($statistical_ontology_term, $analysis_model_training_data_file_type, $analysis_model_language, @sorted_residual_trait_names, %rr_unique_traits, %rr_residual_unique_traits, $statistics_cmd, $cmd_f90, $cmd_asreml, $statistics_cmd_reading, $prepare_file_cv_cmd, $prepare_file_cv2_cmd, $statistics_cmd_cv_1, $statistics_cmd_cv_2, %cmd_statistics_uni, $number_accessions);
     my $tolparinv_10 = $tolparinv*10;
     my $legendre_order_number_env_var_pos = $legendre_order_number+1+2;
     my ($result_blup_data_original, $result_blup_data_delta_original, $result_blup_spatial_data_original, $result_blup_pe_data_original, $result_blup_pe_data_delta_original, $result_residual_data_original, $result_fitted_data_original, %fixed_effects_original, %rr_genetic_coefficients_original, %rr_temporal_coefficients_original);
@@ -3381,66 +3381,90 @@ sub perform_drone_imagery_analytics {
             push @encoded_traits_cv_check, 'mat\$'.$t_coded;
 
             my $t_coded_cv1 = $t_coded.'_CV1';
-            my $t_coded_cv1_2 = $t_coded.'_CV1_2';
             push @encoded_traits_cv_1, $t_coded_cv1;
-            push @encoded_traits_cv_1_2, $t_coded_cv1_2;
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t_coded.';
             mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- median(mat\$'.$t_coded.');
-            mat\$'.$t_coded_cv1_2.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv1_2.'[randomized_positions[1:cv_step_size]] <- NA;
             ';
             push @encoded_traits_cv_save_1, 'mat\$'.$t_coded_cv1;
-            push @encoded_traits_cv_save_1_2, 'mat\$'.$t_coded_cv1_2;
 
             my $t_coded_cv2 = $t_coded.'_CV2';
-            my $t_coded_cv2_2 = $t_coded.'_CV2_2';
             push @encoded_traits_cv_2, $t_coded_cv2;
-            push @encoded_traits_cv_2_2, $t_coded_cv2_2;
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t_coded.';
             mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- median(mat\$'.$t_coded.');
-            mat\$'.$t_coded_cv2_2.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv2_2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
             ';
             push @encoded_traits_cv_save_2, 'mat\$'.$t_coded_cv2;
-            push @encoded_traits_cv_save_2_2, 'mat\$'.$t_coded_cv2_2;
 
             my $t_coded_cv3 = $t_coded.'_CV3';
-            my $t_coded_cv3_2 = $t_coded.'_CV3_2';
             push @encoded_traits_cv_3, $t_coded_cv3;
-            push @encoded_traits_cv_3_2, $t_coded_cv3_2;
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t_coded.';
             mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- median(mat\$'.$t_coded.');
-            mat\$'.$t_coded_cv3_2.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv3_2.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
             ';
             push @encoded_traits_cv_save_3, 'mat\$'.$t_coded_cv3;
-            push @encoded_traits_cv_save_3_2, 'mat\$'.$t_coded_cv3_2;
 
             my $t_coded_cv4 = $t_coded.'_CV4';
-            my $t_coded_cv4_2 = $t_coded.'_CV4_2';
             push @encoded_traits_cv_4, $t_coded_cv4;
-            push @encoded_traits_cv_4_2, $t_coded_cv4_2;
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t_coded.';
             mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- median(mat\$'.$t_coded.');
-            mat\$'.$t_coded_cv4_2.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv4_2.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
             ';
             push @encoded_traits_cv_save_4, 'mat\$'.$t_coded_cv4;
-            push @encoded_traits_cv_save_4_2, 'mat\$'.$t_coded_cv4_2;
 
             my $t_coded_cv5 = $t_coded.'_CV5';
-            my $t_coded_cv5_2 = $t_coded.'_CV5_2';
             push @encoded_traits_cv_5, $t_coded_cv5;
-            push @encoded_traits_cv_5_2, $t_coded_cv5_2;
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t_coded.';
             mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- median(mat\$'.$t_coded.');
-            mat\$'.$t_coded_cv5_2.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv5_2.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
             ';
             push @encoded_traits_cv_save_5, 'mat\$'.$t_coded_cv5;
-            push @encoded_traits_cv_save_5_2, 'mat\$'.$t_coded_cv5_2;
         }
         $prepare_file_cv_cmd .= '
+        write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+        "';
+
+        $prepare_file_cv2_cmd = 'R -e "library(data.table);
+        mat <- data.frame(fread(\''.$stats_tempfile_2.'\', header=TRUE, sep=\',\'));
+        cv_step_size <- length(mat\$plot_id) %/% 5;
+        cv_step_size_modulo <- length(mat\$plot_id) %% 5;
+        ';
+
+        foreach my $t (@sorted_trait_names) {
+            my $t_coded = "t$t";
+            $prepare_file_cv_cmd .= 'randomized_positions <- sample(length(mat\$plot_id));';
+
+            my $t_coded_cv1_2 = $t_coded.'_CV1_2';
+            push @encoded_traits_cv_1_2, $t_coded_cv1_2;
+            $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv1_2.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv1_2.'[randomized_positions[1:cv_step_size]] <- NA;
+            ';
+            push @encoded_traits_cv_save_1_2, 'mat\$'.$t_coded_cv1_2;
+
+            my $t_coded_cv2_2 = $t_coded.'_CV2_2';
+            push @encoded_traits_cv_2_2, $t_coded_cv2_2;
+            $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv2_2.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv2_2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            ';
+            push @encoded_traits_cv_save_2_2, 'mat\$'.$t_coded_cv2_2;
+
+            my $t_coded_cv3_2 = $t_coded.'_CV3_2';
+            push @encoded_traits_cv_3_2, $t_coded_cv3_2;
+            $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv3_2.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv3_2.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            ';
+            push @encoded_traits_cv_save_3_2, 'mat\$'.$t_coded_cv3_2;
+
+            my $t_coded_cv4_2 = $t_coded.'_CV4_2';
+            push @encoded_traits_cv_4_2, $t_coded_cv4_2;
+            $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv4_2.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv4_2.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            ';
+            push @encoded_traits_cv_save_4_2, 'mat\$'.$t_coded_cv4_2;
+
+            my $t_coded_cv5_2 = $t_coded.'_CV5_2';
+            push @encoded_traits_cv_5_2, $t_coded_cv5_2;
+            $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv5_2.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv5_2.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            ';
+            push @encoded_traits_cv_save_5_2, 'mat\$'.$t_coded_cv5_2;
+        }
+        $prepare_file_cv2_cmd .= '
         write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         "';
 
@@ -3540,6 +3564,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -6484,6 +6509,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $prepare_file_cv_cmd;
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
@@ -9596,6 +9622,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $prepare_file_cv_cmd;
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
@@ -12698,6 +12725,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $prepare_file_cv_cmd;
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
@@ -15802,6 +15830,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $prepare_file_cv_cmd;
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
@@ -18903,6 +18932,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $prepare_file_cv_cmd;
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
@@ -21975,6 +22005,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $prepare_file_cv_cmd;
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
@@ -25100,6 +25131,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $prepare_file_cv_cmd;
         # print STDERR Dumper $statistics_cmd;
         eval {
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
