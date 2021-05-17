@@ -3427,7 +3427,7 @@ sub perform_drone_imagery_analytics {
 
         foreach my $t (@sorted_trait_names) {
             my $t_coded = "t$t";
-            $prepare_file_cv_cmd .= 'randomized_positions <- sample(length(mat\$plot_id));';
+            $prepare_file_cv2_cmd .= 'randomized_positions <- sample(length(mat\$plot_id));';
 
             my $t_coded_cv1_2 = $t_coded.'_CV1_2';
             push @encoded_traits_cv_1_2, $t_coded_cv1_2;
