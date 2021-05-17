@@ -2318,11 +2318,11 @@ sub perform_drone_imagery_analytics {
             "';
 
             $statistics_cmd_cv_2 = '
-            mix_cv_2_1 <- asreml('.$t_coded_cv1_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'32gb\');
-            mix_cv_2_2 <- asreml('.$t_coded_cv2_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'32gb\');
-            mix_cv_2_3 <- asreml('.$t_coded_cv3_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'32gb\');
-            mix_cv_2_4 <- asreml('.$t_coded_cv4_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'32gb\');
-            mix_cv_2_5 <- asreml('.$t_coded_cv5_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'32gb\');
+            mix_cv_2_1 <- asreml('.$t_coded_cv1_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'2gb\');
+            mix_cv_2_2 <- asreml('.$t_coded_cv2_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'2gb\');
+            mix_cv_2_3 <- asreml('.$t_coded_cv3_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'2gb\');
+            mix_cv_2_4 <- asreml('.$t_coded_cv4_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'2gb\');
+            mix_cv_2_5 <- asreml('.$t_coded_cv5_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'2gb\');
 
             p_cv1 <- predict.asreml(mix_cv_2_1, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
             p_cv2 <- predict.asreml(mix_cv_2_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
@@ -2870,11 +2870,11 @@ sub perform_drone_imagery_analytics {
             "';
 
             $statistics_cmd_cv_2 = '
-            mix_cv_2_1 <- asreml('.$t_coded_cv1_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'32gb\');
-            mix_cv_2_2 <- asreml('.$t_coded_cv2_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'32gb\');
-            mix_cv_2_3 <- asreml('.$t_coded_cv3_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'32gb\');
-            mix_cv_2_4 <- asreml('.$t_coded_cv4_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'32gb\');
-            mix_cv_2_5 <- asreml('.$t_coded_cv5_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'32gb\');
+            mix_cv_2_1 <- asreml('.$t_coded_cv1_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'2gb\');
+            mix_cv_2_2 <- asreml('.$t_coded_cv2_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'2gb\');
+            mix_cv_2_3 <- asreml('.$t_coded_cv3_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'2gb\');
+            mix_cv_2_4 <- asreml('.$t_coded_cv4_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'2gb\');
+            mix_cv_2_5 <- asreml('.$t_coded_cv5_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', workspace=\'2gb\');
 
             p_cv1 <- predict.asreml(mix_cv_2_1, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
             p_cv2 <- predict.asreml(mix_cv_2_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
@@ -3530,11 +3530,11 @@ sub perform_drone_imagery_analytics {
         my $encoded_trait_cv_string_5_2 = join ',', @encoded_traits_cv_5_2;
         my $cbind_string_cv_5_2 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_5_2)" : $encoded_trait_cv_string_5_2;
         $statistics_cmd_cv_2 = '
-        mix_cv_1_2 <- asreml('.$cbind_string_cv_1_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', workspace=\'32gb\' );
-        mix_cv_2_2 <- asreml('.$cbind_string_cv_2_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', workspace=\'32gb\' );
-        mix_cv_3_2 <- asreml('.$cbind_string_cv_3_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', workspace=\'32gb\' );
-        mix_cv_4_2 <- asreml('.$cbind_string_cv_4_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', workspace=\'32gb\' );
-        mix_cv_5_2 <- asreml('.$cbind_string_cv_5_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', workspace=\'32gb\' );
+        mix_cv_1_2 <- asreml('.$cbind_string_cv_1_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', workspace=\'2gb\' );
+        mix_cv_2_2 <- asreml('.$cbind_string_cv_2_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', workspace=\'2gb\' );
+        mix_cv_3_2 <- asreml('.$cbind_string_cv_3_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', workspace=\'2gb\' );
+        mix_cv_4_2 <- asreml('.$cbind_string_cv_4_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', workspace=\'2gb\' );
+        mix_cv_5_2 <- asreml('.$cbind_string_cv_5_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', workspace=\'2gb\' );
 
         p_cv1 <- predict.asreml(mix_cv_1_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
         p_cv2 <- predict.asreml(mix_cv_2_2, classify = \''.$cv_classify_string.'\', tol='.$tol_asr.' );
@@ -7997,9 +7997,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv1_2_altered_env = $model_sum_square_cv1_2_altered_env + $error**2;
                     }
                 close($fh_cv1_2);
@@ -8019,9 +8018,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv2_2_altered_env = $model_sum_square_cv2_2_altered_env + $error**2;
                     }
                 close($fh_cv2_2);
@@ -8041,9 +8039,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv3_2_altered_env = $model_sum_square_cv3_2_altered_env + $error**2;
                     }
                 close($fh_cv3_2);
@@ -8063,9 +8060,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv4_2_altered_env = $model_sum_square_cv4_2_altered_env + $error**2;
                     }
                 close($fh_cv4_2);
@@ -8085,9 +8081,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv5_2_altered_env = $model_sum_square_cv5_2_altered_env + $error**2;
                     }
                 close($fh_cv5_2);
@@ -11095,9 +11090,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv1_2_altered_env_2 = $model_sum_square_cv1_2_altered_env_2 + $error**2;
                     }
                 close($fh_cv1_2);
@@ -11117,9 +11111,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv2_2_altered_env_2 = $model_sum_square_cv2_2_altered_env_2 + $error**2;
                     }
                 close($fh_cv2_2);
@@ -11139,9 +11132,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv3_2_altered_env_2 = $model_sum_square_cv3_2_altered_env_2 + $error**2;
                     }
                 close($fh_cv3_2);
@@ -11161,9 +11153,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv4_2_altered_env_2 = $model_sum_square_cv4_2_altered_env_2 + $error**2;
                     }
                 close($fh_cv4_2);
@@ -11183,9 +11174,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv5_2_altered_env_2 = $model_sum_square_cv5_2_altered_env_2 + $error**2;
                     }
                 close($fh_cv5_2);
@@ -16896,9 +16886,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv1_2_altered_env_4 = $model_sum_square_cv1_2_altered_env_4 + $error**2;
                 }
             close($fh_cv1_2);
@@ -16918,9 +16907,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv2_2_altered_env_4 = $model_sum_square_cv2_2_altered_env_4 + $error**2;
                 }
             close($fh_cv2_2);
@@ -16940,9 +16928,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv3_2_altered_env_4 = $model_sum_square_cv3_2_altered_env_4 + $error**2;
                 }
             close($fh_cv3_2);
@@ -16962,9 +16949,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv4_2_altered_env_4 = $model_sum_square_cv4_2_altered_env_4 + $error**2;
                 }
             close($fh_cv4_2);
@@ -16984,9 +16970,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv5_2_altered_env_4 = $model_sum_square_cv5_2_altered_env_4 + $error**2;
                 }
             close($fh_cv5_2);
@@ -17292,9 +17277,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv1_2_altered_env_4 = $model_sum_square_cv1_2_altered_env_4 + $error**2;
                     }
                 close($fh_cv1_2);
@@ -17314,9 +17298,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv2_2_altered_env_4 = $model_sum_square_cv2_2_altered_env_4 + $error**2;
                     }
                 close($fh_cv2_2);
@@ -17336,9 +17319,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv3_2_altered_env_4 = $model_sum_square_cv3_2_altered_env_4 + $error**2;
                     }
                 close($fh_cv3_2);
@@ -17358,9 +17340,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv4_2_altered_env_4 = $model_sum_square_cv4_2_altered_env_4 + $error**2;
                     }
                 close($fh_cv4_2);
@@ -17380,9 +17361,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv5_2_altered_env_4 = $model_sum_square_cv5_2_altered_env_4 + $error**2;
                     }
                 close($fh_cv5_2);
@@ -19967,9 +19947,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv1_2_altered_env_5 = $model_sum_square_cv1_2_altered_env_5 + $error**2;
                 }
             close($fh_cv1_2);
@@ -19989,9 +19968,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv2_2_altered_env_5 = $model_sum_square_cv2_2_altered_env_5 + $error**2;
                 }
             close($fh_cv2_2);
@@ -20011,9 +19989,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv3_2_altered_env_5 = $model_sum_square_cv3_2_altered_env_5 + $error**2;
                 }
             close($fh_cv3_2);
@@ -20033,9 +20010,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv4_2_altered_env_5 = $model_sum_square_cv4_2_altered_env_5 + $error**2;
                 }
             close($fh_cv4_2);
@@ -20055,9 +20031,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv5_2_altered_env_5 = $model_sum_square_cv5_2_altered_env_5 + $error**2;
                 }
             close($fh_cv5_2);
@@ -20365,9 +20340,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv1_2_altered_env_5 = $model_sum_square_cv1_2_altered_env_5 + $error**2;
                     }
                 close($fh_cv1_2);
@@ -20387,9 +20361,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv2_2_altered_env_5 = $model_sum_square_cv2_2_altered_env_5 + $error**2;
                     }
                 close($fh_cv2_2);
@@ -20409,9 +20382,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv3_2_altered_env_5 = $model_sum_square_cv3_2_altered_env_5 + $error**2;
                     }
                 close($fh_cv3_2);
@@ -20431,9 +20403,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv4_2_altered_env_5 = $model_sum_square_cv4_2_altered_env_5 + $error**2;
                     }
                 close($fh_cv4_2);
@@ -20453,9 +20424,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv5_2_altered_env_5 = $model_sum_square_cv5_2_altered_env_5 + $error**2;
                     }
                 close($fh_cv5_2);
@@ -23093,9 +23063,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv1_2_altered_env_6 = $model_sum_square_cv1_2_altered_env_6 + $error**2;
                 }
             close($fh_cv1_2);
@@ -23115,9 +23084,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv2_2_altered_env_6 = $model_sum_square_cv2_2_altered_env_6 + $error**2;
                 }
             close($fh_cv2_2);
@@ -23137,9 +23105,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv3_2_altered_env_6 = $model_sum_square_cv3_2_altered_env_6 + $error**2;
                 }
             close($fh_cv3_2);
@@ -23159,9 +23126,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv4_2_altered_env_6 = $model_sum_square_cv4_2_altered_env_6 + $error**2;
                 }
             close($fh_cv4_2);
@@ -23181,9 +23147,8 @@ sub perform_drone_imagery_analytics {
 
                     my $trait_cv = $columns[0];
                     my $accession_id = $columns[1];
-                    my $row_number = $columns[2];
-                    my $predicted_value = $columns[3];
-                    my $error = $columns[4];
+                    my $predicted_value = $columns[2];
+                    my $error = $columns[3];
                     $model_sum_square_cv5_2_altered_env_6 = $model_sum_square_cv5_2_altered_env_6 + $error**2;
                 }
             close($fh_cv5_2);
@@ -23491,9 +23456,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv1_2_altered_env_6 = $model_sum_square_cv1_2_altered_env_6 + $error**2;
                     }
                 close($fh_cv1_2);
@@ -23513,9 +23477,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv2_2_altered_env_6 = $model_sum_square_cv2_2_altered_env_6 + $error**2;
                     }
                 close($fh_cv2_2);
@@ -23535,9 +23498,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv3_2_altered_env_6 = $model_sum_square_cv3_2_altered_env_6 + $error**2;
                     }
                 close($fh_cv3_2);
@@ -23557,9 +23519,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv4_2_altered_env_6 = $model_sum_square_cv4_2_altered_env_6 + $error**2;
                     }
                 close($fh_cv4_2);
@@ -23579,9 +23540,8 @@ sub perform_drone_imagery_analytics {
 
                         my $trait_cv = $columns[0];
                         my $accession_id = $columns[1];
-                        my $row_number = $columns[2];
-                        my $predicted_value = $columns[3];
-                        my $error = $columns[4];
+                        my $predicted_value = $columns[2];
+                        my $error = $columns[3];
                         $model_sum_square_cv5_2_altered_env_6 = $model_sum_square_cv5_2_altered_env_6 + $error**2;
                     }
                 close($fh_cv5_2);
