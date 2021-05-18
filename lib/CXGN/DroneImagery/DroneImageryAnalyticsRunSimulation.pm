@@ -806,36 +806,36 @@ sub perform_drone_imagery_analytics {
             my $cv_classify_string = 'c(\'id\')';
             if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
                 $statistics_cmd_cv_1 .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
                 ';
 
                 $statistics_cmd_cv_2 .= '
-                mix_cv_2_1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
-                mix_cv_2_2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
-                mix_cv_2_3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
-                mix_cv_2_4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
-                mix_cv_2_5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+                mix_cv_2_1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
                 ';
             }
             elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
                 $statistics_cmd_cv_1 .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.', na.method.Y=\"include\");
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
                 ';
 
                 $statistics_cmd_cv_2 .= '
-                mix_cv_2_1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
-                mix_cv_2_2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
-                mix_cv_2_3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
-                mix_cv_2_4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
-                mix_cv_2_5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+                mix_cv_2_1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
                 ';
             }
             $statistics_cmd_cv_1 .= '
@@ -846,11 +846,11 @@ sub perform_drone_imagery_analytics {
                 write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             "';
             $statistics_cmd_cv_2 .= '
-            p_cv1 <- predict.mmer(object=mix_cv_2_1, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
-            p_cv2 <- predict.mmer(object=mix_cv_2_2, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
-            p_cv3 <- predict.mmer(object=mix_cv_2_3, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
-            p_cv4 <- predict.mmer(object=mix_cv_2_4, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
-            p_cv5 <- predict.mmer(object=mix_cv_2_5, classify = '.$cv_classify_string.', tolparinv='.$tolparinv.' );
+            p_cv1 <- predict.mmer(object=mix_cv_2_1, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+            p_cv2 <- predict.mmer(object=mix_cv_2_2, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+            p_cv3 <- predict.mmer(object=mix_cv_2_3, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+            p_cv4 <- predict.mmer(object=mix_cv_2_4, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+            p_cv5 <- predict.mmer(object=mix_cv_2_5, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
             p_cv1;
             write.table(p_cv1\$pvals, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             write.table(p_cv2\$pvals, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
