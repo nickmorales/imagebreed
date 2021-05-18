@@ -123,12 +123,12 @@
                                     <label class="col-sm-3 control-label">Env Variance: </label>
                                     <div class="col-sm-9" >
                                         <select class="form-control" id="drone_imagery_analytics_env_variance">
-                                            <option value="0.2,0.1,0.05,0.01,0.3">0.2,0.1,0.05,0.01,0.3</option>
                                             <option value="0.2">0.2</option>
                                             <option value="0.1">0.1</option>
                                             <option value="0.05">0.05</option>
                                             <option value="0.01">0.01</option>
                                             <option value="0.3">0.3</option>
+                                            <option value="0.2,0.1,0.05,0.01,0.3">0.2,0.1,0.05,0.01,0.3</option>
                                         </select>
                                     </div>
                                 </div>
@@ -671,7 +671,7 @@ jQuery(document).ready(function() {
                 manage_drone_imagery_analytics_protocol_ids.push(jQuery(this).val());
             }
         });
-        
+
         if (manage_drone_imagery_analytics_protocol_ids.length > 1) {
             alert('Please select only one protocol!');
             return false;
