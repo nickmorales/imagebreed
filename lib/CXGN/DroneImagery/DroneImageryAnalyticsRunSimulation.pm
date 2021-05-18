@@ -4032,7 +4032,6 @@ sub perform_drone_imagery_analytics {
         variance => $model_sum_square_original_cv_2_stat->variance(),
         mean => $model_sum_square_original_cv_2_stat->mean()
     };
-    die;
 
     my (%phenotype_data_altered, @data_matrix_altered, @data_matrix_phenotypes_altered, @phenotype_data_altered_values);
     my $phenotype_min_altered = 1000000000;
