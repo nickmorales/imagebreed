@@ -169,15 +169,25 @@ sub perform_drone_imagery_analytics {
         ';
         my @encoded_traits_cv_check;
         my @encoded_traits_cv_1;
+        my @encoded_traits_cv_1_2;
         my @encoded_traits_cv_save_1;
+        my @encoded_traits_cv_save_1_2;
         my @encoded_traits_cv_2;
+        my @encoded_traits_cv_2_2;
         my @encoded_traits_cv_save_2;
+        my @encoded_traits_cv_save_2_2;
         my @encoded_traits_cv_3;
+        my @encoded_traits_cv_3_2;
         my @encoded_traits_cv_save_3;
+        my @encoded_traits_cv_save_3_2;
         my @encoded_traits_cv_4;
+        my @encoded_traits_cv_4_2;
         my @encoded_traits_cv_save_4;
+        my @encoded_traits_cv_save_4_2;
         my @encoded_traits_cv_5;
+        my @encoded_traits_cv_5_2;
         my @encoded_traits_cv_save_5;
+        my @encoded_traits_cv_save_5_2;
 
         foreach my $t_coded (@encoded_traits) {
             $prepare_file_cv_cmd .= 'randomized_positions <- sample(length(mat\$plot_id));';
@@ -187,39 +197,87 @@ sub perform_drone_imagery_analytics {
             my $t_coded_cv1 = $t_coded.'_CV1';
             push @encoded_traits_cv_1, $t_coded_cv1;
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
+            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- median(mat\$'.$t_coded.');
             ';
             push @encoded_traits_cv_save_1, $t_coded_cv1.' = mat\$'.$t_coded_cv1;
 
             my $t_coded_cv2 = $t_coded.'_CV2';
             push @encoded_traits_cv_2, $t_coded_cv2;
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- median(mat\$'.$t_coded.');
             ';
             push @encoded_traits_cv_save_2, $t_coded_cv2.' = mat\$'.$t_coded_cv2;
 
             my $t_coded_cv3 = $t_coded.'_CV3';
             push @encoded_traits_cv_3, $t_coded_cv3;
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- median(mat\$'.$t_coded.');
             ';
             push @encoded_traits_cv_save_3, $t_coded_cv3.' = mat\$'.$t_coded_cv3;
 
             my $t_coded_cv4 = $t_coded.'_CV4';
             push @encoded_traits_cv_4, $t_coded_cv4;
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- median(mat\$'.$t_coded.');
             ';
             push @encoded_traits_cv_save_4, $t_coded_cv4.' = mat\$'.$t_coded_cv4;
 
             my $t_coded_cv5 = $t_coded.'_CV5';
             push @encoded_traits_cv_5, $t_coded_cv5;
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- median(mat\$'.$t_coded.');
             ';
             push @encoded_traits_cv_save_5, $t_coded_cv5.' = mat\$'.$t_coded_cv5;
         }
         $prepare_file_cv_cmd .= '
+        write.table(mat, file=\''.$stats_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+        "';
+
+        $prepare_file_cv2_cmd = 'R -e "library(data.table);
+        mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+        cv_step_size <- length(mat\$plot_id) %/% 5;
+        cv_step_size_modulo <- length(mat\$plot_id) %% 5;
+        ';
+
+        foreach my $t_coded (@encoded_traits) {
+            $prepare_file_cv2_cmd .= 'randomized_positions <- sample(length(mat\$plot_id));';
+
+            my $t_coded_cv1_2 = $t_coded.'_CV1_2';
+            push @encoded_traits_cv_1_2, $t_coded_cv1_2;
+            $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv1_2.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv1_2.'[randomized_positions[1:cv_step_size]] <- mean(mat\$'.$t_coded.');
+            ';
+            push @encoded_traits_cv_save_1_2, 'mat\$'.$t_coded_cv1_2;
+
+            my $t_coded_cv2_2 = $t_coded.'_CV2_2';
+            push @encoded_traits_cv_2_2, $t_coded_cv2_2;
+            $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv2_2.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv2_2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- mean(mat\$'.$t_coded.');
+            ';
+            push @encoded_traits_cv_save_2_2, 'mat\$'.$t_coded_cv2_2;
+
+            my $t_coded_cv3_2 = $t_coded.'_CV3_2';
+            push @encoded_traits_cv_3_2, $t_coded_cv3_2;
+            $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv3_2.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv3_2.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- mean(mat\$'.$t_coded.');
+            ';
+            push @encoded_traits_cv_save_3_2, 'mat\$'.$t_coded_cv3_2;
+
+            my $t_coded_cv4_2 = $t_coded.'_CV4_2';
+            push @encoded_traits_cv_4_2, $t_coded_cv4_2;
+            $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv4_2.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv4_2.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- mean(mat\$'.$t_coded.');
+            ';
+            push @encoded_traits_cv_save_4_2, 'mat\$'.$t_coded_cv4_2;
+
+            my $t_coded_cv5_2 = $t_coded.'_CV5_2';
+            push @encoded_traits_cv_5_2, $t_coded_cv5_2;
+            $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv5_2.' <- mat\$'.$t_coded.';
+            mat\$'.$t_coded_cv5_2.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- mean(mat\$'.$t_coded.');
+            ';
+            push @encoded_traits_cv_save_5_2, 'mat\$'.$t_coded_cv5_2;
+        }
+        $prepare_file_cv2_cmd .= '
         write.table(mat, file=\''.$stats_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         "';
 
@@ -274,39 +332,51 @@ sub perform_drone_imagery_analytics {
         my $cbind_string_cv_4 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_4)" : $encoded_trait_cv_string_4;
         my $encoded_trait_cv_string_5 = join ',', @encoded_traits_cv_5;
         my $cbind_string_cv_5 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_5)" : $encoded_trait_cv_string_5;
+
+        my $encoded_trait_cv_string_1_2 = join ',', @encoded_traits_cv_1_2;
+        my $cbind_string_cv_1_2 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_1_2)" : $encoded_trait_cv_string_1_2;
+        my $encoded_trait_cv_string_2_2 = join ',', @encoded_traits_cv_2_2;
+        my $cbind_string_cv_2_2 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_2_2)" : $encoded_trait_cv_string_2_2;
+        my $encoded_trait_cv_string_3_2 = join ',', @encoded_traits_cv_3_2;
+        my $cbind_string_cv_3_2 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_3_2)" : $encoded_trait_cv_string_3_2;
+        my $encoded_trait_cv_string_4_2 = join ',', @encoded_traits_cv_4_2;
+        my $cbind_string_cv_4_2 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_4_2)" : $encoded_trait_cv_string_4_2;
+        my $encoded_trait_cv_string_5_2 = join ',', @encoded_traits_cv_5_2;
+        my $cbind_string_cv_5_2 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_5_2)" : $encoded_trait_cv_string_5_2;
+
         $statistics_cmd_cv_1 = '';
         $statistics_cmd_cv_2 = '';
         my $cv_classify_string = 'c(\'id\')';
         if ($statistics_select eq 'sommer_grm_spatial_genetic_blups') {
             $statistics_cmd_cv_1 .= '
-            mix_cv_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-            mix_cv_2 <- mmer('.$cbind_string_cv_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-            mix_cv_3 <- mmer('.$cbind_string_cv_3.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-            mix_cv_4 <- mmer('.$cbind_string_cv_4.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-            mix_cv_5 <- mmer('.$cbind_string_cv_5.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
+            mix_cv_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2 <- mmer('.$cbind_string_cv_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_3 <- mmer('.$cbind_string_cv_3.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_4 <- mmer('.$cbind_string_cv_4.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_5 <- mmer('.$cbind_string_cv_5.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
             ';
             $statistics_cmd_cv_2 .= '
-            mix_cv_2_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.');
-            mix_cv_2_2 <- mmer('.$cbind_string_cv_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.');
-            mix_cv_2_3 <- mmer('.$cbind_string_cv_3.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.');
-            mix_cv_2_4 <- mmer('.$cbind_string_cv_4.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.');
-            mix_cv_2_5 <- mmer('.$cbind_string_cv_5.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.');
+            mix_cv_2_1 <- mmer('.$cbind_string_cv_1_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_2 <- mmer('.$cbind_string_cv_2_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_3 <- mmer('.$cbind_string_cv_3_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_4 <- mmer('.$cbind_string_cv_4_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_5 <- mmer('.$cbind_string_cv_5_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
             ';
         }
         elsif ($statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
             $statistics_cmd_cv_1 .= '
-            mix_cv_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-            mix_cv_2 <- mmer('.$cbind_string_cv_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-            mix_cv_3 <- mmer('.$cbind_string_cv_3.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-            mix_cv_4 <- mmer('.$cbind_string_cv_4.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-            mix_cv_5 <- mmer('.$cbind_string_cv_5.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
+            mix_cv_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.' );
+            mix_cv_2 <- mmer('.$cbind_string_cv_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.' );
+            mix_cv_3 <- mmer('.$cbind_string_cv_3.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.' );
+            mix_cv_4 <- mmer('.$cbind_string_cv_4.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.' );
+            mix_cv_5 <- mmer('.$cbind_string_cv_5.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.' );
             ';
             $statistics_cmd_cv_2 .= '
-            mix_cv_2_1 <- mmer('.$cbind_string_cv_1.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.');
-            mix_cv_2_2 <- mmer('.$cbind_string_cv_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.');
-            mix_cv_2_3 <- mmer('.$cbind_string_cv_3.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.');
-            mix_cv_2_4 <- mmer('.$cbind_string_cv_4.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.');
-            mix_cv_2_5 <- mmer('.$cbind_string_cv_5.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv_10.');
+            mix_cv_2_1 <- mmer('.$cbind_string_cv_1_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_2 <- mmer('.$cbind_string_cv_2_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_3 <- mmer('.$cbind_string_cv_3_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_4 <- mmer('.$cbind_string_cv_4_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix_cv_2_5 <- mmer('.$cbind_string_cv_5_2.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
             ';
         }
         my $encoded_traits_cv_save_1 = join ',', @encoded_traits_cv_save_1;
@@ -314,26 +384,38 @@ sub perform_drone_imagery_analytics {
         my $encoded_traits_cv_save_3 = join ',', @encoded_traits_cv_save_3;
         my $encoded_traits_cv_save_4 = join ',', @encoded_traits_cv_save_4;
         my $encoded_traits_cv_save_5 = join ',', @encoded_traits_cv_save_5;
+        my $encoded_traits_cv_save_1_2 = join ',', @encoded_traits_cv_save_1_2;
+        my $encoded_traits_cv_save_2_2 = join ',', @encoded_traits_cv_save_2_2;
+        my $encoded_traits_cv_save_3_2 = join ',', @encoded_traits_cv_save_3_2;
+        my $encoded_traits_cv_save_4_2 = join ',', @encoded_traits_cv_save_4_2;
+        my $encoded_traits_cv_save_5_2 = join ',', @encoded_traits_cv_save_5_2;
         my $encoded_traits_cv_check = join ',', @encoded_traits_cv_check;
-        $statistics_cmd_cv_1 .= 'write.table(data.frame(plot_id = mix_cv_1\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_1.', residuals = mix_cv_1\$residuals, fitted = mix_cv_1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        $statistics_cmd_cv_1 .= '
+        write.table(data.frame(plot_id = mix_cv_1\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_1.', residuals = mix_cv_1\$residuals, fitted = mix_cv_1\$fitted), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         write.table(data.frame(plot_id = mix_cv_2\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_2.', residuals = mix_cv_2\$residuals, fitted = mix_cv_2\$fitted), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         write.table(data.frame(plot_id = mix_cv_3\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_3.', residuals = mix_cv_3\$residuals, fitted = mix_cv_3\$fitted), file=\''.$stats_out_cv3_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         write.table(data.frame(plot_id = mix_cv_4\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_4.', residuals = mix_cv_4\$residuals, fitted = mix_cv_4\$fitted), file=\''.$stats_out_cv4_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         write.table(data.frame(plot_id = mix_cv_5\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_5.', residuals = mix_cv_5\$residuals, fitted = mix_cv_5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         "';
         $statistics_cmd_cv_2 .= '
-        p_cv1 <- predict.mmer(object=mix_cv_2_1, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
-        p_cv2 <- predict.mmer(object=mix_cv_2_2, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
-        p_cv3 <- predict.mmer(object=mix_cv_2_3, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
-        p_cv4 <- predict.mmer(object=mix_cv_2_4, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
-        p_cv5 <- predict.mmer(object=mix_cv_2_5, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
-        p_cv1;
-        write.table(p_cv1\$pvals, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-        write.table(p_cv2\$pvals, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-        write.table(p_cv3\$pvals, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-        write.table(p_cv4\$pvals, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-        write.table(p_cv5\$pvals, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(data.frame(plot_id = mix_cv_2_1\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_1_2.', residuals = mix_cv_2_1\$residuals, fitted = mix_cv_2_1\$fitted), file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(data.frame(plot_id = mix_cv_2_2\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_2_2.', residuals = mix_cv_2_2\$residuals, fitted = mix_cv_2_2\$fitted), file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(data.frame(plot_id = mix_cv_2_3\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_3_2.', residuals = mix_cv_2_3\$residuals, fitted = mix_cv_2_3\$fitted), file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(data.frame(plot_id = mix_cv_2_4\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_4_2.', residuals = mix_cv_2_4\$residuals, fitted = mix_cv_2_4\$fitted), file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(data.frame(plot_id = mix_cv_2_5\$data\$plot_id, '.$encoded_traits_cv_check.','.$encoded_traits_cv_save_5_2.', residuals = mix_cv_2_5\$residuals, fitted = mix_cv_2_5\$fitted), file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         "';
+
+        # p_cv1 <- predict.mmer(object=mix_cv_2_1, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+        # p_cv2 <- predict.mmer(object=mix_cv_2_2, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+        # p_cv3 <- predict.mmer(object=mix_cv_2_3, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+        # p_cv4 <- predict.mmer(object=mix_cv_2_4, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+        # p_cv5 <- predict.mmer(object=mix_cv_2_5, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+        # p_cv1;
+        # write.table(p_cv1\$pvals, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        # write.table(p_cv2\$pvals, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        # write.table(p_cv3\$pvals, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        # write.table(p_cv4\$pvals, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        # write.table(p_cv5\$pvals, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
 
         $statistics_cmd = $statistics_cmd_reading.$statistics_cmd_model;
 
@@ -341,6 +423,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -608,11 +691,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv1_2_original = $model_sum_square_cv1_2_original + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_original = $model_sum_square_cv1_2_original + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv1_2);
 
@@ -629,11 +717,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv2_2_original = $model_sum_square_cv2_2_original + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_original = $model_sum_square_cv2_2_original + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv2_2);
 
@@ -650,11 +743,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv3_2_original = $model_sum_square_cv3_2_original + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_original = $model_sum_square_cv3_2_original + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv3_2);
 
@@ -671,11 +769,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv4_2_original = $model_sum_square_cv4_2_original + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_original = $model_sum_square_cv4_2_original + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv4_2);
 
@@ -692,11 +795,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv5_2_original = $model_sum_square_cv5_2_original + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_original = $model_sum_square_cv5_2_original + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv5_2);
 
@@ -744,24 +852,39 @@ sub perform_drone_imagery_analytics {
             cv_step_size_modulo <- length(mat\$plot_id) %% 5;
             ';
             my $t_coded_cv1 = $t.'_CV1';
+            my $t_coded_cv1_2 = $t.'_CV1_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- NA;
+            mat\$'.$t_coded_cv1_2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- median(mat\$'.$t.');
+            mat\$'.$t_coded_cv1_2.'[randomized_positions[1:cv_step_size]] <- mean(mat\$'.$t.');
             ';
             my $t_coded_cv2 = $t.'_CV2';
+            my $t_coded_cv2_2 = $t.'_CV2_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv2_2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- median(mat\$'.$t.');
+            mat\$'.$t_coded_cv2_2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- mean(mat\$'.$t.');
             ';
             my $t_coded_cv3 = $t.'_CV3';
+            my $t_coded_cv3_2 = $t.'_CV3_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv3_2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- median(mat\$'.$t.');
+            mat\$'.$t_coded_cv3_2.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- mean(mat\$'.$t.');
             ';
             my $t_coded_cv4 = $t.'_CV4';
+            my $t_coded_cv4_2 = $t.'_CV4_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv4_2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- median(mat\$'.$t.');
+            mat\$'.$t_coded_cv4_2.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- mean(mat\$'.$t.');
             ';
             my $t_coded_cv5 = $t.'_CV5';
+            my $t_coded_cv5_2 = $t.'_CV5_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$'.$t.';
-            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            mat\$'.$t_coded_cv5_2.' <- mat\$'.$t.';
+            mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- median(mat\$'.$t.');
+            mat\$'.$t_coded_cv5_2.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- mean(mat\$'.$t.');
             ';
             $prepare_file_cv_cmd .= '
             write.table(mat, file=\''.$stats_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -806,36 +929,36 @@ sub perform_drone_imagery_analytics {
             my $cv_classify_string = 'c(\'id\')';
             if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
                 $statistics_cmd_cv_1 .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.' );
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.' );
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.' );
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.' );
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.' );
                 ';
 
                 $statistics_cmd_cv_2 .= '
-                mix_cv_2_1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                mix_cv_2_2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                mix_cv_2_3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                mix_cv_2_4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                mix_cv_2_5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_1 <- mmer('.$t_coded_cv1_2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_2 <- mmer('.$t_coded_cv2_2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_3 <- mmer('.$t_coded_cv3_2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_4 <- mmer('.$t_coded_cv4_2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_5 <- mmer('.$t_coded_cv5_2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
                 ';
             }
             elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
                 $statistics_cmd_cv_1 .= '
-                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
-                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\"include\");
+                mix_cv1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.' );
+                mix_cv2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.' );
+                mix_cv3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.' );
+                mix_cv4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.' );
+                mix_cv5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.' );
                 ';
 
                 $statistics_cmd_cv_2 .= '
-                mix_cv_2_1 <- mmer('.$t_coded_cv1.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                mix_cv_2_2 <- mmer('.$t_coded_cv2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                mix_cv_2_3 <- mmer('.$t_coded_cv3.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                mix_cv_2_4 <- mmer('.$t_coded_cv4.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-                mix_cv_2_5 <- mmer('.$t_coded_cv5.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_1 <- mmer('.$t_coded_cv1_2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_2 <- mmer('.$t_coded_cv2_2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_3 <- mmer('.$t_coded_cv3_2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_4 <- mmer('.$t_coded_cv4_2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                mix_cv_2_5 <- mmer('.$t_coded_cv5_2.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
                 ';
             }
             $statistics_cmd_cv_1 .= '
@@ -846,18 +969,24 @@ sub perform_drone_imagery_analytics {
                 write.table(data.frame(plot_id = mix_cv5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5.' = mat\$'.$t_coded_cv5.', residuals = mix_cv5\$residuals, fitted = mix_cv5\$fitted), file=\''.$stats_out_cv5_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             "';
             $statistics_cmd_cv_2 .= '
-            p_cv1 <- predict.mmer(object=mix_cv_2_1, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
-            p_cv2 <- predict.mmer(object=mix_cv_2_2, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
-            p_cv3 <- predict.mmer(object=mix_cv_2_3, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
-            p_cv4 <- predict.mmer(object=mix_cv_2_4, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
-            p_cv5 <- predict.mmer(object=mix_cv_2_5, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
-            p_cv1;
-            write.table(p_cv1\$pvals, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(p_cv2\$pvals, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(p_cv3\$pvals, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(p_cv4\$pvals, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
-            write.table(p_cv5\$pvals, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv_2_1\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv1_2.' = mat\$'.$t_coded_cv1_2.', residuals = mix_cv_2_1\$residuals, fitted = mix_cv_2_1\$fitted), file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv_2_2\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv2_2.' = mat\$'.$t_coded_cv2_2.', residuals = mix_cv_2_2\$residuals, fitted = mix_cv_2_2\$fitted), file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv_2_3\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv3_2.' = mat\$'.$t_coded_cv3_2.', residuals = mix_cv_2_3\$residuals, fitted = mix_cv_2_3\$fitted), file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv_2_4\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv4_2.' = mat\$'.$t_coded_cv4_2.', residuals = mix_cv_2_4\$residuals, fitted = mix_cv_2_4\$fitted), file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                write.table(data.frame(plot_id = mix_cv_2_5\$data\$plot_id, '.$t.' = mat\$'.$t.','.$t_coded_cv5_2.' = mat\$'.$t_coded_cv5_2.', residuals = mix_cv_2_5\$residuals, fitted = mix_cv_2_5\$fitted), file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             "';
+
+            # p_cv1 <- predict.mmer(object=mix_cv_2_1, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+            # p_cv2 <- predict.mmer(object=mix_cv_2_2, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+            # p_cv3 <- predict.mmer(object=mix_cv_2_3, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+            # p_cv4 <- predict.mmer(object=mix_cv_2_4, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+            # p_cv5 <- predict.mmer(object=mix_cv_2_5, classify = '.$cv_classify_string.', tolparinv='.$tolparinv_10.' );
+            # p_cv1;
+            # write.table(p_cv1\$pvals, file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            # write.table(p_cv2\$pvals, file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            # write.table(p_cv3\$pvals, file=\''.$stats_out_cv3_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            # write.table(p_cv4\$pvals, file=\''.$stats_out_cv4_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            # write.table(p_cv5\$pvals, file=\''.$stats_out_cv5_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
 
             $statistics_cmd = $statistics_cmd_reading.$statistics_cmd_model;
 
@@ -1132,11 +1261,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv1_2_original = $model_sum_square_cv1_2_original + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_original = $model_sum_square_cv1_2_original + ($true_value-$fitted)**2;
                     }
                 close($fh_cv1_2);
 
@@ -1153,11 +1285,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv2_2_original = $model_sum_square_cv2_2_original + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_original = $model_sum_square_cv2_2_original + ($true_value-$fitted)**2;
                     }
                 close($fh_cv2_2);
 
@@ -1174,11 +1309,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv3_2_original = $model_sum_square_cv3_2_original + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_original = $model_sum_square_cv3_2_original + ($true_value-$fitted)**2;
                     }
                 close($fh_cv3_2);
 
@@ -1195,11 +1333,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv4_2_original = $model_sum_square_cv4_2_original + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_original = $model_sum_square_cv4_2_original + ($true_value-$fitted)**2;
                     }
                 close($fh_cv4_2);
 
@@ -1216,11 +1357,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv5_2_original = $model_sum_square_cv5_2_original + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_original = $model_sum_square_cv5_2_original + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5_2);
 
@@ -2249,35 +2393,35 @@ sub perform_drone_imagery_analytics {
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$t'.$t.';
             mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- median(mat\$t'.$t.');
             mat\$'.$t_coded_cv1_2.' <- mat\$t'.$t.';
-            mat\$'.$t_coded_cv1_2.'[randomized_positions[1:cv_step_size]] <- NA;
+            mat\$'.$t_coded_cv1_2.'[randomized_positions[1:cv_step_size]] <- mean(mat\$t'.$t.');
             ';
             my $t_coded_cv2 = 't'.$t.'_CV2';
             my $t_coded_cv2_2 = 't'.$t.'_CV2_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$t'.$t.';
             mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- median(mat\$t'.$t.');
             mat\$'.$t_coded_cv2_2.' <- mat\$t'.$t.';
-            mat\$'.$t_coded_cv2_2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv2_2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- mean(mat\$t'.$t.');
             ';
             my $t_coded_cv3 = 't'.$t.'_CV3';
             my $t_coded_cv3_2 = 't'.$t.'_CV3_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$t'.$t.';
             mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- median(mat\$t'.$t.');
             mat\$'.$t_coded_cv3_2.' <- mat\$t'.$t.';
-            mat\$'.$t_coded_cv3_2.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv3_2.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- mean(mat\$t'.$t.');
             ';
             my $t_coded_cv4 = 't'.$t.'_CV4';
             my $t_coded_cv4_2 = 't'.$t.'_CV4_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$t'.$t.';
             mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- median(mat\$t'.$t.');
             mat\$'.$t_coded_cv4_2.' <- mat\$t'.$t.';
-            mat\$'.$t_coded_cv4_2.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv4_2.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- mean(mat\$t'.$t.');
             ';
             my $t_coded_cv5 = 't'.$t.'_CV5';
             my $t_coded_cv5_2 = 't'.$t.'_CV5_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$t'.$t.';
             mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- median(mat\$t'.$t.');
             mat\$'.$t_coded_cv5_2.' <- mat\$t'.$t.';
-            mat\$'.$t_coded_cv5_2.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            mat\$'.$t_coded_cv5_2.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- mean(mat\$t'.$t.');
             ';
             $prepare_file_cv_cmd .= '
             write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -2822,35 +2966,35 @@ sub perform_drone_imagery_analytics {
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv1.' <- mat\$t'.$t.';
             mat\$'.$t_coded_cv1.'[randomized_positions[1:cv_step_size]] <- median(mat\$t'.$t.');
             mat\$'.$t_coded_cv1_2.' <- mat\$t'.$t.';
-            mat\$'.$t_coded_cv1_2.'[randomized_positions[1:cv_step_size]] <- NA;
+            mat\$'.$t_coded_cv1_2.'[randomized_positions[1:cv_step_size]] <- mean(mat\$t'.$t.');
             ';
             my $t_coded_cv2 = 't'.$t.'_CV2';
             my $t_coded_cv2_2 = 't'.$t.'_CV2_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv2.' <- mat\$t'.$t.';
             mat\$'.$t_coded_cv2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- median(mat\$t'.$t.');
             mat\$'.$t_coded_cv2_2.' <- mat\$t'.$t.';
-            mat\$'.$t_coded_cv2_2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv2_2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- mean(mat\$t'.$t.');
             ';
             my $t_coded_cv3 = 't'.$t.'_CV3';
             my $t_coded_cv3_2 = 't'.$t.'_CV3_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv3.' <- mat\$t'.$t.';
             mat\$'.$t_coded_cv3.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- median(mat\$t'.$t.');
             mat\$'.$t_coded_cv3_2.' <- mat\$t'.$t.';
-            mat\$'.$t_coded_cv3_2.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv3_2.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- mean(mat\$t'.$t.');
             ';
             my $t_coded_cv4 = 't'.$t.'_CV4';
             my $t_coded_cv4_2 = 't'.$t.'_CV4_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv4.' <- mat\$t'.$t.';
             mat\$'.$t_coded_cv4.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- median(mat\$t'.$t.');
             mat\$'.$t_coded_cv4_2.' <- mat\$t'.$t.';
-            mat\$'.$t_coded_cv4_2.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv4_2.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- mean(mat\$t'.$t.');
             ';
             my $t_coded_cv5 = 't'.$t.'_CV5';
             my $t_coded_cv5_2 = 't'.$t.'_CV5_2';
             $prepare_file_cv_cmd .= 'mat\$'.$t_coded_cv5.' <- mat\$t'.$t.';
             mat\$'.$t_coded_cv5.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- median(mat\$t'.$t.');
             mat\$'.$t_coded_cv5_2.' <- mat\$t'.$t.';
-            mat\$'.$t_coded_cv5_2.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            mat\$'.$t_coded_cv5_2.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- mean(mat\$t'.$t.');
             ';
             $prepare_file_cv_cmd .= '
             write.table(mat, file=\''.$stats_tempfile_2.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -3470,35 +3614,35 @@ sub perform_drone_imagery_analytics {
             my $t_coded_cv1_2 = $t_coded.'_CV1_2';
             push @encoded_traits_cv_1_2, $t_coded_cv1_2;
             $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv1_2.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv1_2.'[randomized_positions[1:cv_step_size]] <- NA;
+            mat\$'.$t_coded_cv1_2.'[randomized_positions[1:cv_step_size]] <- mean(mat\$'.$t_coded.');
             ';
             push @encoded_traits_cv_save_1_2, 'mat\$'.$t_coded_cv1_2;
 
             my $t_coded_cv2_2 = $t_coded.'_CV2_2';
             push @encoded_traits_cv_2_2, $t_coded_cv2_2;
             $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv2_2.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv2_2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv2_2.'[randomized_positions[(cv_step_size+1):(2*cv_step_size)]] <- mean(mat\$'.$t_coded.');
             ';
             push @encoded_traits_cv_save_2_2, 'mat\$'.$t_coded_cv2_2;
 
             my $t_coded_cv3_2 = $t_coded.'_CV3_2';
             push @encoded_traits_cv_3_2, $t_coded_cv3_2;
             $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv3_2.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv3_2.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv3_2.'[randomized_positions[((2*cv_step_size)+1):(3*cv_step_size)]] <- mean(mat\$'.$t_coded.');
             ';
             push @encoded_traits_cv_save_3_2, 'mat\$'.$t_coded_cv3_2;
 
             my $t_coded_cv4_2 = $t_coded.'_CV4_2';
             push @encoded_traits_cv_4_2, $t_coded_cv4_2;
             $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv4_2.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv4_2.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- NA;
+            mat\$'.$t_coded_cv4_2.'[randomized_positions[((3*cv_step_size)+1):(4*cv_step_size)]] <- mean(mat\$'.$t_coded.');
             ';
             push @encoded_traits_cv_save_4_2, 'mat\$'.$t_coded_cv4_2;
 
             my $t_coded_cv5_2 = $t_coded.'_CV5_2';
             push @encoded_traits_cv_5_2, $t_coded_cv5_2;
             $prepare_file_cv2_cmd .= 'mat\$'.$t_coded_cv5_2.' <- mat\$'.$t_coded.';
-            mat\$'.$t_coded_cv5_2.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- NA;
+            mat\$'.$t_coded_cv5_2.'[randomized_positions[((4*cv_step_size)+1):((5*cv_step_size)+cv_step_size_modulo)]] <- mean(mat\$'.$t_coded.');
             ';
             push @encoded_traits_cv_save_5_2, 'mat\$'.$t_coded_cv5_2;
         }
@@ -4307,6 +4451,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -4574,11 +4719,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv1_2_altered = $model_sum_square_cv1_2_altered + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered = $model_sum_square_cv1_2_altered + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv1_2);
 
@@ -4595,11 +4745,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv2_2_altered = $model_sum_square_cv2_2_altered + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered = $model_sum_square_cv2_2_altered + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv2_2);
 
@@ -4616,11 +4771,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv3_2_altered = $model_sum_square_cv3_2_altered + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered = $model_sum_square_cv3_2_altered + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv3_2);
 
@@ -4637,11 +4797,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv4_2_altered = $model_sum_square_cv4_2_altered + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered = $model_sum_square_cv4_2_altered + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv4_2);
 
@@ -4658,11 +4823,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv5_2_altered = $model_sum_square_cv5_2_altered + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered = $model_sum_square_cv5_2_altered + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv5_2);
 
@@ -4965,11 +5135,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv1_2_altered = $model_sum_square_cv1_2_altered + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered = $model_sum_square_cv1_2_altered + ($true_value-$fitted)**2;
                     }
                 close($fh_cv1_2);
 
@@ -4986,11 +5159,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv2_2_altered = $model_sum_square_cv2_2_altered + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered = $model_sum_square_cv2_2_altered + ($true_value-$fitted)**2;
                     }
                 close($fh_cv2_2);
 
@@ -5007,11 +5183,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv3_2_altered = $model_sum_square_cv3_2_altered + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered = $model_sum_square_cv3_2_altered + ($true_value-$fitted)**2;
                     }
                 close($fh_cv3_2);
 
@@ -5028,11 +5207,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv4_2_altered = $model_sum_square_cv4_2_altered + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered = $model_sum_square_cv4_2_altered + ($true_value-$fitted)**2;
                     }
                 close($fh_cv4_2);
 
@@ -5049,11 +5231,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv5_2_altered = $model_sum_square_cv5_2_altered + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered = $model_sum_square_cv5_2_altered + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5_2);
 
@@ -7456,6 +7641,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -7723,11 +7909,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv1_2_altered_env = $model_sum_square_cv1_2_altered_env + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered_env = $model_sum_square_cv1_2_altered_env + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv1_2);
 
@@ -7744,11 +7935,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv2_2_altered_env = $model_sum_square_cv2_2_altered_env + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered_env = $model_sum_square_cv2_2_altered_env + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv2_2);
 
@@ -7765,11 +7961,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv3_2_altered_env = $model_sum_square_cv3_2_altered_env + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered_env = $model_sum_square_cv3_2_altered_env + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv3_2);
 
@@ -7786,11 +7987,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv4_2_altered_env = $model_sum_square_cv4_2_altered_env + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered_env = $model_sum_square_cv4_2_altered_env + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv4_2);
 
@@ -7807,11 +8013,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv5_2_altered_env = $model_sum_square_cv5_2_altered_env + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered_env = $model_sum_square_cv5_2_altered_env + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv5_2);
 
@@ -8113,11 +8324,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv1_2_altered_env = $model_sum_square_cv1_2_altered_env + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered_env = $model_sum_square_cv1_2_altered_env + ($true_value-$fitted)**2;
                     }
                 close($fh_cv1_2);
 
@@ -8134,11 +8348,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv2_2_altered_env = $model_sum_square_cv2_2_altered_env + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered_env = $model_sum_square_cv2_2_altered_env + ($true_value-$fitted)**2;
                     }
                 close($fh_cv2_2);
 
@@ -8155,11 +8372,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv3_2_altered_env = $model_sum_square_cv3_2_altered_env + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered_env = $model_sum_square_cv3_2_altered_env + ($true_value-$fitted)**2;
                     }
                 close($fh_cv3_2);
 
@@ -8176,11 +8396,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv4_2_altered_env = $model_sum_square_cv4_2_altered_env + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered_env = $model_sum_square_cv4_2_altered_env + ($true_value-$fitted)**2;
                     }
                 close($fh_cv4_2);
 
@@ -8197,11 +8420,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv5_2_altered_env = $model_sum_square_cv5_2_altered_env + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered_env = $model_sum_square_cv5_2_altered_env + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5_2);
 
@@ -10594,6 +10820,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -10861,11 +11088,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv1_2_altered_env_2 = $model_sum_square_cv1_2_altered_env_2 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered_env_2 = $model_sum_square_cv1_2_altered_env_2 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv1_2);
 
@@ -10882,11 +11114,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv2_2_altered_env_2 = $model_sum_square_cv2_2_altered_env_2 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered_env_2 = $model_sum_square_cv2_2_altered_env_2 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv2_2);
 
@@ -10903,11 +11140,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv3_2_altered_env_2 = $model_sum_square_cv3_2_altered_env_2 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered_env_2 = $model_sum_square_cv3_2_altered_env_2 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv3_2);
 
@@ -10924,11 +11166,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv4_2_altered_env_2 = $model_sum_square_cv4_2_altered_env_2 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered_env_2 = $model_sum_square_cv4_2_altered_env_2 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv4_2);
 
@@ -10945,11 +11192,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv5_2_altered_env_2 = $model_sum_square_cv5_2_altered_env_2 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered_env_2 = $model_sum_square_cv5_2_altered_env_2 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv5_2);
 
@@ -11251,11 +11503,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv1_2_altered_env_2 = $model_sum_square_cv1_2_altered_env_2 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered_env_2 = $model_sum_square_cv1_2_altered_env_2 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv1_2);
 
@@ -11272,11 +11527,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv2_2_altered_env_2 = $model_sum_square_cv2_2_altered_env_2 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered_env_2 = $model_sum_square_cv2_2_altered_env_2 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv2_2);
 
@@ -11293,11 +11551,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv3_2_altered_env_2 = $model_sum_square_cv3_2_altered_env_2 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered_env_2 = $model_sum_square_cv3_2_altered_env_2 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv3_2);
 
@@ -11314,11 +11575,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv4_2_altered_env_2 = $model_sum_square_cv4_2_altered_env_2 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered_env_2 = $model_sum_square_cv4_2_altered_env_2 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv4_2);
 
@@ -11335,11 +11599,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv5_2_altered_env_2 = $model_sum_square_cv5_2_altered_env_2 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered_env_2 = $model_sum_square_cv5_2_altered_env_2 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5_2);
 
@@ -13733,6 +14000,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -14000,11 +14268,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv1_2_altered_env_3 = $model_sum_square_cv1_2_altered_env_3 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered_env_3 = $model_sum_square_cv1_2_altered_env_3 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv1_2);
 
@@ -14021,11 +14294,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv2_2_altered_env_3 = $model_sum_square_cv2_2_altered_env_3 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered_env_3 = $model_sum_square_cv2_2_altered_env_3 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv2_2);
 
@@ -14042,11 +14320,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv3_2_altered_env_3 = $model_sum_square_cv3_2_altered_env_3 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered_env_3 = $model_sum_square_cv3_2_altered_env_3 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv3_2);
 
@@ -14063,11 +14346,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv4_2_altered_env_3 = $model_sum_square_cv4_2_altered_env_3 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered_env_3 = $model_sum_square_cv4_2_altered_env_3 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv4_2);
 
@@ -14084,11 +14372,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv5_2_altered_env_3 = $model_sum_square_cv5_2_altered_env_3 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered_env_3 = $model_sum_square_cv5_2_altered_env_3 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv5_2);
 
@@ -14391,11 +14684,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv1_2_altered_env_3 = $model_sum_square_cv1_2_altered_env_3 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered_env_3 = $model_sum_square_cv1_2_altered_env_3 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv1_2);
 
@@ -14412,11 +14708,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv2_2_altered_env_3 = $model_sum_square_cv2_2_altered_env_3 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered_env_3 = $model_sum_square_cv2_2_altered_env_3 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv2_2);
 
@@ -14433,11 +14732,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv3_2_altered_env_3 = $model_sum_square_cv3_2_altered_env_3 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered_env_3 = $model_sum_square_cv3_2_altered_env_3 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv3_2);
 
@@ -14454,11 +14756,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv4_2_altered_env_3 = $model_sum_square_cv4_2_altered_env_3 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered_env_3 = $model_sum_square_cv4_2_altered_env_3 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv4_2);
 
@@ -14475,11 +14780,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv5_2_altered_env_3 = $model_sum_square_cv5_2_altered_env_3 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered_env_3 = $model_sum_square_cv5_2_altered_env_3 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5_2);
 
@@ -16870,6 +17178,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -17137,11 +17446,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv1_2_altered_env_4 = $model_sum_square_cv1_2_altered_env_4 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered_env_4 = $model_sum_square_cv1_2_altered_env_4 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv1_2);
 
@@ -17158,11 +17472,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv2_2_altered_env_4 = $model_sum_square_cv2_2_altered_env_4 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered_env_4 = $model_sum_square_cv2_2_altered_env_4 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv2_2);
 
@@ -17179,11 +17498,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv3_2_altered_env_4 = $model_sum_square_cv3_2_altered_env_4 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered_env_4 = $model_sum_square_cv3_2_altered_env_4 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv3_2);
 
@@ -17200,11 +17524,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv4_2_altered_env_4 = $model_sum_square_cv4_2_altered_env_4 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered_env_4 = $model_sum_square_cv4_2_altered_env_4 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv4_2);
 
@@ -17221,11 +17550,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv5_2_altered_env_4 = $model_sum_square_cv5_2_altered_env_4 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered_env_4 = $model_sum_square_cv5_2_altered_env_4 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv5_2);
 
@@ -17528,11 +17862,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv1_2_altered_env_4 = $model_sum_square_cv1_2_altered_env_4 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered_env_4 = $model_sum_square_cv1_2_altered_env_4 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv1_2);
 
@@ -17549,11 +17886,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv2_2_altered_env_4 = $model_sum_square_cv2_2_altered_env_4 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered_env_4 = $model_sum_square_cv2_2_altered_env_4 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv2_2);
 
@@ -17570,11 +17910,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv3_2_altered_env_4 = $model_sum_square_cv3_2_altered_env_4 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered_env_4 = $model_sum_square_cv3_2_altered_env_4 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv3_2);
 
@@ -17591,11 +17934,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv4_2_altered_env_4 = $model_sum_square_cv4_2_altered_env_4 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered_env_4 = $model_sum_square_cv4_2_altered_env_4 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv4_2);
 
@@ -17612,11 +17958,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv5_2_altered_env_4 = $model_sum_square_cv5_2_altered_env_4 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered_env_4 = $model_sum_square_cv5_2_altered_env_4 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5_2);
 
@@ -19974,6 +20323,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -20243,11 +20593,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv1_2_altered_env_5 = $model_sum_square_cv1_2_altered_env_5 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered_env_5 = $model_sum_square_cv1_2_altered_env_5 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv1_2);
 
@@ -20264,11 +20619,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv2_2_altered_env_5 = $model_sum_square_cv2_2_altered_env_5 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered_env_5 = $model_sum_square_cv2_2_altered_env_5 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv2_2);
 
@@ -20285,11 +20645,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv3_2_altered_env_5 = $model_sum_square_cv3_2_altered_env_5 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered_env_5 = $model_sum_square_cv3_2_altered_env_5 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv3_2);
 
@@ -20306,11 +20671,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv4_2_altered_env_5 = $model_sum_square_cv4_2_altered_env_5 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered_env_5 = $model_sum_square_cv4_2_altered_env_5 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv4_2);
 
@@ -20327,11 +20697,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv5_2_altered_env_5 = $model_sum_square_cv5_2_altered_env_5 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered_env_5 = $model_sum_square_cv5_2_altered_env_5 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv5_2);
 
@@ -20636,11 +21011,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv1_2_altered_env_5 = $model_sum_square_cv1_2_altered_env_5 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered_env_5 = $model_sum_square_cv1_2_altered_env_5 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv1_2);
 
@@ -20657,11 +21035,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv2_2_altered_env_5 = $model_sum_square_cv2_2_altered_env_5 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered_env_5 = $model_sum_square_cv2_2_altered_env_5 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv2_2);
 
@@ -20678,11 +21059,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv3_2_altered_env_5 = $model_sum_square_cv3_2_altered_env_5 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered_env_5 = $model_sum_square_cv3_2_altered_env_5 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv3_2);
 
@@ -20699,11 +21083,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv4_2_altered_env_5 = $model_sum_square_cv4_2_altered_env_5 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered_env_5 = $model_sum_square_cv4_2_altered_env_5 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv4_2);
 
@@ -20720,11 +21107,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv5_2_altered_env_5 = $model_sum_square_cv5_2_altered_env_5 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered_env_5 = $model_sum_square_cv5_2_altered_env_5 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5_2);
 
@@ -23135,6 +23525,7 @@ sub perform_drone_imagery_analytics {
         # print STDERR Dumper $statistics_cmd;
         eval {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
+            my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
             my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
             my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
@@ -23404,11 +23795,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv1_2_altered_env_6 = $model_sum_square_cv1_2_altered_env_6 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered_env_6 = $model_sum_square_cv1_2_altered_env_6 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv1_2);
 
@@ -23425,11 +23821,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv2_2_altered_env_6 = $model_sum_square_cv2_2_altered_env_6 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered_env_6 = $model_sum_square_cv2_2_altered_env_6 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv2_2);
 
@@ -23446,11 +23847,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv3_2_altered_env_6 = $model_sum_square_cv3_2_altered_env_6 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered_env_6 = $model_sum_square_cv3_2_altered_env_6 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv3_2);
 
@@ -23467,11 +23873,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv4_2_altered_env_6 = $model_sum_square_cv4_2_altered_env_6 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered_env_6 = $model_sum_square_cv4_2_altered_env_6 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv4_2);
 
@@ -23488,11 +23899,16 @@ sub perform_drone_imagery_analytics {
                         @columns = $csv->fields();
                     }
 
-                    my $trait_cv = $columns[0];
-                    my $accession_id = $columns[1];
-                    my $predicted_value = $columns[2];
-                    my $error = $columns[3];
-                    $model_sum_square_cv5_2_altered_env_6 = $model_sum_square_cv5_2_altered_env_6 + $error**2;
+                    my $stock_id = $columns[0];
+                    foreach (0..$number_traits-1) {
+                        my $trait_name = $sorted_trait_names[$_];
+                        my $true_value = $columns[1 + $_];
+                        my $masked_value = $columns[1 + $number_traits + $_];
+                        my $residual = $columns[1 + 2*$number_traits + $_];
+                        my $fitted = $columns[1 + 3*$number_traits + $_];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered_env_6 = $model_sum_square_cv5_2_altered_env_6 + ($true_value-$fitted)**2;
+                    }
                 }
             close($fh_cv5_2);
 
@@ -23797,11 +24213,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv1_2_altered_env_6 = $model_sum_square_cv1_2_altered_env_6 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv1_2_altered_env_6 = $model_sum_square_cv1_2_altered_env_6 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv1_2);
 
@@ -23818,11 +24237,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv2_2_altered_env_6 = $model_sum_square_cv2_2_altered_env_6 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv2_2_altered_env_6 = $model_sum_square_cv2_2_altered_env_6 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv2_2);
 
@@ -23839,11 +24261,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv3_2_altered_env_6 = $model_sum_square_cv3_2_altered_env_6 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv3_2_altered_env_6 = $model_sum_square_cv3_2_altered_env_6 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv3_2);
 
@@ -23860,11 +24285,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv4_2_altered_env_6 = $model_sum_square_cv4_2_altered_env_6 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv4_2_altered_env_6 = $model_sum_square_cv4_2_altered_env_6 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv4_2);
 
@@ -23881,11 +24309,14 @@ sub perform_drone_imagery_analytics {
                             @columns = $csv->fields();
                         }
 
-                        my $trait_cv = $columns[0];
-                        my $accession_id = $columns[1];
-                        my $predicted_value = $columns[2];
-                        my $error = $columns[3];
-                        $model_sum_square_cv5_2_altered_env_6 = $model_sum_square_cv5_2_altered_env_6 + $error**2;
+                        my $trait_name = $trait_name_encoder_rev{$t};
+                        my $stock_id = $columns[0];
+                        my $true_value = $columns[1];
+                        my $masked_value = $columns[2];
+                        my $residual = $columns[3];
+                        my $fitted = $columns[4];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        $model_sum_square_cv5_2_altered_env_6 = $model_sum_square_cv5_2_altered_env_6 + ($true_value-$fitted)**2;
                     }
                 close($fh_cv5_2);
 
