@@ -14,6 +14,16 @@
         <div class="container-fluid">
 
             <&| /util/workflow.mas, id=> "drone_imagery_calculate_statistics_workflow" &>
+                <&| /util/workflow.mas:step, title=> "Intro" &>
+                    <& /page/page_title.mas, title=>"Select the type of analysis to perform" &>
+                    <center>
+                    <button class="btn btn-default" id="drone_imagery_calculate_statistics_intro_single_trial_select_step">Single Trial Field Analysis</button>
+                    </center>
+                    <br/>
+                    <center>
+                    <button class="btn btn-default" id="drone_imagery_calculate_statistics_intro_single_trial_multiseason_select_step">Single Trial Multi-Season Field Analysis</button>
+                    </center>
+                </&>
                 <&| /util/workflow.mas:step, title=> "Field Trial" &>
                     <& /page/page_title.mas, title=>"Select the field trial you are interested in. Select only one." &>
                     <br/><br/>
@@ -321,6 +331,11 @@ jQuery(document).ready(function() {
         jQuery('#drone_imagery_calculate_statistics_dialog').modal('show');
     });
 
+    jQuery('#drone_imagery_calculate_statistics_intro_single_trial_select_step').click(function(){
+        Workflow.complete("#drone_imagery_calculate_statistics_intro_single_trial_select_step");
+        Workflow.focus('#drone_imagery_calculate_statistics_workflow', 1);
+    });
+
     jQuery('#drone_imagery_calculate_statistics_select_observation_variable_type').change(function(){
         manage_drone_imagery_calculate_statistics_observation_variable_type = jQuery('#drone_imagery_calculate_statistics_select_observation_variable_type').val();
         if (manage_drone_imagery_calculate_statistics_observation_variable_type == 'time_ontology') {
@@ -356,7 +371,7 @@ jQuery(document).ready(function() {
             get_select_box('traits', 'drone_imagery_calculate_statistics_permanent_env_structure_phenotype_correlation_select_div', { 'name' : 'drone_imagery_calculate_statistics_permanent_env_structure_phenotype_correlation_select', 'id' : 'drone_imagery_calculate_statistics_permanent_env_structure_phenotype_correlation_select', 'empty':1, 'multiple':1, 'size': 20, 'trial_ids':manage_drone_imagery_calculate_statistics_field_trial_id_string, 'stock_type':'plot' });
 
             Workflow.complete("#drone_imagery_calculate_statistics_field_trial_select_step");
-            Workflow.focus('#drone_imagery_calculate_statistics_workflow', 1);
+            Workflow.focus('#drone_imagery_calculate_statistics_workflow', 2);
         }
         return false;
     });
@@ -385,7 +400,7 @@ jQuery(document).ready(function() {
             alert('Please select at least one observation variable!');
         } else {
             Workflow.complete("#drone_imagery_calculate_statistics_trait_select_step");
-            Workflow.focus('#drone_imagery_calculate_statistics_workflow', 2);
+            Workflow.focus('#drone_imagery_calculate_statistics_workflow', 3);
         }
         return false;
     });
@@ -737,7 +752,7 @@ jQuery(document).ready(function() {
                     jQuery('#drone_imagery_calculate_statistics_result_div').html(html);
 
                     Workflow.complete("#drone_imagery_calculate_statistics_select_step");
-                    Workflow.focus('#drone_imagery_calculate_statistics_workflow', 3);
+                    Workflow.focus('#drone_imagery_calculate_statistics_workflow', 4);
                 }
             },
             error: function(response){
