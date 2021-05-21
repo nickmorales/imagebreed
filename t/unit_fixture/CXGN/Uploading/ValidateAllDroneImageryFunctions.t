@@ -49,6 +49,8 @@ ok($message_hash->{success});
 ok($message_hash->{new_vehicle_id});
 my $new_vehicle_id = $message_hash->{new_vehicle_id};
 
+if ($f->config->{enable_opendronemap}) {
+
 #Testing upload of unstitched Micasense RedEdge 5 band raw captures.
 my $file_micasense5channel_image_zip = "/home/production/public/static_content/imagebreed/AlfalfaExample35MeterMicasenseAerialDroneFlightRawCaptures.zip";
 my $micasense5bandpanelzipfile = $f->config->{basepath}."/t/data/imagebreed/ExampleAerialDroneFlightMicasensePanel.zip";
@@ -110,6 +112,8 @@ print STDERR Dumper $message_hash_rgb_stitch;
 is($message_hash_rgb_stitch->{success}, 1);
 is(scalar(@{$message_hash_rgb_stitch->{drone_run_band_project_ids}}), 2);
 is(scalar(@{$message_hash_rgb_stitch->{drone_run_band_image_ids}}), 2);
+
+}
 
 #Testing upload of RGB unstitched raw captures.
 my $rasterblue = $f->config->{basepath}."/t/data/imagebreed/RasterBlue.png";
@@ -273,7 +277,12 @@ ok($response_drone_runs->is_success);
 my $message_drone_runs = $response_drone_runs->decoded_content;
 my $message_hash_drone_runs = decode_json $message_drone_runs;
 print STDERR Dumper $message_hash_drone_runs;
+if ($f->config->{enable_opendronemap}) {
 is(scalar(@{$message_hash_drone_runs->{data}}), 3);
+}
+else {
+is(scalar(@{$message_hash_drone_runs->{data}}), 1);
+}
 
 $ua = LWP::UserAgent->new;
 my $response_image_types = $ua->get('http://localhost:3010/api/drone_imagery/plot_polygon_types?select_checkbox_name=drone_test_checkbox&field_trial_id='.$field_trial_id);
