@@ -784,7 +784,7 @@ sub get_sequence_metadata_protocols : Path('/ajax/html/select/sequence_metadata_
     my $c = shift;
     my $checkbox_name = $c->req->param('checkbox_name');
     my $data_type_cvterm_id = $c->req->param('sequence_metadata_data_type_id');
-    
+
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
     my $protocol_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'sequence_metadata_protocol', 'protocol_type')->cvterm_id();
@@ -1070,6 +1070,47 @@ sub get_traits_select : Path('/ajax/html/select/traits') Args(0) {
             }
         }
         if ($select_format eq 'component_table_select') {
+            my $html = '<table class="table table-hover table-bordered" id="'.$id.'"><thead><th>Observation Variable Components</th><th>Select</th></thead><tbody>';
+            my %unique_components;
+            foreach (values %unique_traits_ids) {
+                foreach my $component (@{$_->[2]}) {
+                    $unique_components{$_->[0]}->{num_pheno} = $_->[3];
+                    $unique_components{$_->[0]}->{imaging_project_id} = $_->[4];
+                    $unique_components{$_->[0]}->{imaging_project_name} = $_->[5];
+                    if ($component->{cv_type} && $component->{cv_type} eq $contains_composable_cv_type) {
+                        $unique_components{$_->[0]}->{contains_cv_type} = $component->{name};
+                    }
+                    else {
+                        push @{$unique_components{$_->[0]}->{cv_types}}, $component->{name};
+                    }
+                }
+            }
+            my %separated_components;
+            while (my ($k, $v) = each %unique_components) {
+                my $string_cv_types = join ',', @{$v->{cv_types}};
+                push @{$separated_components{$string_cv_types}}, [$k, $v->{contains_cv_type}, $v->{num_pheno}, $v->{imaging_project_id}, $v->{imaging_project_name}];
+            }
+            foreach my $k (sort keys %separated_components) {
+                my $v = $separated_components{$k};
+                $html .= "<tr><td>".$k."</td><td>";
+                foreach (@$v) {
+                    $html .= "<input type='checkbox' name = '".$name."' value ='".$_->[0]."'";
+                    if ($select_all) {
+                        $html .= "checked";
+                    }
+                    $html .= ">&nbsp;".$_->[1]." (".$_->[2]." Phenotypes";
+                    if ($_->[3] && $_->[4]) {
+                        $html .= " From ".$_->[4];
+                    }
+                    $html .= ")<br/>";
+                }
+                $html .= "</td></tr>";
+            }
+            $html .= "</tbody></table>";
+            $c->stash->{rest} = { select => $html };
+            $c->detach;
+        }
+        elsif ($select_format eq 'component_table_multiseason_select') {
             my $html = '<table class="table table-hover table-bordered" id="'.$id.'"><thead><th>Observation Variable Components</th><th>Select</th></thead><tbody>';
             my %unique_components;
             foreach (values %unique_traits_ids) {

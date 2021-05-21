@@ -305,6 +305,238 @@
   </div>
 </div>
 
+<div class="modal fade" id="drone_imagery_calculate_statistics_single_trial_multiseason_dialog" name="drone_imagery_calculate_statistics_single_trial_multiseason_dialog" tabindex="-1" role="dialog" aria-labelledby="droneImageryCalculateStatisticsSingleTrialMultiSeasonDialog" data-backdrop="static">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="droneImageryCalculateStatisticsSingleTrialMultiSeasonDialog">Calculate statistics on aerial image phenotypes</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+
+            <&| /util/workflow.mas, id=> "drone_imagery_calculate_statistics_single_trial_multiseason_workflow" &>
+                <&| /util/workflow.mas:step, title=> "Field Trial" &>
+                    <& /page/page_title.mas, title=>"Select the field trial you are interested in. Select only one." &>
+                    <br/><br/>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Field Trial(s): </label>
+                            <div class="col-sm-9" >
+                                <div id="drone_imagery_calculate_statistics_multiseason_trial_select_div"></div>
+                            </div>
+                        </div>
+                    </form>
+                    <center>
+                    <button class="btn btn-primary" id="drone_imagery_calculate_statistics_multiseason_field_trial_select_step">Go to Next Step</button>
+                    </center>
+                </&>
+                <&| /util/workflow.mas:step, title=> "Trait Selection" &>
+                    <& /page/page_title.mas, title=>"Select the observation variable(s) you are interested in" &>
+                    <br/><br/>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Observation Variables Phenotyped in the Selected Field Trial: </label>
+                            <div class="col-sm-9" >
+                                <div id="drone_imagery_calculate_statistics_multiseason_trait_select_div"></div>
+                            </div>
+                        </div>
+                    </form>
+                    <center>
+                    <button class="btn btn-primary" id="drone_imagery_calculate_statistics_multiseason_trait_select_step">Go to Next Step</button>
+                    </center>
+                </&>
+                <&| /util/workflow.mas:step, title=> "Statistics" &>
+                    <& /page/page_title.mas, title=>"Select statistics to calculate" &>
+
+                    <select class="form-control" id="drone_imagery_calculate_statistics_multiseason_select_input">
+                        <option value="">Select A Model</option>
+
+                        <option value="sommer_grm_genetic_blups">Sommer GBLUPs Y~replicate+GRM. Multivariate genetic effects using GRM</option>
+                        <option value="sommer_grm_spatial_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+spatial. Multivariate genetic + 2Dspl spatial effects</option>
+                    </select>
+
+                    <hr>
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Relationship Matrix Type: </label>
+                            <div class="col-sm-9" >
+                                <select class="form-control" id="drone_imagery_calculate_statistics_multiseason_relationship_matrix_type_select_div">
+                                    <option value="">Identity</option>
+                                    <option value="htp_phenotypes">High-throughput Phenotyping Data</option>
+                                    <option value="genotypes">Genotyping Data</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="drone_imagery_calculate_statistics_multiseason_genotyping_protocol_div" class="well well-sm" style="display:none">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Genotyping Protocol To Calculate Genomic Relationship Matrix (optional. If none selected, an identity matrix is used): </label>
+                                <div class="col-sm-9" >
+                                    <div id="drone_imagery_calculate_statistics_multiseason_genotyping_protocol_select_div"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Compute Genotypes From Parents: </label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_image_calculate_statistics_multiseason_genotyping_protocol_compute_from_parents_select">
+                                        <option value="no">No</option>
+                                        <option value="yes">Yes</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" id="drone_image_calculate_statistics_multiseason_genotyping_protocol_use_parental_grms_select_div" style="display:none">
+                                <label class="col-sm-3 control-label">Use Parental Relationship Matrices: </label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_image_calculate_statistics_multiseason_genotyping_protocol_use_parental_grms_select">
+                                        <option value="no">No</option>
+                                        <option value="yes">Yes</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" id="drone_image_calculate_statistics_multiseason_genotyping_protocol_include_pedigree_select_div" style="display:none">
+                                <label class="col-sm-3 control-label">Include Pedigree Info Into Relationship Matrix: </label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_image_calculate_statistics_multiseason_genotyping_protocol_include_pedigree_select">
+                                        <option value="no">No</option>
+                                        <option value="yes">Yes</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="drone_imagery_calculate_statistics_multiseason_htp_phenotypes_rel_matrix_div" class="well well-sm" style="display:none">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">How to calculate the relationship matrix with high-throughput phenotypes: </label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_image_calculate_statistics_multiseason_htp_phenotypes_rel_matrix_select">
+                                        <option value="correlations">Correlations</option>
+                                        <option value="blues">BLUEs</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Time Points to Use: </label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_image_calculate_statistics_multiseason_htp_phenotypes_rel_matrix_times_select">
+                                        <option value="all">All Available</option>
+                                        <option value="latest_trait">Up to the latest date selected in traits</option>
+                                        <option value="vegetative" disabled>Vegetative Growth Stage</option>
+                                        <option value="reproductive" disabled>Reproductive Growth Stage</option>
+                                        <option value="mature" disabled>Mature Growth Stage</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" id="drone_image_calculate_statistics_multiseason_htp_phenotypes_rel_matrix_inversion_select_div" style="display:none">
+                                <label class="col-sm-3 control-label">HTP BLUEs Inversion Tolerance: </label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_image_calculate_statistics_multiseason_htp_phenotypes_rel_matrix_inversion_select">
+                                        <option value="0.00001">0.00001</option>
+                                        <option value="0.0001">0.0001</option>
+                                        <option value="0.001">0.001</option>
+                                        <option value="0.01">0.01</option>
+                                        <option value="0.1">0.1</option>
+                                        <option value="0.5">0.5</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Inversion Tolerance: </label>
+                            <div class="col-sm-9" >
+                                <select class="form-control" id="drone_image_calculate_statistics_multiseason_tolparinv_select">
+                                    <option value="0.000001">0.000001</option>
+                                    <option value="0.00001">0.00001</option>
+                                    <option value="0.0001">0.0001</option>
+                                    <option value="0.001">0.001</option>
+                                    <option value="0.01">0.01</option>
+                                    <option value="0.05">0.05</option>
+                                    <option value="0.08">0.08</option>
+                                    <option value="0.1">0.1</option>
+                                    <option value="0.2">0.2</option>
+                                    <option value="0.5">0.5</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="drone_imagery_calculate_statistics_multiseason_legendre_polynomial_div" style="display:none">
+                        <hr>
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Legendre Polynomial Order: </label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_image_calculate_statistics_multiseason_legendre_order_number_select">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="drone_imagery_calculate_statistics_multiseason_permanent_env_structure_div" style="display:none">
+                        <hr>
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Permanent Environment Structure: </label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_image_calculate_statistics_multiseason_permanent_env_structure_select">
+                                        <option value="identity">Identity Matrix</option>
+                                        <option value="phenotype_correlation">Phenotype Correlation Matrix</option>
+                                        <option value="euclidean_rows_and_columns">Euclidean Distance From Rows and Columns Matrix</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="drone_imagery_calculate_statistics_multiseason_permanent_env_structure_phenotype_correlation_div" style="display:none">
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">Phenotypes For Correlation Matrix: </label>
+                                    <div class="col-sm-9" >
+                                        <div id="drone_imagery_calculate_statistics_multiseason_permanent_env_structure_phenotype_correlation_select_div"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <br/><br/>
+                    <center>
+                    <button class="btn btn-primary" id="drone_imagery_calculate_statistics_multiseason_select_step">Submit</button>
+                    </center>
+                </&>
+                <&| /util/workflow.mas:step, title=> "Results" &>
+                    <& /page/page_title.mas, title=>"Statistics results" &>
+
+                    <div id ="drone_imagery_calculate_statistics_multiseason_result_div">
+                    </div>
+                </&>
+            </&>
+
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 
 jQuery(document).ready(function() {
@@ -325,10 +557,27 @@ jQuery(document).ready(function() {
     var manage_drone_imagery_calculate_statistics_grm_training_file;
     var manage_drone_imagery_calculate_statistics_response = {};
 
+    var manage_drone_imagery_calculate_statistics_multiseason_field_trial_id_array = undefined;
+    var manage_drone_imagery_calculate_statistics_multiseason_field_trial_id_string = "";
+    var manage_drone_imagery_calculate_statistics_multiseason_trait_ids = [];
+    var manage_drone_imagery_calculate_statistics_multiseason_trait_names = [];
+    var manage_drone_imagery_calculate_statistics_multiseason_accession_names = [];
+    var manage_drone_imagery_calculate_statistics_multiseason_plot_names = [];
+    var manage_drone_imagery_calculate_statistics_multiseason_select = '';
+    var manage_drone_imagery_calculate_statistics_multiseason_phenotype_training_file;
+    var manage_drone_imagery_calculate_statistics_multiseason_grm_training_file;
+    var manage_drone_imagery_calculate_statistics_multiseason_response = {};
+
     jQuery('#drone_imagery_calculate_statistics_link').click(function(){
         get_select_box('trials', 'drone_imagery_calculate_statistics_trial_select_div', { 'name' : 'drone_imagery_calculate_statistics_field_trial_id', 'id' : 'drone_imagery_calculate_statistics_field_trial_id', 'empty':1, 'multiple':1 });
 
+        get_select_box('trials', 'drone_imagery_calculate_statistics_multiseason_trial_select_div', { 'name' : 'drone_imagery_calculate_statistics_multiseason_field_trial_id', 'id' : 'drone_imagery_calculate_statistics_multiseason_field_trial_id', 'empty':1, 'multiple':1 });
+
         jQuery('#drone_imagery_calculate_statistics_dialog').modal('show');
+    });
+
+    jQuery('#drone_imagery_calculate_statistics_intro_single_trial_multiseason_select_step').click(function(){
+        jQuery('#drone_imagery_calculate_statistics_single_trial_multiseason_dialog').modal('show');
     });
 
     jQuery('#drone_imagery_calculate_statistics_intro_single_trial_select_step').click(function(){
@@ -374,6 +623,26 @@ jQuery(document).ready(function() {
             Workflow.focus('#drone_imagery_calculate_statistics_workflow', 2);
         }
         return false;
+    });
+
+    jQuery('#drone_imagery_calculate_statistics_multiseason_field_trial_select_step').click(function(){
+        manage_drone_imagery_calculate_statistics_multiseason_field_trial_id_array = undefined;
+        manage_drone_imagery_calculate_statistics_multiseason_field_trial_id_string = "";
+        manage_drone_imagery_calculate_statistics_multiseason_field_trial_id_array = jQuery('#drone_imagery_calculate_statistics_multiseason_field_trial_id').val();
+
+        if (manage_drone_imagery_calculate_statistics_multiseason_field_trial_id_array.length > 1) {
+            alert('Please only select a single field trial for now!');
+            return false;
+        }
+
+        manage_drone_imagery_calculate_statistics_multiseason_field_trial_id_string = manage_drone_imagery_calculate_statistics_multiseason_field_trial_id_array.join(",");
+
+        get_select_box('traits', 'drone_imagery_calculate_statistics_multiseason_trait_select_div', { 'name' : 'drone_imagery_calculate_statistics_multiseason_trait_id_select', 'id' : 'drone_imagery_calculate_statistics_multiseason_trait_id_select', 'empty':1, 'multiple':1, 'size': 20, 'trial_ids':manage_drone_imagery_calculate_statistics_multiseason_field_trial_id_string, 'stock_type':'plot', 'contains_composable_cv_type':'time_ontology', 'select_format':'component_table_multiseason_select' });
+
+        get_select_box('traits', 'drone_imagery_calculate_statistics_multiseason_permanent_env_structure_phenotype_correlation_select_div', { 'name' : 'drone_imagery_calculate_statistics_multiseason_permanent_env_structure_phenotype_correlation_select', 'id' : 'drone_imagery_calculate_statistics_multiseason_permanent_env_structure_phenotype_correlation_select', 'empty':1, 'multiple':1, 'size': 20, 'trial_ids':manage_drone_imagery_calculate_statistics_multiseason_field_trial_id_string, 'stock_type':'plot' });
+
+        Workflow.complete("#drone_imagery_calculate_statistics_multiseason_field_trial_select_step");
+        Workflow.focus('#drone_imagery_calculate_statistics_single_trial_multiseason_workflow', 2);
     });
 
     jQuery('#drone_imagery_calculate_statistics_trait_select_step').click(function(){
