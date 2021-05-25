@@ -940,7 +940,7 @@ sub trials_list_POST {
 	}
 	my $brapi = $self->brapi_module;
 	my $brapi_module = $brapi->brapi_wrapper('Trials');
-	my $brapi_package_result = $brapi_module->store(\@all_trials,$user_id);
+	my $brapi_package_result = $brapi_module->store(\@all_trials, $user_id, $c->config->{supportedCrop});
 	_standard_response_construction($c, $brapi_package_result);
 }
 
@@ -3108,9 +3108,7 @@ sub locations_list : Chained('brapi') PathPart('locations') Args(0) : ActionClas
 sub locations_list_POST {
 	my $self = shift;
 	my $c = shift;
-	# TODO: disable auth for now with use for bi-api
-	#my ($auth,$user_id) = _authenticate_user($c);
-	my $user_id = undef;
+	my ($auth, $user_id) = _authenticate_user($c);
 	my $clean_inputs = $c->stash->{clean_inputs};
 	my $data = $clean_inputs;
 	my @all_locations;
@@ -3152,9 +3150,7 @@ sub locations_detail_PUT {
 	my $self = shift;
 	my $c = shift;
 	my $location_id = shift;
-	# TODO: disable auth for now with use for bi-api
-	#my ($auth,$user_id) = _authenticate_user($c);
-	my $user_id = undef;
+	my ($auth,$user_id) = _authenticate_user($c);
 	my $clean_inputs = $c->stash->{clean_inputs};
 	my $data = $clean_inputs;
 	my @all_locations;

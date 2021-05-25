@@ -126,7 +126,7 @@ sub details {
 			my @folder_studies;
 			my $additional_info = $folder->additional_info;
             my $folder_id = $folder->folder_id;
-            my $folder_description = $folder->name; #description doesn't exist 
+            my $folder_description = $folder->description;
             my $breeding_program_id = $folder->breeding_program->project_id();
 
 			my %result = (
@@ -162,9 +162,10 @@ sub store {
     my $self = shift;
     my $data = shift;
     my $user_id = shift;
+    my $crop = shift;
 
     if (!$user_id){
-        return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('You must be logged in to add a seedlot!'));
+        return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('You must be logged in to add a trial!'));
     }
     my $schema = $self->bcs_schema;
     my $page_size = $self->page_size;
@@ -182,7 +183,7 @@ sub store {
 
     foreach my $params (@$data){
         my $folder_name = $params->{trialName} || undef;
-        my $parent_folder_id = $params->{programDbId} || undef;        
+        my $parent_folder_id = $params->{programDbId} || undef;
         my $breeding_program_id = $params->{programDbId} || undef;
         my $description = $params->{trialDescription} || undef;
         my $additional_info = $params->{additionalInfo} || undef;
@@ -230,7 +231,7 @@ sub store {
 
         foreach my $program (@$programs) {
             $program = { "id" => $program->[0], "name" => $program->[1], "program_id" => $program->[0], "program_name" => $program->[1],  "program_description" => $program->[2] };
-            $result_data = _get_folders($program, $schema, $result_data, 'breeding_program', undef, \%location_id_list, \%location_names_list, \%study_id_list, \%study_name_list, \%trial_id_list, \%trial_name_list);
+            $result_data = _get_folders($program, $schema, $result_data, 'breeding_program', $crop, \%location_id_list, \%location_names_list, \%study_id_list, \%study_name_list, \%trial_id_list, \%trial_name_list);
         }
     }
 
@@ -249,7 +250,7 @@ sub update {
     my $crop = shift;
 
     if (!$user_id){
-        return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('You must be logged in to add a seedlot!'));
+        return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('You must be logged in to update a trial!'));
     }
     my $schema = $self->bcs_schema;
     my $page_size = $self->page_size;
@@ -258,7 +259,7 @@ sub update {
 
     my $folder_id = $params->{trialDbId} || undef;
     my $folder_name = $params->{trialName} || undef;
-    my $parent_folder_id = $params->{programDbId} || undef;        
+    my $parent_folder_id = $params->{programDbId} || undef;
     my $breeding_program_id = $params->{programDbId} || undef;
     my $description = $params->{trialDescription} || undef;
     my $additional_info = $params->{additionalInfo} || undef;
@@ -280,9 +281,9 @@ sub update {
     }
 
     my $project_rel_row = $self->bcs_schema()->resultset('Project::ProjectRelationship')->find(
-    { 
+    {
       subject_project_id =>  $folder_id,
-    }); 
+    });
     if ($project_rel_row){
         $project_rel_row->object_project_id($breeding_program_id);
         $project_rel_row->update();
@@ -307,7 +308,7 @@ sub update {
     my @folder_studies;
     my %additional_info;
     my $folder_id = $folder->folder_id;
-    my $folder_description = $folder->name; #description doesn't exist 
+    my $folder_description = $folder->description;
     my $breeding_program_id = $folder->breeding_program->project_id();
 
     my %result = (
@@ -438,7 +439,7 @@ sub _get_folders {
             startDate=>undef,
             trialDbId=>qq|$self->{'id'}|,
             trialName=>$self->{'name'},
-            trialDescription=>$self->{'program_description'},
+            trialDescription=>$self->{'description'},
             trialPUI=>undef
         }
     };
@@ -470,14 +471,15 @@ sub _get_studies {
             subject_project_id => { 'not in' => \@folder_contents }
         },
         {   join      => { subject_project => { projectprops => 'type' } },
-            '+select' => ['subject_project.name', 'projectprops.value', 'type.name'],
-            '+as'     => ['project_name', 'project_value', 'project_type']
+            '+select' => ['subject_project.name', 'subject_project.description', 'projectprops.value', 'type.name'],
+            '+as'     => ['project_name', 'project_description', 'project_value', 'project_type']
         }
      );
 
     while (my $row = $rs->next) {
         my $name = $row->get_column('project_name');
         $studies{$name}{'name'} = $name;
+        $studies{$name}{'description'} = $row->get_column('project_description');
         $studies{$name}{'id'} = $row->subject_project_id();
         $studies{$name}{'program_name'} = $self->{'program_name'};
         $studies{$name}{'program_id'} = $self->{'program_id'};
