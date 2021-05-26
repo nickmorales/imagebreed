@@ -432,7 +432,7 @@ sub retrieve_plot_info {
     #print STDERR "REL TYEPS = ".Dumper($self->get_relationship_types());
 
     my $accession_rs = $plot->search_related('stock_relationship_subjects')->search(
-	{ 'me.type_id' => { -in => $self->get_relationship_type_ids() }, 'object.type_id' => { -in => [$self->cvterm_id('accession')] } },
+	{ 'me.type_id' => { -in => $self->get_relationship_type_ids() }, 'object.type_id' => { -in => [$self->cvterm_id('accession'), $self->cvterm_id('cross'), $self->cvterm_id('family_name')] } },
 	{ 'join' => 'object' }
 	);
 

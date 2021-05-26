@@ -65,7 +65,7 @@ is_deeply($response, {
           'metadata' => {
                           'status' => [
                                         {
-                                          'messageType' => '400',
+                                          'messageType' => 'ERROR',
                                           'message' => 'You must login and have permission to access this BrAPI call.'
                                         }
                                       ],
