@@ -39,7 +39,7 @@ has 'source_stock_types' => (isa => 'ArrayRef[Str]', is=> 'rw', default =>sub { 
 
 has 'source_stock_type_ids' => (isa => 'ArrayRef[Int]', is => 'rw' );
 
-has 'source_primary_stock_types' => (isa => 'ArrayRef[Str]', is=> 'rw', default =>sub {  [ 'accession' ]  });  # what is being placed on the layout
+has 'source_primary_stock_types' => (isa => 'ArrayRef[Str]', is=> 'rw', default =>sub {  [ 'accession' ]  });  # what is being primarily placed on the layout
 
 has 'source_primary_stock_type_ids' => (isa => 'ArrayRef[Int]', is => 'rw' );
 
