@@ -39,6 +39,10 @@ has 'source_stock_types' => (isa => 'ArrayRef[Str]', is=> 'rw', default =>sub { 
 
 has 'source_stock_type_ids' => (isa => 'ArrayRef[Int]', is => 'rw' );
 
+has 'source_primary_stock_types' => (isa => 'ArrayRef[Str]', is=> 'rw', default =>sub {  [ 'accession' ]  });  # what is being placed on the layout
+
+has 'source_primary_stock_type_ids' => (isa => 'ArrayRef[Int]', is => 'rw' );
+
 has 'target_stock_types' => (isa => 'ArrayRef[Str]', is => 'rw', default => sub { [ 'plot' ] }); # the object things are placed on, such as plot
 
 has 'target_stock_type_ids' => (isa => 'ArrayRef[Int]', is => 'rw');
@@ -109,37 +113,44 @@ sub cvterm_id {
 
 sub convert_source_stock_types_to_ids {
     my $self = shift;
-    my @source_cvterm_ids;
 
     print STDERR "Converting source stock types to ids... \n";
 
+    my @source_cvterm_ids;
     foreach my $source_stock (@{$self->get_source_stock_types()}) {
-	print STDERR "Converting $source_stock to ... ";
-	my $source_stock_cvterm_id = $self->cvterm_id($source_stock);
-	print STDERR "$source_stock_cvterm_id . \n";
-	push @source_cvterm_ids, $source_stock_cvterm_id;
+        # print STDERR "Converting $source_stock to ... ";
+        my $source_stock_cvterm_id = $self->cvterm_id($source_stock);
+        # print STDERR "$source_stock_cvterm_id . \n";
+        push @source_cvterm_ids, $source_stock_cvterm_id;
     }
     $self->set_source_stock_type_ids(\@source_cvterm_ids);
 
+    my @source_primary_cvterm_ids;
+    foreach my $source_stock (@{$self->get_source_primary_stock_types()}) {
+        # print STDERR "Converting $source_stock to ... ";
+        my $source_stock_cvterm_id = $self->cvterm_id($source_stock);
+        # print STDERR "$source_stock_cvterm_id . \n";
+        push @source_primary_cvterm_ids, $source_stock_cvterm_id;
+    }
+    $self->set_source_primary_stock_type_ids(\@source_primary_cvterm_ids);
+
     my @target_cvterm_ids;
     foreach my $target_stock (@{$self->get_target_stock_types()}) {
-	print STDERR "Converting $target_stock to ... ";
-	my $target_stock_cvterm_id = $self->cvterm_id($target_stock);
-	print STDERR "$target_stock_cvterm_id . \n";
-	push @target_cvterm_ids, $target_stock_cvterm_id;
+        # print STDERR "Converting $target_stock to ... ";
+        my $target_stock_cvterm_id = $self->cvterm_id($target_stock);
+        # print STDERR "$target_stock_cvterm_id . \n";
+        push @target_cvterm_ids, $target_stock_cvterm_id;
     }
     $self->set_target_stock_type_ids(\@target_cvterm_ids);
 
-
     my @rel_type_cvterm_ids;
     foreach my $rel_type (@{$self->get_relationship_types()}) {
-	print STDERR "Converting $rel_type to ... ";
-	my $rel_type_cvterm_id = $self->cvterm_id($rel_type);
-	print STDERR "$rel_type_cvterm_id . \n";
-	push @rel_type_cvterm_ids, $rel_type_cvterm_id;
+        # print STDERR "Converting $rel_type to ... ";
+        my $rel_type_cvterm_id = $self->cvterm_id($rel_type);
+        # print STDERR "$rel_type_cvterm_id . \n";
+        push @rel_type_cvterm_ids, $rel_type_cvterm_id;
     }
     $self->set_relationship_type_ids(\@rel_type_cvterm_ids);
-
 }
 
 
@@ -432,7 +443,7 @@ sub retrieve_plot_info {
     #print STDERR "REL TYEPS = ".Dumper($self->get_relationship_types());
 
     my $accession_rs = $plot->search_related('stock_relationship_subjects')->search(
-	{ 'me.type_id' => { -in => $self->get_relationship_type_ids() }, 'object.type_id' => { -in => [$self->cvterm_id('accession'), $self->cvterm_id('cross'), $self->cvterm_id('family_name')] } },
+	{ 'me.type_id' => { -in => $self->get_relationship_type_ids() }, 'object.type_id' => { -in => $self->get_source_primary_stock_type_ids() } },
 	{ 'join' => 'object' }
 	);
 

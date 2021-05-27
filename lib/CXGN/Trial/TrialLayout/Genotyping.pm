@@ -13,6 +13,7 @@ sub BUILD {
 
     print STDERR "BUILD CXGN::Trial::TrialLayout::Genotyping...\n";
 
+    $self->set_source_primary_stock_types( [ "accession" ] );
     $self->set_source_stock_types( [ "accession", "plot", "plant", "tissue_sample", "subplot" ] );
     $self->set_relationship_types( [ "tissue_sample_of" ] );
     $self->set_target_stock_types( [ "tissue_sample" ] );
@@ -64,9 +65,9 @@ sub retrieve_plot_info {
      $genotyping_project_name = $genotyping_project_name_row->get_column("value") || "unknown";
 
      $design->{$plot_number}->{genotyping_user_id} = $genotyping_user_id;
-     print STDERR "RETRIEVED: genotyping_user_id: $design->{genotyping_user_id}\n";
+     # print STDERR "RETRIEVED: genotyping_user_id: $design->{genotyping_user_id}\n";
      $design->{$plot_number}->{genotyping_project_name} = $genotyping_project_name;
-     print STDERR "RETRIEVED: genotyping_project_name: $design->{genotyping_project_name}\n";
+     # print STDERR "RETRIEVED: genotyping_project_name: $design->{genotyping_project_name}\n";
 
      my $source_rs = $plot->search_related('stock_relationship_subjects')->search(
 	 { 'me.type_id' => { -in => $self->get_relationship_type_ids() }, 'object.type_id' => { -in => $self->get_source_stock_type_ids() } },
