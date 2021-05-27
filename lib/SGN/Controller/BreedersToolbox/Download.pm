@@ -896,6 +896,7 @@ sub download_grm_action : Path('/breeders/download_grm_action') {
     my $minor_allele_frequency = $c->req->param("minor_allele_frequency") ? $c->req->param("minor_allele_frequency") + 0 : 0.05;
     my $marker_filter = $c->req->param("marker_filter") ? $c->req->param("marker_filter") + 0 : 0.60;
     my $individuals_filter = $c->req->param("individuals_filter") ? $c->req->param("individuals_filter") + 0 : 0.80;
+    my $return_imputed_matrix = $c->req->param("return_imputed_matrix") ? $c->req->param("return_imputed_matrix") : 0;
     my $return_only_first_genotypeprop_for_stock = defined($c->req->param('return_only_first_genotypeprop_for_stock')) ? $c->req->param('return_only_first_genotypeprop_for_stock') : 1;
     my $dl_token = $c->req->param("gbs_download_token") || "no_token";
     my $dl_cookie = "download".$dl_token;
@@ -941,7 +942,8 @@ sub download_grm_action : Path('/breeders/download_grm_action') {
         download_format=>$download_format,
         minor_allele_frequency=>$minor_allele_frequency,
         marker_filter=>$marker_filter,
-        individuals_filter=>$individuals_filter
+        individuals_filter=>$individuals_filter,
+        return_imputed_matrix=>$return_imputed_matrix
     });
     my $file_handle = $geno->download_grm(
         'filehandle',
