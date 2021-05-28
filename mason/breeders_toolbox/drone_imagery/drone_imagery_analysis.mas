@@ -20,9 +20,9 @@
                     <button class="btn btn-default" id="drone_imagery_calculate_statistics_intro_single_trial_select_step">Single Trial Field Analysis</button>
                     </center>
                     <br/>
-                    <center>
+                    <!--center>
                     <button class="btn btn-default" id="drone_imagery_calculate_statistics_intro_single_trial_multiseason_select_step">Single Trial Multi-Season Field Analysis</button>
-                    </center>
+                    </center-->
                 </&>
                 <&| /util/workflow.mas:step, title=> "Field Trial" &>
                     <& /page/page_title.mas, title=>"Select the field trial you are interested in. Select only one." &>
