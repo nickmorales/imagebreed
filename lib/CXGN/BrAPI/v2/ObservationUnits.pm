@@ -100,7 +100,7 @@ sub search {
 
     foreach my $obs_unit (@$data){
         my @brapi_observations;
-        
+
         if( lc $include_observations eq 'true') {
 
             my $observations = $obs_unit->{observations};
@@ -145,7 +145,7 @@ sub search {
 
         my $type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'plot_geo_json', 'stock_property')->cvterm_id();
         my $sp_rs ='';
-        eval { 
+        eval {
             $sp_rs = $self->bcs_schema->resultset("Stock::Stockprop")->search({ type_id => $type_id, stock_id => $obs_unit->{observationunit_stock_id} });
         };
         my %geolocation_lookup;
@@ -153,11 +153,11 @@ sub search {
             $geolocation_lookup{$r->stock_id} = $r->value;
         }
         my $geo_coordinates_string = $geolocation_lookup{$obs_unit->{observationunit_stock_id}} ?$geolocation_lookup{$obs_unit->{observationunit_stock_id}} : '';
-        my $geo_coordinates; 
+        my $geo_coordinates;
 
         if ($geo_coordinates_string){
             $geo_coordinates = decode_json $geo_coordinates_string;
-        } 
+        }
 
         my $entry_type = $obs_unit->{obsunit_is_a_control} ? 'check' : 'test';
 
@@ -169,9 +169,9 @@ sub search {
         my $level_name = $obs_unit->{observationunit_type_name};
         my $level_order = _order($level_name) + 0;
         my $level_code = eval "\$$level_name" || "";
-         
-        if ( $level_order_arrayref &&  ! grep { $_ eq $level_order } @{$level_order_arrayref}  ) { next; } 
-        if ( $level_code_arrayref &&  ! grep { $_ eq $level_code } @{$level_code_arrayref}  ) { next; } 
+
+        if ( $level_order_arrayref &&  ! grep { $_ eq $level_order } @{$level_order_arrayref}  ) { next; }
+        if ( $level_code_arrayref &&  ! grep { $_ eq $level_code } @{$level_code_arrayref}  ) { next; }
 
         my $observationLevelRelationships = [
             {
@@ -204,8 +204,8 @@ sub search {
             positionCoordinateY => $obs_unit->{obsunit_row_number} ? $obs_unit->{obsunit_row_number} + 0 : undef,
             positionCoordinateYType => 'GRID_ROW',
             # replicate => $obs_unit->{obsunit_rep}, #obsolete v2?
-            observationLevel =>  { 
-                levelName => $level_name,       
+            observationLevel =>  {
+                levelName => $level_name,
                 levelOrder => $level_order,
                 levelCode => $level_code,
             },
@@ -224,7 +224,7 @@ sub search {
                 my $accession = $_->[2];
                 my $reference_id;
 
-                if($reference_source eq 'DOI') { 
+                if($reference_source eq 'DOI') {
                     $reference_id = ($url) ? "$url$accession" : "doi:$accession";
                 } else {
                     $reference_id = ($accession) ? "$url$accession" : $url;
@@ -234,7 +234,7 @@ sub search {
                     referenceID => $reference_id,
                     referenceSource => $reference_source
                 };
-                
+
             }
         }
 
@@ -259,8 +259,8 @@ sub search {
             trialDbId => $obs_unit->{folder_id} ? qq|$obs_unit->{folder_id}| : qq|$obs_unit->{trial_id}|,
             trialName => $obs_unit->{folder_name} ? $obs_unit->{folder_name} : $obs_unit->{trial_name},
         };
-        $total_count = $obs_unit->{full_count};       
-        
+        $total_count = $obs_unit->{full_count};
+
     }
 
     my %result = (data=>\@data_window);
@@ -345,7 +345,7 @@ sub detail {
 
         my $type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'plot_geo_json', 'stock_property')->cvterm_id();
         my $sp_rs ='';
-        eval { 
+        eval {
             $sp_rs = $self->bcs_schema->resultset("Stock::Stockprop")->search({ type_id => $type_id, stock_id => $obs_unit->{observationunit_stock_id} });
         };
         my %geolocation_lookup;
@@ -353,16 +353,16 @@ sub detail {
             $geolocation_lookup{$r->stock_id} = $r->value;
         }
         my $geo_coordinates_string = $geolocation_lookup{$obs_unit->{observationunit_stock_id}} ?$geolocation_lookup{$obs_unit->{observationunit_stock_id}} : '';
-        my $geo_coordinates; 
+        my $geo_coordinates;
 
         if ($geo_coordinates_string){
             $geo_coordinates = decode_json $geo_coordinates_string;
-        } 
+        }
 
         my $entry_type = $obs_unit->{obsunit_is_a_control} ? 'check' : 'test';
 
         my $level_order = _order($obs_unit->{observationunit_type_name});
-        my $observationLevelRelationships = [  
+        my $observationLevelRelationships = [
             {
                 levelCode => $obs_unit->{obsunit_rep},
                 levelName => "replicate",
@@ -392,8 +392,8 @@ sub detail {
             positionCoordinateXType => 'GRID_COL',
             positionCoordinateY => $obs_unit->{obsunit_row_number} ? $obs_unit->{obsunit_row_number} + 0 : undef,
             positionCoordinateYType => 'GRID_ROW',
-            observationLevel =>  { 
-                levelName => $obs_unit->{observationunit_type_name},       
+            observationLevel =>  {
+                levelName => $obs_unit->{observationunit_type_name},
                 levelOrder => $level_order,
                 levelCode => '',
             },
@@ -412,7 +412,7 @@ sub detail {
                 my $accession = $_->[2];
                 my $reference_id;
 
-                if($reference_source eq 'DOI') { 
+                if($reference_source eq 'DOI') {
                     $reference_id = ($url) ? "$url$accession" : "doi:$accession";
                 } else {
                     $reference_id = ($accession) ? "$url$accession" : $url;
@@ -422,7 +422,7 @@ sub detail {
                     referenceID => $reference_id,
                     referenceSource => $reference_source
                 };
-                
+
             }
         }
 
@@ -431,7 +431,7 @@ sub detail {
             externalReferences => \@references,
             germplasmDbId => qq|$obs_unit->{germplasm_stock_id}|,
             germplasmName => $obs_unit->{germplasm_uniquename},
-            locationDbId => qq|$obs_unit->{trial_location_id}|,   
+            locationDbId => qq|$obs_unit->{trial_location_id}|,
             locationName => $obs_unit->{trial_location_name},
             observationUnitDbId => qq|$obs_unit->{observationunit_stock_id}|,
             observations => \@brapi_observations,
@@ -450,7 +450,7 @@ sub detail {
         $total_count = $obs_unit->{full_count};
         $counter++;
     }
- 
+
     my $pagination = CXGN::BrAPI::Pagination->pagination_response($counter,$page_size,$page);
     return CXGN::BrAPI::JSONResponse->return_success(@data_window, $pagination, \@data_files, $status, 'Observation Units search result constructed');
 }
@@ -479,7 +479,7 @@ sub observationunits_update {
         my $trait_list_arrayref = $params->{observationVariableDbId} || ($params->{observationVariableDbIds} || ());
         my $program_ids_arrayref = $params->{programDbId} || ($params->{programDbIds} || ());
         my $folder_ids_arrayref = $params->{trialDbId} || ($params->{trialDbIds} || ());
-        my $observationUnit_name = $params->{observationUnitName} ? $params->{observationUnitName} : undef; 
+        my $observationUnit_name = $params->{observationUnitName} ? $params->{observationUnitName} : undef;
         my $observationUnit_position_arrayref = $params->{observationUnitPosition} ? $params->{observationUnitPosition} : undef;
         my $observationUnit_x_ref = $params->{externalReferences} ? $params->{externalReferences} : undef;
         my $seedlot_id = $params->{seedLotDbId} || ""; #not implemented yet
@@ -584,8 +584,8 @@ sub observationunits_store {
     my $person = CXGN::People::Person->new($dbh, $user_id);
     my $user_name = $person->get_username;
     my %design;
-    
-    my %studies = map { $_->{studyDbId} => 1 } @$data; 
+
+    my %studies = map { $_->{studyDbId} => 1 } @$data;
     if(keys %studies ne 1){
         return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Provide just one study at the time.'));
     }
@@ -594,11 +594,11 @@ sub observationunits_store {
     my $project = $self->bcs_schema->resultset("Project::Project")->find( { project_id => $trial_id });
     my $design_prop =  $project->projectprops->find( { 'type.name' => 'design' },{ join => 'type'}); #there should be only one design prop.
     if (!$design_prop) {
-        return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Study doe not have a proper Study type.'));
+        return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Study does not have a proper Study type.'));
     }
     my $design_type = $design_prop->value;
 
-    my %locations = map { $_->{locationDbId} => 1 } @$data; 
+    my %locations = map { $_->{locationDbId} => 1 } @$data;
     if(keys %locations ne 1){
         return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Provide just one location at the time.'));
     }
@@ -617,7 +617,7 @@ sub observationunits_store {
         my $levels = $params->{observationUnitPosition}->{observationLevelRelationships} ? $params->{observationUnitPosition}->{observationLevelRelationships} : undef;
         my $block_number;
         my $rep_number;
-   
+
         if (!$plot_number){
             return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Provide a sequential plot number unique for the study.'));
         }
@@ -643,7 +643,7 @@ sub observationunits_store {
             row_number => $row_number,
             col_number => $col_number,
             # plot_geo_json => $plot_geo_json,
-            
+
         };
     }
 
@@ -688,7 +688,7 @@ sub observationunits_store {
        # my $reference_result = $references->store();
     #}
      ###
-     
+
     if(!$error){
         my $bs = CXGN::BreederSearch->new( { dbh=>$dbh, dbname=>$c->config->{dbname}, } );
         my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});

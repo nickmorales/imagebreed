@@ -21,7 +21,7 @@ sub search {
     my $page = $self->page;
     my $status = $self->status;
 
-    my $observation_db_id = $params->{observationDbId} || ($params->{observationDbIds} || ()); 
+    my $observation_db_id = $params->{observationDbId} || ($params->{observationDbIds} || ());
     my @observation_variable_db_ids = $params->{observationVariableDbIds} ? @{$params->{observationVariableDbIds}} : ();
     # externalReferenceID
     # externalReferenceSource
@@ -39,10 +39,10 @@ sub search {
     # observationUnitLevelOrder
     # observationUnitLevelCode
     my @trial_ids;
-    if ($study_ids_arrayref){ 
+    if ($study_ids_arrayref){
         push @trial_ids, @$study_ids_arrayref;
     }
-    if ($trial_ids_arrayref){ 
+    if ($trial_ids_arrayref){
         push @trial_ids, @$trial_ids_arrayref;
     }
     my $trial_ids = \@trial_ids;
@@ -146,7 +146,7 @@ sub detail {
 
     my $trial_ids;
     if ($study_ids_arrayref || $trial_ids_arrayref){
-        $trial_ids = ($study_ids_arrayref, $trial_ids_arrayref); 
+        $trial_ids = [$study_ids_arrayref, $trial_ids_arrayref];
     }
 
     my $limit;
@@ -177,7 +177,7 @@ sub detail {
         my $observations = $obs_unit->{observations};
         foreach (@$observations){
             my @season = {
-                year => $obs_unit->{year},       
+                year => $obs_unit->{year},
                 season => $obs_unit->{year},
                 seasonDbId => $obs_unit->{year}
             };
@@ -330,7 +330,7 @@ sub observations_store {
         return CXGN::BrAPI::JSONResponse->return_error($status, $stored_observation_error);
     }
     if ($stored_observation_success) {
-        #if no error refresh matviews 
+        #if no error refresh matviews
         my $bs = CXGN::BreederSearch->new( { dbh=>$dbh, dbname=>$c->config->{dbname}, } );
         my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
 
@@ -365,7 +365,7 @@ sub _search_observation_id {
     my ($plant_list, $subplot_list);
     my $trait_contains;
     my $trait_list;
-   
+
     my $numeric_regex = '^[0-9]+([,.][0-9]+)?$';
 
     my $stock_lookup = CXGN::Stock::StockLookup->new({ schema => $schema} );
@@ -549,7 +549,7 @@ sub _search_observation_id {
         }
 
         no warnings 'uninitialized';
-        
+
         if ($notes) { $notes =~ s/\R//g; }
         if ($trial_description) { $trial_description =~ s/\R//g; }
         if ($breeding_program_description) { $breeding_program_description =~ s/\R//g };

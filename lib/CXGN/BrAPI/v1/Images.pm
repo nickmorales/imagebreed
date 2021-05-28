@@ -110,8 +110,8 @@ sub detail {
     my $page_size = $self->page_size;
     my $page = $self->page;
     my $status = $self->status;
-    my $page = CXGN::Page->new();
-    my $hostname = $page->get_hostname();
+    my $page_obj = CXGN::Page->new();
+    my $hostname = $page_obj->get_hostname();
     my @data_files;
 
     my $image = SGN::Image->new($self->bcs_schema()->storage->dbh(), $inputs->{image_id});
@@ -181,8 +181,8 @@ sub detail {
         );
     }
 
-    my $total_count = 1;
-    my $pagination = CXGN::BrAPI::Pagination->pagination_response($total_count,$page_size,$page);
+    my $total_count_ret = 1;
+    my $pagination = CXGN::BrAPI::Pagination->pagination_response($total_count_ret, $page_size, $page);
     return CXGN::BrAPI::JSONResponse->return_success(\%result, $pagination, \@data_files, $status, 'Image detail constructed');
 }
 
@@ -395,8 +395,8 @@ sub detail {
         );
     }
 
-    my $total_count = 1;
-    my $pagination = CXGN::BrAPI::Pagination->pagination_response($total_count,$page_size,$page);
+    my $total_count_ret = 1;
+    my $pagination = CXGN::BrAPI::Pagination->pagination_response($total_count_ret, $page_size, $page);
     return CXGN::BrAPI::JSONResponse->return_success( \%result, $pagination, undef, $self->status());
 }
 

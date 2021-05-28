@@ -6,7 +6,7 @@ use CXGN::Location;
 use Moose;
 use SGN::Model::Cvterm;
 use Data::Dumper;
-use JSON;
+use JSON::XS;
 
 has 'bcs_schema' => ( isa => 'Bio::Chado::Schema',
 	is => 'rw',

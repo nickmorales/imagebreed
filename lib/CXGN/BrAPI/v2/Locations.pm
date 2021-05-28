@@ -172,7 +172,7 @@ sub get_response {
 		return CXGN::BrAPI::JSONResponse->return_success(\%result, $pagination, \@data_files, $status, 'Locations list result constructed');
 	} else {
 		$pagination = CXGN::BrAPI::Pagination->pagination_response(1,$page_size,$page);
-		return CXGN::BrAPI::JSONResponse->return_success(@data[0], $pagination, \@data_files, $status, 'Locations object result constructed');
+		return CXGN::BrAPI::JSONResponse->return_success($data[0], $pagination, \@data_files, $status, 'Locations object result constructed');
 	}
 }
 

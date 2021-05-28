@@ -145,13 +145,14 @@ has 'chado_schema' => (
 has 'dbh' => (is  => 'rw',predicate => 'has_dbh', required => 1,);
 has 'trial_id' => (isa => 'Maybe[Int]', is => 'rw', predicate => 'has_trial_id');
 has 'program' => (isa =>'Str', is => 'rw', predicate => 'has_program', required => 1,);
-has 'trial_year' => (isa => 'Str', is => 'rw', predicate => 'has_trial_year', required => 1,);
-has 'trial_description' => (isa => 'Str', is => 'rw', predicate => 'has_trial_description', required => 1,);
-has 'trial_location' => (isa => 'Str', is => 'rw', predicate => 'has_trial_location', required => 1,);
-has 'design_type' => (isa => 'Str', is => 'rw', predicate => 'has_design_type', required => 1);
-has 'design' => (isa => 'HashRef[HashRef]|Undef', is => 'rw', predicate => 'has_design', required => 1);
+has 'trial_year' => (isa => 'Maybe[Str]', is => 'rw', predicate => 'has_trial_year', required => 0,);
+has 'trial_description' => (isa => 'Maybe[Str]', is => 'rw', predicate => 'has_trial_description', required => 0,);
+has 'trial_location' => (isa => 'Maybe[Str]', is => 'rw', predicate => 'has_trial_location', required => 0,);
+has 'design_type' => (isa => 'Maybe[Str]', is => 'rw', predicate => 'has_design_type', required => 0);
+has 'design' => (isa => 'HashRef[HashRef]|Undef', is => 'rw', predicate => 'has_design', required => 0);
 has 'trial_name' => (isa => 'Str', is => 'rw', predicate => 'has_trial_name', required => 1);
 has 'trial_type' => (isa => 'Str', is => 'rw', predicate => 'has_trial_type', required => 0);
+has 'trial_type_value' => (isa => 'Str', is => 'rw', predicate => 'has_trial_type_value', required => 0);
 has 'trial_has_plant_entries' => (isa => 'Int', is => 'rw', predicate => 'has_trial_has_plant_entries', required => 0);
 has 'trial_has_subplot_entries' => (isa => 'Int', is => 'rw', predicate => 'has_trial_has_subplot_entries', required => 0);
 has 'field_size' => (isa => 'Num', is => 'rw', predicate => 'has_field_size', required => 0);
@@ -161,6 +162,7 @@ has 'planting_date' => (isa => 'Str', is => 'rw', predicate => 'has_planting_dat
 has 'harvest_date' => (isa => 'Str', is => 'rw', predicate => 'has_harvest_date', required => 0);
 has 'operator' => (isa => 'Str', is => 'rw', predicate => 'has_operator', required => 1);
 has 'trial_stock_type' => (isa => 'Str', is => 'rw', predicate => 'has_trial_stock_type', required => 0, default => 'accession');
+has 'additional_info' => (isa => 'Maybe[HashRef]', is => 'rw', required => 0);
 
 # Trial linkage when saving a field trial
 #
@@ -234,12 +236,12 @@ sub save_trial {
     my %design = %{$self->get_design()};
     my $trial_name = $self->get_trial_name();
     $trial_name =~ s/^\s+|\s+$//g; #trim whitespace from both ends
-    
-    # if a trial id is provided, the project row has already been 
+
+    # if a trial id is provided, the project row has already been
     # created by other means, so use that trial_id
-    
-    if (! $self->has_trial_id()) { 
-	
+
+    if (! $self->has_trial_id()) {
+
 	if (!$trial_name) {
 		print STDERR "Trial not saved: Can't create trial without a trial name\n";
 		return { error => "Trial not saved: Can't create trial without a trial name" };
@@ -328,7 +330,7 @@ sub save_trial {
     });
 
 
-    if ($self->get_is_genotyping()) { 
+    if ($self->get_is_genotyping()) {
         #print STDERR "Storing user_id and project_name provided by the IGD spreadksheet for later recovery in the spreadsheet download... ".(join ",", ($self->get_genotyping_user_id(), $self->get_genotyping_project_name()))."\n";
         $nd_experiment->create_nd_experimentprops({
             $genotyping_user_cvterm->name() => $self->get_genotyping_user_id(),
@@ -350,7 +352,7 @@ sub save_trial {
             $nd_experiment->find_or_create_related('nd_experiment_protocols', {nd_protocol_id => $self->get_analysis_model_protocol_id() });
         }
     }
-    elsif ($self->get_is_sampling_trial()) { 
+    elsif ($self->get_is_sampling_trial()) {
         $project->create_projectprops({
             $sampling_facility_cvterm->name() => $self->get_sampling_trial_facility(),
             $sampling_trial_sample_type_cvterm->name() => $self->get_sampling_trial_sample_type()
@@ -418,7 +420,7 @@ sub save_trial {
             $field_trial_is_planned_to_be_genotyped_cvterm->name() => $self->get_field_trial_is_planned_to_be_genotyped
         });
     }
-    
+
     if (!$self->get_is_genotyping) {
         if ($self->has_trial_stock_type && $self->get_trial_stock_type){
             $project->create_projectprops({

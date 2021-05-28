@@ -20,7 +20,6 @@ sub search {
     my $page_size = $self->page_size;
     my $page = $self->page;
     my $status = $self->status;
-    my @data_files;
 
     my $data_level = $params->{observationLevel}->[0] || 'all';
     my $years_arrayref = $params->{seasonDbId} || ($params->{seasonDbIds} || ());

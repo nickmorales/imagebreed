@@ -562,10 +562,10 @@ sub germplasm_mcpd {
             acquisitionDate=>$_->{'acquisition date'}
         );
     }
-    my $total_count = (%result) ? 1 : 0;
+    my $total_count_ret = (%result) ? 1 : 0;
     my @data_files;
 
-    my $pagination = CXGN::BrAPI::Pagination->pagination_response($total_count,$page_size,$page);
+    my $pagination = CXGN::BrAPI::Pagination->pagination_response($total_count_ret, $page_size, $page);
     return CXGN::BrAPI::JSONResponse->return_success(\%result, $pagination, \@data_files, $status, 'Germplasm detail result constructed');
 
 }
@@ -900,7 +900,7 @@ sub update {
                     modification_note => 'Bulk load of accession information'
                 });
                 my $added_stock_id = $stock->store();
-                
+
                 my $previous_name = $stock_exists->uniquename();
 
                 if($previous_name ne $uniquename){

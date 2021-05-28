@@ -6,7 +6,7 @@ use SGN::Model::Cvterm;
 use CXGN::Trial::Folder;
 use CXGN::BrAPI::Pagination;
 use CXGN::BrAPI::JSONResponse;
-use JSON;
+use JSON::XS;
 
 extends 'CXGN::BrAPI::v2::Common';
 
@@ -302,30 +302,30 @@ sub update {
     }
 
     #retrieve updated trial
-    my $folder = CXGN::Trial::Folder->new(bcs_schema=>$schema, folder_id=>$folder_id);
+    my $folder_obj = CXGN::Trial::Folder->new(bcs_schema=>$schema, folder_id=>$folder_id);
 
     my $total_count = 1;
     my @folder_studies;
     my %additional_info;
-    my $folder_id = $folder->folder_id;
-    my $folder_description = $folder->description;
-    my $breeding_program_id = $folder->breeding_program->project_id();
+    my $folder_id_ret = $folder_obj->folder_id;
+    my $folder_description = $folder_obj->description;
+    my $breeding_program_id_ret = $folder_obj->breeding_program->project_id();
 
     my %result = (
         active=>JSON::true,
-        additionalInfo=>$folder->additional_info,
+        additionalInfo=>$folder_obj->additional_info,
         commonCropName=>$crop,
         contacts=>undef,
         datasetAuthorships=>undef,
         documentationURL=>undef,
         endDate=>undef,
         externalReferences=>undef,
-        programDbId=>qq|$breeding_program_id|,
-        programName=>$folder->breeding_program->name(),
+        programDbId=>qq|$breeding_program_id_ret|,
+        programName=>$folder_obj->breeding_program->name(),
         publications=>undef,
         startDate=>undef,#get_project_start_date
-        trialDbId=>qq|$folder_id|,
-        trialName=>$folder->name,
+        trialDbId=>qq|$folder_id_ret|,
+        trialName=>$folder_obj->name,
         trialDescription=>$folder_description,
         trialPUI=>undef
     );
@@ -445,7 +445,6 @@ sub _get_folders {
     };
 
 	return $data;
-
 }
 
 sub _get_studies {
