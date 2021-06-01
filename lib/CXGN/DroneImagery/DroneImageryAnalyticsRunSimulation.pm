@@ -63,7 +63,7 @@ use Storable qw(dclone);
 use Statistics::Descriptive;
 
 sub perform_drone_imagery_analytics {
-    my ($schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, $legendre_coeff_exec_array, $trait_name_encoder_hash, $trait_name_encoder_rev_hash, $stock_info_hash, $plot_id_map_hash, $sorted_trait_names_array, $accession_id_factor_map_hash, $rep_time_factors_array, $ind_rep_factors_array, $unique_accession_names_array, $plot_id_count_map_reverse_hash, $sorted_scaled_ln_times_array, $time_count_map_reverse_hash, $accession_id_factor_map_reverse_hash, $seen_times_hash, $plot_id_factor_map_reverse_hash, $trait_to_time_map_hash, $unique_plot_names_array, $stock_name_row_col_hash, $phenotype_data_original_hash, $plot_rep_time_factor_map_hash, $stock_row_col_hash, $stock_row_col_id_hash, $polynomial_map_hash, $plot_ids_ordered_array, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type) = @_;
+    my ($schema, $a_env, $b_env, $ro_env, $row_ro_env, $env_variance_percent, $protocol_id, $statistics_select, $analytics_select, $tolparinv, $use_area_under_curve, $legendre_order_number, $permanent_environment_structure, $legendre_coeff_exec_array, $trait_name_encoder_hash, $trait_name_encoder_rev_hash, $stock_info_hash, $plot_id_map_hash, $sorted_trait_names_array, $accession_id_factor_map_hash, $rep_time_factors_array, $ind_rep_factors_array, $unique_accession_names_array, $plot_id_count_map_reverse_hash, $sorted_scaled_ln_times_array, $time_count_map_reverse_hash, $accession_id_factor_map_reverse_hash, $seen_times_hash, $plot_id_factor_map_reverse_hash, $trait_to_time_map_hash, $unique_plot_names_array, $stock_name_row_col_hash, $phenotype_data_original_hash, $plot_rep_time_factor_map_hash, $stock_row_col_hash, $stock_row_col_id_hash, $polynomial_map_hash, $plot_ids_ordered_array, $csv, $timestamp, $user_name, $stats_tempfile, $grm_file, $grm_rename_tempfile, $tmp_stats_dir, $stats_out_tempfile, $stats_out_tempfile_row, $stats_out_tempfile_col, $stats_out_tempfile_residual, $stats_out_tempfile_2dspl, $stats_prep2_tempfile, $stats_out_param_tempfile, $parameter_tempfile, $parameter_asreml_tempfile, $stats_tempfile_2, $permanent_environment_structure_tempfile, $permanent_environment_structure_env_tempfile, $permanent_environment_structure_env_tempfile2, $permanent_environment_structure_env_tempfile_mat, $sim_env_changing_mat_tempfile, $sim_env_changing_mat_full_tempfile, $yhat_residual_tempfile, $blupf90_solutions_tempfile, $coeff_genetic_tempfile, $coeff_pe_tempfile, $stats_out_tempfile_varcomp, $time_min, $time_max, $header_string, $env_sim_exec, $min_row, $max_row, $min_col, $max_col, $mean_row, $sig_row, $mean_col, $sig_col, $sim_env_change_over_time, $correlation_between_times, $field_trial_id_list, $simulated_environment_real_data_trait_id, $fixed_effect_type, $perform_cv) = @_;
     my @legendre_coeff_exec = @$legendre_coeff_exec_array;
     my %trait_name_encoder = %$trait_name_encoder_hash;
     my %trait_name_encoder_rev = %$trait_name_encoder_rev_hash;
@@ -425,8 +425,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -1003,8 +1005,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
             my $run_stats_fault = 0;
             if ($@) {
@@ -2028,245 +2032,247 @@ sub perform_drone_imagery_analytics {
             }
         }
 
-        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1;
-        my $status_cv1 = system($cmd_f90_cv1);
+        if ($perform_cv) {
+            my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1;
+            my $status_cv1 = system($cmd_f90_cv1);
 
-        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1);
+            open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1);
 
-        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+            my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1\n";
 
-            while (my $row = <$fh_yhat_res_cv1>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_original = $model_sum_square_cv1_original + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1);
+                while (my $row = <$fh_yhat_res_cv1>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_original = $model_sum_square_cv1_original + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1);
 
-        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2;
-        my $status_cv2 = system($cmd_f90_cv2);
+            my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2;
+            my $status_cv2 = system($cmd_f90_cv2);
 
-        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2);
+            open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2);
 
-        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+            my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2\n";
 
-            while (my $row = <$fh_yhat_res_cv2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_original = $model_sum_square_cv2_original + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2);
+                while (my $row = <$fh_yhat_res_cv2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_original = $model_sum_square_cv2_original + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2);
 
-        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3;
-        my $status_cv3 = system($cmd_f90_cv3);
+            my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3;
+            my $status_cv3 = system($cmd_f90_cv3);
 
-        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3);
+            open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3);
 
-        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+            my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3\n";
 
-            while (my $row = <$fh_yhat_res_cv3>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_original = $model_sum_square_cv3_original + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3);
+                while (my $row = <$fh_yhat_res_cv3>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_original = $model_sum_square_cv3_original + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3);
 
-        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4;
-        my $status_cv4 = system($cmd_f90_cv4);
+            my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4;
+            my $status_cv4 = system($cmd_f90_cv4);
 
-        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4);
+            open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4);
 
-        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+            my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4\n";
 
-            while (my $row = <$fh_yhat_res_cv4>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_original = $model_sum_square_cv4_original + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4);
+                while (my $row = <$fh_yhat_res_cv4>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_original = $model_sum_square_cv4_original + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4);
 
-        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5;
-        my $status_cv5 = system($cmd_f90_cv5);
+            my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5;
+            my $status_cv5 = system($cmd_f90_cv5);
 
-        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5);
+            open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5);
 
-        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+            my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5\n";
 
-            while (my $row = <$fh_yhat_res_cv5>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_original = $model_sum_square_cv5_original + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5);
+                while (my $row = <$fh_yhat_res_cv5>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_original = $model_sum_square_cv5_original + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5);
 
-        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1_2;
-        my $status_cv1_2 = system($cmd_f90_cv1_2);
+            my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1_2;
+            my $status_cv1_2 = system($cmd_f90_cv1_2);
 
-        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1_2);
+            open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1_2);
 
-        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+            my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
 
-            while (my $row = <$fh_yhat_res_cv1_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_2_original = $model_sum_square_cv1_2_original + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1_2);
+                while (my $row = <$fh_yhat_res_cv1_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_2_original = $model_sum_square_cv1_2_original + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1_2);
 
-        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2_2;
-        my $status_cv2_2 = system($cmd_f90_cv2_2);
+            my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2_2;
+            my $status_cv2_2 = system($cmd_f90_cv2_2);
 
-        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2_2);
+            open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2_2);
 
-        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+            my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
 
-            while (my $row = <$fh_yhat_res_cv2_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_2_original = $model_sum_square_cv2_2_original + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2_2);
+                while (my $row = <$fh_yhat_res_cv2_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_2_original = $model_sum_square_cv2_2_original + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2_2);
 
-        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3_2;
-        my $status_cv3_2 = system($cmd_f90_cv3_2);
+            my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3_2;
+            my $status_cv3_2 = system($cmd_f90_cv3_2);
 
-        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3_2);
+            open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3_2);
 
-        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+            my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
 
-            while (my $row = <$fh_yhat_res_cv3_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_2_original = $model_sum_square_cv3_2_original + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3_2);
+                while (my $row = <$fh_yhat_res_cv3_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_2_original = $model_sum_square_cv3_2_original + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3_2);
 
-        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4_2;
-        my $status_cv4_2 = system($cmd_f90_cv4_2);
+            my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4_2;
+            my $status_cv4_2 = system($cmd_f90_cv4_2);
 
-        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4_2);
+            open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4_2);
 
-        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+            my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
 
-            while (my $row = <$fh_yhat_res_cv4_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_2_original = $model_sum_square_cv4_2_original + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4_2);
+                while (my $row = <$fh_yhat_res_cv4_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_2_original = $model_sum_square_cv4_2_original + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4_2);
 
-        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5_2;
-        my $status_cv5_2 = system($cmd_f90_cv5_2);
+            my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5_2;
+            my $status_cv5_2 = system($cmd_f90_cv5_2);
 
-        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5_2);
+            open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5_2);
 
-        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+            my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
 
-            while (my $row = <$fh_yhat_res_cv5_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_2_original = $model_sum_square_cv5_2_original + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5_2);
+                while (my $row = <$fh_yhat_res_cv5_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_2_original = $model_sum_square_cv5_2_original + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5_2);
+        }
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         $analysis_model_language = "R";
@@ -2507,8 +2513,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -3080,8 +3088,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -3759,8 +3769,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
 
         my $run_stats_fault = 0;
@@ -4453,8 +4465,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -4876,8 +4890,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -5724,245 +5740,247 @@ sub perform_drone_imagery_analytics {
             }
         }
 
-        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1;
-        my $status_cv1 = system($cmd_f90_cv1);
+        if ($perform_cv) {
+            my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1;
+            my $status_cv1 = system($cmd_f90_cv1);
 
-        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1);
+            open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1);
 
-        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+            my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1\n";
 
-            while (my $row = <$fh_yhat_res_cv1>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_altered = $model_sum_square_cv1_altered + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1);
+                while (my $row = <$fh_yhat_res_cv1>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_altered = $model_sum_square_cv1_altered + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1);
 
-        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2;
-        my $status_cv2 = system($cmd_f90_cv2);
+            my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2;
+            my $status_cv2 = system($cmd_f90_cv2);
 
-        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2);
+            open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2);
 
-        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+            my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2\n";
 
-            while (my $row = <$fh_yhat_res_cv2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_altered = $model_sum_square_cv2_altered + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2);
+                while (my $row = <$fh_yhat_res_cv2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_altered = $model_sum_square_cv2_altered + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2);
 
-        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3;
-        my $status_cv3 = system($cmd_f90_cv3);
+            my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3;
+            my $status_cv3 = system($cmd_f90_cv3);
 
-        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3);
+            open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3);
 
-        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+            my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3\n";
 
-            while (my $row = <$fh_yhat_res_cv3>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_altered = $model_sum_square_cv3_altered + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3);
+                while (my $row = <$fh_yhat_res_cv3>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_altered = $model_sum_square_cv3_altered + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3);
 
-        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4;
-        my $status_cv4 = system($cmd_f90_cv4);
+            my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4;
+            my $status_cv4 = system($cmd_f90_cv4);
 
-        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4);
+            open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4);
 
-        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+            my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4\n";
 
-            while (my $row = <$fh_yhat_res_cv4>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_altered = $model_sum_square_cv4_altered + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4);
+                while (my $row = <$fh_yhat_res_cv4>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_altered = $model_sum_square_cv4_altered + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4);
 
-        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5;
-        my $status_cv5 = system($cmd_f90_cv5);
+            my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5;
+            my $status_cv5 = system($cmd_f90_cv5);
 
-        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5);
+            open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5);
 
-        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+            my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5\n";
 
-            while (my $row = <$fh_yhat_res_cv5>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_altered = $model_sum_square_cv5_altered + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5);
+                while (my $row = <$fh_yhat_res_cv5>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_altered = $model_sum_square_cv5_altered + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5);
 
-        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1_2;
-        my $status_cv1_2 = system($cmd_f90_cv1_2);
+            my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1_2;
+            my $status_cv1_2 = system($cmd_f90_cv1_2);
 
-        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1_2);
+            open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1_2);
 
-        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+            my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
 
-            while (my $row = <$fh_yhat_res_cv1_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_2_altered = $model_sum_square_cv1_2_altered + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1_2);
+                while (my $row = <$fh_yhat_res_cv1_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_2_altered = $model_sum_square_cv1_2_altered + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1_2);
 
-        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2_2;
-        my $status_cv2_2 = system($cmd_f90_cv2_2);
+            my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2_2;
+            my $status_cv2_2 = system($cmd_f90_cv2_2);
 
-        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2_2);
+            open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2_2);
 
-        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+            my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
 
-            while (my $row = <$fh_yhat_res_cv2_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_2_altered = $model_sum_square_cv2_2_altered + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2_2);
+                while (my $row = <$fh_yhat_res_cv2_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_2_altered = $model_sum_square_cv2_2_altered + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2_2);
 
-        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3_2;
-        my $status_cv3_2 = system($cmd_f90_cv3_2);
+            my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3_2;
+            my $status_cv3_2 = system($cmd_f90_cv3_2);
 
-        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3_2);
+            open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3_2);
 
-        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+            my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
 
-            while (my $row = <$fh_yhat_res_cv3_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_2_altered = $model_sum_square_cv3_2_altered + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3_2);
+                while (my $row = <$fh_yhat_res_cv3_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_2_altered = $model_sum_square_cv3_2_altered + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3_2);
 
-        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4_2;
-        my $status_cv4_2 = system($cmd_f90_cv4_2);
+            my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4_2;
+            my $status_cv4_2 = system($cmd_f90_cv4_2);
 
-        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4_2);
+            open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4_2);
 
-        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+            my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
 
-            while (my $row = <$fh_yhat_res_cv4_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_2_altered = $model_sum_square_cv4_2_altered + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4_2);
+                while (my $row = <$fh_yhat_res_cv4_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_2_altered = $model_sum_square_cv4_2_altered + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4_2);
 
-        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5_2;
-        my $status_cv5_2 = system($cmd_f90_cv5_2);
+            my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5_2;
+            my $status_cv5_2 = system($cmd_f90_cv5_2);
 
-        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5_2);
+            open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5_2);
 
-        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+            my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
 
-            while (my $row = <$fh_yhat_res_cv5_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_2_altered = $model_sum_square_cv5_2_altered + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5_2);
+                while (my $row = <$fh_yhat_res_cv5_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_2_altered = $model_sum_square_cv5_2_altered + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5_2);
+        }
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
 
@@ -5978,8 +5996,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -6409,8 +6429,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -6781,8 +6803,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
 
         my $run_stats_fault = 0;
@@ -7643,8 +7667,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -8066,8 +8092,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
             my $run_stats_fault = 0;
             if ($@) {
@@ -8914,245 +8942,247 @@ sub perform_drone_imagery_analytics {
             }
         }
 
-        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1;
-        my $status_cv1 = system($cmd_f90_cv1);
+        if ($perform_cv) {
+            my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1;
+            my $status_cv1 = system($cmd_f90_cv1);
 
-        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1);
+            open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1);
 
-        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+            my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1\n";
 
-            while (my $row = <$fh_yhat_res_cv1>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_altered_env = $model_sum_square_cv1_altered_env + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1);
+                while (my $row = <$fh_yhat_res_cv1>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_altered_env = $model_sum_square_cv1_altered_env + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1);
 
-        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2;
-        my $status_cv2 = system($cmd_f90_cv2);
+            my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2;
+            my $status_cv2 = system($cmd_f90_cv2);
 
-        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2);
+            open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2);
 
-        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+            my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2\n";
 
-            while (my $row = <$fh_yhat_res_cv2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_altered_env = $model_sum_square_cv2_altered_env + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2);
+                while (my $row = <$fh_yhat_res_cv2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_altered_env = $model_sum_square_cv2_altered_env + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2);
 
-        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3;
-        my $status_cv3 = system($cmd_f90_cv3);
+            my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3;
+            my $status_cv3 = system($cmd_f90_cv3);
 
-        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3);
+            open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3);
 
-        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+            my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3\n";
 
-            while (my $row = <$fh_yhat_res_cv3>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_altered_env = $model_sum_square_cv3_altered_env + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3);
+                while (my $row = <$fh_yhat_res_cv3>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_altered_env = $model_sum_square_cv3_altered_env + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3);
 
-        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4;
-        my $status_cv4 = system($cmd_f90_cv4);
+            my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4;
+            my $status_cv4 = system($cmd_f90_cv4);
 
-        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4);
+            open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4);
 
-        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+            my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4\n";
 
-            while (my $row = <$fh_yhat_res_cv4>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_altered_env = $model_sum_square_cv4_altered_env + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4);
+                while (my $row = <$fh_yhat_res_cv4>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_altered_env = $model_sum_square_cv4_altered_env + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4);
 
-        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5;
-        my $status_cv5 = system($cmd_f90_cv5);
+            my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5;
+            my $status_cv5 = system($cmd_f90_cv5);
 
-        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5);
+            open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5);
 
-        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+            my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5\n";
 
-            while (my $row = <$fh_yhat_res_cv5>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_altered_env = $model_sum_square_cv5_altered_env + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5);
+                while (my $row = <$fh_yhat_res_cv5>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_altered_env = $model_sum_square_cv5_altered_env + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5);
 
-        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1_2;
-        my $status_cv1_2 = system($cmd_f90_cv1_2);
+            my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1_2;
+            my $status_cv1_2 = system($cmd_f90_cv1_2);
 
-        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1_2);
+            open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1_2);
 
-        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+            my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
 
-            while (my $row = <$fh_yhat_res_cv1_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_2_altered_env = $model_sum_square_cv1_2_altered_env + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1_2);
+                while (my $row = <$fh_yhat_res_cv1_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_2_altered_env = $model_sum_square_cv1_2_altered_env + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1_2);
 
-        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2_2;
-        my $status_cv2_2 = system($cmd_f90_cv2_2);
+            my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2_2;
+            my $status_cv2_2 = system($cmd_f90_cv2_2);
 
-        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2_2);
+            open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2_2);
 
-        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+            my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
 
-            while (my $row = <$fh_yhat_res_cv2_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_2_altered_env = $model_sum_square_cv2_2_altered_env + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2_2);
+                while (my $row = <$fh_yhat_res_cv2_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_2_altered_env = $model_sum_square_cv2_2_altered_env + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2_2);
 
-        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3_2;
-        my $status_cv3_2 = system($cmd_f90_cv3_2);
+            my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3_2;
+            my $status_cv3_2 = system($cmd_f90_cv3_2);
 
-        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3_2);
+            open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3_2);
 
-        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+            my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
 
-            while (my $row = <$fh_yhat_res_cv3_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_2_altered_env = $model_sum_square_cv3_2_altered_env + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3_2);
+                while (my $row = <$fh_yhat_res_cv3_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_2_altered_env = $model_sum_square_cv3_2_altered_env + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3_2);
 
-        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4_2;
-        my $status_cv4_2 = system($cmd_f90_cv4_2);
+            my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4_2;
+            my $status_cv4_2 = system($cmd_f90_cv4_2);
 
-        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4_2);
+            open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4_2);
 
-        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+            my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
 
-            while (my $row = <$fh_yhat_res_cv4_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_2_altered_env = $model_sum_square_cv4_2_altered_env + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4_2);
+                while (my $row = <$fh_yhat_res_cv4_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_2_altered_env = $model_sum_square_cv4_2_altered_env + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4_2);
 
-        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5_2;
-        my $status_cv5_2 = system($cmd_f90_cv5_2);
+            my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5_2;
+            my $status_cv5_2 = system($cmd_f90_cv5_2);
 
-        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5_2);
+            open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5_2);
 
-        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+            my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
 
-            while (my $row = <$fh_yhat_res_cv5_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_2_altered_env = $model_sum_square_cv5_2_altered_env + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5_2);
+                while (my $row = <$fh_yhat_res_cv5_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_2_altered_env = $model_sum_square_cv5_2_altered_env + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5_2);
+        }
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -9167,8 +9197,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -9598,8 +9630,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -9970,8 +10004,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
 
         my $run_stats_fault = 0;
@@ -10822,8 +10858,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -11245,8 +11283,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
             my $run_stats_fault = 0;
             if ($@) {
@@ -12093,245 +12133,247 @@ sub perform_drone_imagery_analytics {
             }
         }
 
-        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1;
-        my $status_cv1 = system($cmd_f90_cv1);
+        if ($perform_cv) {
+            my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1;
+            my $status_cv1 = system($cmd_f90_cv1);
 
-        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1);
+            open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1);
 
-        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+            my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1\n";
 
-            while (my $row = <$fh_yhat_res_cv1>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_altered_env_2 = $model_sum_square_cv1_altered_env_2 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1);
+                while (my $row = <$fh_yhat_res_cv1>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_altered_env_2 = $model_sum_square_cv1_altered_env_2 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1);
 
-        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2;
-        my $status_cv2 = system($cmd_f90_cv2);
+            my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2;
+            my $status_cv2 = system($cmd_f90_cv2);
 
-        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2);
+            open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2);
 
-        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+            my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2\n";
 
-            while (my $row = <$fh_yhat_res_cv2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_altered_env_2 = $model_sum_square_cv2_altered_env_2 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2);
+                while (my $row = <$fh_yhat_res_cv2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_altered_env_2 = $model_sum_square_cv2_altered_env_2 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2);
 
-        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3;
-        my $status_cv3 = system($cmd_f90_cv3);
+            my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3;
+            my $status_cv3 = system($cmd_f90_cv3);
 
-        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3);
+            open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3);
 
-        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+            my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3\n";
 
-            while (my $row = <$fh_yhat_res_cv3>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_altered_env_2 = $model_sum_square_cv3_altered_env_2 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3);
+                while (my $row = <$fh_yhat_res_cv3>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_altered_env_2 = $model_sum_square_cv3_altered_env_2 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3);
 
-        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4;
-        my $status_cv4 = system($cmd_f90_cv4);
+            my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4;
+            my $status_cv4 = system($cmd_f90_cv4);
 
-        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4);
+            open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4);
 
-        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+            my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4\n";
 
-            while (my $row = <$fh_yhat_res_cv4>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_altered_env_2 = $model_sum_square_cv4_altered_env_2 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4);
+                while (my $row = <$fh_yhat_res_cv4>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_altered_env_2 = $model_sum_square_cv4_altered_env_2 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4);
 
-        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5;
-        my $status_cv5 = system($cmd_f90_cv5);
+            my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5;
+            my $status_cv5 = system($cmd_f90_cv5);
 
-        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5);
+            open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5);
 
-        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+            my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5\n";
 
-            while (my $row = <$fh_yhat_res_cv5>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_altered_env_2 = $model_sum_square_cv5_altered_env_2 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5);
+                while (my $row = <$fh_yhat_res_cv5>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_altered_env_2 = $model_sum_square_cv5_altered_env_2 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5);
 
-        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1_2;
-        my $status_cv1_2 = system($cmd_f90_cv1_2);
+            my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1_2;
+            my $status_cv1_2 = system($cmd_f90_cv1_2);
 
-        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1_2);
+            open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1_2);
 
-        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+            my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
 
-            while (my $row = <$fh_yhat_res_cv1_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_2_altered_env_2 = $model_sum_square_cv1_2_altered_env_2 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1_2);
+                while (my $row = <$fh_yhat_res_cv1_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_2_altered_env_2 = $model_sum_square_cv1_2_altered_env_2 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1_2);
 
-        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2_2;
-        my $status_cv2_2 = system($cmd_f90_cv2_2);
+            my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2_2;
+            my $status_cv2_2 = system($cmd_f90_cv2_2);
 
-        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2_2);
+            open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2_2);
 
-        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+            my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
 
-            while (my $row = <$fh_yhat_res_cv2_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_2_altered_env_2 = $model_sum_square_cv2_2_altered_env_2 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2_2);
+                while (my $row = <$fh_yhat_res_cv2_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_2_altered_env_2 = $model_sum_square_cv2_2_altered_env_2 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2_2);
 
-        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3_2;
-        my $status_cv3_2 = system($cmd_f90_cv3_2);
+            my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3_2;
+            my $status_cv3_2 = system($cmd_f90_cv3_2);
 
-        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3_2);
+            open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3_2);
 
-        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+            my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
 
-            while (my $row = <$fh_yhat_res_cv3_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_2_altered_env_2 = $model_sum_square_cv3_2_altered_env_2 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3_2);
+                while (my $row = <$fh_yhat_res_cv3_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_2_altered_env_2 = $model_sum_square_cv3_2_altered_env_2 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3_2);
 
-        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4_2;
-        my $status_cv4_2 = system($cmd_f90_cv4_2);
+            my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4_2;
+            my $status_cv4_2 = system($cmd_f90_cv4_2);
 
-        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4_2);
+            open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4_2);
 
-        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+            my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
 
-            while (my $row = <$fh_yhat_res_cv4_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_2_altered_env_2 = $model_sum_square_cv4_2_altered_env_2 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4_2);
+                while (my $row = <$fh_yhat_res_cv4_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_2_altered_env_2 = $model_sum_square_cv4_2_altered_env_2 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4_2);
 
-        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5_2;
-        my $status_cv5_2 = system($cmd_f90_cv5_2);
+            my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5_2;
+            my $status_cv5_2 = system($cmd_f90_cv5_2);
 
-        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5_2);
+            open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5_2);
 
-        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+            my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
 
-            while (my $row = <$fh_yhat_res_cv5_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_2_altered_env_2 = $model_sum_square_cv5_2_altered_env_2 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5_2);
+                while (my $row = <$fh_yhat_res_cv5_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_2_altered_env_2 = $model_sum_square_cv5_2_altered_env_2 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5_2);
+        }
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -12346,8 +12388,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -12777,8 +12821,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -13149,8 +13195,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
 
         my $run_stats_fault = 0;
@@ -14002,8 +14050,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -14425,8 +14475,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -15274,245 +15326,247 @@ sub perform_drone_imagery_analytics {
             }
         }
 
-        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1;
-        my $status_cv1 = system($cmd_f90_cv1);
+        if ($perform_cv) {
+            my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1;
+            my $status_cv1 = system($cmd_f90_cv1);
 
-        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1);
+            open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1);
 
-        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+            my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1\n";
 
-            while (my $row = <$fh_yhat_res_cv1>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_altered_env_3 = $model_sum_square_cv1_altered_env_3 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1);
+                while (my $row = <$fh_yhat_res_cv1>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_altered_env_3 = $model_sum_square_cv1_altered_env_3 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1);
 
-        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2;
-        my $status_cv2 = system($cmd_f90_cv2);
+            my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2;
+            my $status_cv2 = system($cmd_f90_cv2);
 
-        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2);
+            open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2);
 
-        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+            my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2\n";
 
-            while (my $row = <$fh_yhat_res_cv2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_altered_env_3 = $model_sum_square_cv2_altered_env_3 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2);
+                while (my $row = <$fh_yhat_res_cv2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_altered_env_3 = $model_sum_square_cv2_altered_env_3 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2);
 
-        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3;
-        my $status_cv3 = system($cmd_f90_cv3);
+            my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3;
+            my $status_cv3 = system($cmd_f90_cv3);
 
-        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3);
+            open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3);
 
-        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+            my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3\n";
 
-            while (my $row = <$fh_yhat_res_cv3>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_altered_env_3 = $model_sum_square_cv3_altered_env_3 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3);
+                while (my $row = <$fh_yhat_res_cv3>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_altered_env_3 = $model_sum_square_cv3_altered_env_3 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3);
 
-        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4;
-        my $status_cv4 = system($cmd_f90_cv4);
+            my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4;
+            my $status_cv4 = system($cmd_f90_cv4);
 
-        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4);
+            open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4);
 
-        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+            my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4\n";
 
-            while (my $row = <$fh_yhat_res_cv4>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_altered_env_3 = $model_sum_square_cv4_altered_env_3 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4);
+                while (my $row = <$fh_yhat_res_cv4>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_altered_env_3 = $model_sum_square_cv4_altered_env_3 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4);
 
-        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5;
-        my $status_cv5 = system($cmd_f90_cv5);
+            my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5;
+            my $status_cv5 = system($cmd_f90_cv5);
 
-        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5);
+            open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5);
 
-        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+            my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5\n";
 
-            while (my $row = <$fh_yhat_res_cv5>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_altered_env_3 = $model_sum_square_cv5_altered_env_3 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5);
+                while (my $row = <$fh_yhat_res_cv5>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_altered_env_3 = $model_sum_square_cv5_altered_env_3 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5);
 
-        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1_2;
-        my $status_cv1_2 = system($cmd_f90_cv1_2);
+            my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1_2;
+            my $status_cv1_2 = system($cmd_f90_cv1_2);
 
-        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1_2);
+            open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1_2);
 
-        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+            my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
 
-            while (my $row = <$fh_yhat_res_cv1_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_2_altered_env_3 = $model_sum_square_cv1_2_altered_env_3 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1_2);
+                while (my $row = <$fh_yhat_res_cv1_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_2_altered_env_3 = $model_sum_square_cv1_2_altered_env_3 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1_2);
 
-        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2_2;
-        my $status_cv2_2 = system($cmd_f90_cv2_2);
+            my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2_2;
+            my $status_cv2_2 = system($cmd_f90_cv2_2);
 
-        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2_2);
+            open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2_2);
 
-        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+            my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
 
-            while (my $row = <$fh_yhat_res_cv2_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_2_altered_env_3 = $model_sum_square_cv2_2_altered_env_3 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2_2);
+                while (my $row = <$fh_yhat_res_cv2_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_2_altered_env_3 = $model_sum_square_cv2_2_altered_env_3 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2_2);
 
-        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3_2;
-        my $status_cv3_2 = system($cmd_f90_cv3_2);
+            my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3_2;
+            my $status_cv3_2 = system($cmd_f90_cv3_2);
 
-        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3_2);
+            open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3_2);
 
-        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+            my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
 
-            while (my $row = <$fh_yhat_res_cv3_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_2_altered_env_3 = $model_sum_square_cv3_2_altered_env_3 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3_2);
+                while (my $row = <$fh_yhat_res_cv3_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_2_altered_env_3 = $model_sum_square_cv3_2_altered_env_3 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3_2);
 
-        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4_2;
-        my $status_cv4_2 = system($cmd_f90_cv4_2);
+            my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4_2;
+            my $status_cv4_2 = system($cmd_f90_cv4_2);
 
-        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4_2);
+            open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4_2);
 
-        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+            my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
 
-            while (my $row = <$fh_yhat_res_cv4_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_2_altered_env_3 = $model_sum_square_cv4_2_altered_env_3 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4_2);
+                while (my $row = <$fh_yhat_res_cv4_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_2_altered_env_3 = $model_sum_square_cv4_2_altered_env_3 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4_2);
 
-        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5_2;
-        my $status_cv5_2 = system($cmd_f90_cv5_2);
+            my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5_2;
+            my $status_cv5_2 = system($cmd_f90_cv5_2);
 
-        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5_2);
+            open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5_2);
 
-        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+            my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
 
-            while (my $row = <$fh_yhat_res_cv5_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_2_altered_env_3 = $model_sum_square_cv5_2_altered_env_3 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5_2);
+                while (my $row = <$fh_yhat_res_cv5_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_2_altered_env_3 = $model_sum_square_cv5_2_altered_env_3 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5_2);
+        }
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -15527,8 +15581,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -15958,8 +16014,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -16330,8 +16388,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
 
         my $run_stats_fault = 0;
@@ -17180,8 +17240,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -17603,8 +17665,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -18452,245 +18516,247 @@ sub perform_drone_imagery_analytics {
             }
         }
 
-        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1;
-        my $status_cv1 = system($cmd_f90_cv1);
+        if ($perform_cv) {
+            my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1;
+            my $status_cv1 = system($cmd_f90_cv1);
 
-        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1);
+            open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1);
 
-        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+            my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1\n";
 
-            while (my $row = <$fh_yhat_res_cv1>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_altered_env_4 = $model_sum_square_cv1_altered_env_4 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1);
+                while (my $row = <$fh_yhat_res_cv1>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_altered_env_4 = $model_sum_square_cv1_altered_env_4 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1);
 
-        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2;
-        my $status_cv2 = system($cmd_f90_cv2);
+            my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2;
+            my $status_cv2 = system($cmd_f90_cv2);
 
-        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2);
+            open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2);
 
-        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+            my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2\n";
 
-            while (my $row = <$fh_yhat_res_cv2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_altered_env_4 = $model_sum_square_cv2_altered_env_4 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2);
+                while (my $row = <$fh_yhat_res_cv2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_altered_env_4 = $model_sum_square_cv2_altered_env_4 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2);
 
-        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3;
-        my $status_cv3 = system($cmd_f90_cv3);
+            my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3;
+            my $status_cv3 = system($cmd_f90_cv3);
 
-        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3);
+            open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3);
 
-        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+            my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3\n";
 
-            while (my $row = <$fh_yhat_res_cv3>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_altered_env_4 = $model_sum_square_cv3_altered_env_4 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3);
+                while (my $row = <$fh_yhat_res_cv3>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_altered_env_4 = $model_sum_square_cv3_altered_env_4 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3);
 
-        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4;
-        my $status_cv4 = system($cmd_f90_cv4);
+            my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4;
+            my $status_cv4 = system($cmd_f90_cv4);
 
-        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4);
+            open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4);
 
-        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+            my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4\n";
 
-            while (my $row = <$fh_yhat_res_cv4>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_altered_env_4 = $model_sum_square_cv4_altered_env_4 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4);
+                while (my $row = <$fh_yhat_res_cv4>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_altered_env_4 = $model_sum_square_cv4_altered_env_4 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4);
 
-        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5;
-        my $status_cv5 = system($cmd_f90_cv5);
+            my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5;
+            my $status_cv5 = system($cmd_f90_cv5);
 
-        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5);
+            open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5);
 
-        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+            my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5\n";
 
-            while (my $row = <$fh_yhat_res_cv5>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_altered_env_4 = $model_sum_square_cv5_altered_env_4 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5);
+                while (my $row = <$fh_yhat_res_cv5>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_altered_env_4 = $model_sum_square_cv5_altered_env_4 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5);
 
-        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1_2;
-        my $status_cv1_2 = system($cmd_f90_cv1_2);
+            my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1_2;
+            my $status_cv1_2 = system($cmd_f90_cv1_2);
 
-        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1_2);
+            open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1_2);
 
-        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+            my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
 
-            while (my $row = <$fh_yhat_res_cv1_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_2_altered_env_4 = $model_sum_square_cv1_2_altered_env_4 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1_2);
+                while (my $row = <$fh_yhat_res_cv1_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_2_altered_env_4 = $model_sum_square_cv1_2_altered_env_4 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1_2);
 
-        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2_2;
-        my $status_cv2_2 = system($cmd_f90_cv2_2);
+            my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2_2;
+            my $status_cv2_2 = system($cmd_f90_cv2_2);
 
-        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2_2);
+            open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2_2);
 
-        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+            my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
 
-            while (my $row = <$fh_yhat_res_cv2_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_2_altered_env_4 = $model_sum_square_cv2_2_altered_env_4 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2_2);
+                while (my $row = <$fh_yhat_res_cv2_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_2_altered_env_4 = $model_sum_square_cv2_2_altered_env_4 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2_2);
 
-        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3_2;
-        my $status_cv3_2 = system($cmd_f90_cv3_2);
+            my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3_2;
+            my $status_cv3_2 = system($cmd_f90_cv3_2);
 
-        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3_2);
+            open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3_2);
 
-        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+            my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
 
-            while (my $row = <$fh_yhat_res_cv3_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_2_altered_env_4 = $model_sum_square_cv3_2_altered_env_4 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3_2);
+                while (my $row = <$fh_yhat_res_cv3_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_2_altered_env_4 = $model_sum_square_cv3_2_altered_env_4 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3_2);
 
-        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4_2;
-        my $status_cv4_2 = system($cmd_f90_cv4_2);
+            my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4_2;
+            my $status_cv4_2 = system($cmd_f90_cv4_2);
 
-        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4_2);
+            open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4_2);
 
-        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+            my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
 
-            while (my $row = <$fh_yhat_res_cv4_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_2_altered_env_4 = $model_sum_square_cv4_2_altered_env_4 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4_2);
+                while (my $row = <$fh_yhat_res_cv4_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_2_altered_env_4 = $model_sum_square_cv4_2_altered_env_4 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4_2);
 
-        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5_2;
-        my $status_cv5_2 = system($cmd_f90_cv5_2);
+            my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5_2;
+            my $status_cv5_2 = system($cmd_f90_cv5_2);
 
-        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5_2);
+            open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5_2);
 
-        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+            my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
 
-            while (my $row = <$fh_yhat_res_cv5_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_2_altered_env_4 = $model_sum_square_cv5_2_altered_env_4 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5_2);
+                while (my $row = <$fh_yhat_res_cv5_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_2_altered_env_4 = $model_sum_square_cv5_2_altered_env_4 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5_2);
+        }
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -18705,8 +18771,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -19136,8 +19204,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -19508,8 +19578,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
 
         my $run_stats_fault = 0;
@@ -20325,8 +20397,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -20750,8 +20824,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -21601,245 +21677,247 @@ sub perform_drone_imagery_analytics {
             }
         }
 
-        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1;
-        my $status_cv1 = system($cmd_f90_cv1);
+        if ($perform_cv) {
+            my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1;
+            my $status_cv1 = system($cmd_f90_cv1);
 
-        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1);
+            open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1);
 
-        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+            my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1\n";
 
-            while (my $row = <$fh_yhat_res_cv1>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_altered_env_5 = $model_sum_square_cv1_altered_env_5 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1);
+                while (my $row = <$fh_yhat_res_cv1>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_altered_env_5 = $model_sum_square_cv1_altered_env_5 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1);
 
-        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2;
-        my $status_cv2 = system($cmd_f90_cv2);
+            my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2;
+            my $status_cv2 = system($cmd_f90_cv2);
 
-        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2);
+            open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2);
 
-        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+            my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2\n";
 
-            while (my $row = <$fh_yhat_res_cv2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_altered_env_5 = $model_sum_square_cv2_altered_env_5 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2);
+                while (my $row = <$fh_yhat_res_cv2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_altered_env_5 = $model_sum_square_cv2_altered_env_5 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2);
 
-        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3;
-        my $status_cv3 = system($cmd_f90_cv3);
+            my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3;
+            my $status_cv3 = system($cmd_f90_cv3);
 
-        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3);
+            open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3);
 
-        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+            my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3\n";
 
-            while (my $row = <$fh_yhat_res_cv3>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_altered_env_5 = $model_sum_square_cv3_altered_env_5 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3);
+                while (my $row = <$fh_yhat_res_cv3>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_altered_env_5 = $model_sum_square_cv3_altered_env_5 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3);
 
-        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4;
-        my $status_cv4 = system($cmd_f90_cv4);
+            my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4;
+            my $status_cv4 = system($cmd_f90_cv4);
 
-        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4);
+            open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4);
 
-        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+            my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4\n";
 
-            while (my $row = <$fh_yhat_res_cv4>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_altered_env_5 = $model_sum_square_cv4_altered_env_5 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4);
+                while (my $row = <$fh_yhat_res_cv4>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_altered_env_5 = $model_sum_square_cv4_altered_env_5 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4);
 
-        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5;
-        my $status_cv5 = system($cmd_f90_cv5);
+            my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5;
+            my $status_cv5 = system($cmd_f90_cv5);
 
-        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5);
+            open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5);
 
-        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+            my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5\n";
 
-            while (my $row = <$fh_yhat_res_cv5>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_altered_env_5 = $model_sum_square_cv5_altered_env_5 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5);
+                while (my $row = <$fh_yhat_res_cv5>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_altered_env_5 = $model_sum_square_cv5_altered_env_5 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5);
 
-        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1_2;
-        my $status_cv1_2 = system($cmd_f90_cv1_2);
+            my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1_2;
+            my $status_cv1_2 = system($cmd_f90_cv1_2);
 
-        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1_2);
+            open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1_2);
 
-        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+            my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
 
-            while (my $row = <$fh_yhat_res_cv1_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_2_altered_env_5 = $model_sum_square_cv1_2_altered_env_5 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1_2);
+                while (my $row = <$fh_yhat_res_cv1_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_2_altered_env_5 = $model_sum_square_cv1_2_altered_env_5 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1_2);
 
-        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2_2;
-        my $status_cv2_2 = system($cmd_f90_cv2_2);
+            my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2_2;
+            my $status_cv2_2 = system($cmd_f90_cv2_2);
 
-        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2_2);
+            open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2_2);
 
-        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+            my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
 
-            while (my $row = <$fh_yhat_res_cv2_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_2_altered_env_5 = $model_sum_square_cv2_2_altered_env_5 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2_2);
+                while (my $row = <$fh_yhat_res_cv2_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_2_altered_env_5 = $model_sum_square_cv2_2_altered_env_5 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2_2);
 
-        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3_2;
-        my $status_cv3_2 = system($cmd_f90_cv3_2);
+            my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3_2;
+            my $status_cv3_2 = system($cmd_f90_cv3_2);
 
-        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3_2);
+            open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3_2);
 
-        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+            my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
 
-            while (my $row = <$fh_yhat_res_cv3_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_2_altered_env_5 = $model_sum_square_cv3_2_altered_env_5 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3_2);
+                while (my $row = <$fh_yhat_res_cv3_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_2_altered_env_5 = $model_sum_square_cv3_2_altered_env_5 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3_2);
 
-        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4_2;
-        my $status_cv4_2 = system($cmd_f90_cv4_2);
+            my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4_2;
+            my $status_cv4_2 = system($cmd_f90_cv4_2);
 
-        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4_2);
+            open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4_2);
 
-        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+            my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
 
-            while (my $row = <$fh_yhat_res_cv4_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_2_altered_env_5 = $model_sum_square_cv4_2_altered_env_5 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4_2);
+                while (my $row = <$fh_yhat_res_cv4_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_2_altered_env_5 = $model_sum_square_cv4_2_altered_env_5 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4_2);
 
-        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5_2;
-        my $status_cv5_2 = system($cmd_f90_cv5_2);
+            my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5_2;
+            my $status_cv5_2 = system($cmd_f90_cv5_2);
 
-        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5_2);
+            open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5_2);
 
-        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+            my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
 
-            while (my $row = <$fh_yhat_res_cv5_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_2_altered_env_5 = $model_sum_square_cv5_2_altered_env_5 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5_2);
+                while (my $row = <$fh_yhat_res_cv5_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_2_altered_env_5 = $model_sum_square_cv5_2_altered_env_5 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5_2);
+        }
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -21854,8 +21932,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -22285,8 +22365,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -22657,8 +22739,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
 
         my $run_stats_fault = 0;
@@ -23527,8 +23611,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
         my $run_stats_fault = 0;
         if ($@) {
@@ -23952,8 +24038,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -24803,245 +24891,247 @@ sub perform_drone_imagery_analytics {
             }
         }
 
-        my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1;
-        my $status_cv1 = system($cmd_f90_cv1);
+        if ($perform_cv) {
+            my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1;
+            my $status_cv1 = system($cmd_f90_cv1);
 
-        open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1);
+            open(my $fh_log_cv1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1);
 
-        my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1\n";
+            my $yhat_residual_tempfile_cv1 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1, '<', $yhat_residual_tempfile_cv1) or die "Could not open file '$yhat_residual_tempfile_cv1' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1\n";
 
-            while (my $row = <$fh_yhat_res_cv1>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_altered_env_6 = $model_sum_square_cv1_altered_env_6 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1);
+                while (my $row = <$fh_yhat_res_cv1>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_altered_env_6 = $model_sum_square_cv1_altered_env_6 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1);
 
-        my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2;
-        my $status_cv2 = system($cmd_f90_cv2);
+            my $cmd_f90_cv2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2;
+            my $status_cv2 = system($cmd_f90_cv2);
 
-        open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2);
+            open(my $fh_log_cv2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2);
 
-        my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2\n";
+            my $yhat_residual_tempfile_cv2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2, '<', $yhat_residual_tempfile_cv2) or die "Could not open file '$yhat_residual_tempfile_cv2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2\n";
 
-            while (my $row = <$fh_yhat_res_cv2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_altered_env_6 = $model_sum_square_cv2_altered_env_6 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2);
+                while (my $row = <$fh_yhat_res_cv2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_altered_env_6 = $model_sum_square_cv2_altered_env_6 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2);
 
-        my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3;
-        my $status_cv3 = system($cmd_f90_cv3);
+            my $cmd_f90_cv3 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3;
+            my $status_cv3 = system($cmd_f90_cv3);
 
-        open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3);
+            open(my $fh_log_cv3, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3);
 
-        my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3\n";
+            my $yhat_residual_tempfile_cv3 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3, '<', $yhat_residual_tempfile_cv3) or die "Could not open file '$yhat_residual_tempfile_cv3' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3\n";
 
-            while (my $row = <$fh_yhat_res_cv3>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_altered_env_6 = $model_sum_square_cv3_altered_env_6 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3);
+                while (my $row = <$fh_yhat_res_cv3>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_altered_env_6 = $model_sum_square_cv3_altered_env_6 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3);
 
-        my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4;
-        my $status_cv4 = system($cmd_f90_cv4);
+            my $cmd_f90_cv4 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4;
+            my $status_cv4 = system($cmd_f90_cv4);
 
-        open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4);
+            open(my $fh_log_cv4, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4);
 
-        my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4\n";
+            my $yhat_residual_tempfile_cv4 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4, '<', $yhat_residual_tempfile_cv4) or die "Could not open file '$yhat_residual_tempfile_cv4' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4\n";
 
-            while (my $row = <$fh_yhat_res_cv4>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_altered_env_6 = $model_sum_square_cv4_altered_env_6 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4);
+                while (my $row = <$fh_yhat_res_cv4>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_altered_env_6 = $model_sum_square_cv4_altered_env_6 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4);
 
-        my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5;
-        my $status_cv5 = system($cmd_f90_cv5);
+            my $cmd_f90_cv5 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_basename.' | '.$command_name.' > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5;
+            my $status_cv5 = system($cmd_f90_cv5);
 
-        open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5);
+            open(my $fh_log_cv5, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5);
 
-        my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5\n";
+            my $yhat_residual_tempfile_cv5 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5, '<', $yhat_residual_tempfile_cv5) or die "Could not open file '$yhat_residual_tempfile_cv5' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5\n";
 
-            while (my $row = <$fh_yhat_res_cv5>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_altered_env_6 = $model_sum_square_cv5_altered_env_6 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5);
+                while (my $row = <$fh_yhat_res_cv5>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_altered_env_6 = $model_sum_square_cv5_altered_env_6 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5);
 
-        my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv1_2;
-        my $status_cv1_2 = system($cmd_f90_cv1_2);
+            my $cmd_f90_cv1_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv1_2;
+            my $status_cv1_2 = system($cmd_f90_cv1_2);
 
-        open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv1_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv1_2);
+            open(my $fh_log_cv1_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv1_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv1_2);
 
-        my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
+            my $yhat_residual_tempfile_cv1_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv1_2, '<', $yhat_residual_tempfile_cv1_2) or die "Could not open file '$yhat_residual_tempfile_cv1_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv1_2\n";
 
-            while (my $row = <$fh_yhat_res_cv1_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv1_2_altered_env_6 = $model_sum_square_cv1_2_altered_env_6 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv1_2);
+                while (my $row = <$fh_yhat_res_cv1_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv1_2_altered_env_6 = $model_sum_square_cv1_2_altered_env_6 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv1_2);
 
-        my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv2_2;
-        my $status_cv2_2 = system($cmd_f90_cv2_2);
+            my $cmd_f90_cv2_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv2_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv2_2;
+            my $status_cv2_2 = system($cmd_f90_cv2_2);
 
-        open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv2_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv2_2);
+            open(my $fh_log_cv2_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv2_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv2_2);
 
-        my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
+            my $yhat_residual_tempfile_cv2_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv2_2, '<', $yhat_residual_tempfile_cv2_2) or die "Could not open file '$yhat_residual_tempfile_cv2_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv2_2\n";
 
-            while (my $row = <$fh_yhat_res_cv2_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv2_2_altered_env_6 = $model_sum_square_cv2_2_altered_env_6 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv2_2);
+                while (my $row = <$fh_yhat_res_cv2_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv2_2_altered_env_6 = $model_sum_square_cv2_2_altered_env_6 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv2_2);
 
-        my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv3_2;
-        my $status_cv3_2 = system($cmd_f90_cv3_2);
+            my $cmd_f90_cv3_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv3_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv3_2;
+            my $status_cv3_2 = system($cmd_f90_cv3_2);
 
-        open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv3_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv3_2);
+            open(my $fh_log_cv3_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv3_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv3_2);
 
-        my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
+            my $yhat_residual_tempfile_cv3_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv3_2, '<', $yhat_residual_tempfile_cv3_2) or die "Could not open file '$yhat_residual_tempfile_cv3_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv3_2\n";
 
-            while (my $row = <$fh_yhat_res_cv3_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv3_2_altered_env_6 = $model_sum_square_cv3_2_altered_env_6 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv3_2);
+                while (my $row = <$fh_yhat_res_cv3_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv3_2_altered_env_6 = $model_sum_square_cv3_2_altered_env_6 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv3_2);
 
-        my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv4_2;
-        my $status_cv4_2 = system($cmd_f90_cv4_2);
+            my $cmd_f90_cv4_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv4_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv4_2;
+            my $status_cv4_2 = system($cmd_f90_cv4_2);
 
-        open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv4_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv4_2);
+            open(my $fh_log_cv4_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv4_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv4_2);
 
-        my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
+            my $yhat_residual_tempfile_cv4_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv4_2, '<', $yhat_residual_tempfile_cv4_2) or die "Could not open file '$yhat_residual_tempfile_cv4_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv4_2\n";
 
-            while (my $row = <$fh_yhat_res_cv4_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv4_2_altered_env_6 = $model_sum_square_cv4_2_altered_env_6 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv4_2);
+                while (my $row = <$fh_yhat_res_cv4_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv4_2_altered_env_6 = $model_sum_square_cv4_2_altered_env_6 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv4_2);
 
-        my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
-        print STDERR Dumper $cmd_f90_cv5_2;
-        my $status_cv5_2 = system($cmd_f90_cv5_2);
+            my $cmd_f90_cv5_2 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv5_2_basename.' | blupf90 > '.$stats_out_tempfile;
+            print STDERR Dumper $cmd_f90_cv5_2;
+            my $status_cv5_2 = system($cmd_f90_cv5_2);
 
-        open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            while (my $row = <$fh_log_cv5_2>) {
-                print STDERR $row;
-            }
-        close($fh_log_cv5_2);
+            open(my $fh_log_cv5_2, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                while (my $row = <$fh_log_cv5_2>) {
+                    print STDERR $row;
+                }
+            close($fh_log_cv5_2);
 
-        my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
-        open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
-            print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
+            my $yhat_residual_tempfile_cv5_2 = $tmp_stats_dir."/yhat_residual";
+            open(my $fh_yhat_res_cv5_2, '<', $yhat_residual_tempfile_cv5_2) or die "Could not open file '$yhat_residual_tempfile_cv5_2' $!";
+                print STDERR "Opened $yhat_residual_tempfile_cv5_2\n";
 
-            while (my $row = <$fh_yhat_res_cv5_2>) {
-                # print STDERR $row;
-                my @vals = split ' ', $row;
-                my $pred = $vals[0];
-                my $residual = $vals[1];
-                $model_sum_square_cv5_2_altered_env_6 = $model_sum_square_cv5_2_altered_env_6 + $residual*$residual;
-            }
-        close($fh_yhat_res_cv5_2);
+                while (my $row = <$fh_yhat_res_cv5_2>) {
+                    # print STDERR $row;
+                    my @vals = split ' ', $row;
+                    my $pred = $vals[0];
+                    my $residual = $vals[1];
+                    $model_sum_square_cv5_2_altered_env_6 = $model_sum_square_cv5_2_altered_env_6 + $residual*$residual;
+                }
+            close($fh_yhat_res_cv5_2);
+        }
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -25056,8 +25146,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -25487,8 +25579,10 @@ sub perform_drone_imagery_analytics {
             eval {
                 my $status_prepare_file_cv = system($prepare_file_cv_cmd);
                 my $status = system($statistics_cmd);
-                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                if ($perform_cv) {
+                    my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                    my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+                }
             };
 
             my $run_stats_fault = 0;
@@ -25859,8 +25953,10 @@ sub perform_drone_imagery_analytics {
             my $status_prepare_file_cv2 = system($prepare_file_cv2_cmd);
             my $status_prepare_file_cv = system($prepare_file_cv_cmd);
             my $status = system($statistics_cmd);
-            my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
-            my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            if ($perform_cv) {
+                my $status_cv1 = system($statistics_cmd_reading.$statistics_cmd_cv_1);
+                my $status_cv2 = system($statistics_cmd_reading.$statistics_cmd_cv_2);
+            }
         };
 
         my $run_stats_fault = 0;
