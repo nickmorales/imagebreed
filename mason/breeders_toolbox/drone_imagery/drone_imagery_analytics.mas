@@ -121,8 +121,8 @@
                                     <label class="col-sm-3 control-label">Number Interations: </label>
                                     <div class="col-sm-9" >
                                         <select class="form-control" id="drone_imagery_analytics_number_iterations">
-                                            <option value="2">2</option>
                                             <option value="10">10</option>
+                                            <option value="2">2</option>
                                             <option value="25">25</option>
                                             <option value="1">1</option>
                                         </select>
@@ -305,11 +305,11 @@
                                     <label class="col-sm-3 control-label">Legendre Polynomial Order: </label>
                                     <div class="col-sm-9" >
                                         <select class="form-control" id="drone_image_analytics_legendre_order_number_select">
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
                                             <option value="3">3</option>
+                                            <!--option value="1">1</option>
+                                            <option value="2">2</option>
                                             <option value="4">4</option>
-                                            <option value="5">5</option>
+                                            <option value="5">5</option-->
                                         </select>
                                     </div>
                                 </div>
