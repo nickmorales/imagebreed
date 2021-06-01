@@ -149,7 +149,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
             fixed_effect_trait_id => $c->req->param('fixed_effect_trait_id'),
             fixed_effect_quantiles => $c->req->param('fixed_effect_quantiles'),
             env_iterations => $env_iterations,
-            perform_cv => $c->req->param('perform_cv') || 0
+            perform_cv => $c->req->param('drone_imagery_analytics_select_perform_cv') || 0
         };
         my $q2 = "INSERT INTO nd_protocolprop (nd_protocol_id, value, type_id) VALUES (?,?,?);";
         my $h2 = $schema->storage->dbh()->prepare($q2);
