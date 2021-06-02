@@ -200,29 +200,53 @@ sub _validate_request {
 	my $data_type = shift;
 	my $data = shift;
 	my $required_fields = shift;
+	my $required_field_prefix = shift;
 
-	# Check the required fields
-	# TODO: Only top level right now, maybe in the future add nested checks
 	if ($required_fields) {
+		# Validate each array element
 		if ($data_type eq 'ARRAY') {
 			foreach my $object (values %{$data}) {
-				foreach my $required_field (@{$required_fields}) {
-					# Ignore the query params if they were passed in
-					if (ref($object) eq 'HASH' && !$object->{$required_field}) {
-						my $response = CXGN::BrAPI::JSONResponse->return_error($c->stash->{status}, sprintf('%s required', $required_field), 400);
-						_standard_response_construction($c, $response);
-					}
+				# Ignore the query params if they were passed in. Their included in the body
+				if (ref($object) eq 'HASH') {
+					_validate_request($c, 'HASH', $object, $required_fields);
 				}
 			}
-		} elsif ($data_type eq 'HASH') {
-			foreach my $required_field (@{$required_fields}) {
+		}
+
+		# Check all of our fields
+		foreach my $required_field (@{$required_fields}) {
+			# Check if the required field has another level or not
+			if (ref($required_field) eq 'HASH') {
+				# Check the field keys and recurse
+				foreach my $sub_req_field (keys %{$required_field}) {
+					if ($data_type eq 'HASH') {
+						if (!$data->{$sub_req_field}) {
+							_missing_field_response($c, $sub_req_field, $required_field_prefix);
+						} else {
+							my $sub_data = $data->{$sub_req_field};
+							_validate_request($c, 'HASH', $sub_data, $required_field->{$sub_req_field},
+								$required_field_prefix ? sprintf("%s.%s", $required_field_prefix, $sub_req_field): $sub_req_field);
+						}
+					}
+				}
+				next;
+			}
+
+			if ($data_type eq 'HASH') {
 				if (!$data->{$required_field}) {
-					my $response = CXGN::BrAPI::JSONResponse->return_error($c->stash->{status}, sprintf('%s required', $required_field), 400);
-					_standard_response_construction($c, $response);
+					_missing_field_response($c, $required_field, $required_field_prefix);
 				}
 			}
 		}
 	}
+}
+
+sub _missing_field_response {
+	my $c = shift;
+	my $field_name = shift;
+	my $prefix = shift;
+	my $response = CXGN::BrAPI::JSONResponse->return_error($c->stash->{status}, $prefix ? sprintf("%s.%s required", $prefix, $field_name) : $field_name, 400);
+	_standard_response_construction($c, $response);
 }
 
 sub _authenticate_user {
@@ -2041,12 +2065,12 @@ sub studies_POST {
     my ($auth, $user_id) = _authenticate_user($c);
     my $clean_inputs = $c->stash->{clean_inputs};
     my $data = $clean_inputs;
-	_validate_request($c, 'ARRAY', $data, ['trialDbId', 'studyName', 'studyType', 'locationDbId']);
+    _validate_request($c, 'ARRAY', $data, ['trialDbId', 'studyName', 'studyType', 'locationDbId']);
 
     my @all_studies;
-	foreach my $study (values %{$data}) {
-	    push @all_studies, $study;
-	}
+    foreach my $study (values %{$data}) {
+        push @all_studies, $study;
+    }
     my $brapi = $self->brapi_module;
     my $brapi_module = $brapi->brapi_wrapper('Studies');
     my $brapi_package_result = $brapi_module->store(\@all_studies, $user_id, $c);
@@ -2166,63 +2190,63 @@ sub studies_info_POST {
 }
 
 sub studies_info_GET {
-	my $self = shift;
-	my $c = shift;
-	my ($auth) = _authenticate_user($c);
-	my $clean_inputs = $c->stash->{clean_inputs};
-	my $brapi = $self->brapi_module;
-	my $brapi_module = $brapi->brapi_wrapper('Studies');
-	my $brapi_package_result = $brapi_module->detail(
-		$c->stash->{study_id},
+    my $self = shift;
+    my $c = shift;
+    my ($auth) = _authenticate_user($c);
+    my $clean_inputs = $c->stash->{clean_inputs};
+    my $brapi = $self->brapi_module;
+    my $brapi_module = $brapi->brapi_wrapper('Studies');
+    my $brapi_package_result = $brapi_module->detail(
+        $c->stash->{study_id},
         $c->config->{main_production_site_url},
-		$c->config->{supportedCrop}
-	);
-	_standard_response_construction($c, $brapi_package_result);
+        $c->config->{supportedCrop}
+    );
+    _standard_response_construction($c, $brapi_package_result);
 }
 
 sub studies_info_PUT {
-	my $self = shift;
-	my $c = shift;
-	my ($auth,$user_id) = _authenticate_user($c);
-	my $clean_inputs = $c->stash->{clean_inputs};
-	my $data = $clean_inputs;
-	_validate_request($c, 'HASH', $data, ['trialDbId', 'studyName', 'studyType', 'locationDbId']);
+    my $self = shift;
+    my $c = shift;
+    my ($auth,$user_id) = _authenticate_user($c);
+    my $clean_inputs = $c->stash->{clean_inputs};
+    my $data = $clean_inputs;
+    _validate_request($c, 'HASH', $data, ['trialDbId', 'studyName', 'studyType', 'locationDbId']);
 
-	$data->{studyDbId} = $c->stash->{study_id};
-	my $brapi = $self->brapi_module;
-	my $brapi_module = $brapi->brapi_wrapper('Studies');
-	my $brapi_package_result = $brapi_module->update($data,$user_id,$c);
-	_standard_response_construction($c, $brapi_package_result);
+    $data->{studyDbId} = $c->stash->{study_id};
+    my $brapi = $self->brapi_module;
+    my $brapi_module = $brapi->brapi_wrapper('Studies');
+    my $brapi_package_result = $brapi_module->update($data,$user_id,$c);
+    _standard_response_construction($c, $brapi_package_result);
 }
 
 sub studies_observation_variables : Chained('studies_single') PathPart('observationvariables') Args(0) : ActionClass('REST') { }
 
 sub studies_observation_variables_POST {
-	my $self = shift;
-	my $c = shift;
-	#my $auth = _authenticate_user($c);
+    my $self = shift;
+    my $c = shift;
+    #my $auth = _authenticate_user($c);
 }
 
 sub studies_observation_variables_GET {
-	my $self = shift;
-	my $c = shift;
-	my ($auth) = _authenticate_user($c);
-	my $brapi = $self->brapi_module;
-	my $brapi_module = $brapi->brapi_wrapper('Studies');
-	my $brapi_package_result = $brapi_module->studies_observation_variables(
-		$c->stash->{study_id},
+    my $self = shift;
+    my $c = shift;
+    my ($auth) = _authenticate_user($c);
+    my $brapi = $self->brapi_module;
+    my $brapi_module = $brapi->brapi_wrapper('Studies');
+    my $brapi_package_result = $brapi_module->studies_observation_variables(
+        $c->stash->{study_id},
         $c->config->{supportedCrop}
-	);
-	_standard_response_construction($c, $brapi_package_result);
+    );
+    _standard_response_construction($c, $brapi_package_result);
 }
 
 
 sub studies_layout : Chained('studies_single') PathPart('layout') Args(0) : ActionClass('REST') { }
 
 sub studies_layout_POST {
-	my $self = shift;
-	my $c = shift;
-	#my $auth = _authenticate_user($c);
+    my $self = shift;
+    my $c = shift;
+    #my $auth = _authenticate_user($c);
 }
 
 sub studies_layout_GET {
@@ -2240,8 +2264,8 @@ sub studies_layout_GET {
         ($file_path, $uri) = $c->tempfile( TEMPLATE => "download/$temp_file_name");
     }
 
-	my $brapi = $self->brapi_module;
-	my $brapi_module = $brapi->brapi_wrapper('Studies');
+    my $brapi = $self->brapi_module;
+    my $brapi_module = $brapi->brapi_wrapper('Studies');
     my $brapi_package_result = $brapi_module->studies_layout({
         study_id => $c->stash->{study_id},
         format => $format,
@@ -2269,8 +2293,8 @@ sub studies_layouts_GET {
         ($file_path, $uri) = $c->tempfile( TEMPLATE => "download/$temp_file_name");
     }
 
-	my $brapi = $self->brapi_module;
-	my $brapi_module = $brapi->brapi_wrapper('Studies');
+    my $brapi = $self->brapi_module;
+    my $brapi_module = $brapi->brapi_wrapper('Studies');
     my $brapi_package_result = $brapi_module->studies_layout({
         study_id => $c->stash->{study_id},
         format => $format,
