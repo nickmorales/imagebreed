@@ -52,9 +52,9 @@ sub search {
                 join $table\_dbxref as o_dbxref using ($table_id)
                 join dbxref as ref on (ref.dbxref_id=o_dbxref.dbxref_id)
                 join db using (db_id)";
-    if ($ids) { 
+    if ($ids) {
         my $list_ids = join ("," , @$ids);
-        $query = $query . " where s.$table_id in ($list_ids)"; 
+        $query = $query . " where s.$table_id in ($list_ids)";
     }
 
     my $sth = $self->bcs_schema->storage()->dbh()->prepare($query);
@@ -81,13 +81,13 @@ sub store {
 
         #DOI
         if($ref_name eq "DOI"){
-            my $create_db = $schema->resultset("General::Db")->find_or_create( 
+            my $create_db = $schema->resultset("General::Db")->find_or_create(
             {
             name       => 'DOI',
             urlprefix =>  'http://',
             url        => 'doi.org',
             } );
-            
+
             $ref_id =~ s/http:\/\/doi\.org//;
             $ref_id =~ s/https:\/\/doi\.org//;
             $ref_id =~ s/doi://;
@@ -106,22 +106,23 @@ sub store {
         } else {
             my ($url,$object_id) = _check_brapi_url($_->{'referenceID'});
 
-            if($url){
+            if($ref_name){
 
                 my $create_db = $schema->resultset("General::Db")->find_or_create({
                     name => $ref_name,
                     url => $url
                 });
-            
-                my $create_dbxref = $schema->resultset("General::Dbxref")->find_or_create({
-                    db_id => $create_db->db_id(),
-                    accession => $object_id
-                });
+                if($object_id){
+                    my $create_dbxref = $schema->resultset("General::Dbxref")->find_or_create({
+                        db_id => $create_db->db_id(),
+                        accession => $object_id
+                    });
 
-                my $create_stock_dbxref = $schema->resultset($table)->find_or_create({
-                    $table_id => $id,
-                    dbxref_id => $create_dbxref->dbxref_id()
-                });
+                    my $create_stock_dbxref = $schema->resultset($table)->find_or_create({
+                        $table_id => $id,
+                        dbxref_id => $create_dbxref->dbxref_id()
+                    });
+                }
             }
         }
     }
@@ -138,13 +139,16 @@ sub store {
 
 sub _check_brapi_url {
     my $url = shift;
-    
+
     my $url_object_id = "";
 
     if ($url =~ /brapi\/v[1-2]\//){
         $url_object_id = $url;
         $url = $`;
         $url_object_id =~ s/$url//;
+    } else{
+        $url_object_id = $url;
+        $url = "";
     }
     return ($url,$url_object_id);
 }
