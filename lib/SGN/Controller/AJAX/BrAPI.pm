@@ -5253,6 +5253,20 @@ sub breedingmethods_GET {
     _standard_response_construction($c, $brapi_package_result);
 }
 
+sub nirs : Chained('brapi') PathPart('nirs') Args(0) : ActionClass('REST') { }
+
+sub nirs_GET {
+    my $self = shift;
+    my $c = shift;
+    my $auth = _authenticate_user($c);
+    my $clean_inputs = $c->stash->{clean_inputs};
+    my $brapi = $self->brapi_module;
+    my $brapi_module = $brapi->brapi_wrapper('Nirs');
+    my $brapi_package_result = $brapi_module->search($clean_inputs);
+
+    _standard_response_construction($c, $brapi_package_result);
+}
+
 
 #functions
 sub save_results {
