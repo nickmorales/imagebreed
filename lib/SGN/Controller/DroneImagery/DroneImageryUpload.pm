@@ -58,6 +58,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
     my $new_drone_run_vehicle_id = $c->req->param('drone_run_imaging_vehicle_id');
     my $new_drone_run_battery_name = $c->req->param('drone_run_imaging_vehicle_battery_name');
 
+    my $dir = $c->tempfiles_subdir('/upload_drone_imagery_bulk_previous');
+
     if (!$new_drone_run_vehicle_id) {
         $c->stash->{message} = "Please give an imaging event vehicle id!";
         $c->stash->{template} = 'generic_message.mas';
