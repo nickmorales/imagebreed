@@ -54,7 +54,7 @@ sub view_all :Path('/organism/all/view') :Args(0) {
     }
 
     # add image_uris to each of the organism tree records
-    foreach my $v (values %{ $c->stash->{organism_trees} }) { 
+    foreach my $v (values %{ $c->stash->{organism_trees} }) {
 	$v->{image_uri} = $c->uri_for( $self->action_for('organism_tree_image'), [ $v->{set_name} ])->relative();
    }
 
@@ -141,7 +141,7 @@ sub view_sol100 :Path('sol100/view') :Args(0) {
     print STDERR "ACTION: ".$self->action_for('organism_tree_image')."\n";
 
     print STDERR "IMAGE URI: ".$c->uri_for( $self->action_for('organism_tree_image'), ['sol100'] )->relative()."\n";
-    
+
     $c->stash({
         template => "/sequencing/sol100.mas",
 
@@ -150,8 +150,8 @@ sub view_sol100 :Path('sol100/view') :Args(0) {
         organism_tree => {
             %{ $self->rendered_organism_tree_cache->thaw( 'sol100' ) },
 
-	    
-	    
+
+
             image_uri => $c->uri_for( $self->action_for('organism_tree_image'), ['sol100'] )->relative(),
         },
 
@@ -223,6 +223,12 @@ sub invalidate_organism_tree_cache :Args(0) {
 #/organism/<org_id>/<more_stuff>
 sub find_organism :Chained('/') :PathPart('organism') :CaptureArgs(1) {
     my ( $self, $c, $organism_id ) = @_;
+
+    if (!$c->user()) {
+        my $url = '/' . $c->req->path;
+        $c->res->redirect("/user/login?goto_url=$url");
+        $c->detach();
+    }
 
     my $rs =
         $c->dbic_schema('CXGN::Biosource::Schema','sgn_chado')
@@ -639,14 +645,14 @@ sub _render_organism_tree {
             $species_names,
             $self->species_data_summary_cache,
            );
-	
+
 	my $cache = $self->species_data_summary_cache();
-	foreach my $n (@$species_names) { 
+	foreach my $n (@$species_names) {
 	    my $ors = CXGN::Chado::Organism::get_organism_by_species($n, $schema);
 	    # $o is a resultset
-	    if ($ors) { 
+	    if ($ors) {
 		my $genome_info = $cache->thaw($ors->organism_id())->{'Genome Information'};
-		if ($genome_info =~ /y/i) { 
+		if ($genome_info =~ /y/i) {
 		    $tree->hilite_species([170,220,180], [$n]);
 		}
 	    }
