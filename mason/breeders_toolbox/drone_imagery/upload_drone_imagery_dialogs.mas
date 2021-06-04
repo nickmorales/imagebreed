@@ -2956,19 +2956,19 @@ jQuery(document).ready(function() {
         }
     );
 
-    var drone_run_base_date_element = jQuery("#drone_run_base_date");
-    jQuery('input[title="drone_run_base_date"]').daterangepicker(
-        {
-            "singleDatePicker": true,
-            "showDropdowns": true,
-            "autoUpdateInput": false,
-            "timePicker": true,
-            "timePicker24Hour": true,
-        },
-        function(start){
-            drone_run_base_date_element.val(start.format('YYYY/MM/DD HH:mm:ss'));
-        }
-    );
+    //var drone_run_base_date_element = jQuery("#drone_run_base_date");
+    //jQuery('input[title="drone_run_base_date"]').daterangepicker(
+    //    {
+    //        "singleDatePicker": true,
+    //        "showDropdowns": true,
+    //        "autoUpdateInput": false,
+    //        "timePicker": true,
+    //        "timePicker24Hour": true,
+    //    },
+    //    function(start){
+    //        drone_run_base_date_element.val(start.format('YYYY/MM/DD HH:mm:ss'));
+    //    }
+    //);
 
     get_select_box('imaging_event_vehicles', 'drone_run_imaging_vehicle_div', {'id':'drone_run_imaging_vehicle_id', 'name':'drone_run_imaging_vehicle_id'});
 
