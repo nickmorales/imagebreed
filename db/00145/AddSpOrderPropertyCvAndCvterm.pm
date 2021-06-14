@@ -7,7 +7,7 @@
 
 =head1 SYNOPSIS
 
-mx-run AddSpOrderPropertyCvAndCvterms [options] -H hostname -D dbname -u username [-F]
+mx-run AddSpOrderPropertyCvAndCvterm [options] -H hostname -D dbname -u username [-F]
 
 this is a subclass of L<CXGN::Metadata::Dbpatch>
 see the perldoc of parent class for more details.
@@ -30,7 +30,7 @@ it under the same terms as Perl itself.
 =cut
 
 
-package AddSpOrderPropertyCvAndCvterms;
+package AddSpOrderPropertyCvAndCvterm;
 
 use Moose;
 use Bio::Chado::Schema;
