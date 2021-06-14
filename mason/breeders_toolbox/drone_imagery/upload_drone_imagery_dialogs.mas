@@ -3825,6 +3825,78 @@ jQuery(document).ready(function() {
         return false;
     });
 
+    jQuery('#upload_drone_imagery_odm_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
+    jQuery('#upload_drone_imagery_odm_micasense_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
+    jQuery('#upload_drone_imagery_bulk_previous_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
+    jQuery('#upload_drone_imagery_bulk_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
+    jQuery('#upload_drone_imagery_one_band_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
+    jQuery('#upload_drone_imagery_two_band_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
+    jQuery('#upload_drone_imagery_three_band_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
+    jQuery('#upload_drone_imagery_four_band_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
+    jQuery('#upload_drone_imagery_five_band_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
+    jQuery('#upload_drone_imagery_six_band_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
+    jQuery('#upload_drone_imagery_seven_band_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
+    jQuery('#upload_drone_imagery_eight_band_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
     // Now handled non-AJAX to get around 2GB file limit
 
     // jQuery('#upload_drone_imagery_submit').click(function(){
