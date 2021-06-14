@@ -59,7 +59,7 @@ sub patch {
 --do your SQL here
 --
 
-CREATE TABLE sgn_people.sp_order ( 
+CREATE TABLE sgn_people.sp_order (
    sp_order_id serial primary key,
    order_from_id bigint references sgn_people.sp_person,
    order_to_id bigint references sgn_people.sp_person,
@@ -72,7 +72,7 @@ CREATE TABLE sgn_people.sp_order (
 GRANT select,insert,update,delete ON sgn_people.sp_order TO web_usr;
 GRANT USAGE ON sgn_people.sp_order_sp_order_id_seq TO web_usr;
 
-CREATE TABLE sgn_people.sp_orderprop ( 
+CREATE TABLE sgn_people.sp_orderprop (
     sp_orderprop_id serial primary key,
     sp_order_id bigint references sgn_people.sp_order,
     type_id bigint references cvterm,
