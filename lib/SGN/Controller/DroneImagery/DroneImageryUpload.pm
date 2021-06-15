@@ -2283,6 +2283,95 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     return;
 }
 
+sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_imagery_bulk_previous") :Args(0) {
+    my $self = shift;
+    my $c = shift;
+    $c->response->headers->header( "Access-Control-Allow-Origin" => '*' );
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
+    my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+    my $dbh = $c->dbc->dbh;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    # print STDERR Dumper $c->req->params();
+
+    my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
+
+    my $image_type = $c->req->param('upload_drone_imagery_geocoordinate_param_type');
+    my $field_trial_id = $c->req->param('upload_drone_imagery_geocoordinate_param_field_trial_id');
+    my $drone_run_id = $c->req->param('upload_drone_imagery_geocoordinate_param_drone_run_id');
+    my $upload_file = $c->req->upload('upload_drone_imagery_geocoordinate_param_geotiff');
+
+    my $dir = $c->tempfiles_subdir('/upload_drone_imagery_geocoordinate_param');
+
+    my $upload_original_name = $upload_file->filename();
+    my $upload_tempfile = $upload_file->tempname;
+    my $time = DateTime->now();
+    my $timestamp = $time->ymd()."_".$time->hms();
+
+    # my $uploader = CXGN::UploadFile->new({
+    #     tempfile => $upload_tempfile,
+    #     subdirectory => "drone_imagery_upload_geocoord_params",
+    #     archive_path => $c->config->{archive_path},
+    #     archive_filename => $upload_original_name,
+    #     timestamp => $timestamp,
+    #     user_id => $user_id,
+    #     user_role => $user_role
+    # });
+    # my $archived_filename_with_path = $uploader->archive();
+    # my $md5 = $uploader->get_md5($archived_filename_with_path);
+    # if (!$archived_filename_with_path) {
+    #     $c->stash->{rest} = { error => "Could not save file $upload_original_name in archive." };
+    #     $c->detach();
+    # }
+    # unlink $upload_tempfile;
+    # print STDERR "Archived Drone Image GeoCoordinate Params File: $archived_filename_with_path\n";
+
+    my @geoparams_coordinates;
+    my $ortho_file;
+    if ($image_type eq 'rgb') {
+        my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
+        my $outfile_image_r = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
+        my $outfile_image_g = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
+        my $outfile_image_b = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
+        my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
+
+        my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $upload_tempfile --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams ";
+        print STDERR $geo_cmd."\n";
+        my $geo_cmd_status = system($geo_cmd);
+        $ortho_file = $outfile_image;
+
+        open(my $fh_geoparams, '<', $outfile_geoparams) or die "Could not open file '".$outfile_geoparams."' $!";
+            print STDERR "Opened ".$outfile_geoparams."\n";
+            my $geoparams = <$fh_geoparams>;
+            chomp $geoparams;
+            @geoparams_coordinates = split ',', $geoparams;
+            print STDERR Dumper [$geoparams, \@geoparams_coordinates];
+        close($fh_geoparams);
+    }
+    else {
+        my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
+        my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
+
+        my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $upload_tempfile --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams ";
+        print STDERR $geo_cmd."\n";
+        my $geo_cmd_status = system($geo_cmd);
+        $ortho_file = $outfile_image;
+
+        open(my $fh_geoparams, '<', $outfile_geoparams) or die "Could not open file '".$outfile_geoparams."' $!";
+            print STDERR "Opened ".$outfile_geoparams."\n";
+            my $geoparams = <$fh_geoparams>;
+            chomp $geoparams;
+            @geoparams_coordinates = split ',', $geoparams;
+            print STDERR Dumper [$geoparams, \@geoparams_coordinates];
+        close($fh_geoparams);
+    }
+
+    $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";
+    $c->stash->{template} = 'generic_message.mas';
+    return;
+}
+
 sub _check_user_login {
     my $c = shift;
     my $user_id;

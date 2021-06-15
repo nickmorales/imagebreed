@@ -2229,6 +2229,49 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
   </div>
 </div>
 
+<div class="modal fade" id="upload_drone_imagery_geocoordinate_param_dialog" name="upload_drone_imagery_geocoordinate_param_dialog" tabindex="-1" role="dialog" aria-labelledby="uploadDroneImageryGeocoordinateParamDialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="uploadDroneImageryGeocoordinateParamDialog">Add GeoCoordinate Params</h4>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+
+                    <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_geocoordinate_param_form" name="upload_drone_imagery_geocoordinate_param_form" action="/drone_imagery/upload_drone_imagery_geocoordinate_param">
+                        <div class="form-group">
+                            <label class="col-sm-6 control-label">WGS84 GeoTIFF (.tif): (should be same dimensions as uploaded reflectance maps)</label>
+                            <div class="col-sm-6" >
+                                <input type="file" id="upload_drone_imagery_geocoordinate_param_geotiff" name="upload_drone_imagery_geocoordinate_param_geotiff" encoding="multipart/form-data" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-6 control-label">GeoTIFF Type:</label>
+                            <div class="col-sm-6" >
+                                <select class="form-control" id="upload_drone_imagery_geocoordinate_param_type" name="upload_drone_imagery_geocoordinate_param_type">
+                                    <option value="single">Single Channel GeoTIFF</option>
+                                    <option value="rgb">RGB GeoTIFF</option>
+                                </select>
+                            </div>
+                        </div>
+                        <input type="hidden" id="upload_drone_imagery_geocoordinate_param_field_trial_id" name="upload_drone_imagery_geocoordinate_param_field_trial_id" value="" />
+                        <input type="hidden" id="upload_drone_imagery_geocoordinate_param_drone_run_id" name="upload_drone_imagery_geocoordinate_param_drone_run_id" value="" />
+                    </form><br/>
+
+                    <center>
+                        <button type="submit" class="btn btn-info" name="upload_drone_imagery_geocoordinate_param_submit" id="upload_drone_imagery_geocoordinate_param_submit">Submit</button>
+                    </center>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <& /breeders_toolbox/drone_imagery/upload_drone_imagery_dialogs.mas &>
 
 <script>
@@ -4335,6 +4378,29 @@ jQuery(document).ready(function() {
                 alert('Error calculating precipitation sum!');
             }
         });
+    });
+
+    //
+    // Add GeoCoordinate Params
+    //
+
+    var manage_drone_imagery_add_geocoordinate_params_field_trial_id;
+    var manage_drone_imagery_add_geocoordinate_params_drone_run_project_id;
+
+    jQuery(document).on('click', 'button[name=drone_imagery_drone_run_band_add_geocoordinate_params]', function() {
+        manage_drone_imagery_add_geocoordinate_params_field_trial_id = jQuery(this).data('field_trial_id');
+        manage_drone_imagery_add_geocoordinate_params_drone_run_project_id = jQuery(this).data('drone_run_project_id');
+
+        jQuery('#upload_drone_imagery_geocoordinate_param_field_trial_id').val(manage_drone_imagery_add_geocoordinate_params_field_trial_id);
+        jQuery('#upload_drone_imagery_geocoordinate_param_drone_run_id').val(manage_drone_imagery_add_geocoordinate_params_drone_run_project_id);
+
+        jQuery('#upload_drone_imagery_geocoordinate_param_dialog').modal('show');
+    });
+
+    jQuery('#upload_drone_imagery_geocoordinate_param_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
     });
 
     //

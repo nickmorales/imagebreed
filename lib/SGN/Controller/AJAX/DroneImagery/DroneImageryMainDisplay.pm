@@ -140,6 +140,28 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
             my $drone_run_bands = $v->{bands};
             my $drone_run_date = $v->{drone_run_date};
 
+            my $missing_geocoord_params = 0;
+            foreach my $drone_run_band_project_id (sort keys %$drone_run_bands) {
+                my $d = $drone_run_bands->{$drone_run_band_project_id};
+                if ($d->{drone_run_band_geoparam_coordinates}) {
+                    my $geocoords = decode_json $d->{drone_run_band_geoparam_coordinates};
+                    if (scalar(@$geocoords) < 0) {
+                        $missing_geocoord_params = 1;
+                    }
+                    # my $xOrigin = $geocoords->[0];
+                    # my $yOrigin = $geocoords->[3];
+                    # my $pixelWidth = $geocoords->[1];
+                    # my $pixelHeight = -1*$geocoords->[5];
+                    # my $x_pos = ($crd->[0] - $xOrigin) / $pixelWidth;
+                    # my $y_pos = ($yOrigin - $crd->[1] ) / $pixelHeight;
+                    # my $x_coord = ($x_pos * $pixelWidth) + $xOrigin;
+                    # my $y_coord = $yOrigin - ($y_pos * $pixelHeight);
+                }
+                else {
+                    $missing_geocoord_params = 1;
+                }
+            }
+
             $drone_run_html .= '<div class="panel-group" id="drone_run_band_accordion_drone_run_wrapper_'.$k.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_run_band_accordion_drone_run_wrapper_'.$k.'" href="#drone_run_band_accordion_drone_run_wrapper_one_'.$k.'" >'.$v->{drone_run_project_name}.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp'.$drone_run_date.'</a></h4></div><div id="drone_run_band_accordion_drone_run_wrapper_one_'.$k.'" class="panel-collapse collapse"><div class="panel-body">';
 
             $drone_run_html .= '<div class="well well-sm">';
@@ -205,6 +227,10 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
                     # if ($v->{drone_run_processed} && !$v->{drone_run_ground_control_points}) {
                     if ($v->{drone_run_processed}) {
                         $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_ground_control_points" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Save Ground Control Points For<br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
+
+                        if ($missing_geocoord_params) {
+                            $drone_run_html .= '<button class="btn btn-default btn-sm" name="drone_imagery_drone_run_band_add_geocoordinate_params" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Add GeoCoordinate Params</button><br/><br/>';
+                        }
                     }
                 # }
             }
@@ -225,23 +251,7 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
             foreach my $drone_run_band_project_id (sort keys %$drone_run_bands) {
                 my $d = $drone_run_bands->{$drone_run_band_project_id};
 
-                $drone_run_band_table_html .= '<tr><td><b>Name</b>: '.$d->{drone_run_band_project_name}.'<br/><b>Description</b>: '.$d->{drone_run_band_project_description}.'<br/><b>Type</b>: '.$d->{drone_run_band_project_type}.'<br/><b>GeoParam Coordinates</b>:';
-                if ($d->{drone_run_band_geoparam_coordinates}) {
-                    my $geocoords = decode_json $d->{drone_run_band_geoparam_coordinates};
-                    my $xOrigin = $geocoords->[0];
-                    my $yOrigin = $geocoords->[3];
-                    my $pixelWidth = $geocoords->[1];
-                    my $pixelHeight = -1*$geocoords->[5];
-                    # my $x_pos = ($crd->[0] - $xOrigin) / $pixelWidth;
-                    # my $y_pos = ($yOrigin - $crd->[1] ) / $pixelHeight;
-                    # my $x_coord = ($x_pos * $pixelWidth) + $xOrigin;
-                    # my $y_coord = -1 * ( ($y_pos * $pixelHeight) - $yOrigin );
-                    $drone_run_band_table_html .= ' Saved';
-                }
-                else {
-                    $drone_run_band_table_html .= ' <button class="btn btn-sm btn-default" name="drone_imagery_drone_run_band_add_geocoordinate_params" data-drone_run_band_project_id="'.$drone_run_band_project_id.'" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'">Add GeoCoordinate Params</button>';
-                }
-                $drone_run_band_table_html .= '</td><td>';
+                $drone_run_band_table_html .= '<tr><td><b>Name</b>: '.$d->{drone_run_band_project_name}.'<br/><b>Description</b>: '.$d->{drone_run_band_project_description}.'<br/><b>Type</b>: '.$d->{drone_run_band_project_type}.'</td><td>';
 
                 $drone_run_band_table_html .= '<div class="panel-group" id="drone_run_band_accordion_'.$drone_run_band_project_id.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_run_band_accordion_'.$drone_run_band_project_id.'" href="#drone_run_band_accordion_one_'.$drone_run_band_project_id.'" onclick="manageDroneImageryDroneRunBandDisplay('.$drone_run_band_project_id.')">View Images</a></h4></div><div id="drone_run_band_accordion_one_'.$drone_run_band_project_id.'" class="panel-collapse collapse"><div class="panel-body">';
 
