@@ -2255,14 +2255,31 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                                 </select>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label class="col-sm-6 control-label">Coordinate System:</label>
+                            <div class="col-sm-6" >
+                                <select class="form-control" id="upload_drone_imagery_geocoordinate_param_coordinate_system" name="upload_drone_imagery_geocoordinate_param_coordinate_system">
+                                    <option value="WGS84">WGS84</option>
+                                    <option value="UTM">UTM</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-6 control-label">Save As Official Plot GeoJSON:</label>
+                            <div class="col-sm-6" >
+                                <select class="form-control" id="upload_drone_imagery_geocoordinate_param_overwrite_geojson" name="upload_drone_imagery_geocoordinate_param_overwrite_geojson">
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+                            </div>
+                        </div>
                         <input type="hidden" id="upload_drone_imagery_geocoordinate_param_field_trial_id" name="upload_drone_imagery_geocoordinate_param_field_trial_id" value="" />
                         <input type="hidden" id="upload_drone_imagery_geocoordinate_param_drone_run_id" name="upload_drone_imagery_geocoordinate_param_drone_run_id" value="" />
+
+                        <center>
+                            <button type="submit" class="btn btn-info" name="upload_drone_imagery_geocoordinate_param_submit" id="upload_drone_imagery_geocoordinate_param_submit">Submit</button>
+                        </center>
                     </form><br/>
-
-                    <center>
-                        <button type="submit" class="btn btn-info" name="upload_drone_imagery_geocoordinate_param_submit" id="upload_drone_imagery_geocoordinate_param_submit">Submit</button>
-                    </center>
-
                 </div>
             </div>
             <div class="modal-footer">

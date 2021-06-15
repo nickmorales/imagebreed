@@ -148,14 +148,6 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
                     if (scalar(@$geocoords) < 0) {
                         $missing_geocoord_params = 1;
                     }
-                    # my $xOrigin = $geocoords->[0];
-                    # my $yOrigin = $geocoords->[3];
-                    # my $pixelWidth = $geocoords->[1];
-                    # my $pixelHeight = -1*$geocoords->[5];
-                    # my $x_pos = ($crd->[0] - $xOrigin) / $pixelWidth;
-                    # my $y_pos = ($yOrigin - $crd->[1] ) / $pixelHeight;
-                    # my $x_coord = ($x_pos * $pixelWidth) + $xOrigin;
-                    # my $y_coord = $yOrigin - ($y_pos * $pixelHeight);
                 }
                 else {
                     $missing_geocoord_params = 1;
@@ -228,9 +220,9 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
                     if ($v->{drone_run_processed}) {
                         $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_ground_control_points" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Save Ground Control Points For<br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
 
-                        if ($missing_geocoord_params) {
+                        # if ($missing_geocoord_params) {
                             $drone_run_html .= '<button class="btn btn-default btn-sm" name="drone_imagery_drone_run_band_add_geocoordinate_params" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Add GeoCoordinate Params</button><br/><br/>';
-                        }
+                        # }
                     }
                 # }
             }

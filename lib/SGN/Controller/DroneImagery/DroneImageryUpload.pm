@@ -28,6 +28,7 @@ use LWP::UserAgent;
 use CXGN::ZipFile;
 use Text::CSV;
 use SGN::Controller::AJAX::DroneImagery::DroneImagery;
+use CXGN::Trial::TrialLayout;
 
 BEGIN { extends 'Catalyst::Controller'; }
 
@@ -2283,7 +2284,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     return;
 }
 
-sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_imagery_bulk_previous") :Args(0) {
+sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone_imagery_geocoordinate_param") :Args(0) {
     my $self = shift;
     my $c = shift;
     $c->response->headers->header( "Access-Control-Allow-Origin" => '*' );
@@ -2294,10 +2295,9 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
     # print STDERR Dumper $c->req->params();
 
-    my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
-    my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
-
+    my $overwrite_geojson = $c->req->param('upload_drone_imagery_geocoordinate_param_overwrite_geojson') eq 'yes' ? 1 : 0;
     my $image_type = $c->req->param('upload_drone_imagery_geocoordinate_param_type');
+    my $coordinate_system = $c->req->param('upload_drone_imagery_geocoordinate_param_coordinate_system');
     my $field_trial_id = $c->req->param('upload_drone_imagery_geocoordinate_param_field_trial_id');
     my $drone_run_id = $c->req->param('upload_drone_imagery_geocoordinate_param_drone_run_id');
     my $upload_file = $c->req->upload('upload_drone_imagery_geocoordinate_param_geotiff');
@@ -2309,23 +2309,13 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
 
-    # my $uploader = CXGN::UploadFile->new({
-    #     tempfile => $upload_tempfile,
-    #     subdirectory => "drone_imagery_upload_geocoord_params",
-    #     archive_path => $c->config->{archive_path},
-    #     archive_filename => $upload_original_name,
-    #     timestamp => $timestamp,
-    #     user_id => $user_id,
-    #     user_role => $user_role
-    # });
-    # my $archived_filename_with_path = $uploader->archive();
-    # my $md5 = $uploader->get_md5($archived_filename_with_path);
-    # if (!$archived_filename_with_path) {
-    #     $c->stash->{rest} = { error => "Could not save file $upload_original_name in archive." };
-    #     $c->detach();
-    # }
-    # unlink $upload_tempfile;
-    # print STDERR "Archived Drone Image GeoCoordinate Params File: $archived_filename_with_path\n";
+    my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
+    my $drone_run_band_plot_polygons_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_plot_polygons_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_plot_polygons', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
+    my $stock_geo_json_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot_geo_json', 'stock_property');
+    my $field_trial_project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
 
     my @geoparams_coordinates;
     my $ortho_file;
@@ -2365,6 +2355,116 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             @geoparams_coordinates = split ',', $geoparams;
             print STDERR Dumper [$geoparams, \@geoparams_coordinates];
         close($fh_geoparams);
+    }
+
+    my $xOrigin = $geoparams_coordinates[0];
+    my $yOrigin = $geoparams_coordinates[3];
+    my $pixelWidth = $geoparams_coordinates[1];
+    my $pixelHeight = -1*$geoparams_coordinates[5];
+
+    my $drone_run_band_q = "SELECT drone_run_band.project_id, plot_polygons.value, field_trial.project_id
+        FROM project AS drone_run
+        JOIN project_relationship ON (drone_run.project_id=project_relationship.object_project_id AND project_relationship.type_id=$project_relationship_type_id)
+        JOIN project AS drone_run_band ON(project_relationship.subject_project_id=drone_run_band.project_id)
+        JOIN projectprop AS plot_polygons ON(drone_run_band.project_id=plot_polygons.project_id AND plot_polygons.type_id=$drone_run_band_plot_polygons_type_id)
+        JOIN project_relationship AS field_trial_rel ON (drone_run.project_id=field_trial_rel.subject_project_id AND field_trial_rel.type_id=$field_trial_project_relationship_type_id)
+        JOIN project AS field_trial ON (field_trial_rel.object_project_id=field_trial.project_id)
+        WHERE drone_run.project_id=?;";
+    my $drone_run_band_h = $schema->storage->dbh()->prepare($drone_run_band_q);
+    $drone_run_band_h->execute($drone_run_id);
+
+    my $stock_q = "SELECT stock_id FROM stock WHERE uniquename = ?;";
+    my $stock_h = $schema->storage->dbh()->prepare($stock_q);
+
+    my %seen_field_trial_ids;
+    while (my ($drone_run_band_project_id, $plot_polygon_json, $field_trial_id) = $drone_run_band_h->fetchrow_array()) {
+        $seen_field_trial_ids{$field_trial_id}++;
+
+        my $plot_polygon = decode_json $plot_polygon_json;
+        # print STDERR Dumper $plot_polygon;
+
+        my @geocoord_plot_polygons;
+        while (my($stock_name, $polygon_arr) = each %$plot_polygon) {
+
+            $stock_h->execute($stock_name);
+            my ($stock_id) = $stock_h->fetchrow_array();
+
+            my $plot = $schema->resultset("Stock::Stock")->find({stock_id => $stock_id});
+
+            my @geojson_coords;
+            foreach my $poly (@$polygon_arr) {
+                my $x_pos = $poly->{x};
+                my $y_pos = $poly->{y};
+
+                my $x_coord = ($x_pos * $pixelWidth) + $xOrigin;
+                my $y_coord = $yOrigin - ($y_pos * $pixelHeight);
+
+                push @geojson_coords, [$x_coord, $y_coord];
+            }
+            my $first_geojson = $geojson_coords[0];
+            push @geojson_coords, $first_geojson;
+
+            my $geo_json = {
+                "type"=> "Feature",
+                "geometry"=> {
+                    "type"=> "Polygon",
+                    "coordinates"=> [
+                        \@geojson_coords
+                    ]
+                },
+                "properties"=> {
+                    "format"=> $coordinate_system,
+                }
+            };
+            push @geocoord_plot_polygons, $geo_json;
+            my $geno_json_string = encode_json $geo_json;
+            print STDERR $geno_json_string."\n";
+
+            if ($overwrite_geojson) {
+                my $previous_plot_gps_rs = $schema->resultset("Stock::Stockprop")->search({stock_id=>$plot->stock_id, type_id=>$stock_geo_json_cvterm->cvterm_id});
+                $previous_plot_gps_rs->delete_all();
+                $plot->create_stockprops({$stock_geo_json_cvterm->name() => $geno_json_string});
+            }
+        }
+
+        my $drone_run_band_coordinate_system_type_rs = $schema->resultset('Project::Projectprop')->update_or_create({
+            type_id=>$geoparam_coordinates_type_cvterm_id,
+            project_id=>$drone_run_band_project_id,
+            rank=>0,
+            value=> $coordinate_system
+        },
+        {
+            key=>'projectprop_c1'
+        });
+
+        my $drone_run_band_geoparam_coordinates_rs = $schema->resultset('Project::Projectprop')->update_or_create({
+            type_id=>$geoparam_coordinates_cvterm_id,
+            project_id=>$drone_run_band_project_id,
+            rank=>0,
+            value=> encode_json \@geoparams_coordinates
+        },
+        {
+            key=>'projectprop_c1'
+        });
+
+        my $drone_run_band_geoparam_coordinates_polygons_rs = $schema->resultset('Project::Projectprop')->update_or_create({
+            type_id=>$geoparam_coordinates_plot_polygons_cvterm_id,
+            project_id=>$drone_run_band_project_id,
+            rank=>0,
+            value=> encode_json \@geocoord_plot_polygons
+        },
+        {
+            key=>'projectprop_c1'
+        });
+    }
+
+    foreach my $trial_id (keys %seen_field_trial_ids) {
+        my $layout = CXGN::Trial::TrialLayout->new({
+            schema => $schema,
+            trial_id => $trial_id,
+            experiment_type => 'field_layout'
+        });
+        $layout->generate_and_cache_layout();
     }
 
     $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";
