@@ -51,11 +51,11 @@ use CXGN::Trial::TrialLayout;
 use CXGN::Trial;
 use Data::Dumper;
 
-sub validate { 
+sub validate {
     return 1;
 }
 
-sub download { 
+sub download {
     my $self = shift;
     my @trial_ids = $self->trial_id() ? ($self->trial_id()) : ();
     if ($self->trial_list) {
