@@ -1339,6 +1339,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
     my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
     my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_plot_polygons_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_plot_polygons', 'project_property')->cvterm_id();
     my $drone_run_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_project_type', 'project_property')->cvterm_id();
     my $drone_run_is_raw_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_raw_images', 'project_property')->cvterm_id();
     my $drone_run_camera_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_type', 'project_property')->cvterm_id();
@@ -1929,6 +1930,10 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         my @drone_run_band_projects;
         my @drone_run_band_project_ids;
         my @drone_run_band_geoparams_coordinates;
+
+        my $geojson_temp_filename = $filename_imaging_event_geojson_lookup{$geojson_filename};
+        my $geojson_value;
+
         foreach my $m (@ortho_images) {
             my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
             my $band = $m->{band};
@@ -1985,6 +1990,25 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             }
             push @drone_run_band_geoparams_coordinates, \@geoparams_coordinates;
 
+            open(my $fh_geojson, '<', $geojson_temp_filename) or die "Could not open file '$geojson_temp_filename' $!";
+                print STDERR "Opened $geojson_temp_filename\n";
+                $geojson_value = decode_json <$fh_geojson>;
+            close($fh_geojson);
+
+            my $trial_lookup = $field_trial_layout_lookup{$selected_trial_id};
+
+            my %geocoord_plot_polygons;
+            foreach (@{$geojson_value->{features}}) {
+                my $plot_number = $_->{properties}->{ID};
+                my $coordinates = $_->{geometry}->{coordinates};
+                my $stock_name = $trial_lookup->{$plot_number}->{plot_name};
+                my @coords;
+                foreach my $crd (@{$coordinates->[0]}) {
+                    push @coords, [$crd->[0], y => $crd->[1]];
+                }
+                $geocoord_plot_polygons{$stock_name} = \@coords;
+            }
+
             my $project_rs = $schema->resultset("Project::Project")->create({
                 name => $imaging_event_name."_".$band_short,
                 description => $imaging_event_desc.". ".$band,
@@ -1992,7 +2016,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                     {type_id => $drone_run_band_type_cvterm_id, value => $band},
                     {type_id => $design_cvterm_id, value => 'drone_run_band'},
                     {type_id => $geoparam_coordinates_type_cvterm_id, value => $coordinate_system},
-                    {type_id => $geoparam_coordinates_cvterm_id, value => encode_json \@geoparams_coordinates}
+                    {type_id => $geoparam_coordinates_cvterm_id, value => encode_json \@geoparams_coordinates},
+                    {type_id => $geoparam_coordinates_plot_polygons_cvterm_id, value => encode_json \%geocoord_plot_polygons},
                 ],
                 project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $selected_drone_run_id}]
             });
@@ -2028,12 +2053,12 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             push @drone_run_band_project_ids, $selected_drone_run_band_id;
         }
 
-        my $geojson_temp_filename = $filename_imaging_event_geojson_lookup{$geojson_filename};
         push @drone_run_projects, {
             drone_run_project_id => $selected_drone_run_id,
             drone_run_band_projects => \@drone_run_band_projects,
             drone_run_band_project_ids => \@drone_run_band_project_ids,
             geojson_temp_filename => $geojson_temp_filename,
+            geojson_value => $geojson_value,
             time_cvterm_id => $day_cvterm_id,
             field_trial_id => $selected_trial_id,
             coordinate_system => $coordinate_system,
@@ -2056,6 +2081,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         my $time_cvterm_id = $_->{time_cvterm_id};
         my $apply_drone_run_band_project_ids = $_->{drone_run_band_project_ids};
         my $geojson_filename = $_->{geojson_temp_filename};
+        my $geojson_value = $_->{geojson_value};
         my $field_trial_id = $_->{field_trial_id};
         my $coordinate_system = $_->{coordinate_system};
         my $drone_run_band_geoparams_coordinates = $_->{drone_run_band_geoparams_coordinates};
@@ -2096,13 +2122,6 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         foreach (@$vegetative_indices) {
             $vegetative_indices_hash{$_}++;
         }
-
-        my $geojson_value;
-
-        open(my $fh_geojson, '<', $geojson_filename) or die "Could not open file '$geojson_filename' $!";
-            print STDERR "Opened $geojson_filename\n";
-            $geojson_value = decode_json <$fh_geojson>;
-        close($fh_geojson);
 
         my $trial_lookup = $field_trial_layout_lookup{$field_trial_id};
 
