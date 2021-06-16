@@ -100,6 +100,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                     <div class="col-sm-6">
                         <select class="form-control" id="manage_drone_imagery_standard_process_ground_control_points_option">
                             <option value="No">No</option>
+                            <option value="Yes_GeoTIFF_params">Yes, and it has GeoTIFF coordinates saved.</option>
                             <option value="Yes">Yes, and it has GCPs defined.</option>
                             <option value="Yes_camera_rig">Yes, and the same fixed camera rig was used.</option>
                         </select>
@@ -165,6 +166,58 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                     </center>
                 </div>
             </div>
+            <div id="manage_drone_imagery_standard_process_previous_geotiff_params_div" style="display:none">
+                <div class="well well-sm">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+
+                            <div class="form-horizontal">
+                                <div class="form-group">
+                                    <label class="col-sm-6 control-label">Select the aerial imaging event to use as a template. The same rotation and plot-polygon template will be applied: </label>
+                                    <div class="col-sm-6">
+                                        <div id="manage_drone_imagery_standard_process_geotiff_params_select"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="manage_drone_imagery_standard_process_previous_geotiff_params_form" name="manage_drone_imagery_standard_process_previous_geotiff_params_form" action="/drone_imagery/standard_process_previous_geotiff" >
+                                <div class="form-group">
+                                    <label class="col-sm-6 control-label">WGS84/UTM GeoTIFF (.tif): (should be same dimensions as uploaded reflectance maps)</label>
+                                    <div class="col-sm-6" >
+                                        <input type="file" id="manage_drone_imagery_standard_process_geotiff_params_geotiff" name="manage_drone_imagery_standard_process_geotiff_params_geotiff" encoding="multipart/form-data" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-6 control-label">GeoTIFF Type:</label>
+                                    <div class="col-sm-6" >
+                                        <select class="form-control" id="manage_drone_imagery_standard_process_geotiff_params_type" name="manage_drone_imagery_standard_process_geotiff_params_type">
+                                            <option value="single">Single Channel GeoTIFF</option>
+                                            <option value="rgb">RGB GeoTIFF</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-6 control-label">Save As Official Plot GeoJSON:</label>
+                                    <div class="col-sm-6" >
+                                        <select class="form-control" id="manage_drone_imagery_standard_process_geotiff_params_overwrite_geojson" name="manage_drone_imagery_standard_process_geotiff_params_overwrite_geojson">
+                                            <option value="yes">Yes</option>
+                                            <option value="no">No</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="manage_drone_imagery_standard_process_geotiff_params_previous_drone_run_project_id" id="manage_drone_imagery_standard_process_geotiff_params_previous_drone_run_project_id" value="" />
+                                <input type="hidden" name="manage_drone_imagery_standard_process_geotiff_params_drone_run_project_id" id="manage_drone_imagery_standard_process_geotiff_params_drone_run_project_id" value="" />
+                                <input type="hidden" name="manage_drone_imagery_standard_process_geotiff_params_angle" id="manage_drone_imagery_standard_process_geotiff_params_angle" value="" />
+                                <input type="hidden" name="manage_drone_imagery_standard_process_geotiff_params_time_cvterm_id" id="manage_drone_imagery_standard_process_geotiff_params_time_cvterm_id" value="" />
+                            </form>
+
+                            <center>
+                            <button class="btn btn-primary" id="manage_drone_imagery_standard_process_geotiff_params_confirm">Confirm and Go to Next</button>
+                            </center>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div id="manage_drone_imagery_standard_process_ground_control_points_skip_div" style="display:none">
                 <center>
                 <button class="btn btn-primary" id="manage_drone_imagery_standard_process_ground_control_points_skip_step">Skip and Go to Next Step</button>
@@ -197,7 +250,13 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                 <!--button class="btn btn-primary" id="drone_imagery_standard_process_rotate_stitched_view">Rotate Image (Does Not Save)</button-->
                 <button class="btn btn-default" id="drone_imagery_standard_process_rotate_stitched_crosshairs">Draw Crosshairs Assist</button>
                 <!--button class="btn btn-default" id="drone_imagery_standard_process_rotate_stitched_restart">Restart</button-->
-                <button class="btn btn-primary" id="manage_drone_imagery_standard_process_rotate_step">Save Rotated Image And Go To Next Step</button>
+
+                <div id="manage_drone_imagery_standard_process_rotate_step_confirm_div" style="display:none">
+                    <button class="btn btn-primary" id="manage_drone_imagery_standard_process_rotate_step">Save Rotated Image And Go To Next Step</button>
+                </div>
+                <div id="manage_drone_imagery_standard_process_rotate_step_finish_div" style="display:none">
+                    <button class="btn btn-primary" id="manage_drone_imagery_standard_process_rotate_step_finish">Save Rotated Image And Go Complete Standard Process</button>
+                </div>
             </div>
 
             <div id="manage_drone_imagery_standard_process_rotate_load_div">
@@ -2396,6 +2455,8 @@ jQuery(document).ready(function() {
             get_select_box('drone_runs_with_gcps', 'manage_drone_imagery_standard_process_ground_control_points_select', {'id':'manage_drone_imagery_standard_process_ground_control_points_select_id', 'name':'manage_drone_imagery_standard_process_ground_control_points_select_id', 'field_trial_id':manage_drone_imagery_standard_process_field_trial_id, 'empty':1});
 
             get_select_box('drone_runs', 'manage_drone_imagery_standard_process_previous_camera_rig_select', {'id':'manage_drone_imagery_standard_process_previous_camera_rig_select_id', 'name':'manage_drone_imagery_standard_process_previous_camera_rig_select_id', 'field_trial_id':manage_drone_imagery_standard_process_field_trial_id, 'empty':1});
+
+            get_select_box('drone_runs', 'manage_drone_imagery_standard_process_geotiff_params_select', {'id':'manage_drone_imagery_standard_process_previous_geotiff_params_select_id', 'name':'manage_drone_imagery_standard_process_previous_geotiff_params_select_id', 'field_trial_id':manage_drone_imagery_standard_process_field_trial_id});
         }
     });
 
@@ -2404,16 +2465,25 @@ jQuery(document).ready(function() {
             jQuery('#manage_drone_imagery_standard_process_ground_control_points_skip_div').hide();
             jQuery('#manage_drone_imagery_standard_process_ground_control_points_select_div').show();
             jQuery('#manage_drone_imagery_standard_process_previous_camera_rig_select_div').hide();
+            jQuery('#manage_drone_imagery_standard_process_previous_geotiff_params_div').hide();
         }
         else if (jQuery(this).val() == 'Yes_camera_rig') {
             jQuery('#manage_drone_imagery_standard_process_ground_control_points_skip_div').hide();
             jQuery('#manage_drone_imagery_standard_process_ground_control_points_select_div').hide();
             jQuery('#manage_drone_imagery_standard_process_previous_camera_rig_select_div').show();
+            jQuery('#manage_drone_imagery_standard_process_previous_geotiff_params_div').hide();
+        }
+        else if (jQuery(this).val() == 'Yes_GeoTIFF_params') {
+            jQuery('#manage_drone_imagery_standard_process_ground_control_points_skip_div').hide();
+            jQuery('#manage_drone_imagery_standard_process_ground_control_points_select_div').hide();
+            jQuery('#manage_drone_imagery_standard_process_previous_camera_rig_select_div').hide();
+            jQuery('#manage_drone_imagery_standard_process_previous_geotiff_params_div').show();
         }
         else {
             jQuery('#manage_drone_imagery_standard_process_ground_control_points_skip_div').show();
             jQuery('#manage_drone_imagery_standard_process_ground_control_points_select_div').hide();
             jQuery('#manage_drone_imagery_standard_process_previous_camera_rig_select_div').hide();
+            jQuery('#manage_drone_imagery_standard_process_previous_geotiff_params_div').hide();
         }
     });
 
@@ -2580,6 +2650,36 @@ jQuery(document).ready(function() {
         }
     });
 
+    jQuery('#manage_drone_imagery_standard_process_geotiff_params_confirm').click(function() {
+        jQuery.ajax({
+            url : '/api/drone_imagery/get_project_md_image?drone_run_band_project_id='+manage_drone_imagery_standard_process_drone_run_band_project_id+'&project_image_type_name=stitched_drone_imagery',
+            beforeSend: function(){
+                showManageDroneImagerySection('manage_drone_imagery_loading_div');
+            },
+            success: function(response){
+                console.log(response);
+                manage_drone_imagery_standard_process_rotate_stitched_image_id = response.data[0]['image_id'];
+                manage_drone_imagery_standard_process_rotate_stitched_image_degrees = 0.00;
+
+                drone_imagery_plot_polygon_click_type = '';
+
+                showRotateImageD3(manage_drone_imagery_standard_process_rotate_stitched_image_id, '#drone_imagery_standard_process_rotate_original_stitched_div', 'manage_drone_imagery_standard_process_rotate_load_div');
+
+                showManageDroneImagerySection('manage_drone_imagery_standard_process_div');
+
+                jQuery('#manage_drone_imagery_standard_process_rotate_step_confirm_div').hide();
+                jQuery('#manage_drone_imagery_standard_process_rotate_step_finish_div').show();
+
+                Workflow.complete("#manage_drone_imagery_standard_process_geotiff_params_confirm");
+                Workflow.focus('#manage_drone_imagery_standard_process_workflow', 3);
+            },
+            error: function(response){
+                alert('Error getting standard process image rotation step after GeoTIFF previous select!');
+                showManageDroneImagerySection('manage_drone_imagery_standard_process_div');
+            }
+        });
+    });
+
     jQuery('#manage_drone_imagery_standard_process_ground_control_points_skip_step').click(function(){
         jQuery.ajax({
             url : '/api/drone_imagery/get_project_md_image?drone_run_band_project_id='+manage_drone_imagery_standard_process_drone_run_band_project_id+'&project_image_type_name=stitched_drone_imagery',
@@ -2596,6 +2696,9 @@ jQuery(document).ready(function() {
                 showRotateImageD3(manage_drone_imagery_standard_process_rotate_stitched_image_id, '#drone_imagery_standard_process_rotate_original_stitched_div', 'manage_drone_imagery_standard_process_rotate_load_div');
 
                 showManageDroneImagerySection('manage_drone_imagery_standard_process_div');
+
+                jQuery('#manage_drone_imagery_standard_process_rotate_step_confirm_div').show();
+                jQuery('#manage_drone_imagery_standard_process_rotate_step_finish_div').show();
 
                 Workflow.complete("#manage_drone_imagery_standard_process_ground_control_points_skip_step");
                 Workflow.focus('#manage_drone_imagery_standard_process_workflow', 3);
@@ -2670,6 +2773,64 @@ jQuery(document).ready(function() {
                 showManageDroneImagerySection('manage_drone_imagery_standard_process_div');
             }
         });
+    });
+
+    jQuery('#manage_drone_imagery_standard_process_rotate_step_finish').click(function(){
+        var rotate_stitched_image_degrees_text = jQuery('#drone_imagery_standard_process_rotate_degrees_input').val();
+        if (rotate_stitched_image_degrees_text == '') {
+            alert('Please give a number of degrees first! Can be a decimal amount.');
+            return false;
+        }
+        if (isNaN(rotate_stitched_image_degrees_text)) {
+            alert('Please give a number of degrees first! Can be a decimal amount.');
+            return false;
+        }
+        manage_drone_imagery_standard_process_rotate_stitched_image_degrees = parseFloat(rotate_stitched_image_degrees_text);
+
+        var manage_drone_imagery_standard_process_previous_geotiff_params_step_drone_run_project_id = jQuery('#manage_drone_imagery_standard_process_previous_geotiff_params_select_id').val();
+        if (manage_drone_imagery_standard_process_previous_geotiff_params_step_drone_run_project_id == '') {
+            alert('Please select a previous imaging event to use as the template!');
+            return false;
+        }
+
+        jQuery.ajax({
+            type: 'GET',
+            url: '/api/drone_imagery/get_weeks_after_planting_date?drone_run_project_id='+manage_drone_imagery_standard_process_drone_run_project_id,
+            dataType: "json",
+            beforeSend: function (){
+                jQuery('#working_modal').modal('show');
+            },
+            success: function(response){
+                jQuery('#working_modal').modal('hide');
+                console.log(response);
+                if (response.error) {
+                    alert(response.error);
+                }
+
+                manage_drone_imagery_standard_process_phenotype_time = response.time_ontology_day_cvterm_id;
+
+                jQuery('#manage_drone_imagery_standard_process_geotiff_params_drone_run_project_id').val(manage_drone_imagery_standard_process_drone_run_project_id);
+                jQuery('#manage_drone_imagery_standard_process_geotiff_params_previous_drone_run_project_id').val(manage_drone_imagery_standard_process_previous_geotiff_params_step_drone_run_project_id);
+                jQuery('#manage_drone_imagery_standard_process_geotiff_params_time_cvterm_id').val(manage_drone_imagery_standard_process_phenotype_time);
+                jQuery('#manage_drone_imagery_standard_process_geotiff_params_angle').val(manage_drone_imagery_standard_process_rotate_stitched_image_degrees);
+
+
+                Workflow.complete("#manage_drone_imagery_standard_process_rotate_step_finish");
+
+                jQuery('#manage_drone_imagery_standard_process_previous_geotiff_params_form').submit();
+            },
+            error: function(response){
+                alert('Error getting time terms for standard process with previous imaging event!');
+                jQuery('#working_modal').modal('hide');
+            }
+        });
+
+    });
+
+    jQuery('#manage_drone_imagery_standard_process_previous_geotiff_params_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab. You can check when the process is done by looking at the indicator on the manage drone imagery page.');
+        jQuery('#working_modal').modal('show');
+        return true;
     });
 
     jQuery(document).on('click', '#manage_drone_imagery_standard_process_cropping_step', function(){
