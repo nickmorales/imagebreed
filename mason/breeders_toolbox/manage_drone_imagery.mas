@@ -2241,7 +2241,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
                     <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_geocoordinate_param_form" name="upload_drone_imagery_geocoordinate_param_form" action="/drone_imagery/upload_drone_imagery_geocoordinate_param">
                         <div class="form-group">
-                            <label class="col-sm-6 control-label">WGS84 GeoTIFF (.tif): (should be same dimensions as uploaded reflectance maps)</label>
+                            <label class="col-sm-6 control-label">WGS84/UTM GeoTIFF (.tif): (should be same dimensions as uploaded reflectance maps)</label>
                             <div class="col-sm-6" >
                                 <input type="file" id="upload_drone_imagery_geocoordinate_param_geotiff" name="upload_drone_imagery_geocoordinate_param_geotiff" encoding="multipart/form-data" />
                             </div>
@@ -2252,15 +2252,6 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                                 <select class="form-control" id="upload_drone_imagery_geocoordinate_param_type" name="upload_drone_imagery_geocoordinate_param_type">
                                     <option value="single">Single Channel GeoTIFF</option>
                                     <option value="rgb">RGB GeoTIFF</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-6 control-label">Coordinate System:</label>
-                            <div class="col-sm-6" >
-                                <select class="form-control" id="upload_drone_imagery_geocoordinate_param_coordinate_system" name="upload_drone_imagery_geocoordinate_param_coordinate_system">
-                                    <option value="WGS84">WGS84</option>
-                                    <option value="UTM">UTM</option>
                                 </select>
                             </div>
                         </div>

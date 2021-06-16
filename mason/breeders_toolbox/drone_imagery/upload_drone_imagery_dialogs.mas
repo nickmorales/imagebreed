@@ -429,8 +429,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_one_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -533,8 +532,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_two_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -580,8 +578,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_two_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -682,8 +679,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_three_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -729,8 +725,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_three_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -776,8 +771,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_three_3" name="drone_run_band_coordinate_system_3">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -878,8 +872,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_four_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -925,8 +918,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_four_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -972,8 +964,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_four_3" name="drone_run_band_coordinate_system_3">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1019,8 +1010,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_four_4" name="drone_run_band_coordinate_system_4">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1121,8 +1111,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_five_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1168,8 +1157,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_five_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1215,8 +1203,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_five_3" name="drone_run_band_coordinate_system_3">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1262,8 +1249,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_five_4" name="drone_run_band_coordinate_system_4">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1309,8 +1295,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_five_5" name="drone_run_band_coordinate_system_5">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1411,8 +1396,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_six_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1458,8 +1442,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_six_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1505,8 +1488,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_six_3" name="drone_run_band_coordinate_system_3">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1552,8 +1534,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_six_4" name="drone_run_band_coordinate_system_4">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1599,8 +1580,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_six_5" name="drone_run_band_coordinate_system_5">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1646,8 +1626,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_six_6" name="drone_run_band_coordinate_system_6">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1748,8 +1727,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1795,8 +1773,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1842,8 +1819,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_3" name="drone_run_band_coordinate_system_3">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1889,8 +1865,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_4" name="drone_run_band_coordinate_system_4">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1936,8 +1911,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_5" name="drone_run_band_coordinate_system_5">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -1983,8 +1957,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_6" name="drone_run_band_coordinate_system_6">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -2030,8 +2003,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_7" name="drone_run_band_coordinate_system_7">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -2132,8 +2104,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -2179,8 +2150,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -2226,8 +2196,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_3" name="drone_run_band_coordinate_system_3">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -2273,8 +2242,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_4" name="drone_run_band_coordinate_system_4">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -2320,8 +2288,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_5" name="drone_run_band_coordinate_system_5">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -2367,8 +2334,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_6" name="drone_run_band_coordinate_system_6">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -2414,8 +2380,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_7" name="drone_run_band_coordinate_system_7">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -2461,8 +2426,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_8" name="drone_run_band_coordinate_system_8">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
-                                        <option value="UTM">UTM (GeoTIFF Image .tif)</option>
-                                        <option value="WGS84">WGS84 (GeoTIFF Image .tif)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
                                 </div>
                             </div>
@@ -2576,7 +2540,7 @@
                             <li><b>Field Trial Name</b>: (required) The name of the field trial which was imaged. This must already exist in the database.</li>
                             <li><b>GeoJSON Filename</b>: (required) The name of the GeoJSON plot-polygon file that corresponds to this imaging event. This filename must exist in the uploaded GeoJSON zipfile. The same GeoJSON file can be used for multiple imaging events.</li>
                             <li><b>Image Filenames</b>: (required) Comma-separated list of image filenames that corresponds to this imaging event (e.g. Field1Ortho01012020__nir.tiff,Field1Ortho01012020__rgb.tiff,Field1Ortho01012020__bw.tiff). The image filenames must exist in the uploaded images zipfile. The same image file can be used for multiple imaging events.</li>
-                            <li><b>Coordinate System</b>: (required) The coordinate system for the supplied images and GeoJSON files of this imaging event. Must be either "UTM", "WGS84", or "Pixels". If either "UTM" or "WGS84" are used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system AND the GeoJSON files must be of the same coordinate system. If "Pixels" is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs, AND the GeoJSON files must describe the pixel positions of the plot-polygons relative to the provided images.</li>
+                            <li><b>Coordinate System</b>: (required) The coordinate system for the supplied images and GeoJSON files of this imaging event. Must be either "WGS84/UTM" or "Pixels". If "WGS84/UTM" is used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system AND the GeoJSON files must be of the same coordinate system. If "Pixels" is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs, AND the GeoJSON files must describe the pixel positions of the plot-polygons relative to the provided images.</li>
                             <li><b>Rotation Angle</b>: (optional) The clock-wise angle of rotation to apply to the uploaded imagery in degrees (0-360). Default is a 0 degree rotation. If a value is provided, the plot-polygon images are expected to be straight after rotation. If no value is provided or 0 is provided, then the plot-polgyon images will include only pixels that lie within the polygons; however, this is more computationally intensive.</li>
                             <li><b>Base Date</b>: (optional) The date and time to reference the imaging event in YYYY/MM/DD hh:mm:ss format (e.g. 2021/03/02 12:00:00). This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment, and they are not capturing images at precisely the same time.</li>
                             <li><b>Camera Rig</b>: (optional) Free-text description of the camera rig. This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment.</li>
@@ -2608,7 +2572,7 @@
                         <p>Do not upload duplicate spectral types for the same imaging event.</p>
                         <p>Images should be perfectly super-imposable for different spectra in the same imaging event.</p>
                         <p>The same image can be used for several imaging events.</p>
-                        <p>If the coordinate system of the imaging event is either "UTM" of "WGS84", then the orthophoto images must be GeoTIFFs (.tiff) containing the coordinate system. If the coordinate system is "Pixels", then the orthophoto images are simple raster images (.tiff, .jpeg, .png).</p>
+                        <p>If the coordinate system of the imaging event is "WGS84/UTM", then the orthophoto images must be GeoTIFFs (.tiff) containing the coordinate system. If the coordinate system is "Pixels", then the orthophoto images are simple raster images (.tiff, .jpeg, .png).</p>
 
                         <br/>
                         <div class="well well-sm">
@@ -2663,7 +2627,7 @@
                         </div>
                         </p>
                         <p>The ID field should give the unique plot number for the plot polygon. The plot number is defined in the field design as a unique number e.g. (1 to 100).</p>
-                        <p>The coordinates should match the coordinate system of "UTM", "WGS84", or "Pixels".</p>
+                        <p>The coordinates should match the coordinate system of "WGS84/UTM" or "Pixels".</p>
 
                         <br/>
                         <div class="well well-sm">
@@ -2763,7 +2727,7 @@
                             <li><b>Sensor</b>: (required) The type of camera sensor used. Must be either "MicaSense 5 Channel Camera", "CCD Color Camera", or "CMOS Color Camera".</li>
                             <li><b>Field Trial Name</b>: (required) The name of the field trial which was imaged. This must already exist in the database.</li>
                             <li><b>Image Filenames</b>: (required) Comma-separated list of image filenames that corresponds to this imaging event (e.g. Field1Ortho01012020__nir.tiff,Field1Ortho01012020__rgb.tiff,Field1Ortho01012020__bw.tiff). The image filenames must exist in the uploaded images zipfile. The same image file can be used for multiple imaging events.</li>
-                            <li><b>Coordinate System</b>: (required) The coordinate system for the supplied images and GeoJSON files of this imaging event. Must be either "UTM", "WGS84", or "Pixels". If either "UTM" or "WGS84" are used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system AND the GeoJSON files must be of the same coordinate system. If "Pixels" is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs, AND the GeoJSON files must describe the pixel positions of the plot-polygons relative to the provided images.</li>
+                            <li><b>Coordinate System</b>: (required) The coordinate system for the supplied images and GeoJSON files of this imaging event. Must be either "WGS84/UTM" or "Pixels". If "WGS84/UTM" is used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system AND the GeoJSON files must be of the same coordinate system. If "Pixels" is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs, AND the GeoJSON files must describe the pixel positions of the plot-polygons relative to the provided images.</li>
                             <li><b>Base Date</b>: (optional) The date and time to reference the imaging event in YYYY/MM/DD hh:mm:ss format (e.g. 2021/03/02 12:00:00). This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment, and they are not capturing images at precisely the same time.</li>
                             <li><b>Camera Rig</b>: (optional) Free-text description of the camera rig. This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment.</li>
                         </ul>
@@ -2794,7 +2758,7 @@
                         <p>Do not upload duplicate spectral types for the same imaging event.</p>
                         <p>Images should be perfectly super-imposable for different spectra in the same imaging event.</p>
                         <p>The same image can be used for several imaging events.</p>
-                        <p>If the coordinate system of the imaging event is either "UTM" of "WGS84", then the orthophoto images must be GeoTIFFs (.tiff) containing the coordinate system. If the coordinate system is "Pixels", then the orthophoto images are simple raster images (.tiff, .jpeg, .png).</p>
+                        <p>If the coordinate system of the imaging event is "WGS84/UTM", then the orthophoto images must be GeoTIFFs (.tiff) containing the coordinate system. If the coordinate system is "Pixels", then the orthophoto images are simple raster images (.tiff, .jpeg, .png).</p>
 
                         <br/>
                         <div class="well well-sm">
