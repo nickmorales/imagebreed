@@ -681,6 +681,68 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_dem_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImageDSM.py --image_path_dsm $image_path_remaining/odm_dem/dsm.tif --image_path_dtm $image_path_remaining/odm_dem/dtm.tif --outfile_path_dsm $odm_dsm_png --outfile_path_dtm $odm_dtm_png --outfile_path_subtract $odm_subtract_png --band_number 1";
                 my $odm_dem_open_status = system($odm_dem_cmd);
 
+                my @odm_b1_image_size = imgsize($odm_b1);
+                my $odm_b1_image_width = $odm_b1_image_size[0];
+                my $odm_b1_image_length = $odm_b1_image_size[1];
+
+                my @odm_b2_image_size = imgsize($odm_b2);
+                my $odm_b2_image_width = $odm_b2_image_size[0];
+                my $odm_b2_image_length = $odm_b2_image_size[1];
+
+                my @odm_b3_image_size = imgsize($odm_b3);
+                my $odm_b3_image_width = $odm_b3_image_size[0];
+                my $odm_b3_image_length = $odm_b3_image_size[1];
+
+                my @odm_b4_image_size = imgsize($odm_b4);
+                my $odm_b4_image_width = $odm_b4_image_size[0];
+                my $odm_b4_image_length = $odm_b4_image_size[1];
+
+                my @odm_b5_image_size = imgsize($odm_b5);
+                my $odm_b5_image_width = $odm_b5_image_size[0];
+                my $odm_b5_image_length = $odm_b5_image_size[1];
+
+                my @odm_dsm_image_size = imgsize($odm_dsm_png);
+                my $odm_dsm_image_width = $odm_dsm_image_size[0];
+                my $odm_dsm_image_length = $odm_dsm_image_size[1];
+
+                if ($odm_b1_image_width != $odm_b2_image_width || $odm_b2_image_width != $odm_b3_image_width || $odm_b3_image_width != $odm_b4_image_width || $odm_b4_image_width != $odm_b5_image_width) {
+                    $c->stash->{message} = "The ODM stitched 5-channel orthophotos are not all the same width! Something went wrong, please try again. It is possible ODM could not stitch your MicaSense image captures.";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                if ($odm_b1_image_length != $odm_b2_image_length || $odm_b2_image_length != $odm_b3_image_length || $odm_b3_image_length != $odm_b4_image_length || $odm_b4_image_length != $odm_b5_image_length) {
+                    $c->stash->{message} = "The ODM stitched 5-channel orthophotos are not all the same length! Something went wrong, please try again. It is possible ODM could not stitch your MicaSense image captures.";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                if ($odm_dsm_image_width != $odm_b1_image_width) {
+                    $c->stash->{message} = "The ODM stitched 5-channel orthophotos are not the same width as the DSM! Something went wrong, please try again. It is possible ODM could not stitch your MicaSense image captures.";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                if ($odm_dsm_image_length != $odm_b1_image_length) {
+                    $c->stash->{message} = "The ODM stitched 5-channel orthophotos are not the same length as the DSM! Something went wrong, please try again. It is possible ODM could not stitch your MicaSense image captures.";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+
+                my @geoparams_coordinates;
+                my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
+                my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
+
+                my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $odm_dsm_png --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams ";
+                print STDERR $geo_cmd."\n";
+                my $geo_cmd_status = system($geo_cmd);
+                my $ortho_file = $outfile_image;
+
+                open(my $fh_geoparams, '<', $outfile_geoparams) or die "Could not open file '".$outfile_geoparams."' $!";
+                    print STDERR "Opened ".$outfile_geoparams."\n";
+                    my $geoparams = <$fh_geoparams>;
+                    chomp $geoparams;
+                    @geoparams_coordinates = split ',', $geoparams;
+                    print STDERR Dumper [$geoparams, \@geoparams_coordinates];
+                close($fh_geoparams);
+
                 @stitched_bands = (
                     ["Band 1", "OpenDroneMap Blue", "Blue (450-520nm)", $odm_b1],
                     ["Band 2", "OpenDroneMap Green", "Green (515-600nm)", $odm_b2],
@@ -695,15 +757,56 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 print STDERR $odm_command."\n";
                 my $odm_status = system($odm_command);
 
+                my $odm_rgb_orthophoto = "$image_path_remaining/odm_orthophoto/odm_orthophoto.tif";
+
+                my @odm_rgb_image_size = imgsize($odm_rgb_orthophoto);
+                my $odm_rgb_image_width = $odm_rgb_image_size[0];
+                my $odm_rgb_image_length = $odm_rgb_image_size[1];
+
                 my $odm_dsm_png = "$image_path_remaining/odm_dem/dsm.png";
                 my $odm_dtm_png = "$image_path_remaining/odm_dem/dtm.png";
                 my $odm_subtract_png = "$image_path_remaining/odm_dem/subtract.png";
                 my $odm_dem_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImageDSM.py --image_path_dsm $image_path_remaining/odm_dem/dsm.tif --image_path_dtm $image_path_remaining/odm_dem/dtm.tif --outfile_path_dsm $odm_dsm_png --outfile_path_dtm $odm_dtm_png --outfile_path_subtract $odm_subtract_png --band_number 1";
                 my $odm_dem_open_status = system($odm_dem_cmd);
 
+                my @odm_rgb_dsm_image_size = imgsize($odm_dsm_png);
+                my $odm_rgb_dsm_image_width = $odm_rgb_dsm_image_size[0];
+                my $odm_rgb_dsm_image_length = $odm_rgb_dsm_image_size[1];
+
+                if ($odm_rgb_image_width != $odm_rgb_dsm_image_width) {
+                    $c->stash->{message} = "The ODM stitched RGB orthophoto is not the same width as the DSM! Something went wrong, please try again. It is possible ODM could not stitch your RGB image captures.";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                if ($odm_rgb_image_length != $odm_rgb_dsm_image_length) {
+                    $c->stash->{message} = "The ODM stitched RGB orthophoto is not the same length as the DSM! Something went wrong, please try again. It is possible ODM could not stitch your RGB image captures.";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+
+                my @geoparams_coordinates;
+                my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
+                my $outfile_image_r = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
+                my $outfile_image_g = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
+                my $outfile_image_b = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
+                my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
+
+                my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $odm_rgb_orthophoto --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams ";
+                print STDERR $geo_cmd."\n";
+                my $geo_cmd_status = system($geo_cmd);
+                my $ortho_file = $outfile_image;
+
+                open(my $fh_geoparams, '<', $outfile_geoparams) or die "Could not open file '".$outfile_geoparams."' $!";
+                    print STDERR "Opened ".$outfile_geoparams."\n";
+                    my $geoparams = <$fh_geoparams>;
+                    chomp $geoparams;
+                    @geoparams_coordinates = split ',', $geoparams;
+                    print STDERR Dumper [$geoparams, \@geoparams_coordinates];
+                close($fh_geoparams);
+
                 @stitched_bands = (
-                    ["Color Image", "OpenDroneMap RGB Color Image", "RGB Color Image", "$image_path_remaining/odm_orthophoto/odm_orthophoto.tif"],
-                    ["DSM", "OpenDroneMap DSM", "Black and White Image", $odm_dsm_png]
+                    ["Color Image", "OpenDroneMap RGB Color Image", "RGB Color Image", $odm_rgb_orthophoto, \@geoparams_coordinates],
+                    ["DSM", "OpenDroneMap DSM", "Black and White Image", $odm_dsm_png, \@geoparams_coordinates]
                 );
             }
             else {
@@ -724,7 +827,10 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $project_rs = $schema->resultset("Project::Project")->create({
                     name => $new_drone_run_name."_".$m->[1],
                     description => $new_drone_run_desc.". ".$m->[0]." ".$m->[1].". Orthomosaic stitched by OpenDroneMap in ImageBreed".$calibration_info.".",
-                    projectprops => [{type_id => $drone_run_band_type_cvterm_id, value => $m->[2]}, {type_id => $design_cvterm_id, value => 'drone_run_band'}],
+                    projectprops => [
+                        {type_id => $drone_run_band_type_cvterm_id, value => $m->[2]},
+                        {type_id => $design_cvterm_id, value => 'drone_run_band'}
+                    ],
                     project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $selected_drone_run_id}]
                 });
                 my $selected_drone_run_band_id = $project_rs->project_id();
