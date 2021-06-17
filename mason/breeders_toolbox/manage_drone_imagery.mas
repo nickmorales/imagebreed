@@ -242,6 +242,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                 <button class="btn btn-default" id="drone_imagery_standard_process_rotate_stitched_crosshairs">Draw Crosshairs Assist</button>
                 <!--button class="btn btn-default" id="drone_imagery_standard_process_rotate_stitched_restart">Restart</button-->
 
+                <hr>
                 <div id="manage_drone_imagery_standard_process_rotate_step_confirm_div" style="display:none">
                     <button class="btn btn-primary" id="manage_drone_imagery_standard_process_rotate_step">Save Rotated Image And Go To Next Step</button>
                 </div>
@@ -2689,7 +2690,7 @@ jQuery(document).ready(function() {
                 showManageDroneImagerySection('manage_drone_imagery_standard_process_div');
 
                 jQuery('#manage_drone_imagery_standard_process_rotate_step_confirm_div').show();
-                jQuery('#manage_drone_imagery_standard_process_rotate_step_finish_div').show();
+                jQuery('#manage_drone_imagery_standard_process_rotate_step_finish_div').hide();
 
                 Workflow.complete("#manage_drone_imagery_standard_process_ground_control_points_skip_step");
                 Workflow.focus('#manage_drone_imagery_standard_process_workflow', 3);
@@ -2789,10 +2790,9 @@ jQuery(document).ready(function() {
             url: '/api/drone_imagery/get_weeks_after_planting_date?drone_run_project_id='+manage_drone_imagery_standard_process_drone_run_project_id,
             dataType: "json",
             beforeSend: function (){
-                jQuery('#working_modal').modal('show');
+                showManageDroneImagerySection('manage_drone_imagery_loading_div');
             },
             success: function(response){
-                jQuery('#working_modal').modal('hide');
                 console.log(response);
                 if (response.error) {
                     alert(response.error);
@@ -2812,7 +2812,7 @@ jQuery(document).ready(function() {
             },
             error: function(response){
                 alert('Error getting time terms for standard process with previous imaging event!');
-                jQuery('#working_modal').modal('hide');
+                showManageDroneImagerySection('manage_drone_imagery_standard_process_div');
             }
         });
 
