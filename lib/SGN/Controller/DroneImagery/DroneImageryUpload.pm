@@ -2766,51 +2766,93 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
     # print STDERR Dumper $c->req->params();
 
-    my $overwrite_geojson = $c->req->param('upload_drone_imagery_geocoordinate_param_overwrite_geojson') eq 'yes' ? 1 : 0;
-    my $field_trial_id = $c->req->param('upload_drone_imagery_geocoordinate_param_field_trial_id');
-    my $drone_run_id = $c->req->param('upload_drone_imagery_geocoordinate_param_drone_run_id');
-
     my $upload_file = $c->req->upload('manage_drone_imagery_standard_process_geotiff_params_geotiff');
     my $image_type = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_type');
 
-    my $drone_run_project_id_input = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_drone_run_project_id');
-    my $angle = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_angle');
+    my $drone_run_project_id_in = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_drone_run_project_id');
+    my $rotate_value = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_angle');
     my $geoparam_drone_run_project_id_input = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_previous_drone_run_project_id');
     my $time_cvterm_id = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_time_cvterm_id');
-    my $overwrite_geojson = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_overwrite_geojson') eq 'yes' ? 1 : 0;
 
-    my $dir = $c->tempfiles_subdir('/upload_drone_imagery_geocoordinate_param');
+    my $dir = $c->tempfiles_subdir('/standard_process_drone_imagery_geocoordinate_param');
+
+    my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle', 'stock_type')->cvterm_id();
+    my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
+    my $drone_run_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_experiment', 'experiment_type')->cvterm_id();
+    my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_plot_polygons_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_plot_polygons', 'project_property')->cvterm_id();
+    my $drone_run_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_project_type', 'project_property')->cvterm_id();
+    my $drone_run_is_raw_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_raw_images', 'project_property')->cvterm_id();
+    my $drone_run_camera_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_type', 'project_property')->cvterm_id();
+    my $project_start_date_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'project_start_date', 'project_property')->cvterm_id();
+    my $drone_run_base_date_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_base_date', 'project_property')->cvterm_id();
+    my $drone_run_rig_desc_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_rig_description', 'project_property')->cvterm_id();
+    my $drone_run_related_cvterms_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_related_time_cvterms_json', 'project_property')->cvterm_id();
+    my $drone_run_band_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
+    my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
+    my $process_indicator_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_in_progress', 'project_property')->cvterm_id();
+    my $processed_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_completed', 'project_property')->cvterm_id();
+    my $processed_minimal_vi_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_vi_completed', 'project_property')->cvterm_id();
+    my $drone_run_band_type_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
+    my $rotate_angle_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotate_angle', 'project_property')->cvterm_id();
+    my $cropping_polygon_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_cropped_polygon', 'project_property')->cvterm_id();
+    my $plot_polygon_template_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
+    my $project_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'stitched_drone_imagery', 'project_md_image')->cvterm_id();
+    my $rotated_stitched_drone_imagery_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'rotated_stitched_drone_imagery', 'project_md_image')->cvterm_id();
+    my $cropped_stitched_drone_imagery_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'cropped_stitched_drone_imagery', 'project_md_image')->cvterm_id();
+    my $denoised_stitched_drone_imagery_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'denoised_stitched_drone_imagery', 'project_md_image')->cvterm_id();
+    my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
+    my $field_trial_project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
+    my $stock_geo_json_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot_geo_json', 'stock_property');
+    my $calendar_funcs = CXGN::Calendar->new({});
+
+    my %drone_run_project_info;
+    my @apply_drone_run_band_project_ids;
+    my $drone_run_band_q = "SELECT drone_run.project_id, drone_run.name, drone_run_band.project_id, field_trial.project_id, original_image.image_id
+        FROM project AS drone_run
+        JOIN project_relationship ON (drone_run.project_id=project_relationship.object_project_id AND project_relationship.type_id=$project_relationship_type_id)
+        JOIN project AS drone_run_band ON(project_relationship.subject_project_id=drone_run_band.project_id)
+        JOIN project_relationship AS field_trial_rel ON (drone_run.project_id=field_trial_rel.subject_project_id AND field_trial_rel.type_id=$field_trial_project_relationship_type_id)
+        JOIN project AS field_trial ON (field_trial_rel.object_project_id=field_trial.project_id)
+        JOIN phenome.project_md_image AS original_image ON (drone_run_band.project_id=original_image.project_id AND original_image.type_id=$project_image_type_id)
+        WHERE drone_run.project_id=?;";
+    my $drone_run_band_h = $schema->storage->dbh()->prepare($drone_run_band_q);
+    $drone_run_band_h->execute($drone_run_project_id_in);
+
+    while (my ($drone_run_project_id, $drone_run_name, $drone_run_band_project_id, $field_trial_id, $original_image_id) = $drone_run_band_h->fetchrow_array()) {
+        $drone_run_project_info{$drone_run_project_id}->{name} = $drone_run_name;
+        push @apply_drone_run_band_project_ids, $drone_run_band_project_id;
+    }
+
+    my $apply_geocood_polygons_q = "SELECT geocoord_polygons.value
+        FROM project AS drone_run
+        JOIN project_relationship ON (drone_run.project_id=project_relationship.object_project_id AND project_relationship.type_id=$project_relationship_type_id)
+        JOIN project AS drone_run_band ON(project_relationship.subject_project_id=drone_run_band.project_id)
+        JOIN projectprop AS geocoord_polygons ON(drone_run_band.project_id=geocoord_polygons.project_id AND geocoord_polygons.type_id=$geoparam_coordinates_plot_polygons_cvterm_id)
+        WHERE drone_run.project_id=? LIMIT 1;";
+    my $apply_geocood_polygons_h = $schema->storage->dbh()->prepare($apply_geocood_polygons_q);
+    $apply_geocood_polygons_h->execute($geoparam_drone_run_project_id_input);
+    my ($previous_geocoord_polygon_json) = $apply_geocood_polygons_h->fetchrow_array();
+    my $previous_geocoord_polygons = decode_json $previous_geocoord_polygon_json;
 
     my $upload_original_name = $upload_file->filename();
     my $upload_tempfile = $upload_file->tempname;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
 
-    my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
-    my $drone_run_band_plot_polygons_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
-    my $rotate_angle_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotate_angle', 'project_property')->cvterm_id();
-    my $cropping_polygon_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_cropped_polygon', 'project_property')->cvterm_id();
-    my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
-    my $geoparam_coordinates_plot_polygons_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_plot_polygons', 'project_property')->cvterm_id();
-    my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
-    my $stock_geo_json_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot_geo_json', 'stock_property');
-    my $field_trial_project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
-    my $rotated_stitched_drone_imagery_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'rotated_stitched_drone_imagery', 'project_md_image')->cvterm_id();
-    my $cropped_stitched_drone_imagery_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'cropped_stitched_drone_imagery', 'project_md_image')->cvterm_id();
-    my $denoised_stitched_drone_imagery_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'denoised_stitched_drone_imagery', 'project_md_image')->cvterm_id();
-    my $original_stitched_drone_imagery_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'stitched_drone_imagery', 'project_md_image')->cvterm_id();
-
     my @geoparams_coordinates;
     my $geoparams_projection;
     my $ortho_file;
-    my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
-    my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
-    my $outfile_geoparams_projection = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
+    my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/imageXXXX').".png";
+    my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/fileXXXX').".csv";
+    my $outfile_geoparams_projection = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/fileXXXX').".csv";
 
     if ($image_type eq 'rgb') {
-        my $outfile_image_r = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
-        my $outfile_image_g = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
-        my $outfile_image_b = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
+        my $outfile_image_r = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/imageXXXX').".png";
+        my $outfile_image_g = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/imageXXXX').".png";
+        my $outfile_image_b = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/imageXXXX').".png";
 
         my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $upload_tempfile --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
         print STDERR $geo_cmd."\n";
@@ -2862,129 +2904,162 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
         close($fh_geoparam_proj);
     }
 
-    my @input_image_size = imgsize($outfile_image);
-    my $input_image_width = $input_image_size[0];
-    my $input_image_length = $input_image_size[1];
+    my $vegetative_indices = ['VARI', 'TGI', 'NDRE', 'NDVI'];
+    my $phenotype_methods = ['zonal'];
+    my $standard_process_type = 'minimal';
 
     my $rad_conversion = 0.0174533;
-    my $xOrigin = $geoparams_coordinates[0];
-    my $yOrigin = $geoparams_coordinates[3];
-    my $pixelWidth = $geoparams_coordinates[1];
-    my $pixelHeight = -1*$geoparams_coordinates[5];
 
-    my $drone_run_band_q = "SELECT drone_run_band.project_id, field_trial.project_id, plot_polygons.value, rotate_value.value, cropped_polygon.value, rotated_image.image_id, cropped_image.image_id, denoised_image.image_id, original_image.image_id
-        FROM project AS drone_run
-        JOIN project_relationship ON (drone_run.project_id=project_relationship.object_project_id AND project_relationship.type_id=$project_relationship_type_id)
-        JOIN project AS drone_run_band ON(project_relationship.subject_project_id=drone_run_band.project_id)
-        JOIN projectprop AS plot_polygons ON(drone_run_band.project_id=plot_polygons.project_id AND plot_polygons.type_id=$drone_run_band_plot_polygons_type_id)
-        JOIN projectprop AS rotate_value ON(drone_run_band.project_id=rotate_value.project_id AND rotate_value.type_id=$rotate_angle_type_id)
-        JOIN projectprop AS cropped_polygon ON(drone_run_band.project_id=cropped_polygon.project_id AND cropped_polygon.type_id=$cropping_polygon_type_id)
-        JOIN project_relationship AS field_trial_rel ON (drone_run.project_id=field_trial_rel.subject_project_id AND field_trial_rel.type_id=$field_trial_project_relationship_type_id)
-        JOIN project AS field_trial ON (field_trial_rel.object_project_id=field_trial.project_id)
-        JOIN phenome.project_md_image AS rotated_image ON (drone_run_band.project_id=rotated_image.project_id AND rotated_image.type_id=$rotated_stitched_drone_imagery_type_id)
-        JOIN phenome.project_md_image AS cropped_image ON (drone_run_band.project_id=cropped_image.project_id AND cropped_image.type_id=$cropped_stitched_drone_imagery_type_id)
-        JOIN phenome.project_md_image AS denoised_image ON (drone_run_band.project_id=denoised_image.project_id AND denoised_image.type_id=$denoised_stitched_drone_imagery_type_id)
-        JOIN phenome.project_md_image AS original_image ON (drone_run_band.project_id=original_image.project_id AND original_image.type_id=$original_stitched_drone_imagery_type_id)
-        WHERE drone_run.project_id=?;";
-    my $drone_run_band_h = $schema->storage->dbh()->prepare($drone_run_band_q);
-    $drone_run_band_h->execute($drone_run_id);
+    my $drone_run_process_in_progress = $schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$process_indicator_cvterm_id,
+        project_id=>$drone_run_project_id_in,
+        rank=>0,
+        value=>1
+    },
+    {
+        key=>'projectprop_c1'
+    });
 
-    my $stock_q = "SELECT stock_id FROM stock WHERE uniquename = ?;";
-    my $stock_h = $schema->storage->dbh()->prepare($stock_q);
+    my $drone_run_process_completed = $schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$processed_cvterm_id,
+        project_id=>$drone_run_project_id_in,
+        rank=>0,
+        value=>0
+    },
+    {
+        key=>'projectprop_c1'
+    });
 
-    my %seen_field_trial_ids;
-    my @drone_run_band_results;
-    while (my ($drone_run_band_project_id, $field_trial_id, $plot_polygon_json, $rotate_value, $cropped_polygon_json, $rotated_image_id, $cropped_image_id, $denoised_image_id, $original_image_id) = $drone_run_band_h->fetchrow_array()) {
-        my $original_image = SGN::Image->new( $schema->storage->dbh, $original_image_id, $c );
-        my $original_image_fullpath = $original_image->get_filename('original_converted', 'full');
+    my $drone_run_process_minimal_vi_completed = $schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$processed_minimal_vi_cvterm_id,
+        project_id=>$drone_run_project_id_in,
+        rank=>0,
+        value=>0
+    },
+    {
+        key=>'projectprop_c1'
+    });
 
-        my @original_image_size = imgsize($original_image_fullpath);
-        my $original_image_width = $original_image_size[0];
-        my $original_image_length = $original_image_size[1];
-
-        if ($original_image_width != $input_image_width) {
-            $c->stash->{message} = "The provided GeoTIFF width ($input_image_width) does not match the previously uploaded orthophotos width ($original_image_width) for $original_image_id.";
-            $c->stash->{template} = 'generic_message.mas';
-            return;
-        }
-        if ($original_image_length != $input_image_length) {
-            $c->stash->{message} = "The provided GeoTIFF length ($input_image_length) does not match the previously uploaded orthophotos length ($original_image_length) for $original_image_id.";
-            $c->stash->{template} = 'generic_message.mas';
-            return;
-        }
-
-        push @drone_run_band_results, [$drone_run_band_project_id, $field_trial_id, $plot_polygon_json, $rotate_value, $cropped_polygon_json, $rotated_image_id, $cropped_image_id, $denoised_image_id, $original_image_id, $original_image_width, $original_image_length];
+    my %vegetative_indices_hash;
+    foreach (@$vegetative_indices) {
+        $vegetative_indices_hash{$_}++;
     }
 
-    foreach my $d (@drone_run_band_results) {
-        my ($drone_run_band_project_id, $field_trial_id, $plot_polygon_json, $rotate_value, $cropped_polygon_json, $rotated_image_id, $cropped_image_id, $denoised_image_id, $original_image_id, $original_image_width, $original_image_length) = @$d;
+    my %selected_drone_run_band_types;
+    my $q2 = "SELECT project_md_image.image_id, drone_run_band_type.value, drone_run_band.project_id
+        FROM project AS drone_run_band
+        JOIN projectprop AS drone_run_band_type ON(drone_run_band_type.project_id = drone_run_band.project_id AND drone_run_band_type.type_id = $drone_run_band_type_type_id)
+        JOIN phenome.project_md_image AS project_md_image ON(project_md_image.project_id = drone_run_band.project_id)
+        JOIN metadata.md_image ON(project_md_image.image_id = metadata.md_image.image_id)
+        WHERE project_md_image.type_id = $project_image_type_id
+        AND drone_run_band.project_id = ?
+        AND metadata.md_image.obsolete = 'f';";
 
-        my $rotated_image = SGN::Image->new( $schema->storage->dbh, $rotated_image_id, $c );
-        my $rotated_image_fullpath = $rotated_image->get_filename('original_converted', 'full');
+    my $h2 = $schema->storage->dbh()->prepare($q2);
 
-        my @rotated_image_size = imgsize($rotated_image_fullpath);
-        my $rotated_image_width = $rotated_image_size[0];
-        my $rotated_image_length = $rotated_image_size[1];
+    my $term_map = CXGN::DroneImagery::ImageTypes::get_base_imagery_observation_unit_plot_polygon_term_map();
 
-        my $x_center = $rotated_image_width/2;
-        my $y_center = $rotated_image_length/2;
+    my %drone_run_band_info;
+    foreach my $apply_drone_run_band_project_id (@apply_drone_run_band_project_ids) {
 
-        my $plot_polygon = decode_json $plot_polygon_json;
-        my $cropped_polygon = decode_json $cropped_polygon_json;
-        # print STDERR Dumper $plot_polygon;
-        # print STDERR Dumper $cropped_polygon;
-        my $cropping_x_offset = $cropped_polygon->[0]->[0]->{x};
-        my $cropping_y_offset = $cropped_polygon->[0]->[0]->{y};
+        my $h2 = $schema->storage->dbh()->prepare($q2);
+        $h2->execute($apply_drone_run_band_project_id);
+        my ($image_id, $drone_run_band_type, $drone_run_band_project_id) = $h2->fetchrow_array();
+        $selected_drone_run_band_types{$drone_run_band_type} = $drone_run_band_project_id;
 
-        my %geocoord_plot_polygons;
-        while (my($stock_name, $polygon_arr) = each %$plot_polygon) {
+        my $apply_image_width_ratio = 1;
+        my $apply_image_height_ratio = 1;
 
-            $stock_h->execute($stock_name);
-            my ($stock_id) = $stock_h->fetchrow_array();
+        my $dir = $c->tempfiles_subdir('/drone_imagery_rotate');
+        my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
+        $archive_rotate_temp_image .= '.png';
 
-            my $plot = $schema->resultset("Stock::Stock")->find({stock_id => $stock_id});
+        my $rotate_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 1);
+        my $rotated_image_id = $rotate_return->{rotated_image_id};
 
-            my @geojson_coords_original;
-            foreach my $poly (@$polygon_arr) {
-                my $x_pos = $poly->{x} + $cropping_x_offset;
-                my $y_pos = $poly->{y} + $cropping_y_offset;
+        my $image = SGN::Image->new( $schema->storage->dbh, $rotated_image_id, $c );
+        my $image_fullpath = $image->get_filename('original_converted', 'full');
 
-                my $x_pos_rotated = round( ($x_pos - $x_center)*cos($rad_conversion*$rotate_value*-1) - ($y_pos - $y_center)*sin($rad_conversion*$rotate_value*-1) + $x_center );
-                my $y_pos_rotated = round( ($y_pos - $y_center)*cos($rad_conversion*$rotate_value*-1) + ($x_pos - $x_center)*sin($rad_conversion*$rotate_value*-1) + $y_center );
+        my @size = imgsize($image_fullpath);
+        my $width = $size[0];
+        my $length = $size[1];
+        my $x_center = $width/2;
+        my $y_center = $length/2;
 
-                my $x_coord = ($x_pos * $pixelWidth) + $xOrigin;
-                my $y_coord = $yOrigin - ($y_pos * $pixelHeight);
+        my $cropping_value = encode_json [[{x=>0, y=>0}, {x=>$width, y=>0}, {x=>$width, y=>$length}, {x=>0, y=>$length}]];
 
-                push @geojson_coords_original, [$x_coord, $y_coord];
+        my $plot_polygons_value;
+        while( my ($stock_name, $polygons) = each %$previous_geocoord_polygons) {
+            my @coords;
+            foreach my $crd (@$polygons) {
+                my $xOrigin = $geoparams_coordinates[0];
+                my $yOrigin = $geoparams_coordinates[3];
+                my $pixelWidth = $geoparams_coordinates[1];
+                my $pixelHeight = -1*$geoparams_coordinates[5];
+                my $x_pos = ($crd->[0] - $xOrigin) / $pixelWidth;
+                my $y_pos = ($yOrigin - $crd->[1] ) / $pixelHeight;
+
+                my $x_pos_rotated = ($x_pos - $x_center)*cos($rad_conversion*$rotate_value*-1) - ($y_pos - $y_center)*sin($rad_conversion*$rotate_value*-1) + $x_center;
+                my $y_pos_rotated = ($y_pos - $y_center)*cos($rad_conversion*$rotate_value*-1) + ($x_pos - $x_center)*sin($rad_conversion*$rotate_value*-1) + $y_center;
+
+                push @coords, {
+                    x => round($x_pos_rotated),
+                    y => round($y_pos_rotated),
+                };
             }
-            $geocoord_plot_polygons{$stock_name} = \@geojson_coords_original;
-            # print STDERR Dumper \@geojson_coords_original;
+            $plot_polygons_value->{$stock_name} = \@coords;
+        }
+        $plot_polygons_value = encode_json $plot_polygons_value;
 
-            my $first_geojson = $geojson_coords_original[0];
-            my @geojson_coords = ($first_geojson, @geojson_coords_original);
+        $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
+        my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
+        $archive_temp_image .= '.png';
 
-            my $geo_json = {
-                "type"=> "Feature",
-                "geometry"=> {
-                    "type"=> "Polygon",
-                    "coordinates"=> [
-                        \@geojson_coords
-                    ]
-                },
-                "properties"=> {
-                    "format"=> $geoparams_projection,
-                }
-            };
-            my $geno_json_string = encode_json $geo_json;
-            print STDERR $geno_json_string."\n";
+        my $cropping_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_cropping($c, $schema, $drone_run_band_project_id, $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
+        my $cropped_image_id = $cropping_return->{cropped_image_id};
 
-            if ($overwrite_geojson) {
-                my $previous_plot_gps_rs = $schema->resultset("Stock::Stockprop")->search({stock_id=>$plot->stock_id, type_id=>$stock_geo_json_cvterm->cvterm_id});
-                $previous_plot_gps_rs->delete_all();
-                $plot->create_stockprops({$stock_geo_json_cvterm->name() => $geno_json_string});
+        $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
+        my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
+        $archive_denoise_temp_image .= '.png';
 
-                $seen_field_trial_ids{$field_trial_id}++;
-            }
+        my $denoise_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_denoise($c, $schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+        my $denoised_image_id = $denoise_return->{denoised_image_id};
+
+        $drone_run_band_info{$drone_run_band_project_id} = {
+            denoised_image_id => $denoised_image_id,
+            rotate_value => $rotate_value,
+            cropping_value => $cropping_value,
+            drone_run_band_type => $drone_run_band_type,
+            drone_run_project_id => $drone_run_project_id_in,
+            drone_run_project_name => $drone_run_project_info{$drone_run_project_id_in}->{name},
+            plot_polygons_value => $plot_polygons_value,
+            check_resize => 1,
+            keep_original_size_rotate => 1
+        };
+
+        my @denoised_plot_polygon_type = @{$term_map->{$drone_run_band_type}->{observation_unit_plot_polygon_types}->{base}};
+        my @denoised_background_threshold_removed_imagery_types = @{$term_map->{$drone_run_band_type}->{imagery_types}->{threshold_background}};
+        my @denoised_background_threshold_removed_plot_polygon_types = @{$term_map->{$drone_run_band_type}->{observation_unit_plot_polygon_types}->{threshold_background}};
+
+        my $polygon_type = '';
+        if ($rotate_value != 0) {
+            $polygon_type = 'rectangular_square';
+        } else {
+            $polygon_type = 'rectangular_polygon';
+        }
+
+        foreach (@denoised_plot_polygon_type) {
+            my $plot_polygon_original_denoised_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_plot_polygon_assign($c, $schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, $plot_polygons_value, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, $polygon_type);
+        }
+
+        for my $iterator (0..(scalar(@denoised_background_threshold_removed_imagery_types)-1)) {
+            $dir = $c->tempfiles_subdir('/drone_imagery_remove_background');
+            my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
+            $archive_remove_background_temp_image .= '.png';
+
+            my $background_removed_threshold_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_background_remove_threshold_percentage($c, $schema, $denoised_image_id, $drone_run_band_project_id, $denoised_background_threshold_removed_imagery_types[$iterator], '25', '25', $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+
+            my $plot_polygon_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_plot_polygon_assign($c, $schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, $polygon_type);
         }
 
         my $drone_run_band_coordinate_system_type_rs = $schema->resultset('Project::Projectprop')->update_or_create({
@@ -3011,21 +3086,49 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
             type_id=>$geoparam_coordinates_plot_polygons_cvterm_id,
             project_id=>$drone_run_band_project_id,
             rank=>0,
-            value=> encode_json \%geocoord_plot_polygons
+            value=> $previous_geocoord_polygon_json
         },
         {
             key=>'projectprop_c1'
         });
     }
 
-    foreach my $trial_id (keys %seen_field_trial_ids) {
-        my $layout = CXGN::Trial::TrialLayout->new({
-            schema => $schema,
-            trial_id => $trial_id,
-            experiment_type => 'field_layout'
-        });
-        $layout->generate_and_cache_layout();
-    }
+    print STDERR Dumper \%selected_drone_run_band_types;
+    print STDERR Dumper \%vegetative_indices_hash;
+
+    SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_minimal_vi_standard_process($c, $schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_polygon');
+
+    $drone_run_process_in_progress = $schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$process_indicator_cvterm_id,
+        project_id=>$drone_run_project_id_in,
+        rank=>0,
+        value=>0
+    },
+    {
+        key=>'projectprop_c1'
+    });
+
+    $drone_run_process_completed = $schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$processed_cvterm_id,
+        project_id=>$drone_run_project_id_in,
+        rank=>0,
+        value=>1
+    },
+    {
+        key=>'projectprop_c1'
+    });
+
+    $drone_run_process_minimal_vi_completed = $schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$processed_minimal_vi_cvterm_id,
+        project_id=>$drone_run_project_id_in,
+        rank=>0,
+        value=>1
+    },
+    {
+        key=>'projectprop_c1'
+    });
+
+    my $return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id_in, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $user_id, $user_name, $user_role);
 
     $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";
     $c->stash->{template} = 'generic_message.mas';

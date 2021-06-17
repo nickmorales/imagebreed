@@ -196,15 +196,6 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                                         </select>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label class="col-sm-6 control-label">Save As Official Plot GeoJSON:</label>
-                                    <div class="col-sm-6" >
-                                        <select class="form-control" id="manage_drone_imagery_standard_process_geotiff_params_overwrite_geojson" name="manage_drone_imagery_standard_process_geotiff_params_overwrite_geojson">
-                                            <option value="yes">Yes</option>
-                                            <option value="no">No</option>
-                                        </select>
-                                    </div>
-                                </div>
                                 <input type="hidden" name="manage_drone_imagery_standard_process_geotiff_params_previous_drone_run_project_id" id="manage_drone_imagery_standard_process_geotiff_params_previous_drone_run_project_id" value="" />
                                 <input type="hidden" name="manage_drone_imagery_standard_process_geotiff_params_drone_run_project_id" id="manage_drone_imagery_standard_process_geotiff_params_drone_run_project_id" value="" />
                                 <input type="hidden" name="manage_drone_imagery_standard_process_geotiff_params_angle" id="manage_drone_imagery_standard_process_geotiff_params_angle" value="" />
