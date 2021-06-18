@@ -58,11 +58,15 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
     my $drone_run_camera_rig_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_rig_description', 'project_property')->cvterm_id();
     my $drone_run_base_date_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_base_date', 'project_property')->cvterm_id();
     my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_plot_polygons_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_plot_polygons', 'project_property')->cvterm_id();
 
-    my $drone_run_q = "SELECT drone_run_band_project.project_id, drone_run_band_project.name, drone_run_band_project.description, drone_run_project.project_id, drone_run_project.name, drone_run_project.description, field_trial.project_id, field_trial.name, field_trial.description, drone_run_band_type.value, drone_run_date.value, drone_run_type.value, drone_run_averaged_temperature_gdd.value, drone_run_averaged_precipitation_sum.value, drone_run_related_time_cvterm_json.value, drone_run_indicator.value, drone_run_phenotypes_indicator.value, drone_run_processed.value, drone_run_processed_extended.value, drone_run_processed_vi.value, drone_run_is_raw_images.value, drone_run_ground_control_points.value, drone_run_camera_rig.value, drone_run_base_date.value, drone_run_band_geoparam_coordinates.value
+    my $drone_run_q = "SELECT drone_run_band_project.project_id, drone_run_band_project.name, drone_run_band_project.description, drone_run_project.project_id, drone_run_project.name, drone_run_project.description, field_trial.project_id, field_trial.name, field_trial.description, drone_run_band_type.value, drone_run_date.value, drone_run_type.value, drone_run_averaged_temperature_gdd.value, drone_run_averaged_precipitation_sum.value, drone_run_related_time_cvterm_json.value, drone_run_indicator.value, drone_run_phenotypes_indicator.value, drone_run_processed.value, drone_run_processed_extended.value, drone_run_processed_vi.value, drone_run_is_raw_images.value, drone_run_ground_control_points.value, drone_run_camera_rig.value, drone_run_base_date.value, drone_run_band_geoparam_coordinates.value, drone_run_band_geoparam_coordinate_type.value, drone_run_band_geoparam_polygons.value
         FROM project AS drone_run_band_project
         JOIN projectprop AS drone_run_band_type ON(drone_run_band_project.project_id=drone_run_band_type.project_id AND drone_run_band_type.type_id=$drone_run_band_type_cvterm_id)
         LEFT JOIN projectprop AS drone_run_band_geoparam_coordinates ON(drone_run_band_project.project_id=drone_run_band_geoparam_coordinates.project_id AND drone_run_band_geoparam_coordinates.type_id=$geoparam_coordinates_cvterm_id)
+        LEFT JOIN projectprop AS drone_run_band_geoparam_coordinate_type ON(drone_run_band_project.project_id=drone_run_band_geoparam_coordinate_type.project_id AND drone_run_band_geoparam_coordinate_type.type_id=$geoparam_coordinates_type_cvterm_id)
+        LEFT JOIN projectprop AS drone_run_band_geoparam_polygons ON(drone_run_band_project.project_id=drone_run_band_geoparam_polygons.project_id AND drone_run_band_geoparam_polygons.type_id=$geoparam_coordinates_plot_polygons_cvterm_id)
         JOIN project_relationship AS drone_run_band_rel ON (drone_run_band_rel.subject_project_id = drone_run_band_project.project_id AND drone_run_band_rel.type_id = $drone_run_band_drone_run_project_relationship_type_id_cvterm_id)
         JOIN project AS drone_run_project ON (drone_run_band_rel.object_project_id = drone_run_project.project_id)
         JOIN projectprop AS drone_run_date ON(drone_run_project.project_id=drone_run_date.project_id AND drone_run_date.type_id=$project_start_date_type_id)
@@ -90,13 +94,15 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
     my %unique_drone_run_dates;
     my $epoch_seconds = 0;
     my %trial_id_hash;
-    while( my ($drone_run_band_project_id, $drone_run_band_project_name, $drone_run_band_project_desc, $drone_run_project_id, $drone_run_project_name, $drone_run_project_desc, $field_trial_project_id, $field_trial_project_name, $field_trial_project_desc, $drone_run_band_project_type, $drone_run_date, $drone_run_type, $drone_run_averaged_temperature_gdd, $drone_run_averaged_precipitation_sum, $drone_run_related_time_cvterm_json, $drone_run_indicator, $drone_run_phenotypes_indicator, $drone_run_processed, $drone_run_processed_extended, $drone_run_processed_vi, $drone_run_is_raw_images, $drone_run_ground_control_points_json, $drone_run_camera_rig, $drone_run_base_date, $drone_run_band_geoparam_coordinates) = $h->fetchrow_array()) {
+    while( my ($drone_run_band_project_id, $drone_run_band_project_name, $drone_run_band_project_desc, $drone_run_project_id, $drone_run_project_name, $drone_run_project_desc, $field_trial_project_id, $field_trial_project_name, $field_trial_project_desc, $drone_run_band_project_type, $drone_run_date, $drone_run_type, $drone_run_averaged_temperature_gdd, $drone_run_averaged_precipitation_sum, $drone_run_related_time_cvterm_json, $drone_run_indicator, $drone_run_phenotypes_indicator, $drone_run_processed, $drone_run_processed_extended, $drone_run_processed_vi, $drone_run_is_raw_images, $drone_run_ground_control_points_json, $drone_run_camera_rig, $drone_run_base_date, $drone_run_band_geoparam_coordinates, $drone_run_band_geoparam_coordinates_type, $drone_run_band_geoparam_polygons) = $h->fetchrow_array()) {
         my $drone_run_date_formatted = $drone_run_date ? $calendar_funcs->display_start_date($drone_run_date) : '';
 
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{bands}->{$drone_run_band_project_id}->{drone_run_band_project_name} = $drone_run_band_project_name;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{bands}->{$drone_run_band_project_id}->{drone_run_band_project_description} = $drone_run_band_project_desc;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{bands}->{$drone_run_band_project_id}->{drone_run_band_project_type} = $drone_run_band_project_type;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{bands}->{$drone_run_band_project_id}->{drone_run_band_geoparam_coordinates} = $drone_run_band_geoparam_coordinates;
+        $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{bands}->{$drone_run_band_project_id}->{drone_run_band_geoparam_coordinates_type} = $drone_run_band_geoparam_coordinates_type;
+        $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{bands}->{$drone_run_band_project_id}->{drone_run_band_geoparam_polygons} = $drone_run_band_geoparam_polygons;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{trial_id} = $field_trial_project_id;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{trial_name} = $field_trial_project_name;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{drone_run_project_name} = $drone_run_project_name;
@@ -143,9 +149,9 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
             my $missing_geocoord_params = 0;
             foreach my $drone_run_band_project_id (sort keys %$drone_run_bands) {
                 my $d = $drone_run_bands->{$drone_run_band_project_id};
-                if ($d->{drone_run_band_geoparam_coordinates}) {
-                    my $geocoords = decode_json $d->{drone_run_band_geoparam_coordinates};
-                    if (scalar(@$geocoords) < 0) {
+                if ($d->{drone_run_band_geoparam_polygons}) {
+                    my $geocoords = decode_json $d->{drone_run_band_geoparam_polygons};
+                    if (scalar(keys %$geocoords) < 1) {
                         $missing_geocoord_params = 1;
                     }
                 }

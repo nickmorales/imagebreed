@@ -2113,7 +2113,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             else {
                 my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
                 my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
-                my $outfile_geoparams_projection = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
+                my $outfile_geoparams_projection = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
 
                 if ($band_short eq 'rgb') {
                     my $outfile_image_r = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
@@ -2186,8 +2186,9 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                 my $stock_name = $trial_lookup->{$plot_number}->{plot_name};
                 my @coords;
                 foreach my $crd (@{$coordinates->[0]}) {
-                    push @coords, [$crd->[0], y => $crd->[1]];
+                    push @coords, [$crd->[0], $crd->[1]];
                 }
+                my $last_element = pop @coords;
                 $geocoord_plot_polygons{$stock_name} = \@coords;
             }
 
@@ -2770,9 +2771,11 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
     my $image_type = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_type');
 
     my $drone_run_project_id_in = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_drone_run_project_id');
-    my $rotate_value = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_angle');
+    my $rotate_value = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_angle') || 0;
     my $geoparam_drone_run_project_id_input = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_previous_drone_run_project_id');
     my $time_cvterm_id = $c->req->param('manage_drone_imagery_standard_process_geotiff_params_time_cvterm_id');
+
+    $rotate_value = $rotate_value * -1;
 
     my $dir = $c->tempfiles_subdir('/standard_process_drone_imagery_geocoordinate_param');
 
