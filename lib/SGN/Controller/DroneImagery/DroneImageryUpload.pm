@@ -2717,6 +2717,8 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
         JOIN phenome.project_md_image AS denoised_image ON (drone_run_band.project_id=denoised_image.project_id AND denoised_image.type_id=$denoised_stitched_drone_imagery_type_id)
         JOIN phenome.project_md_image AS original_image ON (drone_run_band.project_id=original_image.project_id AND original_image.type_id=$original_stitched_drone_imagery_type_id)
         WHERE drone_run.project_id=?;";
+    print STDERR Dumper $drone_run_band_q;
+    print STDERR Dumper $drone_run_id;
     my $drone_run_band_h = $schema->storage->dbh()->prepare($drone_run_band_q);
     $drone_run_band_h->execute($drone_run_id);
 
