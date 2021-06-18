@@ -5122,19 +5122,39 @@ sub _perform_image_rotate {
     print STDERR Dumper $cmd;
     my $status = system($cmd);
 
+    my $drone_run_band_rotate_keep_original_size_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotate_keep_original_size', 'project_property')->cvterm_id();
+
+    my @original_image_resize_ratio = (1,1);
     if ($check_resize) {
         my ($check_image_width, $check_image_height) = imgsize($archive_rotate_temp_image);
+        my $check_image_width_original = $check_image_width;
+        my $check_image_height_original = $check_image_height;
         if ($check_image_width > 16384) {
             my $cmd_resize = $c->config->{python_executable}.' '.$c->config->{rootpath}.'/DroneImageScripts/ImageProcess/Resize.py --image_path \''.$archive_rotate_temp_image.'\' --outfile_path \''.$archive_rotate_temp_image.'\' --width 16384';
             print STDERR Dumper $cmd_resize;
             my $status_resize = system($cmd_resize);
+            my ($check_image_width_resized, $check_image_height_resized) = imgsize($archive_rotate_temp_image);
+            $check_image_width = $check_image_width_resized;
+            $check_image_height = $check_image_height_resized;
         }
-        elsif ($check_image_height > 16384) {
+        if ($check_image_height > 16384) {
             my $cmd_resize = $c->config->{python_executable}.' '.$c->config->{rootpath}.'/DroneImageScripts/ImageProcess/Resize.py --image_path \''.$archive_rotate_temp_image.'\' --outfile_path \''.$archive_rotate_temp_image.'\' --height 16384';
             print STDERR Dumper $cmd_resize;
             my $status_resize = system($cmd_resize);
         }
+        my ($check_image_width_saved, $check_image_height_saved) = imgsize($archive_rotate_temp_image);
+        @original_image_resize_ratio = ($check_image_width_original/$check_image_width_saved, $check_image_height_original/$check_image_height_saved);
     }
+
+    my $drone_run_band_rotate_keep_original_size_polygons_rs = $schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$drone_run_band_rotate_keep_original_size_cvterm_id,
+        project_id=>$drone_run_band_project_id,
+        rank=>0,
+        value=> $keep_original_size_rotate
+    },
+    {
+        key=>'projectprop_c1'
+    });
 
     my $linking_table_type_id;
     if ($view_only) {

@@ -541,16 +541,23 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
             print STDERR "Archived Drone Image File: $archived_filename_with_path\n";
 
             my ($check_image_width, $check_image_height) = imgsize($archived_filename_with_path);
+            my $check_image_width_original = $check_image_width;
+            my $check_image_height_original = $check_image_height;
             if ($check_image_width > 16384) {
                 my $cmd_resize = $c->config->{python_executable}.' '.$c->config->{rootpath}.'/DroneImageScripts/ImageProcess/Resize.py --image_path \''.$archived_filename_with_path.'\' --outfile_path \''.$archived_filename_with_path.'\' --width 16384';
                 print STDERR Dumper $cmd_resize;
                 my $status_resize = system($cmd_resize);
+                my ($check_image_width_resized, $check_image_height_resized) = imgsize($archived_filename_with_path);
+                $check_image_width = $check_image_width_resized;
+                $check_image_height = $check_image_height_resized;
             }
-            elsif ($check_image_height > 16384) {
+            if ($check_image_height > 16384) {
                 my $cmd_resize = $c->config->{python_executable}.' '.$c->config->{rootpath}.'/DroneImageScripts/ImageProcess/Resize.py --image_path \''.$archived_filename_with_path.'\' --outfile_path \''.$archived_filename_with_path.'\' --height 16384';
                 print STDERR Dumper $cmd_resize;
                 my $status_resize = system($cmd_resize);
             }
+            my ($check_image_width_saved, $check_image_height_saved) = imgsize($archived_filename_with_path);
+            my @original_image_resize_ratio = ($check_image_width_original/$check_image_width_saved, $check_image_height_original/$check_image_height_saved);
 
             my $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
             $image->set_sp_person_id($user_id);
@@ -2834,6 +2841,7 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
     my $denoised_stitched_drone_imagery_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'denoised_stitched_drone_imagery', 'project_md_image')->cvterm_id();
     my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
     my $field_trial_project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
+    my $drone_run_band_rotate_keep_original_size_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotate_keep_original_size', 'project_property')->cvterm_id();
     my $stock_geo_json_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot_geo_json', 'stock_property');
     my $calendar_funcs = CXGN::Calendar->new({});
 
@@ -2855,15 +2863,16 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
         push @apply_drone_run_band_project_ids, $drone_run_band_project_id;
     }
 
-    my $apply_geocood_polygons_q = "SELECT geocoord_polygons.value
+    my $apply_geocood_polygons_q = "SELECT geocoord_polygons.value, rotate_keep_original_size.value
         FROM project AS drone_run
         JOIN project_relationship ON (drone_run.project_id=project_relationship.object_project_id AND project_relationship.type_id=$drone_run_drone_run_band_type_id)
         JOIN project AS drone_run_band ON(project_relationship.subject_project_id=drone_run_band.project_id)
         JOIN projectprop AS geocoord_polygons ON(drone_run_band.project_id=geocoord_polygons.project_id AND geocoord_polygons.type_id=$geoparam_coordinates_plot_polygons_cvterm_id)
+        LEFT JOIN projectprop AS rotate_keep_original_size ON(drone_run_band.project_id=rotate_keep_original_size.project_id AND rotate_keep_original_size.type_id=$drone_run_band_rotate_keep_original_size_cvterm_id)
         WHERE drone_run.project_id=? LIMIT 1;";
     my $apply_geocood_polygons_h = $schema->storage->dbh()->prepare($apply_geocood_polygons_q);
     $apply_geocood_polygons_h->execute($geoparam_drone_run_project_id_input);
-    my ($previous_geocoord_polygon_json) = $apply_geocood_polygons_h->fetchrow_array();
+    my ($previous_geocoord_polygon_json, $rotate_keep_original_size) = $apply_geocood_polygons_h->fetchrow_array();
     my $previous_geocoord_polygons = decode_json $previous_geocoord_polygon_json;
 
     my $upload_original_name = $upload_file->filename();
@@ -3003,7 +3012,7 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
         my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
         $archive_rotate_temp_image .= '.png';
 
-        my $rotate_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, $image_id, $rotate_value*-1, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 1);
+        my $rotate_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, $image_id, $rotate_value*-1, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, $rotate_keep_original_size);
         my $rotated_image_id = $rotate_return->{rotated_image_id};
 
         my $image = SGN::Image->new( $schema->storage->dbh, $rotated_image_id, $c );

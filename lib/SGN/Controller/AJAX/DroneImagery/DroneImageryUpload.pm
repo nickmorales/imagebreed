@@ -458,16 +458,23 @@ sub upload_drone_imagery_POST : Args(0) {
             print STDERR "Archived Drone Image File: $archived_filename_with_path\n";
 
             my ($check_image_width, $check_image_height) = imgsize($archived_filename_with_path);
+            my $check_image_width_original = $check_image_width;
+            my $check_image_height_original = $check_image_height;
             if ($check_image_width > 16384) {
                 my $cmd_resize = $c->config->{python_executable}.' '.$c->config->{rootpath}.'/DroneImageScripts/ImageProcess/Resize.py --image_path \''.$archived_filename_with_path.'\' --outfile_path \''.$archived_filename_with_path.'\' --width 16384';
                 print STDERR Dumper $cmd_resize;
                 my $status_resize = system($cmd_resize);
+                my ($check_image_width_resized, $check_image_height_resized) = imgsize($archived_filename_with_path);
+                $check_image_width = $check_image_width_resized;
+                $check_image_height = $check_image_height_resized;
             }
-            elsif ($check_image_height > 16384) {
+            if ($check_image_height > 16384) {
                 my $cmd_resize = $c->config->{python_executable}.' '.$c->config->{rootpath}.'/DroneImageScripts/ImageProcess/Resize.py --image_path \''.$archived_filename_with_path.'\' --outfile_path \''.$archived_filename_with_path.'\' --height 16384';
                 print STDERR Dumper $cmd_resize;
                 my $status_resize = system($cmd_resize);
             }
+            my ($check_image_width_saved, $check_image_height_saved) = imgsize($archived_filename_with_path);
+            my @original_image_resize_ratio = ($check_image_width_original/$check_image_width_saved, $check_image_height_original/$check_image_height_saved);
 
             my $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
             $image->set_sp_person_id($user_id);
