@@ -5068,6 +5068,7 @@ sub drone_imagery_calculate_statistics_store_analysis_POST : Args(0) {
     $c->stash->{rest} = { success => 1 };
 }
 
+# DEPRECATED. USE standard_process functions
 sub drone_imagery_rotate_image : Path('/api/drone_imagery/rotate_image') : ActionClass('REST') { }
 sub drone_imagery_rotate_image_GET : Args(0) {
     my $self = shift;
@@ -5123,9 +5124,10 @@ sub _perform_image_rotate {
     my $status = system($cmd);
 
     my $drone_run_band_rotate_keep_original_size_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotate_keep_original_size', 'project_property')->cvterm_id();
+    my $rotated_image_resize_ratio_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotated_image_resize_ratio', 'project_property')->cvterm_id();
 
     my @original_image_resize_ratio = (1,1);
-    if ($check_resize) {
+    if ($check_resize && $c->config->{drone_imagery_allow_resize}) {
         my ($check_image_width, $check_image_height) = imgsize($archive_rotate_temp_image);
         my $check_image_width_original = $check_image_width;
         my $check_image_height_original = $check_image_height;
@@ -5145,12 +5147,23 @@ sub _perform_image_rotate {
         my ($check_image_width_saved, $check_image_height_saved) = imgsize($archive_rotate_temp_image);
         @original_image_resize_ratio = ($check_image_width_original/$check_image_width_saved, $check_image_height_original/$check_image_height_saved);
     }
+    print STDERR Dumper \@original_image_resize_ratio;
 
     my $drone_run_band_rotate_keep_original_size_polygons_rs = $schema->resultset('Project::Projectprop')->update_or_create({
         type_id=>$drone_run_band_rotate_keep_original_size_cvterm_id,
         project_id=>$drone_run_band_project_id,
         rank=>0,
         value=> $keep_original_size_rotate
+    },
+    {
+        key=>'projectprop_c1'
+    });
+
+    my $drone_run_band_rotate_resize_rs = $schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$rotated_image_resize_ratio_cvterm_id,
+        project_id=>$drone_run_band_project_id,
+        rank=>0,
+        value=> encode_json \@original_image_resize_ratio
     },
     {
         key=>'projectprop_c1'
@@ -5232,9 +5245,10 @@ sub _perform_image_rotate {
         }
     }
 
+    print STDERR Dumper \@original_image_resize_ratio;
     unlink($archive_rotate_temp_image);
     return {
-        rotated_image_id => $rotated_image_id, image_url => $image_url, image_fullpath => $image_fullpath, rotated_image_url => $rotated_image_url, rotated_image_fullpath => $rotated_image_fullpath
+        rotated_image_id => $rotated_image_id, image_url => $image_url, image_fullpath => $image_fullpath, rotated_image_url => $rotated_image_url, rotated_image_fullpath => $rotated_image_fullpath, original_image_resize_ratio => \@original_image_resize_ratio
     };
 }
 

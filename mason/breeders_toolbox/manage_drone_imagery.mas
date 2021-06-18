@@ -100,9 +100,9 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                     <div class="col-sm-6">
                         <select class="form-control" id="manage_drone_imagery_standard_process_ground_control_points_option">
                             <option value="No">No</option>
-                            <option value="Yes_GeoTIFF_params">Yes, and it has GeoTIFF coordinates saved.</option>
-                            <option value="Yes">Yes, and it has GCPs defined.</option>
+                            <option value="Yes">Yes, and it has Ground Control Points (GCPs) defined.</option>
                             <option value="Yes_camera_rig">Yes, and the same fixed camera rig was used.</option>
+                            <!--option value="Yes_GeoTIFF_params">Yes, and it has GeoTIFF coordinates saved.</option-->
                         </select>
                     </div>
                 </div>
