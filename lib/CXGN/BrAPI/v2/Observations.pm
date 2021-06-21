@@ -236,7 +236,7 @@ sub observations_store {
     if ($user_type ne 'submitter' && $user_type ne 'sequencer' && $user_type ne 'curator') {
         print STDERR 'Must have submitter privileges to upload phenotypes! Please contact us!';
         push @$status, {'403' => 'Permission Denied. Must have correct privilege.'};
-        return CXGN::BrAPI::JSONResponse->return_error($status, 'Must have submitter privileges to upload phenotypes! Please contact us!');
+        return CXGN::BrAPI::JSONResponse->return_error($status, 'Must have submitter privileges to upload phenotypes! Please contact us!', 403);
     }
 
     ## Validate request structure and parse data
@@ -249,7 +249,7 @@ sub observations_store {
     if (!$validated_request || $validated_request->{'error'}) {
         my $parse_error = $validated_request ? $validated_request->{'error'} : "Error parsing request structure";
         print STDERR $parse_error;
-        return CXGN::BrAPI::JSONResponse->return_error($status, $parse_error);
+        return CXGN::BrAPI::JSONResponse->return_error($status, $parse_error, 400);
     } elsif ($validated_request->{'success'}) {
         push @$status, {'info' => $validated_request->{'success'} };
     }
@@ -263,7 +263,7 @@ sub observations_store {
     if (!$parsed_request || $parsed_request->{'error'}) {
         my $parse_error = $parsed_request ? $parsed_request->{'error'} : "Error parsing request data";
         print STDERR $parse_error;
-        return CXGN::BrAPI::JSONResponse->return_error($status, $parse_error);
+        return CXGN::BrAPI::JSONResponse->return_error($status, $parse_error, 400);
     } elsif ($parsed_request->{'success'}) {
         push @$status, {'info' => $parsed_request->{'success'} };
         #define units (observationUnits) and variables (observationVariables) from parsed request
@@ -288,7 +288,7 @@ sub observations_store {
     my $archive_error_message = $response->{error_message};
     my $archive_success_message = $response->{success_message};
     if ($archive_error_message){
-        return CXGN::BrAPI::JSONResponse->return_error($status, $archive_error_message);
+        return CXGN::BrAPI::JSONResponse->return_error($status, $archive_error_message, 500);
     }
     if ($archive_success_message){
         push @$status, {'info' => $archive_success_message };
@@ -327,7 +327,7 @@ sub observations_store {
 
     if ($stored_observation_error) {
         print STDERR "Error: $stored_observation_error\n";
-        return CXGN::BrAPI::JSONResponse->return_error($status, $stored_observation_error);
+        return CXGN::BrAPI::JSONResponse->return_error($status, $stored_observation_error, 500);
     }
     if ($stored_observation_success) {
         #if no error refresh matviews
