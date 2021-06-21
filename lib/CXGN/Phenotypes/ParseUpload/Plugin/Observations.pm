@@ -181,7 +181,8 @@ sub parse {
         my $validated_observations = $validator->validate($schema,'observations', \@observations);
         my @observations_missing = @{$validated_observations->{'missing'}};
         if (scalar @observations_missing) {
-            $parse_result{'error'} = "The following observations do not exist in the database: ".@observations_missing;
+            my $observations_str = join ',', @observations_missing;
+            $parse_result{'error'} = "The following observations do not exist in the database: ".$observations_str;
             #print STDERR "Invalid observations: @observations_missing\n";
             return \%parse_result;
         }
