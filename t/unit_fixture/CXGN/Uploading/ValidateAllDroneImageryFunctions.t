@@ -57,7 +57,7 @@ my $micasense5bandpanelzipfile = $f->config->{basepath}."/t/data/imagebreed/Exam
 $ua = LWP::UserAgent->new;
 $ua->timeout(3600);
 my $response_micasense_stitch = $ua->post(
-        'http://localhost:3010/api/drone_imagery/upload_drone_imagery',
+        'http://localhost:3010/drone_imagery/upload_drone_imagery',
         Content_Type => 'form-data',
         Content => [
             "sgn_session_id"=>$sgn_session_id,
@@ -77,18 +77,20 @@ my $response_micasense_stitch = $ua->post(
 
 ok($response_micasense_stitch->is_success);
 my $message_micasense_stitch = $response_micasense_stitch->decoded_content;
-my $message_hash_micasense_stitch = decode_json $message_micasense_stitch;
-print STDERR Dumper $message_hash_micasense_stitch;
-is($message_hash_micasense_stitch->{success}, 1);
-is(scalar(@{$message_hash_micasense_stitch->{drone_run_band_project_ids}}), 6);
-is(scalar(@{$message_hash_micasense_stitch->{drone_run_band_image_ids}}), 6);
+# my $message_hash_micasense_stitch = decode_json $message_micasense_stitch;
+# print STDERR Dumper $message_hash_micasense_stitch;
+print STDERR Dumper $message_micasense_stitch;
+# is($message_hash_micasense_stitch->{success}, 1);
+# is(scalar(@{$message_hash_micasense_stitch->{drone_run_band_project_ids}}), 6);
+# is(scalar(@{$message_hash_micasense_stitch->{drone_run_band_image_ids}}), 6);
+ok($message_micasense_stitch =~ /Successfully uploaded!/);
 
 #Testing upload of RGB unstitched raw captures.
 my $rgbrawimageszipfile = "/home/production/public/static_content/imagebreed/ExampleColorAerialDroneFlightRawCaptures.zip";
 $ua = LWP::UserAgent->new;
 $ua->timeout(3600);
 my $response_rgb_stitch = $ua->post(
-        'http://localhost:3010/api/drone_imagery/upload_drone_imagery',
+        'http://localhost:3010/drone_imagery/upload_drone_imagery',
         Content_Type => 'form-data',
         Content => [
             "sgn_session_id"=>$sgn_session_id,
@@ -107,11 +109,13 @@ my $response_rgb_stitch = $ua->post(
 
 ok($response_rgb_stitch->is_success);
 my $message_rgb_stitch = $response_rgb_stitch->decoded_content;
-my $message_hash_rgb_stitch = decode_json $message_rgb_stitch;
-print STDERR Dumper $message_hash_rgb_stitch;
-is($message_hash_rgb_stitch->{success}, 1);
-is(scalar(@{$message_hash_rgb_stitch->{drone_run_band_project_ids}}), 2);
-is(scalar(@{$message_hash_rgb_stitch->{drone_run_band_image_ids}}), 2);
+# my $message_hash_rgb_stitch = decode_json $message_rgb_stitch;
+# print STDERR Dumper $message_hash_rgb_stitch;
+print STDERR Dumper $message_rgb_stitch;
+# is($message_hash_rgb_stitch->{success}, 1);
+# is(scalar(@{$message_hash_rgb_stitch->{drone_run_band_project_ids}}), 2);
+# is(scalar(@{$message_hash_rgb_stitch->{drone_run_band_image_ids}}), 2);
+ok($message_rgb_stitch =~ /Successfully uploaded!/);
 
 }
 

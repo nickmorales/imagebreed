@@ -61,6 +61,7 @@ sub upload_drone_imagery_check_drone_name_GET : Args(0) {
     }
 }
 
+#DEPRECATED. USE /drone_imagery/upload_drone_imagery instead!
 sub upload_drone_imagery : Path('/api/drone_imagery/upload_drone_imagery') : ActionClass('REST') { }
 sub upload_drone_imagery_POST : Args(0) {
     my $self = shift;

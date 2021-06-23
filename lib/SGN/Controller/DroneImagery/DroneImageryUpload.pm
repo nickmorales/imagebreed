@@ -574,6 +574,17 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
             push @return_drone_run_band_image_ids, $image->get_image_id();
             push @return_drone_run_band_project_ids, $selected_drone_run_band_id;
         }
+
+        if (scalar(@return_drone_run_band_project_ids) > 0 && scalar(@return_drone_run_band_project_ids) == scalar(@new_drone_run_bands)) {
+            $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";
+            $c->stash->{template} = 'generic_message.mas';
+            return;
+        }
+        else {
+            $c->stash->{message} = "An error occurred! It is possible OpenDroneMap could not stitch your images!";
+            $c->stash->{template} = 'generic_message.mas';
+            return;
+        }
     }
     elsif ($new_drone_run_band_stitching eq 'yes_open_data_map_stitch') {
         my $upload_file = $c->req->upload('upload_drone_images_zipfile');
@@ -658,6 +669,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
         print STDERR Dumper [$image_path_img_name, $image_path_project_name, $image_path_remaining, $image_path_remaining_host];
 
         my $dir = $c->tempfiles_subdir('/upload_drone_imagery_raw_images');
+        my $dir_geocoords = $c->tempfiles_subdir('/upload_drone_imagery_geocoordinate_param');
+
         my $temp_file_docker_log = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_raw_images/fileXXXX');
 
         my $odm_check_prop = $schema->resultset("Project::Projectprop")->find_or_create({
@@ -711,13 +724,16 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_b3 = "$image_path_remaining/odm_orthophoto/b3.png";
                 my $odm_b4 = "$image_path_remaining/odm_orthophoto/b4.png";
                 my $odm_b5 = "$image_path_remaining/odm_orthophoto/b5.png";
-                my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImage.py --image_path $image_path_remaining/odm_orthophoto/odm_orthophoto.tif --outfile_path_b1 $odm_b1 --outfile_path_b2 $odm_b2 --outfile_path_b3 $odm_b3 --outfile_path_b4 $odm_b4 --outfile_path_b5 $odm_b5 --odm_radiocalibrated True";
+                my $odm_final_orthophoto = "$image_path_remaining/odm_orthophoto/odm_orthophoto.tif";
+                my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImage.py --image_path $odm_final_orthophoto --outfile_path_b1 $odm_b1 --outfile_path_b2 $odm_b2 --outfile_path_b3 $odm_b3 --outfile_path_b4 $odm_b4 --outfile_path_b5 $odm_b5 --odm_radiocalibrated True";
+                print STDERR $odm_cmd."\n";
                 my $odm_open_status = system($odm_cmd);
 
                 my $odm_dsm_png = "$image_path_remaining/odm_dem/dsm.png";
                 my $odm_dtm_png = "$image_path_remaining/odm_dem/dtm.png";
                 my $odm_subtract_png = "$image_path_remaining/odm_dem/subtract.png";
                 my $odm_dem_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImageDSM.py --image_path_dsm $image_path_remaining/odm_dem/dsm.tif --image_path_dtm $image_path_remaining/odm_dem/dtm.tif --outfile_path_dsm $odm_dsm_png --outfile_path_dtm $odm_dtm_png --outfile_path_subtract $odm_subtract_png --band_number 1";
+                print STDERR $odm_dem_cmd."\n";
                 my $odm_dem_open_status = system($odm_dem_cmd);
 
                 my @odm_b1_image_size = imgsize($odm_b1);
@@ -745,32 +761,36 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_dsm_image_length = $odm_dsm_image_size[1];
 
                 if ($odm_b1_image_width != $odm_b2_image_width || $odm_b2_image_width != $odm_b3_image_width || $odm_b3_image_width != $odm_b4_image_width || $odm_b4_image_width != $odm_b5_image_width) {
-                    $c->stash->{message} = "The ODM stitched 5-channel orthophotos are not all the same width! Something went wrong, please try again. It is possible ODM could not stitch your MicaSense image captures.";
+                    my $error_message = "The ODM stitched 5-channel orthophotos are not all the same width! Something went wrong, please try again. It is possible ODM could not stitch your MicaSense image captures.";
+                    print STDERR Dumper $error_message;
+                    $c->stash->{message} = $error_message;
                     $c->stash->{template} = 'generic_message.mas';
                     return;
                 }
                 if ($odm_b1_image_length != $odm_b2_image_length || $odm_b2_image_length != $odm_b3_image_length || $odm_b3_image_length != $odm_b4_image_length || $odm_b4_image_length != $odm_b5_image_length) {
-                    $c->stash->{message} = "The ODM stitched 5-channel orthophotos are not all the same length! Something went wrong, please try again. It is possible ODM could not stitch your MicaSense image captures.";
+                    my $error_message = "The ODM stitched 5-channel orthophotos are not all the same length! Something went wrong, please try again. It is possible ODM could not stitch your MicaSense image captures.";
+                    print STDERR Dumper $error_message;
+                    $c->stash->{message} = $error_message;
                     $c->stash->{template} = 'generic_message.mas';
                     return;
                 }
-                if ($odm_dsm_image_width != $odm_b1_image_width) {
-                    $c->stash->{message} = "The ODM stitched 5-channel orthophotos are not the same width as the DSM! Something went wrong, please try again. It is possible ODM could not stitch your MicaSense image captures.";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                if ($odm_dsm_image_length != $odm_b1_image_length) {
-                    $c->stash->{message} = "The ODM stitched 5-channel orthophotos are not the same length as the DSM! Something went wrong, please try again. It is possible ODM could not stitch your MicaSense image captures.";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
+                # if ($odm_dsm_image_width != $odm_b1_image_width) {
+                #     $c->stash->{message} = "The ODM stitched 5-channel orthophotos are not the same width as the DSM! Something went wrong, please try again. It is possible ODM could not stitch your MicaSense image captures.";
+                #     $c->stash->{template} = 'generic_message.mas';
+                #     return;
+                # }
+                # if ($odm_dsm_image_length != $odm_b1_image_length) {
+                #     $c->stash->{message} = "The ODM stitched 5-channel orthophotos are not the same length as the DSM! Something went wrong, please try again. It is possible ODM could not stitch your MicaSense image captures.";
+                #     $c->stash->{template} = 'generic_message.mas';
+                #     return;
+                # }
 
                 my @geoparams_coordinates;
                 my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
                 my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
                 my $outfile_geoparams_projection = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
 
-                my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $odm_dsm_png --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
+                my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $odm_final_orthophoto --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
                 print STDERR $geo_cmd."\n";
                 my $geo_cmd_status = system($geo_cmd);
                 my $ortho_file = $outfile_image;
@@ -825,16 +845,16 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_rgb_dsm_image_width = $odm_rgb_dsm_image_size[0];
                 my $odm_rgb_dsm_image_length = $odm_rgb_dsm_image_size[1];
 
-                if ($odm_rgb_image_width != $odm_rgb_dsm_image_width) {
-                    $c->stash->{message} = "The ODM stitched RGB orthophoto is not the same width as the DSM! Something went wrong, please try again. It is possible ODM could not stitch your RGB image captures.";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                if ($odm_rgb_image_length != $odm_rgb_dsm_image_length) {
-                    $c->stash->{message} = "The ODM stitched RGB orthophoto is not the same length as the DSM! Something went wrong, please try again. It is possible ODM could not stitch your RGB image captures.";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
+                # if ($odm_rgb_image_width != $odm_rgb_dsm_image_width) {
+                #     $c->stash->{message} = "The ODM stitched RGB orthophoto is not the same width as the DSM! Something went wrong, please try again. It is possible ODM could not stitch your RGB image captures.";
+                #     $c->stash->{template} = 'generic_message.mas';
+                #     return;
+                # }
+                # if ($odm_rgb_image_length != $odm_rgb_dsm_image_length) {
+                #     $c->stash->{message} = "The ODM stitched RGB orthophoto is not the same length as the DSM! Something went wrong, please try again. It is possible ODM could not stitch your RGB image captures.";
+                #     $c->stash->{template} = 'generic_message.mas';
+                #     return;
+                # }
 
                 my @geoparams_coordinates;
                 my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
@@ -957,14 +977,25 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 push @return_drone_run_band_project_ids, $selected_drone_run_band_id;
             }
         };
+        if ($@) {
+            print STDERR $@;
+        }
 
         $odm_check_prop->value('0');
         $odm_check_prop->update();
+
+        if (scalar(@return_drone_run_band_project_ids) > 0 && scalar(@return_drone_run_band_project_ids) == scalar(@stitched_bands)) {
+            $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";
+            $c->stash->{template} = 'generic_message.mas';
+            return;
+        }
+        else {
+            $c->stash->{message} = "An error occurred! It is possible OpenDroneMap could not stitch your images!";
+            $c->stash->{template} = 'generic_message.mas';
+            return;
+        }
     }
 
-    $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";
-    $c->stash->{template} = 'generic_message.mas';
-    return;
 }
 
 sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk") :Args(0) {
