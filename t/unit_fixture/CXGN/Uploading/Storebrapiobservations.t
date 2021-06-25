@@ -179,7 +179,7 @@ is_deeply($response, {
                                         },
                                         {
                                           'messageType' => 'INFO',
-                                          'message' => 'All values in your file are now saved in the database!'
+                                          'message' => 'All values in your file have been successfully processed!<br><br>2 new values stored<br><br>'
                                         }
                                       ],
                           'pagination' => {

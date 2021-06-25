@@ -82,7 +82,7 @@ my $message_hash = decode_json $message;
 print STDERR Dumper $message_hash;
 ok($message_hash->{figure});
 is(scalar(@{$message_hash->{success}}), 8);
-is($message_hash->{success}->[6], 'All values in your file are now saved in the database!');
+is($message_hash->{success}->[6], 'All values in your file have been successfully processed!<br><br>15 NIRS profiles stored<br><br>');
 my $nirs_protocol_id = $message_hash->{nd_protocol_id};
 
 my $ds = CXGN::Dataset->new( people_schema => $f->people_schema(), schema => $f->bcs_schema());
