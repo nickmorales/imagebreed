@@ -46,7 +46,7 @@ $crossing_trials
 </&>
 
 <%perl>
-    my $seedlot_subtitle = !!$c->user() 
+    my $seedlot_subtitle = !!$c->user()
         ? '<div class="btn-group"><button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Create Seedlot(s)&nbsp;<span class="caret"></span></button><ul class="dropdown-menu"><li><a href="#" name="add_seedlot_button">Add New Seedlot</a></li><li><a href="#" name="seedlot_bulk_upload">Upload Seedlots</a></li><li><a href="#" name="create_seedlots_trial_button">Create Seedlots from Trial</a></li></ul></div> <button class="btn btn-sm btn-primary" style="margin:3px" name="seedlot_upload_inventory">Upload Inventory</button>'
         : "Login to add or upload seedlots";
 </%perl>
@@ -163,13 +163,6 @@ $crossing_trials
 <script>
 jQuery(document).ready(function(){
 
-<<<<<<< HEAD
-=======
-    // TODO: REMOVE THIS!!!
-    jQuery('#create_seedlots_trial_dialog').modal('show');
-
-
->>>>>>> 0be4c783f... [WIP] Workflow for creating Seedlots from Field Trial
     jQuery("#search_seedlot_form_seedlot_name").autocomplete({
        source: '/ajax/stock/seedlot_name_autocomplete',
     });
@@ -193,8 +186,6 @@ jQuery(document).ready(function(){
                      d.exact_cross = jQuery('#exact_cross').is(":checked") ? 1 : 0;
                      d.quality = jQuery('#search_seedlot_form_quality').val();
                      d.only_good_quality = jQuery('#search_seedlot_form_only_good_quality_checkbox').is(":checked") ? 1 : 0;
-
- 
                 }
         },
         columns: [
