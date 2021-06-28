@@ -310,7 +310,7 @@ sub list_seedlots {
 
     select(STDERR);
     $| = 1;
-    $schema->storage->debug(1);
+    #$schema->storage->debug(1);
 
     my %unique_seedlots;
 
@@ -854,9 +854,9 @@ sub _update_content_stock_id {
     my $type_id = SGN::Model::Cvterm->get_cvterm_row($self->schema(), "collection_of", "stock_relationship")->cvterm_id();
     my $accession_type_id = SGN::Model::Cvterm->get_cvterm_row($self->schema(), "accession", "stock_type")->cvterm_id();
     my $cross_type_id = SGN::Model::Cvterm->get_cvterm_row($self->schema(), "cross", "stock_type")->cvterm_id();
-    
+
     my $acc_rs = $self->stock->search_related('stock_relationship_objects', {'me.type_id'=>$type_id, 'subject.type_id'=>[$accession_type_id,$cross_type_id]}, {'join'=>'subject'});
-    
+
     while (my $r=$acc_rs->next){
         $r->delete();
     }

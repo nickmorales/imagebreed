@@ -555,7 +555,7 @@ sub validate {
     #remove extra numbers, such as igd after : symbol
     my @observation_unit_uniquenames_stripped;
     foreach (@$observation_unit_uniquenames) {
-	print STDERR "Now dealing with observation unit $_...\n";
+        print STDERR "Now dealing with observation unit $_...\n";
         $_ =~ s/^\s+|\s+$//g;
         if ($include_igd_numbers){
             my ($observation_unit_name_with_accession_name, $igd_number) = split(/:/, $_, 2);

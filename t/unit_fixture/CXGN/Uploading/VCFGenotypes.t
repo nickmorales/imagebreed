@@ -311,7 +311,6 @@ $response = $ua->post(
             "upload_genotype_vcf_facility_select"=>"IGD",
             "upload_genotype_vcf_project_description"=>"Intertek SNP project 1",
             "upload_genotype_vcf_protocol_name"=>"Intertek SNP protocol 1",
-            "upload_genotype_vcf_include_lab_numbers"=>1,
             "upload_genotype_vcf_reference_genome_name"=>"Mesculenta_511_v7",
             "upload_genotype_add_new_accessions"=>1, #IDEALLY THIS is set to 0
         ]
