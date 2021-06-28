@@ -14,15 +14,15 @@ $timestamp => localtime()
 
                     <!-- CREATE SEEDLOTS WORKFLOW -->
                     <&| /util/workflow.mas, id=> "create_seedlots_trial_workflow" &>
-                        
-                        
+
+
                         <!-- STEP 1: Intro -->
                         <&| /util/workflow.mas:step, title=> "Intro" &>
                             <& /page/page_title.mas, title=>"Introduction" &>
                             <p>
-                                This workflow will guide you through the process of creating seedlots from the accessions 
-                                in a field trial.  You can create one new seedlot for each plot or unique accession 
-                                in the trial.  You can also set the initial contents (count or weight) of the seedlot 
+                                This workflow will guide you through the process of creating seedlots from the accessions
+                                in a field trial.  You can create one new seedlot for each plot or unique accession
+                                in the trial.  You can also set the initial contents (count or weight) of the seedlot
                                 as the value of a recorded trait from the trial.
                             </p>
                             <br/><br/>
@@ -75,7 +75,7 @@ $timestamp => localtime()
                                 </div>
                                 <div class="col-sm-3"></div>
                             </div>
-                            
+
                             <br/><br/><br /><br />
                             <center>
                                 <button id="create_seedlots_trial_complete_select_stock_type" class="btn btn-primary">Go to Next Step</button>
@@ -127,11 +127,11 @@ $timestamp => localtime()
                             <& /page/page_title.mas, title=>"Set Seedlot Contents" &>
 
                             <p>
-                                Each seedlot needs to have its initial contents (either a count or a weight) set.  You 
-                                can either set the same initial value for each seedlot or use the value from one of the 
-                                traits recorded for this trial.  If you are creating a seedlot for each accession and 
-                                select a trait as their initial value, then the sum of the trait values for each of the 
-                                accession's plots will be used.  The contents of each seedlot can be modified in the 
+                                Each seedlot needs to have its initial contents (either a count or a weight) set.  You
+                                can either set the same initial value for each seedlot or use the value from one of the
+                                traits recorded for this trial.  If you are creating a seedlot for each accession and
+                                select a trait as their initial value, then the sum of the trait values for each of the
+                                accession's plots will be used.  The contents of each seedlot can be modified in the
                                 table below before its creation.
                             </p>
 
@@ -192,8 +192,8 @@ $timestamp => localtime()
                             <& /page/page_title.mas, title=>"Set Seedlot Metadata" &>
 
                             <p>
-                                The following metadata is required for each seedlot.  Fill out the form at the top 
-                                apply the metadata to all of the seedlots.  Then, each seedlot can be manually 
+                                The following metadata is required for each seedlot.  Fill out the form at the top
+                                apply the metadata to all of the seedlots.  Then, each seedlot can be manually
                                 modified in the table below.
                             </p>
 
@@ -283,8 +283,8 @@ $timestamp => localtime()
                             <& /page/page_title.mas, title=>"Confirm Seedlots" &>
 
                             <p>
-                                Confirm the attributes for the new seedlots in the table below.  If something 
-                                is incorrect, navigate to the previous step and correct the information.  Once 
+                                Confirm the attributes for the new seedlots in the table below.  If something
+                                is incorrect, navigate to the previous step and correct the information.  Once
                                 all the information is correct, continue to the next step to create the seedlots.
                             </p>
 
@@ -307,7 +307,7 @@ $timestamp => localtime()
                             <& /page/page_title.mas, title=>"Create Seedlots" &>
 
                             <br /><br />
-                            
+
                             <div id="create_seedlots_trial_uploading">
                                 <p id="create_seedlots_trial_status"><strong>Creating Seedlots...</strong></p>
                                 <div class="progress">
@@ -436,7 +436,7 @@ $timestamp => localtime()
 
 
 
-    // 
+    //
     // WORKFLOW FUNCTIONS
     //
 
@@ -481,7 +481,7 @@ $timestamp => localtime()
                 _finish();
             }
         });
-        
+
 
         /**
          * Hide the working modal, renable the button, and continue (if complete)
@@ -508,9 +508,9 @@ $timestamp => localtime()
         // Hide the plot-level variables, if stock type is not plots
         jQuery(".plot_level_variable").css("display", stock_type === "plots" ? "list-item" : "none");
         jQuery("#create_seedlots_trial_name_template").val(
-            stock_type === "plots" ? 
-            "{trial_name}-{accession_name}-{rep}" : 
-            "{trial_name}-{accession_name}"
+            stock_type === "plots" ?
+            "seedlot-{trial_name}-{accession_name}-{rep}" :
+            "seedlot-{trial_name}-{accession_name}"
         );
 
         // Build the Seedlots
@@ -605,7 +605,7 @@ $timestamp => localtime()
 
     //
     // HELPER FUNCTIONS
-    // 
+    //
 
 
     /**
@@ -673,14 +673,14 @@ $timestamp => localtime()
 
         for ( let i = 0; i < SEEDLOTS.length; i++ ) {
             let contents = 0;
-            
+
             // Set contents value
             if ( value === 'constant' ) {
                 contents = constant;
             }
             else if ( value === 'trait' && trait_data ) {
                 for ( let j = 0; j < trait_data.length; j++ ) {
-                    
+
                     // Sum plots of the same accession
                     if ( stock_type === 'accessions' ) {
                         if ( SEEDLOTS[i].accession.id === trait_data[j].accession_id ) {
@@ -700,7 +700,7 @@ $timestamp => localtime()
 
                 }
             }
-        
+
             html += "<tr>";
             html += "<td>" + SEEDLOTS[i].name + "</td>";
             html += "<td><input class='form-control create_seedlots_trial_contents_seedlot' data-index='" + i + "' value='" + contents + "'></td>";
@@ -825,7 +825,7 @@ $timestamp => localtime()
 
 
     /**
-     * Upload each of the Seedlots to the Database in batches of up to 
+     * Upload each of the Seedlots to the Database in batches of up to
      * UPLOAD_BATCH_SIZE seedlots per batch
      * @param {Function} callback Callback function(errors, success_count)
      */
@@ -1113,7 +1113,7 @@ $timestamp => localtime()
                         accessions = [];
                         for ( let i = 0; i < response.accessions[0].length; i++ ) {
                             accessions.push({
-                                id: response.accessions[0][i].stock_id, 
+                                id: response.accessions[0][i].stock_id,
                                 name: response.accessions[0][i].accession_name
                             });
                         }
@@ -1199,7 +1199,7 @@ $timestamp => localtime()
                 }
             });
         }
-        
+
         function _finish() {
             count++;
             if ( count >= total ) {
