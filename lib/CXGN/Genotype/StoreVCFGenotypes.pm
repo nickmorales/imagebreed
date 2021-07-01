@@ -698,17 +698,19 @@ sub validate {
         }
     }
 
-    my $genotype_property_type_id;
+    my $genotype_cvterm_id;
     if ($genotyping_data_type eq 'ssr') {
-        $genotype_property_type_id = $pcr_marker_genotypeprop_cvterm_id;
+        $genotype_cvterm_id = $pcr_marker_genotypeprop_cvterm_id;
     } else {
-        $genotype_property_type_id = $snp_genotype_id;
+        $genotype_cvterm_id = $snp_genotype_id;
     }
+
     my $previous_genotypes_search_params = {
         'me.uniquename' => {-in => \@observation_unit_uniquenames_stripped},
         'nd_experiment.type_id' => $geno_cvterm_id,
-        'genotype.type_id' => $genotype_property_type_id
+        'genotype.type_id' => $genotype_cvterm_id
     };
+
     if ($stock_type_id) {
         $previous_genotypes_search_params->{'me.type_id'} = $stock_type_id;
     }
