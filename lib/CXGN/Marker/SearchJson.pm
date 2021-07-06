@@ -26,7 +26,7 @@ Running a search consists of two steps:
 1. Call search_marker_json() to execute the SQL
 
 =cut
-  
+
 =head2 Constructor
 
 =over 12
@@ -66,7 +66,7 @@ sub name_like {
   # strip un-normal characters?
   $name =~ s|[^-_\w./%]||g;
 
-  # clean the name to see what WE would call it. 
+  # clean the name to see what WE would call it.
   # We'll search for both the input name and the cleaned name.
   my $clean_name = clean_marker_name($name);
 
@@ -82,8 +82,6 @@ sub on_chr {
   my $subquery = " AND (s.value->>'chrom' IN ($chrom_str))";
   $self->{query_parts} .= $subquery;
 }
-
-=over
 
 =item position_between($start, $end)
 
@@ -103,7 +101,7 @@ sub position_between {
   my ($self, $start, $end) = @_;
 
   # making sure our inputs are numbers
-  # (pg barfs if you feed it a string; 
+  # (pg barfs if you feed it a string;
   # we want to fail gracefully)
   $start += 0;
   $end += 0;
@@ -117,7 +115,7 @@ sub return_subquery {
     my ($self) = @_;
     my $subq = '';
     return $self->{query_parts};
-}    
+}
 
 sub search_marker_json {
     my ($self, $marker) = @_;
@@ -139,7 +137,7 @@ sub search_marker_json {
     $query = "select cvterm_id from cvterm where name = 'vcf_map_details_markers'";
     $self->{sth} = $self->{dbh}->prepare($query);
     $self->{sth}->execute();
-    my ($protocol_markers_cvterm) = $self->{sth}->fetchrow_array(); 
+    my ($protocol_markers_cvterm) = $self->{sth}->fetchrow_array();
 
     $query = "select nd_protocol_id from nd_protocolprop WHERE '$marker' IN (SELECT jsonb_array_elements_text(nd_protocolprop.value->'marker_names') where type_id = $protocol_map_cvterm)";
     $self->{sth} = $self->{dbh}->prepare($query);
@@ -173,8 +171,6 @@ sub perform_search {
 
 }
 
-=back
-=cut
 
 # all good modules return true
 1;

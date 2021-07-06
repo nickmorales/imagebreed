@@ -7,7 +7,7 @@
 
 =head1 DESCRIPTION
 
-The following parameters are required: 
+The following parameters are required:
 
 =over 5
 
@@ -45,7 +45,7 @@ use SGN::Exception;
 
 my $e = undef;
 
-if (!$marker_id) { 
+if (!$marker_id) {
   $c->throw(
      public_message => 'marker_id must be provided as an argument for this page',
      is_client_error => 1,
@@ -54,11 +54,11 @@ if (!$marker_id) {
 
 my $marker = CXGN::Marker->new($dbh, $marker_id);
 
-if (!$marker) { 
+if (!$marker) {
   $e = SGN::Exception->new(title=>"Marker detail page error: Marker with marker_id $marker_id does not exist in the database");
  $m->comp('/site/error/exception.mas', exception=>$e);
   return;
-  
+
 }
 
 my ($marker_name, @other_names) = $marker->name_that_marker();
@@ -72,7 +72,7 @@ my $src_feature = "SL2.50";
 <& /markers/basic_marker_info.mas, marker=>$marker, dbh=>$dbh &>
 
 <&| /page/info_section.mas, title=>"Synonyms", collapsible=>1 &>
-% if (@other_names) { 
+% if (@other_names) {
     <% join "<br />", @other_names %>
 % }
 </&>
@@ -104,6 +104,8 @@ my $src_feature = "SL2.50";
 <& /markers/cosii_files.mas, marker=>$marker &>
 
 <& /markers/attributions.mas, marker=>$marker &>
+
+<& /markers/genotyped_markers.mas, marker_id=>$marker_id &>
 
 <&| /page/info_section.mas, title => "Genomic location of $marker_name", collapsible=>1 &>
 <& /feature/jbrowse_exact_match.mas, feature=> $marker_name, src_feature=> $src_feature &>
