@@ -1593,7 +1593,7 @@ sub get_cached_file_VCF {
     my $web_cluster_queue_config = shift;
     my $basepath_config = shift;
 
-    my $key = $self->key("get_cached_file_VCF_v04");
+    my $key = $self->key("get_cached_file_VCF_v05");
     $self->cache( Cache::File->new( cache_root => $self->cache_root() ));
     my $protocol_ids = $self->protocol_id_list;
 
@@ -1706,8 +1706,12 @@ sub get_cached_file_VCF {
                     #In case of old genotyping protocols where there was no protocolprop marker info
                     if (!$format) {
                         my $first_g = $geno->{selected_genotype_hash}->{$m->{name}};
+                        if (defined($first_g->{'GT'})) {
+                            push @format_array, 'GT';
+                        }
                         foreach my $k (sort keys %$first_g) {
-                            if (defined($first_g->{$k})) {
+                            if ($k eq 'GT') {
+                            } elsif (defined($first_g->{$k})) {
                                 push @format_array, $k;
                             }
                         }
@@ -1754,13 +1758,21 @@ sub get_cached_file_VCF {
                     @format = split ':', $format;
                 }
 
-                foreach my $format_key (@format) {
-                    my $val = $geno->{selected_genotype_hash}->{$m->{name}}->{$format_key};
-                    if ($format_key eq 'GT' && $val eq '') {
+                if (defined($geno->{selected_genotype_hash}->{$m->{name}}->{'GT'})) {
+                    my $val = $geno->{selected_genotype_hash}->{$m->{name}}->{'GT'};
+                    if ($val eq '') {
                         $val = './.';
                     }
                     push @current_geno, $val;
                 }
+                foreach my $format_key (@format) {
+                    my $val = $geno->{selected_genotype_hash}->{$m->{name}}->{$format_key};
+                    if ($format_key eq 'GT') {
+                    } else {
+                        push @current_geno, $val;
+                    }
+                }
+
                 my $current_g = join ':', @current_geno;
                 $genotype_data_string .= $current_g."\t";
             }
