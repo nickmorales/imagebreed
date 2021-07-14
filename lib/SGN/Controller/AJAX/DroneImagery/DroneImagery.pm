@@ -223,7 +223,7 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
 
     my $statistics_select = $c->req->param('statistics_select');
     my $field_trial_id_list = $c->req->param('field_trial_id_list') ? decode_json $c->req->param('field_trial_id_list') : [];
@@ -3928,6 +3928,7 @@ sub drone_imagery_separate_gps_GET : Args(0) {
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $drone_run_project_id = $c->req->param("drone_run_project_id");
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $saved_image_stacks_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_raw_images_saved_micasense_stacks', 'project_property')->cvterm_id();
     my $saved_image_stacks_separated_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_raw_images_saved_micasense_stacks_separated', 'project_property')->cvterm_id();
@@ -4021,6 +4022,7 @@ sub drone_imagery_get_gps_GET : Args(0) {
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $drone_run_project_id = $c->req->param("drone_run_project_id");
     my $flight_pass_counter = $c->req->param("flight_pass_counter");
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $return = _drone_imagery_interactive_get_gps($c, $schema, $drone_run_project_id, $flight_pass_counter);
 
@@ -5327,6 +5329,7 @@ sub drone_imagery_retrieve_parameter_template_GET : Args(0) {
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $template_projectprop_id = $c->req->param('plot_polygons_template_projectprop_id');
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $rs = $schema->resultset("Project::Projectprop")->find({projectprop_id => $template_projectprop_id});
     my $plot_polygons = decode_json $rs->value;
@@ -8752,7 +8755,7 @@ sub standard_process_extended_apply_GET : Args(0) {
     my $time_cvterm_id = $c->req->param('time_days_cvterm_id');
     my $standard_process_type = $c->req->param('standard_process_type');
     my $phenotype_methods = $c->req->param('phenotype_types') ? decode_json $c->req->param('phenotype_types') : ['zonal'];
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
 
     my $process_indicator_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_standard_process_in_progress', 'project_property')->cvterm_id();
     my $processed_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_standard_process_extended_completed', 'project_property')->cvterm_id();
@@ -10975,7 +10978,7 @@ sub drone_imagery_train_keras_model_POST : Args(0) {
     my $use_parents_grm = $c->req->param('use_parents_grm') eq 'yes' ? 1 : 0;
     my $drone_run_ids = decode_json($c->req->param('drone_run_ids'));
     my $plot_polygon_type_ids = decode_json($c->req->param('plot_polygon_type_ids'));
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
 
     my $project_image_type_id_list = CXGN::DroneImagery::ImageTypes::get_all_project_md_image_observation_unit_plot_polygon_types($schema);
 
@@ -11500,7 +11503,7 @@ sub drone_imagery_save_keras_model_GET : Args(0) {
     my $model_type = $c->req->param('model_type');
     my $drone_run_ids = decode_json($c->req->param('drone_run_ids'));
     my $plot_polygon_type_ids = decode_json($c->req->param('plot_polygon_type_ids'));
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
 
     _perform_save_trained_keras_cnn_model($c, $schema, $metadata_schema, $phenome_schema, \@field_trial_ids, $model_file, $model_input_file, $archive_temp_autoencoder_output_model_file, $model_input_aux_file, $model_name, $model_description, $drone_run_ids, $plot_polygon_type_ids, $trait_id, $model_type, \@aux_trait_id, $protocol_id, $use_parents_grm, $user_id, $user_name, $user_role);
 }
@@ -11592,7 +11595,7 @@ sub drone_imagery_predict_keras_model_POST : Args(0) {
     my $drone_run_ids = decode_json($c->req->param('drone_run_ids'));
     my $plot_polygon_type_ids = decode_json($c->req->param('plot_polygon_type_ids'));
     my @aux_trait_ids = $c->req->param('aux_trait_ids[]') ? $c->req->param('aux_trait_ids[]') : ();
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
 
     my @allowed_composed_cvs = split ',', $c->config->{composable_cvs};
     my $composable_cvterm_delimiter = $c->config->{composable_cvterm_delimiter};
@@ -12348,7 +12351,7 @@ sub drone_imagery_autoencoder_keras_vi_model_POST : Args(0) {
     my $drone_run_ids = decode_json($c->req->param('drone_run_ids'));
     my $training_plot_polygon_type_ids = decode_json($c->req->param('training_plot_polygon_type_ids'));
     my $plot_polygon_type_ids = decode_json($c->req->param('plot_polygon_type_ids'));
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
 
     if (scalar(@$drone_run_ids) > 1) {
         $c->stash->{rest} = {error => "Please select only one drone run to predict on!"};
@@ -13074,7 +13077,7 @@ sub drone_imagery_retrain_mask_rcnn_GET : Args(0) {
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
     my $model_name = $c->req->param('model_name');
     my $model_description = $c->req->param('model_description');
     my $model_type = $c->req->param('model_type');
@@ -13292,7 +13295,7 @@ sub drone_imagery_predict_mask_rcnn_GET : Args(0) {
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
     my $model_id = $c->req->param('model_id');
     my $image_id = $c->req->param('image_id');
 
@@ -13383,7 +13386,7 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $drone_run_project_ids = decode_json $c->req->param('drone_run_project_ids');
     my $field_trial_id = $c->req->param('field_trial_id');
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'submitter');
 
     my $plot_polygon_template_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
     my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();

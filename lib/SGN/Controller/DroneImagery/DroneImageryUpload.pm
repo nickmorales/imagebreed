@@ -3373,6 +3373,12 @@ sub _check_user_login {
         $user_name = $c->user()->get_object()->get_username();
         $user_role = $c->user->get_object->get_user_type();
     }
+
+    if ($user_role ne 'curator' && $user_role ne 'submitter' && $user_role ne 'sequencer') {
+        $c->stash->{message} = 'You do not have permissions to do this! Please contact us.';
+        $c->stash->{template} = 'generic_message.mas';
+        return;
+    }
     return ($user_id, $user_name, $user_role);
 }
 

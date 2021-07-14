@@ -77,7 +77,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
 
     my $statistics_select_original = $c->req->param('statistics_select');
     my $analytics_protocol_id = $c->req->param('analytics_protocol_id');
