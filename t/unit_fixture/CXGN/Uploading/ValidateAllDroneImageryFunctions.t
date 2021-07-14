@@ -174,6 +174,13 @@ is(scalar(@{$message_hash_raster->{drone_run_band_image_ids}}), 5);
 my $a_drone_run_project_id = $message_hash_raster->{drone_run_project_id};
 ok($a_drone_run_project_id);
 
+$mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
+my $response = decode_json $mech->content;
+print STDERR Dumper $response;
+is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
+$sgn_session_id = $response->{access_token};
+print STDERR $sgn_session_id."\n";
+
 $ua = LWP::UserAgent->new;
 my $response_get_image = $ua->get('http://localhost:3010/api/drone_imagery/get_image?sgn_session_id='.$sgn_session_id.'&image_id='.$message_hash_raster->{drone_run_band_image_ids}->[0]);
 ok($response_get_image->is_success);
@@ -267,7 +274,7 @@ ok($message_hash_assign_plot_polygons->{success});
 ok($message_hash_assign_plot_polygons->{drone_run_band_template_id});
 
 $ua = LWP::UserAgent->new;
-my $response_get_template = $ua->get('http://localhost:3010/api/drone_imagery/retrieve_parameter_template?plot_polygons_template_projectprop_id='.$message_hash_assign_plot_polygons->{drone_run_band_template_id});
+my $response_get_template = $ua->get('http://localhost:3010/api/drone_imagery/retrieve_parameter_template?sgn_session_id='.$sgn_session_id.'&plot_polygons_template_projectprop_id='.$message_hash_assign_plot_polygons->{drone_run_band_template_id});
 ok($response_get_template->is_success);
 my $message_get_template = $response_get_template->decoded_content;
 my $message_hash_get_template = decode_json $message_get_template;
