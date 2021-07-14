@@ -83,6 +83,8 @@ sub on_chr {
   $self->{query_parts} .= $subquery;
 }
 
+=over
+
 =item position_between($start, $end)
 
 Limits the results to markers appearing between the given endpoints.
@@ -171,6 +173,8 @@ sub perform_search {
 
 }
 
+=back
+=cut
 
 # all good modules return true
 1;
