@@ -239,11 +239,11 @@ sub generate_experimental_design_POST : Args(0) {
     my @design_array;
     my @design_layout_view_html_array;
     my $json = JSON::XS->new();
-    
+
     foreach my $location (@locations) {
         my $trial_name = $c->req->param('project_name');
         my $geolocation_lookup = CXGN::Location::LocationLookup->new(schema => $schema);
-	
+
         $geolocation_lookup->set_location_name($location);
         if (!$geolocation_lookup->get_geolocation()){
             $c->stash->{rest} = { error => "Trial location not found" };
@@ -460,14 +460,6 @@ sub generate_experimental_design_POST : Args(0) {
     };
 }
 
-sub test_controller : Path('ajax/trial/test_controller/') : ActionClass('REST') {
-    my $self = shift;
-    my $c = shift;
-    $c->stash->{rest} = {success => $c};
-    $c->stash->{rest} = {error => $c};
-    return $c;
-}
-
 sub save_experimental_design : Path('/ajax/trial/save_experimental_design') : ActionClass('REST') { }
 
 sub save_experimental_design_POST : Args(0) {
@@ -648,7 +640,7 @@ sub save_experimental_design_POST : Args(0) {
             }
         }
     }
-    
+
     my $bs = CXGN::BreederSearch->new( { dbh=>$dbh, dbname=>$c->config->{dbname}, } );
     my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
 
@@ -837,10 +829,10 @@ sub upload_trial_file_POST : Args(0) {
 
     select(STDERR);
     $| = 1;
-    
+
     print STDERR "Check 1: ".localtime()."\n";
 
-    
+
     #print STDERR Dumper $c->req->params();
     my $chado_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
