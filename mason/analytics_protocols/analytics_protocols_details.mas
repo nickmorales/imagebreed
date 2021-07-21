@@ -78,6 +78,7 @@ $analytics_protocol_result_summary
 %           my $env_iterations = $s->{env_iterations};
 %           my $number_iterations = $s->{number_iterations};
 %           my $varcomps = $s->{env_varcomps};
+%           my $avg_varcomps = $s->{avg_varcomps};
 %           my $avg_varcomps_display = $s->{avg_varcomps_display};
 %           my $avg_cross_validation_display = $s->{avg_cross_validation_display};
 %           if ($analytics_result_type) {
@@ -128,7 +129,8 @@ $analytics_protocol_result_summary
 %               print "<br/><strong>Variance Components</strong><br/>";
 %               foreach my $i (@$avg_varcomps_display) {
 %                   if (defined($i->{mean})) {
-%                       print "$i->{type}: $i->{type_scenario}: $i->{level}: $i->{mean} +- $i->{std}<br/>";
+%                       my $values_string = join ',', @{$i->{vals}};
+%                       print "<span title='".$values_string."'>$i->{type}: $i->{type_scenario}: $i->{level}: $i->{mean} +- $i->{std}</span><br/>";
 %                   }
 %               }
 %           }

@@ -75,6 +75,80 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
     my $result_props_json_array = $result_props_json ? decode_json $result_props_json : [];
     # print STDERR Dumper $result_props_json_array;
 
+    foreach my $a (@$result_props_json_array) {
+        my $trait_name_encoder = $a->{trait_name_map};
+        my @potential_times;
+        #Sommer
+        foreach (keys %$trait_name_encoder) {
+            push @potential_times, "t$_";
+        }
+        #ASREML-R
+        foreach (values %$trait_name_encoder) {
+            push @potential_times, $_;
+        }
+
+        my %avg_varcomps = %{$a->{avg_varcomps}};
+        my @avg_varcomps_display = @{$a->{avg_varcomps_display}};
+
+        while (my($t, $type_obj) = each %avg_varcomps) {
+            while (my($type, $level_obj) = each %$type_obj) {
+                foreach my $time (@potential_times) {
+                    #Sommer varcomps
+                    if (exists($avg_varcomps{$t}->{$type}->{"u:id.$time-$time"}->{vals}) && exists($avg_varcomps{$t}->{$type}->{"u:units.$time-$time"}->{vals})) {
+                        my $g_values = $avg_varcomps{$t}->{$type}->{"u:id.$time-$time"}->{vals};
+                        my $r_values = $avg_varcomps{$t}->{$type}->{"u:units.$time-$time"}->{vals};
+                        my $g_counter = 0;
+                        my @h_values_type;
+                        foreach my $g_i (@$g_values) {
+                            my $r_i = $r_values->[$g_counter];
+                            my $h_i = $g_i + $r_i == 0 ? 0 : $g_i/($g_i + $r_i);
+                            push @h_values_type, $h_i;
+                            $g_counter++;
+                        }
+
+                        my $stat = Statistics::Descriptive::Full->new();
+                        $stat->add_data(@h_values_type);
+                        push @avg_varcomps_display, {
+                            type => $t,
+                            type_scenario => $type,
+                            level => "h2-$time",
+                            vals => \@h_values_type,
+                            std => $stat->standard_deviation(),
+                            mean => $stat->mean()
+                        };
+                    }
+                    #ASREML-R multivariate + univariate
+                    elsif (exists($avg_varcomps{$t}->{$type}->{"trait:vm(id_factor, geno_mat_3col)!trait_$time:$time"}->{vals}) && (exists($avg_varcomps{$t}->{$type}->{"units:trait!trait_$time:$time"}->{vals}) || exists($avg_varcomps{$t}->{$type}->{"trait:units!units!trait_$time:$time"}->{vals}) ) ) {
+                        my $g_values = $avg_varcomps{$t}->{$type}->{"trait:vm(id_factor, geno_mat_3col)!trait_$time:$time"}->{vals};
+                        my $r_values = $avg_varcomps{$t}->{$type}->{"units:trait!trait_$time:$time"}->{vals} || $avg_varcomps{$t}->{$type}->{"trait:units!units!trait_$time:$time"}->{vals};
+                        my $g_counter = 0;
+                        my @h_values_type;
+                        foreach my $g_i (@$g_values) {
+                            my $r_i = $r_values->[$g_counter];
+                            my $h_i = $g_i + $r_i == 0 ? 0 : $g_i/($g_i + $r_i);
+                            push @h_values_type, $h_i;
+                            $g_counter++;
+                        }
+
+                        my $stat = Statistics::Descriptive::Full->new();
+                        $stat->add_data(@h_values_type);
+                        push @avg_varcomps_display, {
+                            type => $t,
+                            type_scenario => $type,
+                            level => "h2-$time",
+                            vals => \@h_values_type,
+                            std => $stat->standard_deviation(),
+                            mean => $stat->mean()
+                        };
+                    }
+                }
+
+            }
+        }
+
+        $a->{avg_varcomps_display} = \@avg_varcomps_display;
+    }
+
     $c->stash->{analytics_protocol_id} = $nd_protocol_id;
     $c->stash->{analytics_protocol_name} = $name;
     $c->stash->{analytics_protocol_description} = $description;
@@ -87,4 +161,3 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
 }
 
 1;
-    
