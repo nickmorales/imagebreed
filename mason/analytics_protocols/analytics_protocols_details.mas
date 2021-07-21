@@ -88,9 +88,11 @@ $analytics_protocol_result_summary
 %               print "<strong>Simulated Environment Correlation Results</strong><br/>";
 %               print $number_iterations." iterations<br/>";
 %               foreach my $env_type (sort keys %$env_corr_results) {
+%                   my $values = $env_corr_results->{$env_type}->{values};
+%                   my $values_string = join ',', @$values;
 %                   my $mean = $env_corr_results->{$env_type}->{mean};
 %                   my $std = $env_corr_results->{$env_type}->{std};
-%                   print $env_type." : ".$mean." +- ".$std."<br/>";
+%                   print "<span title='".$values_string."'>".$env_type." : ".$mean." +- ".$std."</span><br/>";
 %               }
 %           }
 %           if ($env_iterations) {
