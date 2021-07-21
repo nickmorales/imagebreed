@@ -101,20 +101,24 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
                         my @h_values_type;
                         foreach my $g_i (@$g_values) {
                             my $r_i = $r_values->[$g_counter];
-                            my $h_i = $g_i + $r_i == 0 ? 0 : $g_i/($g_i + $r_i);
-                            push @h_values_type, $h_i;
-                            $g_counter++;
+                            if ($g_i && $r_i) {
+                                my $h_i = $g_i + $r_i == 0 ? 0 : $g_i/($g_i + $r_i);
+                                push @h_values_type, $h_i;
+                                $g_counter++;
+                            }
                         }
 
                         my $stat = Statistics::Descriptive::Full->new();
                         $stat->add_data(@h_values_type);
+                        my $std = $stat->standard_deviation() || 0;
+                        my $mean = $stat->mean() || 0;
                         push @avg_varcomps_display, {
                             type => $t,
                             type_scenario => $type,
                             level => "h2-$time",
                             vals => \@h_values_type,
-                            std => $stat->standard_deviation(),
-                            mean => $stat->mean()
+                            std => $std,
+                            mean => $mean
                         };
                     }
                     #ASREML-R multivariate + univariate
@@ -125,20 +129,24 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
                         my @h_values_type;
                         foreach my $g_i (@$g_values) {
                             my $r_i = $r_values->[$g_counter];
-                            my $h_i = $g_i + $r_i == 0 ? 0 : $g_i/($g_i + $r_i);
-                            push @h_values_type, $h_i;
-                            $g_counter++;
+                            if ($g_i && $r_i) {
+                                my $h_i = $g_i + $r_i == 0 ? 0 : $g_i/($g_i + $r_i);
+                                push @h_values_type, $h_i;
+                                $g_counter++;
+                            }
                         }
 
                         my $stat = Statistics::Descriptive::Full->new();
                         $stat->add_data(@h_values_type);
+                        my $std = $stat->standard_deviation() || 0;
+                        my $mean = $stat->mean() || 0;
                         push @avg_varcomps_display, {
                             type => $t,
                             type_scenario => $type,
                             level => "h2-$time",
                             vals => \@h_values_type,
-                            std => $stat->standard_deviation(),
-                            mean => $stat->mean()
+                            std => $std,
+                            mean => $mean
                         };
                     }
                 }
