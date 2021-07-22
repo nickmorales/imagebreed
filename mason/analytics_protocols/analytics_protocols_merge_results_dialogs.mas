@@ -19,7 +19,26 @@
 
                     <hr>
                     <center>
-                    <button class="btn btn-primary" id="drone_imagery_analytics_merge_results_select_step">Go to Next Step</button>
+                    <button class="btn btn-primary" id="drone_imagery_analytics_merge_results_protocol_select_step">Go to Next Step</button>
+                    </center>
+                </&>
+                <&| /util/workflow.mas:step, title=> "Analysis" &>
+                    <& /page/page_title.mas, title=>"Analysis" &>
+
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-6 control-label">Result Type: </label>
+                            <div class="col-sm-6" >
+                                <select class="form-control" name="drone_imagery_analytics_merge_results_analysis_select">
+                                    <option value="charts_across_models_across_sims">Charts of Sim Correlation Across Models</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <center>
+                    <button class="btn btn-primary" id="drone_imagery_analytics_merge_results_analysis_select_step">Go to Next Step</button>
                     </center>
                 </&>
                 <&| /util/workflow.mas:step, title=> "Results" &>
@@ -49,9 +68,12 @@ jQuery(document).ready(function() {
     });
 
     var manage_drone_imagery_analytics_merge_results_protocol_ids = [];
+    var manage_drone_imagery_analytics_merge_results_protocol_ids_string = '';
+    var manage_drone_imagery_analytics_merge_results_analysis_type;
 
-    jQuery('#drone_imagery_analytics_merge_results_select_step').click(function(){
+    jQuery('#drone_imagery_analytics_merge_results_protocol_select_step').click(function(){
         manage_drone_imagery_analytics_merge_results_protocol_ids = [];
+        manage_drone_imagery_analytics_merge_results_protocol_ids_string = '';
 
         jQuery('input[name="drone_imagery_analytics_merge_results_analytics_protocols_select_id"]').each(function() {
             if (this.checked){
@@ -64,8 +86,40 @@ jQuery(document).ready(function() {
             return false;
         }
 
-        Workflow.complete("#drone_imagery_analytics_merge_results_select_step");
+        manage_drone_imagery_analytics_merge_results_protocol_ids_string = manage_drone_imagery_analytics_merge_results_protocol_ids.join(",");
+
+        Workflow.complete("#drone_imagery_analytics_merge_results_protocol_select_step");
         Workflow.focus('#drone_imagery_analytics_merge_results_workflow', 1);
+    });
+
+    jQuery('#drone_imagery_analytics_merge_results_analysis_select_step').click(function(){
+        manage_drone_imagery_analytics_merge_results_analysis_type = jQuery('#drone_imagery_analytics_merge_results_analysis_select').val();
+
+        jQuery.ajax({
+            url : '/ajax/analytics_protocols_merge_results?protocol_ids='+manage_drone_imagery_analytics_merge_results_protocol_ids_string+'&analysis_type='+manage_drone_imagery_analytics_merge_results_analysis_type,
+            beforeSend: function() {
+                jQuery("#working_modal").modal("show");
+            },
+            success: function(response){
+                console.log(response);
+                jQuery("#working_modal").modal("hide");
+
+                var charts = response.charts;
+                var html = '';
+                for (var i=0; i<charts.length; i++) {
+                    html = html + '<img src="'+charts[i]+'"><br/>';
+                }
+                jQuery('#drone_imagery_analytics_merge_results_result_div').html(html);
+
+                Workflow.complete("#drone_imagery_analytics_merge_results_analysis_select_step");
+                Workflow.focus('#drone_imagery_analytics_merge_results_workflow', 2);
+            },
+            error: function(response){
+                jQuery("#working_modal").modal("hide");
+                alert('Error merging analytics protocol results!')
+            }
+        });
+
     });
 
 });
