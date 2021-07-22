@@ -112,7 +112,7 @@ sub analytics_protocols_merge_results :Path('/ajax/analytics_protocols_merge_res
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
     my @protocol_ids = split ',', $c->req->param('protocol_ids');
     my $analysis_type = $c->req->param('analysis_type');
 

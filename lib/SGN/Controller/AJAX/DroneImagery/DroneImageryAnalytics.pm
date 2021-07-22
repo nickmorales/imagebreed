@@ -103,6 +103,16 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     my $protocol_result_summary = [];
     my $protocol_result_summary_id;
     if (!$analytics_protocol_id) {
+        my $q0 = "SELECT name FROM nd_protocol WHERE name=?;";
+        my $h0 = $schema->storage->dbh()->prepare($q0);
+        $h0->execute($analytics_protocol_name);
+        my ($analytics_protocol_name_check) = $h0->fetchrow_array();
+
+        if ($analytics_protocol_name_check) {
+            $c->stash->{rest} = { error => "Please give a unique name for your analytics protocol! The name $analytics_protocol_name is already used!"};
+            return;
+        }
+
         my $q = "INSERT INTO nd_protocol (name, description, type_id) VALUES (?,?,?) RETURNING nd_protocol_id;";
         my $h = $schema->storage->dbh()->prepare($q);
         $h->execute($analytics_protocol_name, $analytics_protocol_desc, $protocol_type_cvterm_id);
