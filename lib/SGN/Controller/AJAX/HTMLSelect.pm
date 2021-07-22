@@ -774,7 +774,7 @@ sub get_analytics_protocols : Path('/ajax/html/select/analytics_protocols') Args
     }
     $html .= "</tbody></table>";
 
-    $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-analyticsprotocol-table').DataTable({ }); } );</script>";
+    $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-analyticsprotocol-table').DataTable({ 'lengthMenu': [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, 'All']] }); } );</script>";
 
     $c->stash->{rest} = { select => $html };
 }
