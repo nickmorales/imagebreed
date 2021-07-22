@@ -216,7 +216,7 @@ sub analytics_protocols_merge_results :Path('/ajax/analytics_protocols_merge_res
                 elsif ($analytics_result_type eq 'asreml_grm_univariate_pure_spatial_genetic_blups') {
                     $model_name = 'AR1_Uni';
                 }
-                $model_name .= "_$result_props_json_array_counter";
+                # $model_name .= "_$result_props_json_array_counter";
                 $seen_unique_model_names{$model_name}++;
 
                 my $fixed_effect = 'Replicate';
