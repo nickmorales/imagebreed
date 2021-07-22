@@ -740,7 +740,7 @@ sub get_high_dimensional_phenotypes_protocols : Path('/ajax/html/select/high_dim
     }
     $html .= "</tbody></table>";
 
-    $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-highdimprotocol-table').DataTable({ }); } );</script>";
+    $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-highdimprotocol-table').DataTable({ 'lengthMenu': [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, 'All']] }); } );</script>";
 
     $c->stash->{rest} = { select => $html };
 }
@@ -850,7 +850,7 @@ sub get_sequence_metadata_protocols : Path('/ajax/html/select/sequence_metadata_
     }
     $html .= "</tbody></table>";
 
-    $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-sdmprotocol-table-" . $data_type_cvterm_id . "').DataTable({ }); } );</script>";
+    $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-sdmprotocol-table-" . $data_type_cvterm_id . "').DataTable({ 'lengthMenu': [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, 'All']] }); } );</script>";
 
     $c->stash->{rest} = { select => $html };
 }
@@ -888,7 +888,7 @@ sub get_trained_nirs_models : Path('/ajax/html/select/trained_nirs_models') Args
     }
     $html .= "</tbody></table>";
 
-    $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-nirsmodel-table').DataTable({ }); } );</script>";
+    $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-nirsmodel-table').DataTable({ 'lengthMenu': [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, 'All']] }); } );</script>";
 
     $c->stash->{rest} = { select => $html };
 }
