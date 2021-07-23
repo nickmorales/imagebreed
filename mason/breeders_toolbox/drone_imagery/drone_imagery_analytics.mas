@@ -324,8 +324,8 @@
                                             <option value="identity">Identity Matrix</option>
                                             <option value="env_corr_structure">Simulated Phenotype Correlation Matrix</option>
                                             <option value="phenotype_correlation">Phenotype Correlation Matrix</option>
-                                            <option value="phenotype_2dspline_effect">2D-Spline Effect of Phenotype</option>
-                                            <!--option value="phenotype_ar1xar1_effect">AR1xAR1 Effect of Phenotype</option-->
+                                            <option value="phenotype_2dspline_effect">2D-Spline Effect of Phenotype Correlation Matrix</option>
+                                            <option value="phenotype_ar1xar1_effect">AR1xAR1 Effect of Phenotype Correlation Matrix</option>
                                             <option value="euclidean_rows_and_columns">Euclidean Distance From Rows and Columns Matrix</option>
                                         </select>
                                     </div>
@@ -346,7 +346,7 @@
                             <div id="drone_imagery_analytics_permanent_env_structure_phenotype_effect_select_div" style="display:none">
                                 <div class="form-horizontal">
                                     <div class="form-group">
-                                        <label class="col-sm-3 control-label">Phenotype For 2D-spline of AR1xAR1 Effect in Permanent Environment Structure: </label>
+                                        <label class="col-sm-3 control-label">Phenotype For 2D-spline or AR1xAR1 Effects in Permanent Environment Structure: </label>
                                         <div class="col-sm-9" >
                                             <div id="drone_imagery_analytics_permanent_env_structure_phenotype_select_div"></div>
                                         </div>
@@ -650,6 +650,10 @@ jQuery(document).ready(function() {
             jQuery('#drone_imagery_analytics_permanent_env_structure_phenotype_effect_select_div').hide();
         }
         else if (jQuery(this).val() == 'phenotype_2dspline_effect') {
+            jQuery('#drone_imagery_analytics_permanent_env_structure_phenotype_correlation_div').hide();
+            jQuery('#drone_imagery_analytics_permanent_env_structure_phenotype_effect_select_div').show();
+        }
+        else if (jQuery(this).val() == 'phenotype_ar1xar1_effect') {
             jQuery('#drone_imagery_analytics_permanent_env_structure_phenotype_correlation_div').hide();
             jQuery('#drone_imagery_analytics_permanent_env_structure_phenotype_effect_select_div').show();
         }
