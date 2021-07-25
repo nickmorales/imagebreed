@@ -382,8 +382,8 @@ sub noaa_ncdc_analysis :Path("/ajax/location/noaa_ncdc_analysis") Args(0) {
         print STDERR $cmd;
         my $status = system($cmd);
 
-        open(my $F, ">", $stats_tempfile_prcp) || die "Can't open file ".$stats_tempfile_prcp;
-            print $F "day,date,value,variable,year\n";
+        open(my $F2, ">", $stats_tempfile_prcp) || die "Can't open file ".$stats_tempfile_prcp;
+            print $F2 "day,date,value,variable,year\n";
 
             while (my($year, $dates) = each %years_groups) {
                 my $prcp_rep = 0;
@@ -412,13 +412,13 @@ sub noaa_ncdc_analysis :Path("/ajax/location/noaa_ncdc_analysis") Args(0) {
                         }
                     }
 
-                    print $F "$increment,$date,$prcp_rep,PRCP,$year\n";
+                    print $F2 "$increment,$date,$prcp_rep,PRCP,$year\n";
                     $increment++;
                 }
             }
-        close($F);
+        close($F2);
 
-        my $cmd = 'R -e "library(data.table); library(ggplot2); library(dplyr);
+        my $cmd2 = 'R -e "library(data.table); library(ggplot2); library(dplyr);
         data <- data.frame(fread(\''.$stats_tempfile_prcp.'\', header=TRUE, sep=\',\'));
         data\$date <- as.Date(as.character(data\$date), tryFormats = c(\'%m-%d\'));
         data\$day <- as.numeric(as.character(data\$day));
@@ -431,8 +431,8 @@ sub noaa_ncdc_analysis :Path("/ajax/location/noaa_ncdc_analysis") Args(0) {
 
         ggsave(\''.$stats_tempfile_plot2.'\', sp, device=\'png\', width=10, height=6, limitsize = FALSE, units=\'in\');
         "';
-        print STDERR $cmd;
-        my $status = system($cmd);
+        print STDERR $cmd2;
+        my $status2 = system($cmd2);
     }
 
     $c->stash->{rest} = { noaa_station_id => $station_id, plot => $stats_tempfile_plot_string, plot2 => $stats_tempfile_plot_string2 };
