@@ -3358,6 +3358,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_original_line_chart_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_originalgenoeff_"."envvar_".$env_variance_percent."_".$permanent_environment_structure."_".$iterations];
+
                     my $original_blup_stat = Statistics::Descriptive::Full->new();
                     $original_blup_stat->add_data(@original_blup_vals);
                     my $sig_original_blup = $original_blup_stat->variance();
@@ -3376,6 +3378,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_line_chart_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_alteredgenoeff_"."envvar_".$env_variance_percent."_".$permanent_environment_structure."_".$iterations];
 
                     my $altered_blup_stat = Statistics::Descriptive::Full->new();
                     $altered_blup_stat->add_data(@altered_blups_vals);
@@ -3396,6 +3400,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env1_line_chart_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env1genoeff_"."envvar_".$env_variance_percent."_".$permanent_environment_structure."_".$iterations];
+
                     my $sim1_blup_stat = Statistics::Descriptive::Full->new();
                     $sim1_blup_stat->add_data(@sim1_blup_vals);
                     my $sig_sim1_blup = $sim1_blup_stat->variance();
@@ -3414,6 +3420,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env2_line_chart_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env2genoeff_"."envvar_".$env_variance_percent."_".$permanent_environment_structure."_".$iterations];
 
                     my $sim2_blup_stat = Statistics::Descriptive::Full->new();
                     $sim2_blup_stat->add_data(@sim2_blup_vals);
@@ -3434,6 +3442,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env3_line_chart_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env3genoeff_"."envvar_".$env_variance_percent."_".$permanent_environment_structure."_".$iterations];
+
                     my $sim3_blup_stat = Statistics::Descriptive::Full->new();
                     $sim3_blup_stat->add_data(@sim3_blup_vals);
                     my $sig_sim3_blup = $sim3_blup_stat->variance();
@@ -3452,6 +3462,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env4_line_chart_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env4genoeff_"."envvar_".$env_variance_percent."_".$permanent_environment_structure."_".$iterations];
 
                     my $sim4_blup_stat = Statistics::Descriptive::Full->new();
                     $sim4_blup_stat->add_data(@sim4_blup_vals);
@@ -3472,6 +3484,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env5_line_chart_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env5genoeff_"."envvar_".$env_variance_percent."_".$permanent_environment_structure."_".$iterations];
+
                     my $sim5_blup_stat = Statistics::Descriptive::Full->new();
                     $sim5_blup_stat->add_data(@sim5_blup_vals);
                     my $sig_sim5_blup = $sim5_blup_stat->variance();
@@ -3490,6 +3504,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env6_line_chart_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env6genoeff_"."envvar_".$env_variance_percent."_".$permanent_environment_structure."_".$iterations];
 
                     my $sim6_blup_stat = Statistics::Descriptive::Full->new();
                     $sim6_blup_stat->add_data(@sim6_blup_vals);
@@ -5670,6 +5686,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_original_line_chart_tempfile_2, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_originalgenoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $original_blup_stat_2 = Statistics::Descriptive::Full->new();
                     $original_blup_stat_2->add_data(@original_blup_vals_2);
                     my $sig_original_blup_2 = $original_blup_stat_2->variance();
@@ -5688,6 +5706,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_line_chart_tempfile_2, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_alteredgenoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $altered_blup_stat_2 = Statistics::Descriptive::Full->new();
                     $altered_blup_stat_2->add_data(@altered_blups_vals_2);
@@ -5708,6 +5728,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env1_line_chart_tempfile_2, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env1genoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $sim1_blup_stat_2 = Statistics::Descriptive::Full->new();
                     $sim1_blup_stat_2->add_data(@sim1_blup_vals_2);
                     my $sig_sim1_blup_2 = $sim1_blup_stat_2->variance();
@@ -5726,6 +5748,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env2_line_chart_tempfile_2, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env2genoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $sim2_blup_stat_2 = Statistics::Descriptive::Full->new();
                     $sim2_blup_stat_2->add_data(@sim2_blup_vals_2);
@@ -5746,6 +5770,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env3_line_chart_tempfile_2, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env3genoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $sim3_blup_stat_2 = Statistics::Descriptive::Full->new();
                     $sim3_blup_stat_2->add_data(@sim3_blup_vals_2);
                     my $sig_sim3_blup_2 = $sim3_blup_stat_2->variance();
@@ -5764,6 +5790,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env4_line_chart_tempfile_2, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env4genoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $sim4_blup_stat_2 = Statistics::Descriptive::Full->new();
                     $sim4_blup_stat_2->add_data(@sim4_blup_vals_2);
@@ -5784,6 +5812,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env5_line_chart_tempfile_2, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env5genoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $sim5_blup_stat_2 = Statistics::Descriptive::Full->new();
                     $sim5_blup_stat_2->add_data(@sim5_blup_vals_2);
                     my $sig_sim5_blup_2 = $sim5_blup_stat_2->variance();
@@ -5802,6 +5832,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env6_line_chart_tempfile_2, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env6genoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $sim6_blup_stat_2 = Statistics::Descriptive::Full->new();
                     $sim6_blup_stat_2->add_data(@sim6_blup_vals_2);
@@ -7947,6 +7979,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_original_line_chart_tempfile_3, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_originalgenoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $original_blup_stat_3 = Statistics::Descriptive::Full->new();
                     $original_blup_stat_3->add_data(@original_blup_vals_3);
                     my $sig_original_blup_3 = $original_blup_stat_3->variance();
@@ -7965,6 +7999,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_line_chart_tempfile_3, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_alteredgenoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $altered_blup_stat_3 = Statistics::Descriptive::Full->new();
                     $altered_blup_stat_3->add_data(@altered_blups_vals_3);
@@ -7985,6 +8021,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env1_line_chart_tempfile_3, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env1genoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $sim1_blup_stat_3 = Statistics::Descriptive::Full->new();
                     $sim1_blup_stat_3->add_data(@sim1_blup_vals_3);
                     my $sig_sim1_blup_3 = $sim1_blup_stat_3->variance();
@@ -8003,6 +8041,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env2_line_chart_tempfile_3, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env2genoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $sim2_blup_stat_3 = Statistics::Descriptive::Full->new();
                     $sim2_blup_stat_3->add_data(@sim2_blup_vals_3);
@@ -8023,6 +8063,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env3_line_chart_tempfile_3, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env3genoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $sim3_blup_stat_3 = Statistics::Descriptive::Full->new();
                     $sim3_blup_stat_3->add_data(@sim3_blup_vals_3);
                     my $sig_sim3_blup_3 = $sim3_blup_stat_3->variance();
@@ -8041,6 +8083,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env4_line_chart_tempfile_3, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env4genoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $sim4_blup_stat_3 = Statistics::Descriptive::Full->new();
                     $sim4_blup_stat_3->add_data(@sim4_blup_vals_3);
@@ -8061,6 +8105,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env5_line_chart_tempfile_3, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env5genoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $sim5_blup_stat_3 = Statistics::Descriptive::Full->new();
                     $sim5_blup_stat_3->add_data(@sim5_blup_vals_3);
                     my $sig_sim5_blup_3 = $sim5_blup_stat_3->variance();
@@ -8079,6 +8125,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env6_line_chart_tempfile_3, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env6genoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $sim6_blup_stat_3 = Statistics::Descriptive::Full->new();
                     $sim6_blup_stat_3->add_data(@sim6_blup_vals_3);
@@ -10326,6 +10374,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_original_line_chart_tempfile_5, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_originalgenoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $original_blup_stat_5 = Statistics::Descriptive::Full->new();
                     $original_blup_stat_5->add_data(@original_blup_vals_5);
                     my $sig_original_blup_5 = $original_blup_stat_5->variance();
@@ -10344,6 +10394,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_line_chart_tempfile_5, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_alteredgenoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $altered_blup_stat_5 = Statistics::Descriptive::Full->new();
                     $altered_blup_stat_5->add_data(@altered_blups_vals_5);
@@ -10364,6 +10416,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env1_line_chart_tempfile_5, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env1genoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $sim1_blup_stat_5 = Statistics::Descriptive::Full->new();
                     $sim1_blup_stat_5->add_data(@sim1_blup_vals_5);
                     my $sig_sim1_blup_5 = $sim1_blup_stat_5->variance();
@@ -10382,6 +10436,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env2_line_chart_tempfile_5, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env2genoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $sim2_blup_stat_5 = Statistics::Descriptive::Full->new();
                     $sim2_blup_stat_5->add_data(@sim2_blup_vals_5);
@@ -10402,6 +10458,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env3_line_chart_tempfile_5, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env3genoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $sim3_blup_stat_5 = Statistics::Descriptive::Full->new();
                     $sim3_blup_stat_5->add_data(@sim3_blup_vals_5);
                     my $sig_sim3_blup_5 = $sim3_blup_stat_5->variance();
@@ -10420,6 +10478,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env4_line_chart_tempfile_5, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env4genoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $sim4_blup_stat_5 = Statistics::Descriptive::Full->new();
                     $sim4_blup_stat_5->add_data(@sim4_blup_vals_5);
@@ -10440,6 +10500,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env5_line_chart_tempfile_5, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env5genoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $sim5_blup_stat_5 = Statistics::Descriptive::Full->new();
                     $sim5_blup_stat_5->add_data(@sim5_blup_vals_5);
                     my $sig_sim5_blup_5 = $sim5_blup_stat_5->variance();
@@ -10458,6 +10520,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env6_line_chart_tempfile_5, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env6genoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $sim6_blup_stat_5 = Statistics::Descriptive::Full->new();
                     $sim6_blup_stat_5->add_data(@sim6_blup_vals_5);
@@ -12704,6 +12768,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_original_line_chart_tempfile_6, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_originalgenoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $original_blup_stat_6 = Statistics::Descriptive::Full->new();
                     $original_blup_stat_6->add_data(@original_blup_vals_6);
                     my $sig_original_blup_6 = $original_blup_stat_6->variance();
@@ -12722,6 +12788,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_line_chart_tempfile_6, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_alteredgenoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $altered_blup_stat_6 = Statistics::Descriptive::Full->new();
                     $altered_blup_stat_6->add_data(@altered_blups_vals_6);
@@ -12742,6 +12810,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env1_line_chart_tempfile_6, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env1genoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $sim1_blup_stat_6 = Statistics::Descriptive::Full->new();
                     $sim1_blup_stat_6->add_data(@sim1_blup_vals_6);
                     my $sig_sim1_blup_6 = $sim1_blup_stat_6->variance();
@@ -12760,6 +12830,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env2_line_chart_tempfile_6, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env2genoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $sim2_blup_stat_6 = Statistics::Descriptive::Full->new();
                     $sim2_blup_stat_6->add_data(@sim2_blup_vals_6);
@@ -12780,6 +12852,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env3_line_chart_tempfile_6, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env3genoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $sim3_blup_stat_6 = Statistics::Descriptive::Full->new();
                     $sim3_blup_stat_6->add_data(@sim3_blup_vals_6);
                     my $sig_sim3_blup_6 = $sim3_blup_stat_6->variance();
@@ -12798,6 +12872,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env4_line_chart_tempfile_6, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env4genoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $sim4_blup_stat_6 = Statistics::Descriptive::Full->new();
                     $sim4_blup_stat_6->add_data(@sim4_blup_vals_6);
@@ -12818,6 +12894,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                     close($F_pheno);
 
+                    push @$spatial_effects_files_store, [$effects_altered_env5_line_chart_tempfile_6, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env5genoeff_"."envvar_".$env_variance_percent."_".$iterations];
+
                     my $sim5_blup_stat_6 = Statistics::Descriptive::Full->new();
                     $sim5_blup_stat_6->add_data(@sim5_blup_vals_6);
                     my $sig_sim5_blup_6 = $sim5_blup_stat_6->variance();
@@ -12836,6 +12914,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     close($F_pheno);
+
+                    push @$spatial_effects_files_store, [$effects_altered_env6_line_chart_tempfile_6, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_env6genoeff_"."envvar_".$env_variance_percent."_".$iterations];
 
                     my $sim6_blup_stat_6 = Statistics::Descriptive::Full->new();
                     $sim6_blup_stat_6->add_data(@sim6_blup_vals_6);
