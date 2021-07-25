@@ -334,6 +334,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     my ($stats_out_pe_pheno_rel_tempfile3_fh, $stats_out_pe_pheno_rel_tempfile3) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_pe_pheno_rel_tempfile4_fh, $stats_out_pe_pheno_rel_tempfile4) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_pe_pheno_rel_tempfile5_fh, $stats_out_pe_pheno_rel_tempfile5) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_out_pe_pheno_rel_tempfile6_fh, $stats_out_pe_pheno_rel_tempfile6) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_out_pe_pheno_rel_tempfile7_fh, $stats_out_pe_pheno_rel_tempfile7) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
 
     my ($stats_out_param_tempfile_fh, $stats_out_param_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_tempfile_row_fh, $stats_out_tempfile_row) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
@@ -2176,7 +2178,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             my $germplasm_name = $stock_name_row_col_pe{$p}->{germplasm_name};
                             my $obsunit_stock_id = $stock_name_row_col_pe{$p}->{obsunit_stock_id};
 
-                            my @row = ($replicate, $block, "S".$germplasm_stock_id, $obsunit_stock_id, $row_number, $col_number, $row_number, $col_number);
+                            my @row = ($replicate, $block, "S".$germplasm_stock_id, $obsunit_stock_id, $row_number, $col_number, $row_number, $col_number, $accession_id_factor_map{$germplasm_stock_id}, '');
 
                             foreach my $t (@sorted_trait_names_permanent_environment_structure) {
                                 if (defined($phenotype_data_pe{$p}->{$t})) {
@@ -2188,8 +2190,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                             push @data_matrix_pe, \@row;
                         }
-
-                        my @phenotype_header_pe = ("replicate", "block", "id", "plot_id", "rowNumber", "colNumber", "rowNumberFactor", "colNumberFactor");
+                        my @phenotype_header_pe = ("replicate", "block", "id", "plot_id", "rowNumber", "colNumber", "rowNumberFactor", "colNumberFactor", "id_factor", "plot_id_factor");
                         foreach (@sorted_trait_names_permanent_environment_structure) {
                             push @phenotype_header_pe, $trait_name_encoder_permanent_environment_structure{$_};
                         }
@@ -2381,11 +2382,37 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 }
                             close($fh);
 
-                            #write pe data to file, use R to get correlation matrix
+                            my @seen_traits_ar1_pe_rel = sort keys %unique_traits_ar1ar1_pe;
+
+                            open(my $fh_ar1_pe_cor, '>', $stats_out_pe_pheno_rel_tempfile6) or die "Could not open file '$stats_out_pe_pheno_rel_tempfile6' $!";
+                                print STDERR "Opened $stats_out_pe_pheno_rel_tempfile6\n";
+
+                                foreach my $p (@unique_plot_names_pe) {
+                                    my @vals = ($p);
+                                    foreach my $t (@seen_traits_ar1_pe_rel) {
+                                        my $val = $result_blup_pe_data{$p}->{$t};
+                                        push @vals, $val;
+                                    }
+                                    my $val_string = join ',', @vals;
+                                    print $fh_ar1_pe_cor "$val_string\n";
+                                }
+                            close($fh_ar1_pe_cor);
+
+                            my $ar1_corr_mat_pe_cmd = 'R -e "library(data.table); library(reshape2);
+                            mat <- data.frame(fread(\''.$stats_out_pe_pheno_rel_tempfile6.'\', header=FALSE, sep=\',\'));
+                            cor_mat <- cor(t(mat[,-1]));
+                            rownames(cor_mat) <- mat[,1];
+                            colnames(cor_mat) <- mat[,1];
+                            range01 <- function(x){(x-min(x))/(max(x)-min(x))};
+                            cor_mat <- range01(cor_mat);
+                            write.table(cor_mat, file=\''.$stats_out_pe_pheno_rel_tempfile7.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+                            "';
+                            print STDERR Dumper $ar1_corr_mat_pe_cmd;
+                            my $ar1_corr_mat_pe_cmd_status = system($ar1_corr_mat_pe_cmd);
 
                             $current_env_row_count = 0;
-                            open(my $pe_rel_res, '<', $stats_out_pe_pheno_rel_tempfile4) or die "Could not open file '$stats_out_pe_pheno_rel_tempfile4' $!";
-                                print STDERR "Opened $stats_out_pe_pheno_rel_tempfile4\n";
+                            open(my $pe_rel_res, '<', $stats_out_pe_pheno_rel_tempfile7) or die "Could not open file '$stats_out_pe_pheno_rel_tempfile7' $!";
+                                print STDERR "Opened $stats_out_pe_pheno_rel_tempfile7\n";
                                 my $header_row = <$pe_rel_res>;
                                 my @header;
                                 if ($csv->parse($header_row)) {
@@ -2397,9 +2424,11 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                     if ($csv->parse($row)) {
                                         @columns = $csv->fields();
                                     }
-                                    my $stock_id1 = $columns[0];
+                                    my $stock_id1_name = $columns[0];
+                                    my $stock_id1 = $stock_name_row_col_pe{$stock_id1_name}->{obsunit_stock_id};
                                     my $counter = 1;
-                                    foreach my $stock_id2 (@header) {
+                                    foreach my $stock_id2_name (@header) {
+                                        my $stock_id2 = $stock_name_row_col_pe{$stock_id2_name}->{obsunit_stock_id};
                                         my $val = $columns[$counter];
                                         $rel_pe_result_hash{$stock_id1}->{$stock_id2} = $val;
                                         $counter++;
@@ -2430,7 +2459,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
 
                             open(my $pe_rel_out, ">", $permanent_environment_structure_tempfile) || die "Can't open file ".$permanent_environment_structure_tempfile;
-                                print STDERR "Opened $permanent_environment_structure_tempfile\n";
+                                print STDERR "Opened AR1AR1 PE Rel Matrix $permanent_environment_structure_tempfile\n";
                                 print $pe_rel_out $data_rel_pe;
                             close($pe_rel_out);
                         }
