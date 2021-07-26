@@ -33,7 +33,8 @@ sub BUILD {   # adjust the cvterm ids for phenotyping trials
 	 'plot_num_per_block',
 	 'subplots_names', #For splotplot
 	 'treatments', #For splitplot
-	 'subplots_plant_names', #For splitplot
+	 'subplots_plant_names', #For splitplot,
+     'additional_info'
 	]);
 
 }

@@ -335,7 +335,7 @@ sub detail {
 
     my $search_params = {
         observationUnitDbIds => [ $observation_unit_db_id ],
-        includeObservations  => 'true'
+        includeObservations  => ['true']
     };
     my $response = $self->search($search_params);
     $response->{result} = scalar $response->{result}->{data} > 0 ? $response->{result}->{data}->[0] : {};

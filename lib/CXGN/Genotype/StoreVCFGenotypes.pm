@@ -785,6 +785,9 @@ sub store_metadata {
 
     $dbh->do('SET search_path TO public,sgn');
 
+    my $synonym_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'stock_synonym', 'stock_property')->cvterm_id();
+    $self->synonym_type_id($synonym_type_id);
+
     my $population_cvterm_id =  SGN::Model::Cvterm->get_cvterm_row($schema, 'population', 'stock_type')->cvterm_id();
     $self->population_cvterm_id($population_cvterm_id);
 
@@ -951,8 +954,10 @@ sub store_metadata {
 
     while (my ($stock_id, $uniquename, $synonym, $type_id) = $h->fetchrow_array()) {
         $stock_lookup{$uniquename} = { stock_id => $stock_id };
-        if ($type_id && $type_id == $self->synonym_type_id()) {
-            $stock_lookup{$synonym} = { stock_id => $stock_id };
+        if ($type_id) {
+            if ($type_id == $self->synonym_type_id()) {
+                $stock_lookup{$synonym} = { stock_id => $stock_id };
+            }
         }
     }
 
