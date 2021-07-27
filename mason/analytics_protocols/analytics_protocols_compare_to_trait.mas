@@ -1,0 +1,116 @@
+<%args>
+</%args>
+
+<div class="modal fade" id="analytics_results_compare_to_trait_dialog" name="analytics_results_compare_to_trait_dialog" tabindex="-1" role="dialog" aria-labelledby="analyticsCompareResultstoTraitDialog" data-backdrop="static">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="analyticsCompareResultstoTraitDialog">Compare Analytics Results to Trait</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+
+            <&| /util/workflow.mas, id=> "analytics_compare_results_to_trait_workflow" &>
+                <&| /util/workflow.mas:step, title=> "Trial" &>
+                    <& /page/page_title.mas, title=>"Select Trial to Compare Phenotypes With" &>
+
+                    <div id="analytics_compare_results_to_trait_trial_select_div">Loading...</div>
+
+                    <hr>
+                    <center>
+                    <button class="btn btn-primary" id="analytics_compare_results_to_trait_trial_select_step">Go to Next Step</button>
+                    </center>
+                </&>
+                <&| /util/workflow.mas:step, title=> "Trait" &>
+                    <& /page/page_title.mas, title=>"Select Trait to Compare With" &>
+
+                    <div id="analytics_compare_results_to_trait_trait_select_div">Loading...</div>
+
+                    <hr>
+                    <center>
+                    <button class="btn btn-primary" id="analytics_compare_results_to_trait_trait_select_step">Go to Next Step</button>
+                    </center>
+                </&>
+                <&| /util/workflow.mas:step, title=> "Results" &>
+                    <& /page/page_title.mas, title=>"Results" &>
+
+                    <div id ="analytics_compare_results_to_trait_results_div">
+                    </div>
+                </&>
+            </&>
+
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+jQuery(document).ready(function() {
+    jQuery('#analytics_results_compare_to_trait_button').click(function(){
+
+        get_select_box('trials', 'analytics_compare_results_to_trait_trial_select_div', { 'name' : 'analytics_compare_results_to_trait_trial_id', 'id' : 'analytics_compare_results_to_trait_trial_id', 'empty':1, 'multiple':0 });
+
+        jQuery('#analytics_results_compare_to_trait_dialog').modal('show');
+    });
+
+    var manage_drone_imagery_analytics_compare_results_trial_id = '';
+    var manage_drone_imagery_analytics_compare_results_trait_id = '';
+
+    jQuery('#analytics_compare_results_to_trait_trial_select_step').click(function(){
+        manage_drone_imagery_analytics_compare_results_trial_id = jQuery('#analytics_compare_results_to_trait_trial_id').val();
+
+        if (manage_drone_imagery_analytics_compare_results_trial_id == '') {
+            alert('Please select a trial!');
+            return false;
+        }
+        else {
+            get_select_box('traits', 'analytics_compare_results_to_trait_trait_select_div', { 'name' : 'analytics_compare_results_to_trait_trait_select', 'id' : 'analytics_compare_results_to_trait_trait_select', 'empty':1, 'multiple':0, 'trial_ids':manage_drone_imagery_analytics_compare_results_trial_id, 'stock_type':'plot' });
+
+            Workflow.complete("#analytics_compare_results_to_trait_trial_select_step");
+            Workflow.focus('#analytics_compare_results_to_trait_workflow', 1);
+        }
+    });
+
+    jQuery('#analytics_compare_results_to_trait_trait_select_step').click(function(){
+        manage_drone_imagery_analytics_compare_results_trait_id = jQuery('#analytics_compare_results_to_trait_trait_select').val();
+
+        if (manage_drone_imagery_analytics_compare_results_trait_id == '') {
+            alert('Please select a trait!');
+            return false;
+        }
+
+        jQuery.ajax({
+            url : '/ajax/analytics_protocols_compare_to_trait?trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id,
+            beforeSend: function() {
+                jQuery("#working_modal").modal("show");
+            },
+            success: function(response){
+                console.log(response);
+                jQuery("#working_modal").modal("hide");
+
+                var charts = response.charts;
+                var html = '';
+                for (var i=0; i<charts.length; i++) {
+                    html = html + '<img src="'+charts[i]+'"><br/>';
+                }
+                jQuery('#analytics_compare_results_to_trait_results_div').html(html);
+
+                Workflow.complete("#analytics_compare_results_to_trait_trait_select_step");
+                Workflow.focus('#analytics_compare_results_to_trait_workflow', 2);
+            },
+            error: function(response){
+                jQuery("#working_modal").modal("hide");
+                alert('Error comparing analytics protocol results to trait!')
+            }
+        });
+
+    });
+
+});
+</script>

@@ -13444,7 +13444,9 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
         avg_varcomps => \%avg_varcomps,
         avg_varcomps_display => \@avg_varcomps_display,
         avg_cross_validation => \%avg_cross_validation,
-        avg_cross_validation_display => \@avg_cross_validation_display
+        avg_cross_validation_display => \@avg_cross_validation_display,
+        sim_env_change_over_time => $sim_env_change_over_time,
+        field_trial_id_list => $field_trial_id_list
     };
     my $q2 = "UPDATE nd_protocolprop SET value=? WHERE nd_protocolprop_id=?;";
     my $h2 = $schema->storage->dbh()->prepare($q2);
