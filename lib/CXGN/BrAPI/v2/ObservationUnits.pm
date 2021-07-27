@@ -373,7 +373,7 @@ sub observationunits_update {
         my $location_ids_arrayref = $params->{locationDbId} ? $params->{locationDbId} : undef;
         my $study_ids_arrayref = $params->{studyDbId} ? $params->{studyDbId} : undef;
         my $accession_id = $params->{germplasmDbId} ? $params->{germplasmDbId} : undef;
-        my $accession_name = $params->{germplasmName} ? $params->{germplasmName}: undef;
+        my $accession_name = $params->{germplasmName} ? $params->{germplasmName} : undef;
         my $trait_list_arrayref = $params->{observationVariableDbId} ? $params->{observationVariableDbId} : undef;
         my $program_ids_arrayref = $params->{programDbId} ? $params->{programDbId} : undef;
         my $folder_ids_arrayref = $params->{trialDbId} ? $params->{trialDbId} : undef;
@@ -425,7 +425,7 @@ sub observationunits_update {
         }
 
         #Update: accession
-        if (! defined $accession_id && ! defined $accession_name) {
+        if (!$accession_id && !$accession_name) {
             return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Either germplasmDbId or germplasmName is required.'), 400);
         }
         my $germplasm_search_result = $self->_get_existing_germplasm($schema, $accession_id, $accession_name);
@@ -726,7 +726,7 @@ sub observationunits_store {
                 $location_id = $row->value();
             }
             else {
-                die {error => sprintf('Erro retrieving the location of the study'), errorCode => 500};
+                die {error => sprintf('Error retrieving the location of the study'), errorCode => 500};
             }
 
             my $trial_design_store = CXGN::Trial::TrialDesignStore->new({
@@ -780,12 +780,12 @@ sub observationunits_store {
     my $bs = CXGN::BreederSearch->new( { dbh=>$dbh, dbname=>$c->config->{dbname}, } );
     my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
 
-    # Get our new OUs by name. Not ideal, but names are unique and its the quickest solution
-    my @observationUnitNames;
-    foreach my $ou (@{$data}) { push @observationUnitNames, $ou->{observationUnitName}; }
-    my $search_params = {observationUnitNames => \@observationUnitNames};
-    $self->page_size(scalar @{$data});
-    return $self->search($search_params);
+    my @observation_unit_db_ids;
+    foreach my $params (@$data) {
+        push @observation_unit_db_ids, $self->bcs_schema->resultset("Stock::Stock")->find({ uniquename => $params->{observationUnitName} })->stock_id();
+    }
+    my $search_params = {observationUnitDbIds => \@observation_unit_db_ids };
+    $self->search($search_params);
 }
 
 sub _order {

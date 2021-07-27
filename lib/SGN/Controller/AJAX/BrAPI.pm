@@ -2670,14 +2670,14 @@ sub observation_unit_single_PUT {
     my $c = shift;
     my $observation_unit_db_id = shift;
     my $clean_inputs = $c->stash->{clean_inputs};
-    my ($auth) = _authenticate_user($c);
+    my ($auth,$user_id) = _authenticate_user($c);
     my $observationUnits = $clean_inputs;
     $observationUnits->{observationUnitDbId} = $observation_unit_db_id;
     my @all_observations_units;
     push @all_observations_units, $observationUnits;
     my $brapi = $self->brapi_module;
     my $brapi_module = $brapi->brapi_wrapper('ObservationUnits');
-    my $brapi_package_result = $brapi_module->observationunits_update(\@all_observations_units);
+    my $brapi_package_result = $brapi_module->observationunits_update(\@all_observations_units, $c, $user_id);
 
     _standard_response_construction($c, $brapi_package_result);
 }
@@ -3740,7 +3740,7 @@ sub observations_PUT {
 			observations => \@all_observations,
 	        user_id => $user_id,
 	        user_type => $user_type,
-	        overwrite => 1,
+	        #overwrite => 1,
 	    },$c);
 	} elsif ($version eq 'v1'){
 		my $clean_inputs = $c->stash->{clean_inputs};
