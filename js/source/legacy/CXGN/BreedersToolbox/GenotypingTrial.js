@@ -27,6 +27,10 @@ jQuery(document).ready(function ($) {
         source: '/organism/autocomplete'
     });
 
+    jQuery("#upload_ssr_species_name_input").autocomplete({
+        source: '/organism/autocomplete'
+    });
+
     jQuery(function() {
         jQuery( "#genotyping_trials_accordion" ).accordion({
             header: "> div > h3",
