@@ -2842,9 +2842,7 @@ sub trial_correlate_traits : Chained('trial') PathPart('correlate_traits') Args(
 
     my $csv = Text::CSV->new({ sep_char => "\t" });
     my @result;
-    open(my $fh, '<', $stats_out_tempfile)
-        or die "Could not open file '$stats_out_tempfile' $!";
-
+    open(my $fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
         print STDERR "Opened $stats_out_tempfile\n";
         my $header = <$fh>;
         my @header_cols;

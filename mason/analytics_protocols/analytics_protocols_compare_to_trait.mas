@@ -1,4 +1,5 @@
 <%args>
+$analytics_protocol_id
 </%args>
 
 <div class="modal fade" id="analytics_results_compare_to_trait_dialog" name="analytics_results_compare_to_trait_dialog" tabindex="-1" role="dialog" aria-labelledby="analyticsCompareResultstoTraitDialog" data-backdrop="static">
@@ -13,7 +14,7 @@
 
             <&| /util/workflow.mas, id=> "analytics_compare_results_to_trait_workflow" &>
                 <&| /util/workflow.mas:step, title=> "Trial" &>
-                    <& /page/page_title.mas, title=>"Select Trial to Compare Phenotypes With" &>
+                    <& /page/page_title.mas, title=>"Select Trial to Compare With" &>
 
                     <div id="analytics_compare_results_to_trait_trial_select_div">Loading...</div>
 
@@ -86,7 +87,7 @@ jQuery(document).ready(function() {
         }
 
         jQuery.ajax({
-            url : '/ajax/analytics_protocols_compare_to_trait?trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id,
+            url : '/ajax/analytics_protocols_compare_to_trait?protocol_id='+<% $analytics_protocol_id %>+'&trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id,
             beforeSend: function() {
                 jQuery("#working_modal").modal("show");
             },
@@ -94,12 +95,41 @@ jQuery(document).ready(function() {
                 console.log(response);
                 jQuery("#working_modal").modal("hide");
 
+                var html = '<table class="table table-hover table-bordered"><thead><tr>';
+                for(var i=0; i<response.germplasm_results[0].length; i++) {
+                    html = html + '<th>'+response.germplasm_results[0][i]+'</th>';
+                }
+                html = html + '</tr></thead>';
+                for(var i=1; i<response.germplasm_results.length; i++) {
+                    html = html + '<tr>';
+                    for(var j=0; j<response.germplasm_results[i].length; j++) {
+                        html = html + '<td>'+response.germplasm_results[i][j]+'</td>';
+                    }
+                    html = html + '</tr>';
+                }
+                html = html + '</tbody></table>';
+
+                html = html + '<div class="well well-sm"><table class="table table-hover table-bordered" id="analytics_compare_results_to_trait_germplasm_data_table"><thead><tr>';
+                for(var i=0; i<response.germplasm_data_header.length; i++) {
+                    html = html + '<th>'+response.germplasm_data_header[i]+'</th>';
+                }
+                html = html + '</tr></thead>';
+                for(var i=0; i<response.germplasm_data.length; i++) {
+                    html = html + '<tr>';
+                    for(var j=0; j<response.germplasm_data[i].length; j++) {
+                        html = html + '<td>'+response.germplasm_data[i][j]+'</td>';
+                    }
+                    html = html + '</tr>';
+                }
+                html = html + '</tbody></table></div>';
+
                 var charts = response.charts;
-                var html = '';
                 for (var i=0; i<charts.length; i++) {
                     html = html + '<img src="'+charts[i]+'"><br/>';
                 }
                 jQuery('#analytics_compare_results_to_trait_results_div').html(html);
+
+                jQuery('#analytics_compare_results_to_trait_germplasm_data_table').DataTable({});
 
                 Workflow.complete("#analytics_compare_results_to_trait_trait_select_step");
                 Workflow.focus('#analytics_compare_results_to_trait_workflow', 2);

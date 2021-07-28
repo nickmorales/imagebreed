@@ -7,6 +7,9 @@ use Data::Dumper;
 use URI::FromHash 'uri';
 use JSON;
 use CXGN::BreederSearch;
+use CXGN::Phenotypes::SearchFactory;
+use Text::CSV;
+use Statistics::Descriptive::Full;
 
 BEGIN { extends 'Catalyst::Controller::REST' };
 
@@ -200,6 +203,9 @@ sub analytics_protocols_merge_results :Path('/ajax/analytics_protocols_merge_res
                     elsif (index($env_type, 'phenotype_2dspline_effect') != -1) {
                         $model_name = "RR_2DsplTraitPE";
                     }
+                    elsif (index($env_type, 'phenotype_ar1xar1_effect') != -1) {
+                        $model_name = "RR_AR1xAR1TraitPE";
+                    }
                     elsif (index($env_type, 'phenotype_correlation') != -1) {
                         $model_name = "RR_CorrTraitPE";
                     }
@@ -268,6 +274,337 @@ sub analytics_protocols_merge_results :Path('/ajax/analytics_protocols_merge_res
     }
 
     $c->stash->{rest} = { charts => \@analytics_protocol_charts };
+}
+
+sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compare_to_trait') Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $people_schema = $c->dbic_schema("CXGN::People::Schema");
+    my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
+    my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
+    my $protocol_id = $c->req->param('protocol_id');
+    my $trait_id = $c->req->param('trait_id');
+    my $trial_id = $c->req->param('trial_id');
+
+    my $csv = Text::CSV->new({ sep_char => "," });
+
+    my $protocolprop_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analytics_protocol_properties', 'protocol_property')->cvterm_id();
+    my $protocolprop_results_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analytics_protocol_result_summary', 'protocol_property')->cvterm_id();
+    my $analytics_experiment_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analytics_protocol_experiment', 'experiment_type')->cvterm_id();
+
+    my $q0 = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.type_id, nd_protocol.description, nd_protocol.create_date, nd_protocolprop.value
+        FROM nd_protocol
+        JOIN nd_protocolprop USING(nd_protocol_id)
+        WHERE nd_protocolprop.type_id=$protocolprop_type_cvterm_id AND nd_protocol.nd_protocol_id = ?;";
+    my $h0 = $schema->storage->dbh()->prepare($q0);
+    $h0->execute($protocol_id);
+    my ($nd_protocol_id, $name, $type_id, $description, $create_date, $props_json) = $h0->fetchrow_array();
+
+    if (!$name) {
+        $c->stash->{rest} = { error => "There is no protocol with that ID!"};
+        return;
+    }
+
+    my $protocol_props = decode_json $props_json;
+    my $observation_variable_id_list = $protocol_props->{observation_variable_id_list};
+    my $observation_variable_number = scalar(@$observation_variable_id_list);
+    my $legendre_poly_number = $protocol_props->{legendre_order_number} || 3;
+
+    my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
+        'MaterializedViewTable',
+        {
+            bcs_schema=>$schema,
+            data_level=>'plot',
+            trait_list=>[$trait_id],
+            trial_list=>[$trial_id],
+            include_timestamp=>0,
+            exclude_phenotype_outlier=>0
+        }
+    );
+    my ($data, $unique_traits) = $phenotypes_search->search();
+    my @sorted_trait_names = sort keys %$unique_traits;
+
+    if (scalar(@$data) == 0) {
+        $c->stash->{rest} = { error => "There are no phenotypes for the trials and traits you have selected!"};
+        return;
+    }
+
+    my %germplasm_phenotypes;
+    my %plot_phenotypes;
+    foreach my $obs_unit (@$data){
+        my $germplasm_name = $obs_unit->{germplasm_uniquename};
+        my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
+        my $replicate_number = $obs_unit->{obsunit_rep} || '';
+        my $block_number = $obs_unit->{obsunit_block} || '';
+        my $obsunit_stock_id = $obs_unit->{observationunit_stock_id};
+        my $obsunit_stock_uniquename = $obs_unit->{observationunit_uniquename};
+        my $row_number = $obs_unit->{obsunit_row_number} || '';
+        my $col_number = $obs_unit->{obsunit_col_number} || '';
+
+        my $observations = $obs_unit->{observations};
+        foreach (@$observations){
+            my $value = $_->{value};
+            my $trait_name = $_->{trait_name};
+
+            push @{$germplasm_phenotypes{$germplasm_name}->{$trait_name}}, $value;
+            $plot_phenotypes{$obsunit_stock_uniquename}->{$trait_name} = $value;
+        }
+    }
+    my @seen_germplasm = sort keys %germplasm_phenotypes;
+    my @seen_plots = sort keys %plot_phenotypes;
+
+    my @result_blups_all;
+    my $q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.description, basename, dirname, md.file_id, md.filetype, nd_protocol.type_id, nd_experiment.type_id
+        FROM metadata.md_files AS md
+        JOIN metadata.md_metadata AS meta ON (md.metadata_id=meta.metadata_id)
+        JOIN phenome.nd_experiment_md_files using(file_id)
+        JOIN nd_experiment using(nd_experiment_id)
+        JOIN nd_experiment_protocol using(nd_experiment_id)
+        JOIN nd_protocol using(nd_protocol_id)
+        WHERE nd_protocol.nd_protocol_id=$protocol_id AND nd_experiment.type_id=$analytics_experiment_type_cvterm_id;";
+    print STDERR $q."\n";
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute();
+    while (my ($model_id, $model_name, $model_description, $basename, $filename, $file_id, $filetype, $model_type_id, $experiment_type_id, $property_type_id, $property_value) = $h->fetchrow_array()) {
+        my $result_type;
+        if (index($filetype, 'originalgenoeff') != -1 && index($filetype, 'nicksmixedmodelsanalytics_v1') != -1 && index($filetype, 'datafile') != -1) {
+            $result_type = 'originalgenoeff';
+        }
+        elsif (index($filetype, 'fullcorr') != -1 && index($filetype, 'nicksmixedmodelsanalytics_v1') != -1 && index($filetype, 'datafile') != -1) {
+            $result_type = 'fullcorr';
+        }
+        else {
+            next;
+        }
+
+        my $parameter = '';
+        my $sim_var = '';
+        if (index($filetype, '0.1') != -1) {
+            $parameter = "Simulation Variance = 0.1";
+            $sim_var = 0.1;
+        }
+        elsif (index($filetype, '0.2') != -1) {
+            $parameter = "Simulation Variance = 0.2";
+            $sim_var = 0.2;
+        }
+        elsif (index($filetype, '0.3') != -1) {
+            $parameter = "Simulation Variance = 0.3";
+            $sim_var = 0.3;
+        }
+
+        my $time_change = 'Constant';
+        if (index($filetype, 'changing_gradual') != -1) {
+            if (index($filetype, '0.75') != -1) {
+                $time_change = "Correlated 0.75";
+            }
+            elsif (index($filetype, '0.9') != -1) {
+                $time_change = "Correlated 0.9";
+            }
+        }
+
+        my $model_name = '';
+        if (index($filetype, 'airemlf90_grm_random_regression') != -1) {
+            if (index($filetype, 'identity') != -1) {
+                $model_name = "RR_IDPE";
+            }
+            elsif (index($filetype, 'euclidean_rows_and_columns') != -1) {
+                $model_name = "RR_EucPE";
+            }
+            elsif (index($filetype, 'phenotype_2dspline_effect') != -1) {
+                $model_name = "RR_2DsplTraitPE";
+            }
+            elsif (index($filetype, 'phenotype_ar1xar1_effect') != -1) {
+                $model_name = "RR_AR1xAR1TraitPE";
+            }
+            elsif (index($filetype, 'phenotype_correlation') != -1) {
+                $model_name = "RR_CorrTraitPE";
+            }
+        }
+        elsif (index($filetype, 'asreml_grm_univariate_pure') != -1) {
+            $model_name = 'AR1_Uni';
+        }
+        elsif (index($filetype, 'sommer_grm_spatial_pure') != -1) {
+            $model_name = '2Dspl_Multi';
+        }
+        elsif (index($filetype, 'sommer_grm_univariate_spatial_pure') != -1) {
+            $model_name = '2Dspl_Uni';
+        }
+        elsif (index($filetype, 'asreml_grm_multivariate') != -1) {
+            $model_name = 'AR1_Multi';
+        }
+        else {
+            $c->stash->{rest} = { error => "The model was not recognized for $filetype!"};
+            return;
+        }
+
+        my %germplasm_result_blups;
+        my %plot_result_blups;
+        my $file_destination = File::Spec->catfile($filename, $basename);
+        open(my $fh, '<', $file_destination) or die "Could not open file '$file_destination' $!";
+            print STDERR "Opened $file_destination\n";
+
+            my $header = <$fh>;
+            while (my $row = <$fh>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+
+                if ($result_type eq 'originalgenoeff') {
+                    my $germplasm_name = $columns[0];
+                    my $time = $columns[1];
+                    my $value = $columns[2];
+                    push @{$germplasm_result_blups{$germplasm_name}}, $value;
+                }
+                elsif ($result_type eq 'fullcorr') {
+                    my $plot_name = $columns[0];
+                    my $plot_id = $columns[1];
+
+                    if (index($filetype, 'airemlf90_grm_random_regression') == -1) {
+                        for my $iter (0..$observation_variable_number-1) {
+                            my $value = $columns[10+$iter*12];
+                            push @{$plot_result_blups{$plot_name}}, $value;
+                        }
+                    }
+                    else {
+                        for my $iter (0..$legendre_poly_number) {
+                            my $value = $columns[10+$iter*12];
+                            push @{$plot_result_blups{$plot_name}}, $value;
+                        }
+                    }
+                }
+            }
+        close($fh);
+
+        push @result_blups_all, {
+            result_type => $result_type,
+            germplasm_result_blups => \%germplasm_result_blups,
+            plot_result_blups => \%plot_result_blups,
+            parameter => $parameter,
+            sim_var => $sim_var,
+            time_change => $time_change,
+            model_name => $model_name
+        }
+    }
+
+    my @analytics_protocol_charts;
+    my @germplasm_results;
+    my @germplasm_data = ();
+    my @germplasm_data_header = ("germplasmName");
+    my @germplasm_data_values = ();
+    my @germplasm_data_values_header = ();
+
+    if (scalar(@result_blups_all) > 1) {
+        my $dir = $c->tempfiles_subdir('/analytics_protocol_figure');
+        my $analytics_protocol_tempfile_string = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+        $analytics_protocol_tempfile_string .= '.png';
+        my $analytics_protocol_figure_tempfile = $c->config->{basepath}."/".$analytics_protocol_tempfile_string;
+        my $analytics_protocol_data_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile2 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile3 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+
+        foreach my $t (@sorted_trait_names) {
+            push @germplasm_data_header, ($t."mean", $t."sd");
+            push @germplasm_data_values_header, $t."mean";
+        }
+        my $result_blup_iter = 1;
+        foreach my $r (@result_blups_all) {
+            if ($r->{result_type} eq 'originalgenoeff') {
+                push @germplasm_data_header, ("gmean$result_blup_iter", "gsd$result_blup_iter");
+                push @germplasm_data_values_header, "gmean$result_blup_iter";
+                $result_blup_iter++;
+            }
+        }
+
+        foreach my $g (@seen_germplasm) {
+            my @line = ($g);
+            my @values;
+
+            foreach my $t (@sorted_trait_names) {
+                my $trait_phenos = $germplasm_phenotypes{$g}->{$t};
+                my $trait_pheno_stat = Statistics::Descriptive::Full->new();
+                $trait_pheno_stat->add_data(@$trait_phenos);
+                my $sd = $trait_pheno_stat->standard_deviation();
+                my $mean = $trait_pheno_stat->mean();
+                push @line, ($mean, $sd);
+                push @values, $mean;
+            }
+
+            foreach my $r (@result_blups_all) {
+                if ($r->{result_type} eq 'originalgenoeff') {
+                    my $germplasm_result_blups = $r->{germplasm_result_blups};
+
+                    my $geno_blups = $germplasm_result_blups->{$g};
+                    my $geno_blups_stat = Statistics::Descriptive::Full->new();
+                    $geno_blups_stat->add_data(@$geno_blups);
+                    my $geno_sd = $geno_blups_stat->standard_deviation();
+                    my $geno_mean = $geno_blups_stat->mean();
+
+                    push @line, ($geno_mean, $geno_sd);
+                    push @values, $geno_mean;
+                }
+            }
+            push @germplasm_data, \@line;
+            push @germplasm_data_values, \@values;
+        }
+
+        open(my $F, ">", $analytics_protocol_data_tempfile) || die "Can't open file ".$analytics_protocol_data_tempfile;
+            my $header_string = join ',', @germplasm_data_header;
+            print $F "$header_string\n";
+
+            foreach (@germplasm_data) {
+                my $string = join ',', @$_;
+                print $F "$string\n";
+            }
+        close($F);
+
+        open(my $F2, ">", $analytics_protocol_data_tempfile2) || die "Can't open file ".$analytics_protocol_data_tempfile2;
+            my $header_string2 = join ',', @germplasm_data_values_header;
+            print $F2 "$header_string2\n";
+
+            foreach (@germplasm_data_values) {
+                my $string = join ',', @$_;
+                print $F2 "$string\n";
+            }
+        close($F2);
+
+        my $model_names_string = '';
+        my $r_cmd = 'R -e "library(ggplot2); library(data.table);
+        data <- data.frame(fread(\''.$analytics_protocol_data_tempfile2.'\', header=TRUE, sep=\',\'));
+        res <- cor(data, use = \'complete.obs\')
+        res_rounded <- round(res, 2)
+        write.table(res_rounded, file=\''.$analytics_protocol_data_tempfile3.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        "';
+        print STDERR Dumper $r_cmd;
+        my $status = system($r_cmd);
+
+        open(my $fh, '<', $analytics_protocol_data_tempfile3) or die "Could not open file '$analytics_protocol_data_tempfile3' $!";
+            print STDERR "Opened $analytics_protocol_data_tempfile3\n";
+            my $header = <$fh>;
+            my @header_cols;
+            if ($csv->parse($header)) {
+                @header_cols = $csv->fields();
+            }
+
+            my @header_trait_names = ("Trait", @header_cols);
+            push @germplasm_results, \@header_trait_names;
+
+            while (my $row = <$fh>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+
+                push @germplasm_results, \@columns;
+            }
+        close($fh);
+
+        push @analytics_protocol_charts, $analytics_protocol_tempfile_string;
+    }
+
+    $c->stash->{rest} = { charts => \@analytics_protocol_charts, germplasm_data_header => \@germplasm_data_header, germplasm_data => \@germplasm_data, germplasm_results => \@germplasm_results };
 }
 
 sub _check_user_login {

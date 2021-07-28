@@ -222,6 +222,9 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
                 elsif (index($env_type, 'phenotype_2dspline_effect') != -1) {
                     $model_name = "RR_2DsplTraitPE";
                 }
+                elsif (index($env_type, 'phenotype_ar1xar1_effect') != -1) {
+                    $model_name = "RR_AR1xAR1TraitPE";
+                }
                 elsif (index($env_type, 'phenotype_correlation') != -1) {
                     $model_name = "RR_CorrTraitPE";
                 }
