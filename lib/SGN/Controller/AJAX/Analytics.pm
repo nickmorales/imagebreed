@@ -495,6 +495,11 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my @germplasm_data_header = ("germplasmName");
     my @germplasm_data_values = ();
     my @germplasm_data_values_header = ();
+    my @plots_avg_results;
+    my @plots_avg_data = ();
+    my @plots_avg_data_header = ("plotName");
+    my @plots_avg_data_values = ();
+    my @plots_avg_data_values_header = ();
 
     if (scalar(@result_blups_all) > 1) {
         my $dir = $c->tempfiles_subdir('/analytics_protocol_figure');
@@ -504,17 +509,29 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $analytics_protocol_data_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile2 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile3 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile4 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile5 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile6 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
         foreach my $t (@sorted_trait_names) {
             push @germplasm_data_header, ($t."mean", $t."sd");
             push @germplasm_data_values_header, $t."mean";
+
+            push @plots_avg_data_header, $t;
+            push @plots_avg_data_values_header, $t;
         }
-        my $result_blup_iter = 1;
+        my $result_gblup_iter = 1;
+        my $result_sblup_iter = 1;
         foreach my $r (@result_blups_all) {
             if ($r->{result_type} eq 'originalgenoeff') {
-                push @germplasm_data_header, ("gmean$result_blup_iter", "gsd$result_blup_iter");
-                push @germplasm_data_values_header, "gmean$result_blup_iter";
-                $result_blup_iter++;
+                push @germplasm_data_header, ("gmean$result_gblup_iter", "gsd$result_gblup_iter");
+                push @germplasm_data_values_header, "gmean$result_gblup_iter";
+                $result_gblup_iter++;
+            }
+            elsif ($r->{result_type} eq 'fullcorr') {
+                push @plots_avg_data_header, ("smean$result_sblup_iter", "ssd$result_sblup_iter");
+                push @plots_avg_data_values_header, "smean$result_sblup_iter";
+                $result_sblup_iter++;
             }
         }
 
@@ -550,6 +567,34 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             push @germplasm_data_values, \@values;
         }
 
+        foreach my $p (@seen_plots) {
+            my @line = ($p);
+            my @values;
+
+            foreach my $t (@sorted_trait_names) {
+                my $val = $plot_phenotypes{$p}->{$t};
+                push @line, $val;
+                push @values, $val;
+            }
+
+            foreach my $r (@result_blups_all) {
+                if ($r->{result_type} eq 'fullcorr') {
+                    my $plot_result_blups = $r->{plot_result_blups};
+
+                    my $plot_blups = $plot_result_blups->{$p};
+                    my $plot_blups_stat = Statistics::Descriptive::Full->new();
+                    $plot_blups_stat->add_data(@$plot_blups);
+                    my $plot_sd = $plot_blups_stat->standard_deviation();
+                    my $plot_mean = $plot_blups_stat->mean();
+
+                    push @line, ($plot_mean, $plot_sd);
+                    push @values, $plot_mean;
+                }
+            }
+            push @plots_avg_data, \@line;
+            push @plots_avg_data_values, \@values;
+        }
+
         open(my $F, ">", $analytics_protocol_data_tempfile) || die "Can't open file ".$analytics_protocol_data_tempfile;
             my $header_string = join ',', @germplasm_data_header;
             print $F "$header_string\n";
@@ -570,7 +615,26 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             }
         close($F2);
 
-        my $model_names_string = '';
+        open(my $F3, ">", $analytics_protocol_data_tempfile4) || die "Can't open file ".$analytics_protocol_data_tempfile4;
+            my $header_string3 = join ',', @plots_avg_data_header;
+            print $F3 "$header_string3\n";
+
+            foreach (@plots_avg_data) {
+                my $string = join ',', @$_;
+                print $F3 "$string\n";
+            }
+        close($F3);
+
+        open(my $F4, ">", $analytics_protocol_data_tempfile5) || die "Can't open file ".$analytics_protocol_data_tempfile5;
+            my $header_string4 = join ',', @plots_avg_data_values_header;
+            print $F4 "$header_string4\n";
+
+            foreach (@plots_avg_data_values) {
+                my $string = join ',', @$_;
+                print $F4 "$string\n";
+            }
+        close($F4);
+
         my $r_cmd = 'R -e "library(ggplot2); library(data.table);
         data <- data.frame(fread(\''.$analytics_protocol_data_tempfile2.'\', header=TRUE, sep=\',\'));
         res <- cor(data, use = \'complete.obs\')
@@ -601,10 +665,47 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             }
         close($fh);
 
-        push @analytics_protocol_charts, $analytics_protocol_tempfile_string;
+        my $r_cmd2 = 'R -e "library(ggplot2); library(data.table);
+        data <- data.frame(fread(\''.$analytics_protocol_data_tempfile5.'\', header=TRUE, sep=\',\'));
+        res <- cor(data, use = \'complete.obs\')
+        res_rounded <- round(res, 2)
+        write.table(res_rounded, file=\''.$analytics_protocol_data_tempfile6.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        "';
+        print STDERR Dumper $r_cmd2;
+        my $status2 = system($r_cmd2);
+
+        open(my $fh2, '<', $analytics_protocol_data_tempfile6) or die "Could not open file '$analytics_protocol_data_tempfile6' $!";
+            print STDERR "Opened $analytics_protocol_data_tempfile6\n";
+            my $header2 = <$fh2>;
+            my @header_cols2;
+            if ($csv->parse($header2)) {
+                @header_cols2 = $csv->fields();
+            }
+
+            my @header_trait_names2 = ("Trait", @header_cols2);
+            push @plots_avg_results, \@header_trait_names2;
+
+            while (my $row = <$fh2>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+
+                push @plots_avg_results, \@columns;
+            }
+        close($fh2);
+
     }
 
-    $c->stash->{rest} = { charts => \@analytics_protocol_charts, germplasm_data_header => \@germplasm_data_header, germplasm_data => \@germplasm_data, germplasm_results => \@germplasm_results };
+    $c->stash->{rest} = {
+        charts => \@analytics_protocol_charts,
+        germplasm_data_header => \@germplasm_data_header,
+        germplasm_data => \@germplasm_data,
+        germplasm_results => \@germplasm_results,
+        plots_avg_data_header => \@plots_avg_data_header,
+        plots_avg_data => \@plots_avg_data,
+        plots_avg_results => \@plots_avg_results
+    };
 }
 
 sub _check_user_login {

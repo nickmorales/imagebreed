@@ -123,6 +123,34 @@ jQuery(document).ready(function() {
                 }
                 html = html + '</tbody></table></div>';
 
+                html = html + '<table class="table table-hover table-bordered"><thead><tr>';
+                for(var i=0; i<response.plots_avg_results[0].length; i++) {
+                    html = html + '<th>'+response.plots_avg_results[0][i]+'</th>';
+                }
+                html = html + '</tr></thead>';
+                for(var i=1; i<response.plots_avg_results.length; i++) {
+                    html = html + '<tr>';
+                    for(var j=0; j<response.plots_avg_results[i].length; j++) {
+                        html = html + '<td>'+response.plots_avg_results[i][j]+'</td>';
+                    }
+                    html = html + '</tr>';
+                }
+                html = html + '</tbody></table>';
+
+                html = html + '<div class="well well-sm"><table class="table table-hover table-bordered" id="analytics_compare_results_to_trait_plots_data_table"><thead><tr>';
+                for(var i=0; i<response.plots_avg_data_header.length; i++) {
+                    html = html + '<th>'+response.plots_avg_data_header[i]+'</th>';
+                }
+                html = html + '</tr></thead>';
+                for(var i=0; i<response.plots_avg_data.length; i++) {
+                    html = html + '<tr>';
+                    for(var j=0; j<response.plots_avg_data[i].length; j++) {
+                        html = html + '<td>'+response.plots_avg_data[i][j]+'</td>';
+                    }
+                    html = html + '</tr>';
+                }
+                html = html + '</tbody></table></div>';
+
                 var charts = response.charts;
                 for (var i=0; i<charts.length; i++) {
                     html = html + '<img src="'+charts[i]+'"><br/>';
@@ -130,6 +158,7 @@ jQuery(document).ready(function() {
                 jQuery('#analytics_compare_results_to_trait_results_div').html(html);
 
                 jQuery('#analytics_compare_results_to_trait_germplasm_data_table').DataTable({});
+                jQuery('#analytics_compare_results_to_trait_plots_data_table').DataTable({});
 
                 Workflow.complete("#analytics_compare_results_to_trait_trait_select_step");
                 Workflow.focus('#analytics_compare_results_to_trait_workflow', 2);
