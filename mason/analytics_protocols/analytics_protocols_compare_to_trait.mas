@@ -95,7 +95,14 @@ jQuery(document).ready(function() {
                 console.log(response);
                 jQuery("#working_modal").modal("hide");
 
-                var html = '<table class="table table-hover table-bordered"><thead><tr>';
+                var result_blups_all = response.result_blups_all;
+                html = '<div>';
+                for(var i=0; i<result_blups_all.length; i++) {
+                    html = html + '<p>'+result_blups_all[i]["model_name"]+': '+result_blups_all[i]["result_type"]+'</p>';
+                }
+                html = html + '</div>';
+
+                html = html + '<table class="table table-hover table-bordered"><thead><tr>';
                 for(var i=0; i<response.germplasm_results[0].length; i++) {
                     html = html + '<th>'+response.germplasm_results[0][i]+'</th>';
                 }

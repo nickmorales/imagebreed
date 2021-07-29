@@ -363,7 +363,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         JOIN nd_experiment using(nd_experiment_id)
         JOIN nd_experiment_protocol using(nd_experiment_id)
         JOIN nd_protocol using(nd_protocol_id)
-        WHERE nd_protocol.nd_protocol_id=$protocol_id AND nd_experiment.type_id=$analytics_experiment_type_cvterm_id;";
+        WHERE nd_protocol.nd_protocol_id=$protocol_id AND nd_experiment.type_id=$analytics_experiment_type_cvterm_id
+        ORDER BY md.file_id ASC;";
     print STDERR $q."\n";
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute();
@@ -779,6 +780,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     }
 
     $c->stash->{rest} = {
+        result_blups_all => \@result_blups_all,
         charts => \@analytics_protocol_charts,
         germplasm_data_header => \@germplasm_data_header,
         germplasm_data => \@germplasm_data,
