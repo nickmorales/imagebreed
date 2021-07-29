@@ -908,9 +908,6 @@ jQuery(document).ready(function(){
             });
             if (selected.length == 0){
                 jQuery('#upload_ssr_protocol_dialog').modal('show');
-                jQuery("#upload_ssr_species_name_input").autocomplete({
-                    source: '/organism/autocomplete'
-                });
             } else if (selected.length > 0) {
                 alert('If you selected a protocol, do not try to make a new one at the same time!');
             }
