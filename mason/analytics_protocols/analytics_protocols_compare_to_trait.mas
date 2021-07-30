@@ -96,9 +96,45 @@ jQuery(document).ready(function() {
                 jQuery("#working_modal").modal("hide");
 
                 var result_blups_all = response.result_blups_all;
-                html = '<div>';
+                html = '<h2>Model Iterations</h2>';
                 for(var i=0; i<result_blups_all.length; i++) {
-                    html = html + '<p>'+result_blups_all[i]["model_name"]+': '+result_blups_all[i]["result_type"]+'</p>';
+                    html = html + '<button type="button" class="btn btn-default btn-sm" data-toggle="collapse" data-target="#analytics_protocol_compare_to_trait_model_it'+i+'">('+i+')&nbsp;&nbsp;&nbsp;'+result_blups_all[i]["model_name"]+': '+result_blups_all[i]["result_type"]+'</button>';
+                    html = html + '<div id="analytics_protocol_compare_to_trait_model_it'+i+'" class="collapse">';
+                    console.log(result_blups_all[i]["result_type"]);
+                    if (result_blups_all[i]["result_type"] == "originalgenoeff") {
+                        html = html + '<table class="table table-hover table-bordered"><thead><tr>';
+                        for(var j=0; j<result_blups_all[i]["germplasm_results"][0].length; j++) {
+                            html = html + '<th>'+result_blups_all[i]["germplasm_results"][0][j]+'</th>';
+                        }
+                        html = html + '</tr></thead>';
+                        for(var j=1; j<result_blups_all[i]["germplasm_results"].length; j++) {
+                            html = html + '<tr>';
+                            for(var k=0; k<result_blups_all[i]["germplasm_results"][j].length; k++) {
+                                html = html + '<td>'+result_blups_all[i]["germplasm_results"][j][k]+'</td>';
+                            }
+                            html = html + '</tr>';
+                        }
+
+                        html = html + '</tbody></table>';
+                        html = html + '<img src="'+result_blups_all[i]["germplasm_geno_corr_plot"]+'">';
+                    }
+                    if (result_blups_all[i]["result_type"] == "fullcorr") {
+                        html = html + '<table class="table table-hover table-bordered"><thead><tr>';
+                        for(var j=0; j<result_blups_all[i].plots_avg_results[0].length; j++) {
+                            html = html + '<th>'+result_blups_all[i].plots_avg_results[0][j]+'</th>';
+                        }
+                        html = html + '</tr></thead>';
+                        for(var j=1; j<result_blups_all[i].plots_avg_results.length; j++) {
+                            html = html + '<tr>';
+                            for(var k=0; k<result_blups_all[i].plots_avg_results[j].length; k++) {
+                                html = html + '<td>'+result_blups_all[i].plots_avg_results[j][k]+'</td>';
+                            }
+                            html = html + '</tr>';
+                        }
+                        html = html + '</tbody></table>';
+                        html = html + '<img src="'+result_blups_all[i]["plots_spatial_corr_plot"]+'">';
+                    }
+                    html = html + '</div><br/>';
                 }
                 html = html + '</div>';
 

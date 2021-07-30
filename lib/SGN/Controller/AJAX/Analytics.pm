@@ -10,6 +10,7 @@ use CXGN::BreederSearch;
 use CXGN::Phenotypes::SearchFactory;
 use Text::CSV;
 use Statistics::Descriptive::Full;
+use Scalar::Util qw(looks_like_number);
 
 BEGIN { extends 'Catalyst::Controller::REST' };
 
@@ -289,23 +290,47 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $trial_id = $c->req->param('trial_id');
 
     my $csv = Text::CSV->new({ sep_char => "," });
+    my $dir = $c->tempfiles_subdir('/analytics_protocol_figure');
 
     my $protocolprop_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analytics_protocol_properties', 'protocol_property')->cvterm_id();
     my $protocolprop_results_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analytics_protocol_result_summary', 'protocol_property')->cvterm_id();
     my $analytics_experiment_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analytics_protocol_experiment', 'experiment_type')->cvterm_id();
 
-    my $q0 = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.type_id, nd_protocol.description, nd_protocol.create_date, nd_protocolprop.value
+    my $q0 = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.type_id, nd_protocol.description, nd_protocol.create_date, properties.value, results.value
         FROM nd_protocol
-        JOIN nd_protocolprop USING(nd_protocol_id)
-        WHERE nd_protocolprop.type_id=$protocolprop_type_cvterm_id AND nd_protocol.nd_protocol_id = ?;";
+        JOIN nd_protocolprop AS properties ON(properties.nd_protocol_id=nd_protocol.nd_protocol_id AND properties.type_id=$protocolprop_type_cvterm_id)
+        JOIN nd_protocolprop AS results ON(results.nd_protocol_id=nd_protocol.nd_protocol_id AND results.type_id=$protocolprop_results_type_cvterm_id)
+        WHERE nd_protocol.nd_protocol_id = ?;";
     my $h0 = $schema->storage->dbh()->prepare($q0);
     $h0->execute($protocol_id);
-    my ($nd_protocol_id, $name, $type_id, $description, $create_date, $props_json) = $h0->fetchrow_array();
+    my ($nd_protocol_id, $name, $type_id, $description, $create_date, $props_json, $result_props_json) = $h0->fetchrow_array();
 
     if (!$name) {
         $c->stash->{rest} = { error => "There is no protocol with that ID!"};
         return;
     }
+
+    my $result_props_json_array = $result_props_json ? decode_json $result_props_json : [];
+    # print STDERR Dumper $result_props_json_array;
+    my %trait_name_map;
+    foreach my $a (@$result_props_json_array) {
+        my $trait_name_encoder = $a->{trait_name_map};
+        print STDERR Dumper $trait_name_encoder;
+        while (my ($k,$v) = each %$trait_name_encoder) {
+            if (looks_like_number($k)) {
+                #'181' => 't3',
+                $trait_name_map{$v} = $k;
+            }
+            else {
+                #'Mean Pixel Value|Merged 3 Bands NRN|NDVI Vegetative Index Image|day 181|COMP:0000618' => 't3',
+                my @t_comps = split '\|', $k;
+                my $time_term = $t_comps[3];
+                my ($day, $time) = split ' ', $time_term;
+                $trait_name_map{$v} = $time;
+            }
+        }
+    }
+    print STDERR Dumper \%trait_name_map;
 
     my $protocol_props = decode_json $props_json;
     my $observation_variable_id_list = $protocol_props->{observation_variable_id_list};
@@ -354,6 +379,33 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     }
     my @seen_germplasm = sort keys %germplasm_phenotypes;
     my @seen_plots = sort keys %plot_phenotypes;
+
+    my $trait_name_string = join ',', @sorted_trait_names;
+
+    # my $spatial_correct_2dspl_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+    # mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+    # geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+    # geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+    # geno_mat[is.na(geno_mat)] <- 0;
+    # mat\$rowNumber <- as.numeric(mat\$rowNumber);
+    # mat\$colNumber <- as.numeric(mat\$colNumber);
+    # mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+    # mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+    # mix <- mmer('.$trait_name_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+    # if (!is.null(mix\$U)) {
+    # #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+    # write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+    # write.table(mix\$U\$\`u:rowNumberFactor\`, file=\''.$stats_out_tempfile_row.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+    # write.table(mix\$U\$\`u:colNumberFactor\`, file=\''.$stats_out_tempfile_col.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+    # write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+    # write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+    # X <- with(mat, spl2D(rowNumber, colNumber));
+    # spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
+    # blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
+    # spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
+    # write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+    # }
+    # "';
 
     my @result_blups_all;
     my $q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.description, basename, dirname, md.file_id, md.filetype, nd_protocol.type_id, nd_experiment.type_id
@@ -441,12 +493,21 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
 
         my %germplasm_result_blups;
+        my %germplasm_result_time_blups;
         my %plot_result_blups;
+        my %plot_result_time_blups;
+        my %seen_times_g;
+        my %seen_times_p;
         my $file_destination = File::Spec->catfile($filename, $basename);
         open(my $fh, '<', $file_destination) or die "Could not open file '$file_destination' $!";
             print STDERR "Opened $file_destination\n";
 
             my $header = <$fh>;
+            my @header_columns;
+            if ($csv->parse($header)) {
+                @header_columns = $csv->fields();
+            }
+
             while (my $row = <$fh>) {
                 my @columns;
                 if ($csv->parse($row)) {
@@ -458,26 +519,412 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     my $time = $columns[1];
                     my $value = $columns[2];
                     push @{$germplasm_result_blups{$germplasm_name}}, $value;
+                    $germplasm_result_time_blups{$germplasm_name}->{$time} = $value;
+                    $seen_times_g{$time}++;
                 }
                 elsif ($result_type eq 'fullcorr') {
                     my $plot_name = $columns[0];
                     my $plot_id = $columns[1];
 
+                    my $total_num_t;
                     if (index($filetype, 'airemlf90_grm_random_regression') == -1) {
-                        for my $iter (0..$observation_variable_number-1) {
-                            my $value = $columns[10+$iter*12];
-                            push @{$plot_result_blups{$plot_name}}, $value;
-                        }
+                        $total_num_t = $observation_variable_number;
                     }
                     else {
-                        for my $iter (0..$legendre_poly_number) {
-                            my $value = $columns[10+$iter*12];
-                            push @{$plot_result_blups{$plot_name}}, $value;
-                        }
+                        $total_num_t = $legendre_poly_number;
+                    }
+
+                    for my $iter (0..$total_num_t-1) {
+                        my $step = 10+($iter*22);
+
+                        my $col_name = $header_columns[$step];
+                        my ($eff, $mod, $time) = split '_', $col_name;
+                        my $time_val = $trait_name_map{$time};
+                        my $value = $columns[$step];
+                        push @{$plot_result_blups{$plot_name}}, $value;
+                        $plot_result_time_blups{$plot_name}->{$time_val} = $value;
+                        $seen_times_p{$time_val}++;
                     }
                 }
             }
         close($fh);
+        print STDERR Dumper \%plot_result_time_blups;
+        print STDERR Dumper \%germplasm_result_time_blups;
+
+        my @sorted_seen_times_g = sort { $a <=> $b } keys %seen_times_g;
+        my @sorted_seen_times_p = sort { $a <=> $b } keys %seen_times_p;
+
+        my $analytics_protocol_data_tempfile10 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile11 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile12 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile13 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile14 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile15 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile16 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile17 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile18 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile19 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile20 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+
+        my $analytics_protocol_tempfile_string_1 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+        $analytics_protocol_tempfile_string_1 .= '.png';
+        my $analytics_protocol_figure_tempfile_1 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_1;
+
+        my $analytics_protocol_tempfile_string_2 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+        $analytics_protocol_tempfile_string_2 .= '.png';
+        my $analytics_protocol_figure_tempfile_2 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_2;
+
+        my @germplasm_results;
+        my @germplasm_data = ();
+        my @germplasm_data_header = ("germplasmName");
+        my @germplasm_data_values = ();
+        my @germplasm_data_values_header = ();
+        my @plots_avg_results;
+        my @plots_avg_data = ();
+        my @plots_avg_data_header = ("plotName");
+        my @plots_avg_data_values = ();
+        my @plots_avg_data_values_header = ();
+        my @plots_avg_corrected_results;
+        my @plots_avg_corrected_data = ();
+        my @plots_avg_corrected_data_header = ("plotName");
+        my @plots_avg_corrected_data_values = ();
+        my @plots_avg_corrected_data_values_header = ();
+        my @germplasm_data_iteration_header = ("germplasmName", "tmean", "time", "value");
+        my @germplasm_data_iteration_data_values = ();
+        my @plots_data_iteration_header = ("plotName", "tvalue", "time", "value");
+        my @plots_data_iteration_data_values = ();
+
+
+        foreach my $t (@sorted_trait_names) {
+            push @germplasm_data_header, ($t."mean", $t."sd");
+            push @germplasm_data_values_header, $t."mean";
+
+            push @plots_avg_data_header, $t;
+            push @plots_avg_data_values_header, $t;
+        }
+
+        if ($result_type eq 'originalgenoeff') {
+            push @germplasm_data_header, ("gmean", "gsd");
+            push @germplasm_data_values_header, "gmean";
+
+            foreach my $time (@sorted_seen_times_g) {
+                push @germplasm_data_header, "g$time";
+                push @germplasm_data_values_header, "g$time";
+            }
+        }
+        elsif ($result_type eq 'fullcorr') {
+            push @plots_avg_data_header, ("smean", "ssd");
+            push @plots_avg_data_values_header, "smean";
+
+            foreach my $time (@sorted_seen_times_p) {
+                push @plots_avg_data_header, "s$time";
+                push @plots_avg_data_values_header, "s$time";
+            }
+
+            push @plots_avg_corrected_data_header, ("smean", "ssd");
+            push @plots_avg_corrected_data_values_header, "smean";
+
+            foreach my $t (@sorted_trait_names) {
+                push @plots_avg_corrected_data_header, $t."csmean";
+                push @plots_avg_corrected_data_values_header, $t."csmean";
+
+                foreach my $time (@sorted_seen_times_p) {
+                    push @plots_avg_corrected_data_header, "c$time";
+                    push @plots_avg_corrected_data_values_header, "c$time";
+                }
+            }
+        }
+
+        foreach my $g (@seen_germplasm) {
+            my @line = ($g);
+            my @values;
+
+            foreach my $t (@sorted_trait_names) {
+                my $trait_phenos = $germplasm_phenotypes{$g}->{$t};
+                my $trait_pheno_stat = Statistics::Descriptive::Full->new();
+                $trait_pheno_stat->add_data(@$trait_phenos);
+                my $sd = $trait_pheno_stat->standard_deviation();
+                my $mean = $trait_pheno_stat->mean();
+                push @line, ($mean, $sd);
+                push @values, $mean;
+
+                foreach my $time (@sorted_seen_times_g) {
+                    my $val = $germplasm_result_time_blups{$g}->{$time};
+                    push @germplasm_data_iteration_data_values, [$g, $mean, $time, $val];
+                }
+            }
+
+            if ($result_type eq 'originalgenoeff') {
+                my $geno_blups = $germplasm_result_blups{$g};
+                my $geno_blups_stat = Statistics::Descriptive::Full->new();
+                $geno_blups_stat->add_data(@$geno_blups);
+                my $geno_sd = $geno_blups_stat->standard_deviation();
+                my $geno_mean = $geno_blups_stat->mean();
+
+                push @line, ($geno_mean, $geno_sd);
+                push @values, $geno_mean;
+
+                foreach my $time (@sorted_seen_times_g) {
+                    my $val = $germplasm_result_time_blups{$g}->{$time};
+                    push @line, $val;
+                    push @values, $val;
+                }
+            }
+            push @germplasm_data, \@line;
+            push @germplasm_data_values, \@values;
+        }
+
+        foreach my $p (@seen_plots) {
+            my @line = ($p);
+            my @values;
+
+            my @line_corrected = ($p);
+            my @values_corrected;
+
+            foreach my $t (@sorted_trait_names) {
+                my $val = $plot_phenotypes{$p}->{$t};
+                push @line, $val;
+                push @values, $val;
+
+                foreach my $time (@sorted_seen_times_p) {
+                    my $sval = $plot_result_time_blups{$p}->{$time};
+                    push @plots_data_iteration_data_values, [$p, $val, $time, $sval];
+                }
+            }
+
+            if ($result_type eq 'fullcorr') {
+                my $plot_blups = $plot_result_blups{$p};
+                my $plot_blups_stat = Statistics::Descriptive::Full->new();
+                $plot_blups_stat->add_data(@$plot_blups);
+                my $plot_sd = $plot_blups_stat->standard_deviation();
+                my $plot_mean = $plot_blups_stat->mean();
+
+                push @line, ($plot_mean, $plot_sd);
+                push @values, $plot_mean;
+
+                foreach my $time (@sorted_seen_times_p) {
+                    my $val = $plot_result_time_blups{$p}->{$time};
+                    push @line, $val;
+                    push @values, $val;
+                }
+
+                push @line_corrected, ($plot_mean, $plot_sd);
+                push @values_corrected, $plot_mean;
+
+                foreach my $t (@sorted_trait_names) {
+                    my $val = $plot_phenotypes{$p}->{$t} - $plot_mean;
+                    push @line_corrected, $val;
+                    push @values_corrected, $val;
+
+                    foreach my $time (@sorted_seen_times_p) {
+                        my $val = $plot_phenotypes{$p}->{$t} - $plot_result_time_blups{$p}->{$time};
+                        push @line_corrected, $val;
+                        push @values_corrected, $val;
+                    }
+                }
+            }
+            push @plots_avg_data, \@line;
+            push @plots_avg_data_values, \@values;
+
+            push @plots_avg_corrected_data, \@line_corrected;
+            push @plots_avg_corrected_data_values, \@values_corrected;
+        }
+
+        open(my $F10, ">", $analytics_protocol_data_tempfile10) || die "Can't open file ".$analytics_protocol_data_tempfile10;
+            my $header_string10 = join ',', @germplasm_data_header;
+            print $F10 "$header_string10\n";
+
+            foreach (@germplasm_data) {
+                my $string = join ',', @$_;
+                print $F10 "$string\n";
+            }
+        close($F10);
+
+        open(my $F11, ">", $analytics_protocol_data_tempfile11) || die "Can't open file ".$analytics_protocol_data_tempfile11;
+            my $header_string11 = join ',', @germplasm_data_values_header;
+            print $F11 "$header_string11\n";
+
+            foreach (@germplasm_data_values) {
+                my $string = join ',', @$_;
+                print $F11 "$string\n";
+            }
+        close($F11);
+
+        open(my $F12, ">", $analytics_protocol_data_tempfile12) || die "Can't open file ".$analytics_protocol_data_tempfile12;
+            my $header_string12 = join ',', @plots_avg_data_header;
+            print $F12 "$header_string12\n";
+
+            foreach (@plots_avg_data) {
+                my $string = join ',', @$_;
+                print $F12 "$string\n";
+            }
+        close($F12);
+
+        open(my $F13, ">", $analytics_protocol_data_tempfile13) || die "Can't open file ".$analytics_protocol_data_tempfile13;
+            my $header_string13 = join ',', @plots_avg_data_values_header;
+            print $F13 "$header_string13\n";
+
+            foreach (@plots_avg_data_values) {
+                my $string = join ',', @$_;
+                print $F13 "$string\n";
+            }
+        close($F13);
+
+        open(my $F14, ">", $analytics_protocol_data_tempfile14) || die "Can't open file ".$analytics_protocol_data_tempfile14;
+            my $header_string14 = join ',', @plots_avg_corrected_data_header;
+            print $F14 "$header_string14\n";
+
+            foreach (@plots_avg_corrected_data) {
+                my $string = join ',', @$_;
+                print $F14 "$string\n";
+            }
+        close($F14);
+
+        open(my $F15, ">", $analytics_protocol_data_tempfile15) || die "Can't open file ".$analytics_protocol_data_tempfile15;
+            my $header_string15 = join ',', @plots_avg_corrected_data_values_header;
+            print $F15 "$header_string15\n";
+
+            foreach (@plots_avg_corrected_data_values) {
+                my $string = join ',', @$_;
+                print $F15 "$string\n";
+            }
+        close($F15);
+
+        open(my $F19, ">", $analytics_protocol_data_tempfile19) || die "Can't open file ".$analytics_protocol_data_tempfile19;
+            my $header_string19 = join ',', @germplasm_data_iteration_header;
+            print $F19 "$header_string19\n";
+
+            foreach (@germplasm_data_iteration_data_values) {
+                my $string = join ',', @$_;
+                print $F19 "$string\n";
+            }
+        close($F19);
+
+        open(my $F20, ">", $analytics_protocol_data_tempfile20) || die "Can't open file ".$analytics_protocol_data_tempfile20;
+            my $header_string20 = join ',', @plots_data_iteration_header;
+            print $F20 "$header_string20\n";
+
+            foreach (@plots_data_iteration_data_values) {
+                my $string = join ',', @$_;
+                print $F20 "$string\n";
+            }
+        close($F20);
+
+        if ($result_type eq 'originalgenoeff') {
+            my $r_cmd_i1 = 'R -e "library(ggplot2); library(data.table);
+            data <- data.frame(fread(\''.$analytics_protocol_data_tempfile11.'\', header=TRUE, sep=\',\'));
+            res <- cor(data, use = \'complete.obs\')
+            res_rounded <- round(res, 2)
+            write.table(res_rounded, file=\''.$analytics_protocol_data_tempfile16.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            "';
+            print STDERR Dumper $r_cmd_i1;
+            my $status_i1 = system($r_cmd_i1);
+
+            open(my $fh_i1, '<', $analytics_protocol_data_tempfile16) or die "Could not open file '$analytics_protocol_data_tempfile16' $!";
+                print STDERR "Opened $analytics_protocol_data_tempfile16\n";
+                my $header = <$fh_i1>;
+                my @header_cols;
+                if ($csv->parse($header)) {
+                    @header_cols = $csv->fields();
+                }
+
+                my @header_trait_names = ("Trait", @header_cols);
+                push @germplasm_results, \@header_trait_names;
+
+                while (my $row = <$fh_i1>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    push @germplasm_results, \@columns;
+                }
+            close($fh_i1);
+
+            my $r_cmd_p1 = 'R -e "library(data.table); library(ggplot2); library(GGally);
+            data <- data.frame(fread(\''.$analytics_protocol_data_tempfile19.'\', header=TRUE, sep=\',\'));
+            data\$time <- as.factor(data\$time);
+            gg <- ggplot(data, aes(x=value, y=tmean, color=time)) +
+            geom_point() +
+            geom_smooth(method=lm, aes(fill=time), se=FALSE, fullrange=TRUE);
+            ggsave(\''.$analytics_protocol_figure_tempfile_1.'\', gg, device=\'png\', width=8, height=8, units=\'in\');
+            "';
+            print STDERR Dumper $r_cmd_p1;
+            my $status_p1 = system($r_cmd_p1);
+        }
+
+        if ($result_type eq 'fullcorr') {
+            my $r_cmd_i2 = 'R -e "library(ggplot2); library(data.table);
+            data <- data.frame(fread(\''.$analytics_protocol_data_tempfile13.'\', header=TRUE, sep=\',\'));
+            res <- cor(data, use = \'complete.obs\')
+            res_rounded <- round(res, 2)
+            write.table(res_rounded, file=\''.$analytics_protocol_data_tempfile17.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            "';
+            print STDERR Dumper $r_cmd_i2;
+            my $status_i2 = system($r_cmd_i2);
+
+            open(my $fh_i2, '<', $analytics_protocol_data_tempfile17) or die "Could not open file '$analytics_protocol_data_tempfile17' $!";
+                print STDERR "Opened $analytics_protocol_data_tempfile17\n";
+                my $header2 = <$fh_i2>;
+                my @header_cols2;
+                if ($csv->parse($header2)) {
+                    @header_cols2 = $csv->fields();
+                }
+
+                my @header_trait_names2 = ("Trait", @header_cols2);
+                push @plots_avg_results, \@header_trait_names2;
+
+                while (my $row = <$fh_i2>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    push @plots_avg_results, \@columns;
+                }
+            close($fh_i2);
+
+            my $r_cmd_i3 = 'R -e "library(ggplot2); library(data.table);
+            data <- data.frame(fread(\''.$analytics_protocol_data_tempfile15.'\', header=TRUE, sep=\',\'));
+            res <- cor(data, use = \'complete.obs\')
+            res_rounded <- round(res, 2)
+            write.table(res_rounded, file=\''.$analytics_protocol_data_tempfile18.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            "';
+            print STDERR Dumper $r_cmd_i3;
+            my $status_i3 = system($r_cmd_i3);
+
+            open(my $fh_i3, '<', $analytics_protocol_data_tempfile18) or die "Could not open file '$analytics_protocol_data_tempfile18' $!";
+                print STDERR "Opened $analytics_protocol_data_tempfile18\n";
+                my $header3 = <$fh_i3>;
+                my @header_cols3;
+                if ($csv->parse($header3)) {
+                    @header_cols3 = $csv->fields();
+                }
+
+                my @header_trait_names3 = ("Trait", @header_cols3);
+                push @plots_avg_corrected_results, \@header_trait_names3;
+
+                while (my $row = <$fh_i3>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    push @plots_avg_corrected_results, \@columns;
+                }
+            close($fh_i3);
+
+            my $r_cmd_p2 = 'R -e "library(data.table); library(ggplot2); library(GGally);
+            data <- data.frame(fread(\''.$analytics_protocol_data_tempfile20.'\', header=TRUE, sep=\',\'));
+            data\$time <- as.factor(data\$time);
+            gg <- ggplot(data, aes(x=value, y=tvalue, color=time)) +
+            geom_point() +
+            geom_smooth(method=lm, aes(fill=time), se=FALSE, fullrange=TRUE);
+            ggsave(\''.$analytics_protocol_figure_tempfile_2.'\', gg, device=\'png\', width=8, height=8, units=\'in\');
+            "';
+            print STDERR Dumper $r_cmd_p2;
+            my $status_p2 = system($r_cmd_p2);
+        }
 
         push @result_blups_all, {
             result_type => $result_type,
@@ -486,7 +933,18 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             parameter => $parameter,
             sim_var => $sim_var,
             time_change => $time_change,
-            model_name => $model_name
+            model_name => $model_name,
+            germplasm_data_header => \@germplasm_data_header,
+            germplasm_data => \@germplasm_data,
+            germplasm_results => \@germplasm_results,
+            plots_avg_data_header => \@plots_avg_data_header,
+            plots_avg_data => \@plots_avg_data,
+            plots_avg_results => \@plots_avg_results,
+            plots_avg_corrected_data_header => \@plots_avg_corrected_data_header,
+            plots_avg_corrected_data => \@plots_avg_corrected_data,
+            plots_avg_corrected_results => \@plots_avg_corrected_results,
+            germplasm_geno_corr_plot => $analytics_protocol_tempfile_string_1,
+            plots_spatial_corr_plot => $analytics_protocol_tempfile_string_2
         }
     }
 
@@ -508,7 +966,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my @plots_avg_corrected_data_values_header = ();
 
     if (scalar(@result_blups_all) > 1) {
-        my $dir = $c->tempfiles_subdir('/analytics_protocol_figure');
         my $analytics_protocol_tempfile_string = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
         $analytics_protocol_tempfile_string .= '.png';
         my $analytics_protocol_figure_tempfile = $c->config->{basepath}."/".$analytics_protocol_tempfile_string;
