@@ -4647,7 +4647,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'latest_trait') {
                             my $max_day = 0;
-                            foreach (keys %seen_days_after_plantings) {
+                            foreach (keys %seen_days_after_plantings_2) {
                                 if ($_ + 0 > $max_day) {
                                     $max_day = $_;
                                 }
@@ -6938,7 +6938,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'latest_trait') {
                             my $max_day = 0;
-                            foreach (keys %seen_days_after_plantings) {
+                            foreach (keys %seen_days_after_plantings_2) {
                                 if ($_ + 0 > $max_day) {
                                     $max_day = $_;
                                 }
@@ -7034,9 +7034,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             return;
                         }
 
-                        open(my $htp_rel_res, '<', $stats_out_htp_rel_tempfile)
-                            or die "Could not open file '$stats_out_htp_rel_tempfile' $!";
-
+                        open(my $htp_rel_res, '<', $stats_out_htp_rel_tempfile) or die "Could not open file '$stats_out_htp_rel_tempfile' $!";
                             print STDERR "Opened $stats_out_htp_rel_tempfile\n";
                             my $header_row = <$htp_rel_res>;
                             my @header;
@@ -9327,7 +9325,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'latest_trait') {
                             my $max_day = 0;
-                            foreach (keys %seen_days_after_plantings) {
+                            foreach (keys %seen_days_after_plantings_5) {
                                 if ($_ + 0 > $max_day) {
                                     $max_day = $_;
                                 }
@@ -11719,7 +11717,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         }
                         elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'latest_trait') {
                             my $max_day = 0;
-                            foreach (keys %seen_days_after_plantings) {
+                            foreach (keys %seen_days_after_plantings_6) {
                                 if ($_ + 0 > $max_day) {
                                     $max_day = $_;
                                 }
