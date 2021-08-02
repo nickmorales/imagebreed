@@ -275,6 +275,7 @@ sub get_phenotype_matrix {
                 } else {
                     $obsunit_data{$obsunit_id}->{$cvterm} = $value;
                 }
+                $obsunit_data{$obsunit_id}->{'notes'} = $d->{notes};
 
                 my $synonyms = $d->{synonyms};
                 my $synonym_string = $synonyms ? join ("," , @$synonyms) : '';
@@ -330,6 +331,7 @@ sub get_phenotype_matrix {
         foreach my $trait (@sorted_traits) {
             push @line, $trait;
         }
+        push @line, 'notes';
         push @info, \@line;
 
         foreach my $p (@unique_obsunit_list) {
@@ -338,6 +340,7 @@ sub get_phenotype_matrix {
             foreach my $trait (@sorted_traits) {
                 push @line, $obsunit_data{$p}->{$trait};
             }
+            push @line,  $obsunit_data{$p}->{'notes'};
             push @info, \@line;
         }
     }
