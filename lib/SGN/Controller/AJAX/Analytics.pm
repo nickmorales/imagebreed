@@ -13,6 +13,7 @@ use Statistics::Descriptive::Full;
 use Scalar::Util qw(looks_like_number);
 use CXGN::Pedigree::ARM;
 use CXGN::Genotype::GRM;
+use File::Temp 'tempfile';
 
 BEGIN { extends 'Catalyst::Controller::REST' };
 
@@ -441,6 +442,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $grm_file;
     # Prepare GRM for Trait Spatial Correction
     eval {
+        print STDERR Dumper [$compute_relationship_matrix_from_htp_phenotypes, $include_pedgiree_info_if_compute_from_parents, $use_parental_grms_if_compute_from_parents, $compute_from_parents];
         if ($compute_relationship_matrix_from_htp_phenotypes eq 'genotypes') {
 
             if ($include_pedgiree_info_if_compute_from_parents) {
@@ -1199,9 +1201,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
     # Prepare phenotype file for Trait Spatial Correction
     my $stats_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
-    my $stats_out_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".tsv";
-    my $stats_out_tempfile_2dspl = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".tsv";
-    my $stats_out_tempfile_residual = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".tsv";
+    my $stats_out_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+    my $stats_out_tempfile_2dspl = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+    my $stats_out_tempfile_residual = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     eval {
         my @data_matrix_original;
         foreach my $p (@seen_plots) {
@@ -1253,18 +1255,19 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     mat\$colNumber <- as.numeric(mat\$colNumber);
     mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
     mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-    mix <- mmer('.$trait_name_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+    mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
     if (!is.null(mix\$U)) {
     #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-    write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-    write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+    write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+    write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
     X <- with(mat, spl2D(rowNumber, colNumber));
     spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
     blups1 <- mix\$U\$\`u:rowNumber\`\$'.$trait_name_encoded_string.';
     spatial_blup_results\$'.$trait_name_encoded_string.' <- data.matrix(X) %*% data.matrix(blups1);
-    write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+    write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
     }
     "';
+    print STDERR Dumper $spatial_correct_2dspl_cmd;
     my $spatial_correct_2dspl_status = system($spatial_correct_2dspl_cmd);
 
     my $result_blup_data_s;
@@ -1358,6 +1361,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     close($fh_2dspl);
 
     my $result_residual_data_s;
+    my $result_fitted_data_s;
     my $residual_sum_s = 0;
     my $residual_sum_square_s = 0;
     my $model_sum_square_residual_s = 0;
@@ -1374,7 +1378,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 @columns = $csv->fields();
             }
 
-            my $trait_name = $trait_name_encoder_rev_s{$t};
+            my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
             my $stock_id = $columns[0];
             my $residual = $columns[1];
             my $fitted = $columns[2];
@@ -1587,11 +1591,11 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
 
         foreach my $t (@sorted_trait_names) {
-            push @germplasm_data_header, ($t."mean", $t."sd");
-            push @germplasm_data_values_header, $t."mean";
+            push @germplasm_data_header, ($t."mean", $t."sd", $t."gsc");
+            push @germplasm_data_values_header, ($t."mean", $t."gsc");
 
-            push @plots_avg_data_header, $t;
-            push @plots_avg_data_values_header, $t;
+            push @plots_avg_data_header, ($t, $t."sce");
+            push @plots_avg_data_values_header, ($t, $t."sce");
         }
 
         if ($result_type eq 'originalgenoeff') {
@@ -1616,8 +1620,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             push @plots_avg_corrected_data_values_header, "smean";
 
             foreach my $t (@sorted_trait_names) {
-                push @plots_avg_corrected_data_header, $t."csmean";
-                push @plots_avg_corrected_data_values_header, $t."csmean";
+                push @plots_avg_corrected_data_header, ($t."sce", $t."csmean");
+                push @plots_avg_corrected_data_values_header, ($t."sce", $t."csmean");
 
                 foreach my $time (@sorted_seen_times_p) {
                     push @plots_avg_corrected_data_header, "c$time";
@@ -1636,8 +1640,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 $trait_pheno_stat->add_data(@$trait_phenos);
                 my $sd = $trait_pheno_stat->standard_deviation();
                 my $mean = $trait_pheno_stat->mean();
-                push @line, ($mean, $sd);
-                push @values, $mean;
+
+                my $geno_trait_spatial_val = $result_blup_data_s->{$g}->{$t};
+                push @line, ($mean, $sd, $geno_trait_spatial_val);
+                push @values, ($mean, $geno_trait_spatial_val);
 
                 foreach my $time (@sorted_seen_times_g) {
                     my $val = $germplasm_result_time_blups{$g}->{$time};
@@ -1674,8 +1680,12 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             foreach my $t (@sorted_trait_names) {
                 my $val = $plot_phenotypes{$p}->{$t};
-                push @line, $val;
-                push @values, $val;
+                my $env_trait_spatial_val = $result_blup_spatial_data_s->{$p}->{$t};
+
+                push @line, ($val, $env_trait_spatial_val);
+                push @values, ($val, $env_trait_spatial_val);
+                push @line_corrected, $env_trait_spatial_val;
+                push @values_corrected, $env_trait_spatial_val;
 
                 foreach my $time (@sorted_seen_times_p) {
                     my $sval = $plot_result_time_blups{$p}->{$time};
@@ -1971,11 +1981,14 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $analytics_protocol_data_tempfile9 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
         foreach my $t (@sorted_trait_names) {
-            push @germplasm_data_header, ($t."mean", $t."sd");
-            push @germplasm_data_values_header, $t."mean";
+            push @germplasm_data_header, ($t."mean", $t."sd", $t."gsc");
+            push @germplasm_data_values_header, ($t."mean", $t."gsc");
 
             push @plots_avg_data_header, $t;
             push @plots_avg_data_values_header, $t;
+
+            push @plots_avg_corrected_data_header, $t;
+            push @plots_avg_corrected_data_values_header, $t;
         }
         my $result_gblup_iter = 1;
         my $result_sblup_iter = 1;
@@ -1993,8 +2006,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 push @plots_avg_corrected_data_values_header, "smean$result_sblup_iter";
 
                 foreach my $t (@sorted_trait_names) {
-                    push @plots_avg_corrected_data_header, $t."csmean$result_sblup_iter";
-                    push @plots_avg_corrected_data_values_header, $t."csmean$result_sblup_iter";
+                    push @plots_avg_corrected_data_header, ($t."sce$result_sblup_iter", $t."csmean$result_sblup_iter");
+                    push @plots_avg_corrected_data_values_header, ($t."sce$result_sblup_iter", $t."csmean$result_sblup_iter");
                 }
 
                 $result_sblup_iter++;
@@ -2011,8 +2024,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 $trait_pheno_stat->add_data(@$trait_phenos);
                 my $sd = $trait_pheno_stat->standard_deviation();
                 my $mean = $trait_pheno_stat->mean();
-                push @line, ($mean, $sd);
-                push @values, $mean;
+
+                my $geno_trait_spatial_val = $result_blup_data_s->{$g}->{$t};
+                push @line, ($mean, $sd, $geno_trait_spatial_val);
+                push @values, ($mean, $geno_trait_spatial_val);
             }
 
             foreach my $r (@result_blups_all) {
@@ -2044,6 +2059,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 my $val = $plot_phenotypes{$p}->{$t};
                 push @line, $val;
                 push @values, $val;
+
+                push @line_corrected, $val;
+                push @values_corrected, $val;
             }
 
             foreach my $r (@result_blups_all) {
@@ -2064,8 +2082,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
                     foreach my $t (@sorted_trait_names) {
                         my $val = $plot_phenotypes{$p}->{$t} - $plot_mean;
-                        push @line_corrected, $val;
-                        push @values_corrected, $val;
+                        my $env_trait_spatial_val = $result_blup_spatial_data_s->{$p}->{$t};
+                        push @line_corrected, ($env_trait_spatial_val, $val);
+                        push @values_corrected, ($env_trait_spatial_val, $val);
                     }
                 }
             }
