@@ -107,6 +107,7 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
     my %seen_times;
     my %trait_to_time_map;
     my %phenotype_data;
+    my %phenotype_data_trait;
     my %stock_name_row_col;
     my $max_row = 0;
     my $max_col = 0;
@@ -116,6 +117,8 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
     my %seen_cols;
     my %stock_row_col_id;
     my %stock_row_col_data;
+    my $pheno_min_val = 10000000000;
+    my $pheno_max_val = -10000000000;
     foreach my $obs_unit (@$data){
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
@@ -174,8 +177,16 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
                 my $value = $_->{value};
                 my $trait_name = $_->{trait_name};
                 $phenotype_data{$obsunit_stock_uniquename}->{$time} = $value;
+                $phenotype_data_trait{$obsunit_stock_uniquename}->{$trait_name} = $value;
                 $seen_times{$time} = $trait_name;
                 $trait_to_time_map{$trait_name} = $time;
+
+                if ($value < $pheno_min_val) {
+                    $pheno_min_val = $value;
+                }
+                if ($value > $pheno_max_val) {
+                    $pheno_max_val = $value;
+                }
             }
         }
     }
@@ -211,6 +222,7 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
     my $col_ro_env = 1 - $row_ro_env;
     my $var_e = 0.2;
 
+    my $dir = $c->tempfiles_subdir('/tmp_drone_statistics');
     my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
     my $tmp_stats_dir = $shared_cluster_dir_config."/tmp_drone_statistics";
     mkdir $tmp_stats_dir if ! -d $tmp_stats_dir;
@@ -222,6 +234,18 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
     my ($sim_env_changing_mat_tempfile_fh, $sim_env_changing_mat_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($sim_env_changing_mat_full_tempfile_fh, $sim_env_changing_mat_full_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
 
+    my $env_effects_first_figure_tempfile_string = $c->tempfile( TEMPLATE => 'tmp_drone_statistics/figureXXXX');
+    $env_effects_first_figure_tempfile_string .= '.png';
+    my $env_effects_first_figure_tempfile = $c->config->{basepath}."/".$env_effects_first_figure_tempfile_string;
+
+    my ($phenotypes_original_heatmap_tempfile_fh, $phenotypes_original_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($sim_linear_heatmap_tempfile_fh, $sim_linear_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($sim_1dn_heatmap_tempfile_fh, $sim_1dn_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($sim_2dn_heatmap_tempfile_fh, $sim_2dn_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($sim_random_heatmap_tempfile_fh, $sim_random_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($sim_ar1_heatmap_tempfile_fh, $sim_ar1_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($sim_rd_heatmap_tempfile_fh, $sim_rd_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
     if ($sims eq '6sims') { #Linear, 1D Normal, 2D Normal, AR1xAR1, Random, Real Data
 
         my %sim_data_check_1_times;
@@ -229,12 +253,21 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
         my @sim_data_env_first;
         my $a_env_adjustment = 0;
         my $b_env_adjustment = 0;
+        my $min_sim_1 = 10000000000;
+        my $max_sim_1 = -10000000000;
         foreach my $t (@sorted_trait_names) {
             foreach my $p (@plot_names_sorted) {
                 my $row_number = $stock_name_row_col{$p}->{row_number};
                 my $col_number = $stock_name_row_col{$p}->{col_number};
                 my $sim_val = eval $env_sim_exec->{'linear_gradient'};
                 $sim_data_check_1_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                if ($sim_val < $min_sim_1) {
+                    $min_sim_1 = $sim_val;
+                }
+                if ($sim_val > $max_sim_1) {
+                    $max_sim_1 = $sim_val;
+                }
 
                 if ($time_count == 0) {
                     push @sim_data_env_first, $sim_val;
@@ -288,6 +321,13 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
                         my $t = $sorted_trait_names[$sim_change_trait_counter];
                         $sim_data_check_1_times{$t}->{$row_number}->{$col_number} = $sim_val;
 
+                        if ($sim_val < $min_sim_1) {
+                            $min_sim_1 = $sim_val;
+                        }
+                        if ($sim_val > $max_sim_1) {
+                            $max_sim_1 = $sim_val;
+                        }
+
                         $sim_change_trait_counter++;
                     }
                     $sim_change_line_counter++;
@@ -300,12 +340,21 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
         $time_count = 0;
         @sim_data_env_first = ();
         my $row_number_adjustment = 0;
+        my $min_sim_2 = 10000000000;
+        my $max_sim_2 = -10000000000;
         foreach my $t (@sorted_trait_names) {
             foreach my $p (@plot_names_sorted) {
                 my $row_number = $stock_name_row_col{$p}->{row_number};
                 my $col_number = $stock_name_row_col{$p}->{col_number};
                 my $sim_val = eval $env_sim_exec->{'random_1d_normal_gradient'};
                 $sim_data_check_2_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                if ($sim_val < $min_sim_2) {
+                    $min_sim_2 = $sim_val;
+                }
+                if ($sim_val > $max_sim_2) {
+                    $max_sim_2 = $sim_val;
+                }
 
                 if ($time_count == 0) {
                     push @sim_data_env_first, $sim_val;
@@ -360,6 +409,13 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
                         my $t = $sorted_trait_names[$sim_change_trait_counter];
                         $sim_data_check_2_times{$t}->{$row_number}->{$col_number} = $sim_val;
 
+                        if ($sim_val < $min_sim_2) {
+                            $min_sim_2 = $sim_val;
+                        }
+                        if ($sim_val > $max_sim_2) {
+                            $max_sim_2 = $sim_val;
+                        }
+
                         $sim_change_trait_counter++;
                     }
                     $sim_change_line_counter++;
@@ -372,12 +428,21 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
         $time_count = 0;
         @sim_data_env_first = ();
         my $col_number_adjustment = 0;
+        my $min_sim_3 = 10000000000;
+        my $max_sim_3 = -10000000000;
         foreach my $t (@sorted_trait_names) {
             foreach my $p (@plot_names_sorted) {
                 my $row_number = $stock_name_row_col{$p}->{row_number};
                 my $col_number = $stock_name_row_col{$p}->{col_number};
                 my $sim_val = eval $env_sim_exec->{'random_2d_normal_gradient'};
                 $sim_data_check_3_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                if ($sim_val < $min_sim_3) {
+                    $min_sim_3 = $sim_val;
+                }
+                if ($sim_val > $max_sim_3) {
+                    $max_sim_3 = $sim_val;
+                }
 
                 if ($time_count == 0) {
                     push @sim_data_env_first, $sim_val;
@@ -432,6 +497,13 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
                         my $t = $sorted_trait_names[$sim_change_trait_counter];
                         $sim_data_check_3_times{$t}->{$row_number}->{$col_number} = $sim_val;
 
+                        if ($sim_val < $min_sim_3) {
+                            $min_sim_3 = $sim_val;
+                        }
+                        if ($sim_val > $max_sim_3) {
+                            $max_sim_3 = $sim_val;
+                        }
+
                         $sim_change_trait_counter++;
                     }
                     $sim_change_line_counter++;
@@ -443,11 +515,20 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
         my %sim_data_check_4_times;
         my %sim_data_check_4_first;
         @sim_data_env_first = ();
+        my $min_sim_4 = 10000000000;
+        my $max_sim_4 = -10000000000;
         foreach my $p (@plot_names_sorted) {
             my $row_number = $stock_name_row_col{$p}->{row_number};
             my $col_number = $stock_name_row_col{$p}->{col_number};
             my $sim_val = eval $env_sim_exec->{'random'};
             $sim_data_check_4_first{$row_number}->{$col_number} = $sim_val;
+
+            if ($sim_val < $min_sim_4) {
+                $min_sim_4 = $sim_val;
+            }
+            if ($sim_val > $max_sim_4) {
+                $max_sim_4 = $sim_val;
+            }
 
             push @sim_data_env_first, $sim_val;
         }
@@ -498,6 +579,13 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
                         my $t = $sorted_trait_names[$sim_change_trait_counter];
                         $sim_data_check_4_times{$t}->{$row_number}->{$col_number} = $sim_val;
 
+                        if ($sim_val < $min_sim_4) {
+                            $min_sim_4 = $sim_val;
+                        }
+                        if ($sim_val > $max_sim_4) {
+                            $max_sim_4 = $sim_val;
+                        }
+
                         $sim_change_trait_counter++;
                     }
                     $sim_change_line_counter++;
@@ -513,6 +601,8 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
 
         my %sim_data_check_5_times;
         my @stock_row_col_id_ordered;
+        my $min_sim_5 = 10000000000;
+        my $max_sim_5 = -10000000000;
         foreach my $r ($min_row..$max_row) {
             foreach my $c ($min_col..$max_col) {
                 push @stock_row_col_id_ordered, $stock_row_col_id{$r}->{$c};
@@ -573,6 +663,13 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
                 my $t = $sorted_trait_names[$current_trait_index];
                 $sim_data_check_5_times{$t}->{$current_row_num}->{$current_col_num} = $sim_val;
 
+                if ($sim_val < $min_sim_5) {
+                    $min_sim_5 = $sim_val;
+                }
+                if ($sim_val > $max_sim_5) {
+                    $max_sim_5 = $sim_val;
+                }
+
                 if ($current_row_num < $max_row) {
                     $current_row_num++;
                 }
@@ -615,6 +712,8 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
 
         $time_count = 0;
         @sim_data_env_first = ();
+        my $min_sim_6 = 10000000000;
+        my $max_sim_6 = -10000000000;
         foreach my $t (@sorted_trait_names) {
             foreach my $obs_unit (@$data_phenotypes_search_selected_env){
                 my $row_number = $obs_unit->{obsunit_row_number} || '';
@@ -623,8 +722,14 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
                 my $observations = $obs_unit->{observations};
                 foreach (@$observations){
                     my $sim_val = $_->{value};
-
                     $sim_data_check_6_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                    if ($sim_val < $min_sim_6) {
+                        $min_sim_6 = $sim_val;
+                    }
+                    if ($sim_val > $max_sim_6) {
+                        $max_sim_6 = $sim_val;
+                    }
 
                     if ($time_count == 0) {
                         push @sim_data_env_first, $sim_val;
@@ -680,6 +785,13 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
                         my $t = $sorted_trait_names[$sim_change_trait_counter];
                         $sim_data_check_6_times{$t}->{$row_number}->{$col_number} = $sim_val;
 
+                        if ($sim_val < $min_sim_6) {
+                            $min_sim_6 = $sim_val;
+                        }
+                        if ($sim_val > $max_sim_6) {
+                            $max_sim_6 = $sim_val;
+                        }
+
                         $sim_change_trait_counter++;
                     }
                     $sim_change_line_counter++;
@@ -687,9 +799,172 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
             close($sim_change_res);
         }
         # print STDERR Dumper \%sim_data_check_6_times;
+
+        my $trait_name_encoded = 1;
+        my %trait_name_encoder;
+        my %trait_name_encoder_rev;
+        foreach my $trait_name (@sorted_trait_names) {
+            if (!exists($trait_name_encoder{$trait_name})) {
+                my $trait_name_e = 't'.$trait_name_encoded;
+                $trait_name_encoder{$trait_name} = $trait_name_e;
+                $trait_name_encoder_rev{$trait_name_e} = $trait_name;
+                $trait_name_encoded++;
+            }
+        }
+
+        open(my $F_pheno, ">", $phenotypes_original_heatmap_tempfile) || die "Can't open file ".$phenotypes_original_heatmap_tempfile;
+            print $F_pheno "trait_type,row,col,value\n";
+            foreach my $p (@plot_names_sorted) {
+                my $row_number = $stock_name_row_col{$p}->{row_number};
+                my $col_number = $stock_name_row_col{$p}->{col_number};
+                foreach my $t (@sorted_trait_names) {
+                    my $val = $phenotype_data_trait{$p}->{$t};
+                    my $val_scaled = ($val - $pheno_min_val)/($pheno_max_val - $pheno_min_val);
+                    my @row = ("Original_".$trait_name_encoder{$t}, $row_number, $col_number, $val_scaled);
+                    my $line = join ',', @row;
+                    print $F_pheno "$line\n";
+                }
+            }
+        close($F_pheno);
+
+        open($F_pheno, ">", $sim_linear_heatmap_tempfile) || die "Can't open file ".$sim_linear_heatmap_tempfile;
+            print $F_pheno "trait_type,row,col,value\n";
+            foreach my $p (@plot_names_sorted) {
+                my $row_number = $stock_name_row_col{$p}->{row_number};
+                my $col_number = $stock_name_row_col{$p}->{col_number};
+                foreach my $t (@sorted_trait_names) {
+                    my $val = $sim_data_check_1_times{$t}->{$row_number}->{$col_number};
+                    my $val_scaled = ($val - $min_sim_1)/($max_sim_1 - $min_sim_1);
+                    my @row = ("Linear_".$trait_name_encoder{$t}, $row_number, $col_number, $val_scaled);
+                    my $line = join ',', @row;
+                    print $F_pheno "$line\n";
+                }
+            }
+        close($F_pheno);
+
+        open($F_pheno, ">", $sim_1dn_heatmap_tempfile) || die "Can't open file ".$sim_1dn_heatmap_tempfile;
+            print $F_pheno "trait_type,row,col,value\n";
+            foreach my $p (@plot_names_sorted) {
+                my $row_number = $stock_name_row_col{$p}->{row_number};
+                my $col_number = $stock_name_row_col{$p}->{col_number};
+                foreach my $t (@sorted_trait_names) {
+                    my $val = $sim_data_check_2_times{$t}->{$row_number}->{$col_number};
+                    my $val_scaled = ($val - $min_sim_2)/($max_sim_2 - $min_sim_2);
+                    my @row = ("1DN_".$trait_name_encoder{$t}, $row_number, $col_number, $val_scaled);
+                    my $line = join ',', @row;
+                    print $F_pheno "$line\n";
+                }
+            }
+        close($F_pheno);
+
+        open($F_pheno, ">", $sim_2dn_heatmap_tempfile) || die "Can't open file ".$sim_2dn_heatmap_tempfile;
+            print $F_pheno "trait_type,row,col,value\n";
+            foreach my $p (@plot_names_sorted) {
+                my $row_number = $stock_name_row_col{$p}->{row_number};
+                my $col_number = $stock_name_row_col{$p}->{col_number};
+                foreach my $t (@sorted_trait_names) {
+                    my $val = $sim_data_check_3_times{$t}->{$row_number}->{$col_number};
+                    my $val_scaled = ($val - $min_sim_3)/($max_sim_3 - $min_sim_3);
+                    my @row = ("2DN_".$trait_name_encoder{$t}, $row_number, $col_number, $val_scaled);
+                    my $line = join ',', @row;
+                    print $F_pheno "$line\n";
+                }
+            }
+        close($F_pheno);
+
+        open($F_pheno, ">", $sim_random_heatmap_tempfile) || die "Can't open file ".$sim_random_heatmap_tempfile;
+            print $F_pheno "trait_type,row,col,value\n";
+            foreach my $p (@plot_names_sorted) {
+                my $row_number = $stock_name_row_col{$p}->{row_number};
+                my $col_number = $stock_name_row_col{$p}->{col_number};
+                foreach my $t (@sorted_trait_names) {
+                    my $val = $sim_data_check_4_times{$t}->{$row_number}->{$col_number};
+                    my $val_scaled = ($val - $min_sim_4)/($max_sim_4 - $min_sim_4);
+                    my @row = ("Random_".$trait_name_encoder{$t}, $row_number, $col_number, $val_scaled);
+                    my $line = join ',', @row;
+                    print $F_pheno "$line\n";
+                }
+            }
+        close($F_pheno);
+
+        open($F_pheno, ">", $sim_ar1_heatmap_tempfile) || die "Can't open file ".$sim_ar1_heatmap_tempfile;
+            print $F_pheno "trait_type,row,col,value\n";
+            foreach my $p (@plot_names_sorted) {
+                my $row_number = $stock_name_row_col{$p}->{row_number};
+                my $col_number = $stock_name_row_col{$p}->{col_number};
+                foreach my $t (@sorted_trait_names) {
+                    my $val = $sim_data_check_5_times{$t}->{$row_number}->{$col_number};
+                    my $val_scaled = ($val - $min_sim_5)/($max_sim_5 - $min_sim_5);
+                    my @row = ("AR1xAR1_".$trait_name_encoder{$t}, $row_number, $col_number, $val_scaled);
+                    my $line = join ',', @row;
+                    print $F_pheno "$line\n";
+                }
+            }
+        close($F_pheno);
+
+        open($F_pheno, ">", $sim_rd_heatmap_tempfile) || die "Can't open file ".$sim_rd_heatmap_tempfile;
+            print $F_pheno "trait_type,row,col,value\n";
+            foreach my $p (@plot_names_sorted) {
+                my $row_number = $stock_name_row_col{$p}->{row_number};
+                my $col_number = $stock_name_row_col{$p}->{col_number};
+                foreach my $t (@sorted_trait_names) {
+                    my $val = $sim_data_check_6_times{$t}->{$row_number}->{$col_number};
+                    my $val_scaled = ($val - $min_sim_6)/($max_sim_6 - $min_sim_6);
+                    my @row = ("RD_".$trait_name_encoder{$t}, $row_number, $col_number, $val_scaled);
+                    my $line = join ',', @row;
+                    print $F_pheno "$line\n";
+                }
+            }
+        close($F_pheno);
+
+        my $output_plot_row = 'row';
+        my $output_plot_col = 'col';
+        if ($max_col > $max_row) {
+            $output_plot_row = 'col';
+            $output_plot_col = 'row';
+        }
+
+        my @types = ("Original_", "Linear_", "1DN_", "2DN_", "AR1xAR1_", "RD_", "Random_");
+        my @type_list;
+        foreach my $type (@types) {
+            foreach my $t (@sorted_trait_names) {
+                push @type_list, $type.$trait_name_encoder{$t};
+            }
+        }
+        my $type_list_string = join '\',\'', @type_list;
+
+        my $cmd_spatialfirst_plot = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
+        mat_orig <- fread(\''.$phenotypes_original_heatmap_tempfile.'\', header=TRUE, sep=\',\');
+        mat_sim_1 <- fread(\''.$sim_linear_heatmap_tempfile.'\', header=TRUE, sep=\',\');
+        mat_sim_2 <- fread(\''.$sim_1dn_heatmap_tempfile.'\', header=TRUE, sep=\',\');
+        mat_sim_3 <- fread(\''.$sim_2dn_heatmap_tempfile.'\', header=TRUE, sep=\',\');
+        mat_sim_4 <- fread(\''.$sim_random_heatmap_tempfile.'\', header=TRUE, sep=\',\');
+        mat_sim_5 <- fread(\''.$sim_ar1_heatmap_tempfile.'\', header=TRUE, sep=\',\');
+        mat_sim_6 <- fread(\''.$sim_rd_heatmap_tempfile.'\', header=TRUE, sep=\',\');
+        pheno_mat <- rbind(mat_orig, mat_sim_1, mat_sim_2, mat_sim_3, mat_sim_4, mat_sim_5, mat_sim_6);
+        pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_string.'\'));
+        options(device=\'png\');
+        par();
+        gg <- ggplot(pheno_mat, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) +
+            geom_tile() +
+            scale_fill_viridis(discrete=FALSE) +
+            coord_equal() +
+            facet_wrap(~trait_type, ncol='.$number_traits.');
+        ggsave(\''.$env_effects_first_figure_tempfile.'\', gg, device=\'png\', width=20, height=20, units=\'in\');
+        "';
+        print STDERR Dumper $cmd_spatialfirst_plot;
+        my $status_spatialfirst_plot = system($cmd_spatialfirst_plot);
     }
 
     $c->stash->{rest} = {
+        plot => $env_effects_first_figure_tempfile_string,
+        pheno_orig_file => $phenotypes_original_heatmap_tempfile,
+        sim_linear_file => $sim_linear_heatmap_tempfile,
+        sim_1dn_file => $sim_1dn_heatmap_tempfile,
+        sim_2dn_file => $sim_2dn_heatmap_tempfile,
+        sim_random_file => $sim_random_heatmap_tempfile,
+        sim_ar1_file => $sim_ar1_heatmap_tempfile,
+        sim_rd_file => $sim_rd_heatmap_tempfile
     };
 }
 

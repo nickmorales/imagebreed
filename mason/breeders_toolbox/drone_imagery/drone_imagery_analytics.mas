@@ -441,6 +441,26 @@
   </div>
 </div>
 
+<div class="modal fade" id="drone_imagery_analytics_temp_results_dialog" name="drone_imagery_analytics_temp_results_dialog" tabindex="-1" role="dialog" aria-labelledby="droneImageryAnalyticsTempResultsDialog" data-backdrop="static">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="droneImageryAnalyticsTempResultsDialog">Results</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <div id="drone_imagery_analytics_temp_results_dialog_div">
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 jQuery(document).ready(function() {
     jQuery('#drone_imagery_analytics_link').click(function(){
@@ -552,7 +572,9 @@ jQuery(document).ready(function() {
                     alert(response.error);
                 }
                 else {
-
+                    var html = '<img src="'+response.plot+'">';
+                    jQuery('#drone_imagery_analytics_temp_results_dialog_div').html(html);
+                    jQuery('#drone_imagery_analytics_temp_results_dialog').modal('show');
                 }
             },
             error: function(response){
