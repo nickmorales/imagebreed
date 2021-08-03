@@ -68,6 +68,282 @@ __PACKAGE__->config(
     map       => { 'application/json' => 'JSON', 'text/html' => 'JSON'  },
 );
 
+sub drone_imagery_show_example_simulations : Path('/api/drone_imagery/show_example_simulations') : ActionClass('REST') { }
+sub drone_imagery_show_example_simulations_GET : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    print STDERR Dumper $c->req->params();
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $people_schema = $c->dbic_schema("CXGN::People::Schema");
+    my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
+    my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my $sims = $c->req->param('simulations');
+    my $sim_env_change_over_time = $c->req->param('change_over_time');
+    my $correlation_over_time = $c->req->param('correlation_over_time');
+    my $trait_id = $c->req->param('real_data_trait_id');
+    my $field_trial_id = $c->req->param('field_trial_id');
+    my $trait_id_list = decode_json $c->req->param('trait_ids');
+
+    my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
+        'MaterializedViewTable',
+        {
+            bcs_schema=>$schema,
+            data_level=>'plot',
+            trait_list=>$trait_id_list,
+            trial_list=>[$field_trial_id],
+            include_timestamp=>0,
+            exclude_phenotype_outlier=>0
+        }
+    );
+    my ($data, $unique_traits) = $phenotypes_search->search();
+    my @sorted_trait_names = sort keys %$unique_traits;
+
+    if (scalar(@$data) == 0) {
+        $c->stash->{rest} = { error => "There are no phenotypes for the trials and traits you have selected!"};
+        return;
+    }
+
+    my %seen_times;
+    my %trait_to_time_map;
+    my %phenotype_data;
+    my %stock_name_row_col;
+    my $max_row = 0;
+    my $max_col = 0;
+    my $min_row = 10000000;
+    my $min_col = 10000000;
+    my %seen_rows;
+    my %seen_cols;
+    my %stock_row_col_id;
+    foreach my $obs_unit (@$data){
+        my $germplasm_name = $obs_unit->{germplasm_uniquename};
+        my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
+        my $replicate_number = $obs_unit->{obsunit_rep} || '';
+        my $block_number = $obs_unit->{obsunit_block} || '';
+        my $obsunit_stock_id = $obs_unit->{observationunit_stock_id};
+        my $obsunit_stock_uniquename = $obs_unit->{observationunit_uniquename};
+        my $row_number = $obs_unit->{obsunit_row_number} || '';
+        my $col_number = $obs_unit->{obsunit_col_number} || '';
+        $stock_name_row_col{$obsunit_stock_uniquename} = {
+            row_number => $row_number,
+            col_number => $col_number,
+            obsunit_stock_id => $obsunit_stock_id,
+            obsunit_name => $obsunit_stock_uniquename,
+            rep => $replicate_number,
+            block => $block_number,
+            germplasm_stock_id => $germplasm_stock_id,
+            germplasm_name => $germplasm_name
+        };
+
+        if ($row_number > $max_row) {
+            $max_row = $row_number;
+        }
+        if ($col_number > $max_col) {
+            $max_col = $col_number;
+        }
+        if ($row_number < $min_row) {
+            $min_row = $row_number;
+        }
+        if ($col_number < $min_col) {
+            $min_col = $col_number;
+        }
+        $seen_rows{$row_number}++;
+        $seen_cols{$col_number}++;
+        $stock_row_col_id{$row_number}->{$col_number} = $obsunit_stock_id;
+
+        my $observations = $obs_unit->{observations};
+        foreach (@$observations){
+            if ($_->{associated_image_project_time_json}) {
+                my $related_time_terms_json = decode_json $_->{associated_image_project_time_json};
+                my $time_days_cvterm = $related_time_terms_json->{day};
+                my $time_term_string = $time_days_cvterm;
+                my $time_days = (split '\|', $time_days_cvterm)[0];
+                my $time = (split ' ', $time_days)[1] + 0;
+
+                my $value = $_->{value};
+                my $trait_name = $_->{trait_name};
+                $phenotype_data{$obsunit_stock_uniquename}->{$time} = $value;
+                $seen_times{$time} = $trait_name;
+                $trait_to_time_map{$trait_name} = $time;
+            }
+        }
+    }
+    my @seen_times_sorted = sort keys %seen_times;
+    my @plot_names_sorted = sort keys %phenotype_data;
+    my @seen_row_numbers = sort keys %seen_rows;
+    my @seen_col_numbers = sort keys %seen_cols;
+
+    my $row_stat = Statistics::Descriptive::Full->new();
+    $row_stat->add_data(@seen_row_numbers);
+    my $mean_row = $row_stat->mean();
+    my $sig_row = $row_stat->variance();
+    my $col_stat = Statistics::Descriptive::Full->new();
+    $col_stat->add_data(@seen_col_numbers);
+    my $mean_col = $col_stat->mean();
+    my $sig_col = $col_stat->variance();
+
+    my $env_sim_exec = {
+        "linear_gradient" => '( ($a_env-$a_env_adjustment)*$row_number/$max_row + ($b_env-$b_env_adjustment)*$col_number/$max_col )',
+        "random_1d_normal_gradient" => '( (1/(2*3.14159)) * exp(-1*(( ($row_number-$row_number_adjustment) /$max_row)**2)/2) )',
+        "random_2d_normal_gradient" => '( exp( (-1/(2*(1-$ro_env**2))) * ( ( (( ($row_number-$row_number_adjustment) - $mean_row)/$max_row)**2)/($sig_row**2) + ( (( ($col_number-$col_number_adjustment) - $mean_col)/$max_col)**2)/($sig_col**2) - ((2*$ro_env)*(( ($row_number-$row_number_adjustment) - $mean_row)/$max_row)*(( ($col_number-$col_number_adjustment) - $mean_col)/$max_col) )/($sig_row*$sig_col) ) ) / (2*3.14159*$sig_row*$sig_col*sqrt(1-$ro_env**2)) )',
+        "random" => 'rand(1)'
+    };
+
+    my $a_env = rand(1);
+    my $b_env = rand(1);
+    my $ro_env = rand(1);
+    my $row_ro_env = rand(1);
+    my $col_ro_env = 1 - $row_ro_env;
+    my $var_e = 0.2;
+
+    my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
+    my $tmp_stats_dir = $shared_cluster_dir_config."/tmp_drone_statistics";
+    mkdir $tmp_stats_dir if ! -d $tmp_stats_dir;
+
+    my ($permanent_environment_structure_tempfile_fh, $permanent_environment_structure_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($permanent_environment_structure_env_tempfile_fh, $permanent_environment_structure_env_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($permanent_environment_structure_env_tempfile2_fh, $permanent_environment_structure_env_tempfile2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($permanent_environment_structure_env_tempfile_mat_fh, $permanent_environment_structure_env_tempfile_mat) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
+    if ($sims eq '6sims') { #Linear, 1D Normal, 2D Normal, AR1xAR1, Random, Real Data
+
+        my %sim_data_check_1_times;
+        my $a_env_adjustment = 0;
+        my $b_env_adjustment = 0;
+        foreach my $t (@sorted_trait_names) {
+            foreach my $p (@plot_names_sorted) {
+                my $row_number = $stock_name_row_col{$p}->{row_number};
+                my $col_number = $stock_name_row_col{$p}->{col_number};
+                my $sim_val = eval $env_sim_exec->{'linear_gradient'};
+                $sim_data_check_1_times{$t}->{$row_number}->{$col_number} = $sim_val;
+            }
+        }
+        #print STDERR Dumper \%sim_data_check_1_times;
+
+        my %sim_data_check_2_times;
+        my $row_number_adjustment = 0;
+        foreach my $t (@sorted_trait_names) {
+            foreach my $p (@plot_names_sorted) {
+                my $row_number = $stock_name_row_col{$p}->{row_number};
+                my $col_number = $stock_name_row_col{$p}->{col_number};
+                my $sim_val = eval $env_sim_exec->{'random_1d_normal_gradient'};
+                $sim_data_check_2_times{$t}->{$row_number}->{$col_number} = $sim_val;
+            }
+        }
+        #print STDERR Dumper \%sim_data_check_2_times;
+
+        my %sim_data_check_3_times;
+        my $col_number_adjustment = 0;
+        foreach my $t (@sorted_trait_names) {
+            foreach my $p (@plot_names_sorted) {
+                my $row_number = $stock_name_row_col{$p}->{row_number};
+                my $col_number = $stock_name_row_col{$p}->{col_number};
+                my $sim_val = eval $env_sim_exec->{'random_2d_normal_gradient'};
+                $sim_data_check_3_times{$t}->{$row_number}->{$col_number} = $sim_val;
+            }
+        }
+        #print STDERR Dumper \%sim_data_check_3_times;
+
+        my %sim_data_check_4_times;
+        foreach my $t (@sorted_trait_names) {
+            foreach my $p (@plot_names_sorted) {
+                my $row_number = $stock_name_row_col{$p}->{row_number};
+                my $col_number = $stock_name_row_col{$p}->{col_number};
+                my $sim_val = eval $env_sim_exec->{'random'};
+                $sim_data_check_4_times{$t}->{$row_number}->{$col_number} = $sim_val;
+            }
+        }
+        #print STDERR Dumper \%sim_data_check_4_times;
+
+        my %sim_data_check_5_times;
+        my @stock_row_col_id_ordered;
+        foreach my $r ($min_row..$max_row) {
+            foreach my $c ($min_col..$max_col) {
+                push @stock_row_col_id_ordered, $stock_row_col_id{$r}->{$c};
+            }
+        }
+        my $max_row_dim = $max_row - $min_row + 1;
+        my $max_col_dim = $max_col - $min_col + 1;
+
+        my $sim_env_change_over_time_num_traits = scalar(@sorted_trait_names);
+        my $pe_rel_cmd = 'R -e "library(data.table); library(MASS);
+        pr <- '.$row_ro_env.';
+        pc <- '.$col_ro_env.';
+        Rr <- matrix(0,'.$max_row_dim.','.$max_row_dim.');
+        for(i in c(1:'.$max_row_dim.')){
+            for(j in c(i:'.$max_row_dim.')){
+                Rr[i,j]=pr**(j-i);
+                Rr[j,i]=Rr[i,j];
+            }
+        }
+        Rc <- matrix(0,'.$max_col_dim.','.$max_col_dim.');
+        for(i in c(1:'.$max_col_dim.')){
+            for(j in c(i:'.$max_col_dim.')){
+                Rc[i,j]=pc**(j-i);
+                Rc[j,i]=Rc[i,j];
+            }
+        }
+        Rscr <- kronecker(Rc,Rr)*'.$var_e.';
+        Rscr <- round(Rscr, 8);
+        time_corr_matrix <- matrix(NA, ncol='.$sim_env_change_over_time_num_traits.', nrow='.$sim_env_change_over_time_num_traits.');
+        diag(time_corr_matrix) <- rep(1,'.$sim_env_change_over_time_num_traits.');
+        ';
+        if ($sim_env_change_over_time eq 'changing_gradual') {
+            $pe_rel_cmd .= 'time_corr_matrix[lower.tri(time_corr_matrix)] <- rep(0.9,sum(seq(1,'.$sim_env_change_over_time_num_traits.'-1)));
+            time_corr_matrix[upper.tri(time_corr_matrix)] <- rep(0.9,sum(seq(1,'.$sim_env_change_over_time_num_traits.'-1)));
+            ';
+        } else {
+            $pe_rel_cmd .= 'time_corr_matrix[lower.tri(time_corr_matrix)] <- rep(1,sum(seq(1,'.$sim_env_change_over_time_num_traits.'-1)));
+            time_corr_matrix[upper.tri(time_corr_matrix)] <- rep(1,sum(seq(1,'.$sim_env_change_over_time_num_traits.'-1)));
+            ';
+        }
+        $pe_rel_cmd .= 'Rscr <- kronecker(time_corr_matrix,Rscr);
+        Resscr <- mvrnorm(1,rep(0,length(Rscr[1,])),Rscr);
+        write.table(Rscr, file=\''.$permanent_environment_structure_env_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');
+        write.table(Resscr, file=\''.$permanent_environment_structure_env_tempfile2.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
+        print STDERR Dumper $pe_rel_cmd;
+        my $status_pe_rel = system($pe_rel_cmd);
+
+        open(my $pe_rel_res, '<', $permanent_environment_structure_env_tempfile2) or die "Could not open file '$permanent_environment_structure_env_tempfile2' $!";
+            print STDERR "Opened $permanent_environment_structure_env_tempfile2\n";
+
+            my $current_row_num = $min_row;
+            my $current_col_num = $min_col;
+            my $current_trait_index = 0;
+            my $current_row_count = 0;
+            while (my $sim_val = <$pe_rel_res>) {
+                chomp $sim_val;
+
+                my $t = $sorted_trait_names[$current_trait_index];
+                $sim_data_check_5_times{$t}->{$current_row_num}->{$current_col_num} = $sim_val;
+
+                if ($current_row_num < $max_row) {
+                    $current_row_num++;
+                }
+                else {
+                    $current_row_num = $min_row;
+                    $current_col_num++;
+                }
+
+                if ($current_row_count >= scalar(@plot_names_sorted)-1) {
+                    $current_trait_index++;
+                    $current_row_count = 0;
+
+                    $current_row_num = $min_row;
+                    $current_col_num = $min_col;
+                }
+                else {
+                    $current_row_count++;
+                }
+            }
+        close($pe_rel_res);
+        #print STDERR Dumper \%sim_data_check_5_times;
+    }
+
+    $c->stash->{rest} = {
+    };
+}
+
 sub drone_imagery_calculate_analytics : Path('/api/drone_imagery/calculate_analytics') : ActionClass('REST') { }
 sub drone_imagery_calculate_analytics_POST : Args(0) {
     my $self = shift;

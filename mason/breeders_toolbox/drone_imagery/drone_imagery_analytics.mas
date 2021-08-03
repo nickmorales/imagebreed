@@ -360,10 +360,13 @@
                             <div class="form-horizontal">
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label">Simulated Environment Processes: </label>
-                                    <div class="col-sm-9" >
+                                    <div class="col-sm-7" >
                                         <select class="form-control" id="drone_imagery_analytics_simulated_environment_processes_select_div">
-                                            <option value="">Linear, 1D Normal, 2D Normal, AR1xAR1, Random, Real Data</option>
+                                            <option value="6sims">Linear, 1D Normal, 2D Normal, AR1xAR1, Random, Real Data</option>
                                         </select>
+                                    </div>
+                                    <div class="col-sm-2" >
+                                        <button class="btn btn-default" id="drone_imagery_analytics_simulated_environment_processes_select_example_button">Show Example</button>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -500,6 +503,63 @@ jQuery(document).ready(function() {
             Workflow.focus('#drone_imagery_analytics_workflow', 1);
         }
         return false;
+    });
+
+    jQuery('#drone_imagery_analytics_simulated_environment_processes_select_example_button').click(function(){
+        var drone_imagery_analytics_simulated_environment_processes_select_example_button_sims = jQuery('#drone_imagery_analytics_simulated_environment_processes_select_div').val();
+        if (drone_imagery_analytics_simulated_environment_processes_select_example_button_sims == '') {
+            alert('Please select sims to show exmaple of!');
+            return false;
+        }
+        var drone_imagery_analytics_simulated_environment_processes_select_example_button_trait = jQuery('#drone_imagery_analytics_simulated_environment_real_data_trait_select').val();
+        if (drone_imagery_analytics_simulated_environment_processes_select_example_button_sims == '6sims' && drone_imagery_analytics_simulated_environment_processes_select_example_button_trait == '') {
+            alert('Please select the real data trait to show example of!');
+            return false;
+        }
+
+        var drone_imagery_analytics_simulated_environment_processes_select_example_button_trait_ids = [];
+        manage_drone_imagery_analytics_observation_variable_type = jQuery('#drone_imagery_analytics_select_observation_variable_type').val();
+        if (manage_drone_imagery_analytics_observation_variable_type == 'time_ontology') {
+            jQuery('input[name="drone_imagery_analytics_trait_id_select"]').each(function() {
+                if (this.checked){
+                    drone_imagery_analytics_simulated_environment_processes_select_example_button_trait_ids.push(jQuery(this).val());
+                }
+            });
+
+            if (drone_imagery_analytics_simulated_environment_processes_select_example_button_trait_ids.length < 1) {
+                alert('Please select at least one observation variable first!');
+                return false;
+            }
+        }
+        else {
+            drone_imagery_analytics_simulated_environment_processes_select_example_button_trait_ids = jQuery('#drone_imagery_analytics_trait_id_select').val();
+            if (drone_imagery_analytics_simulated_environment_processes_select_example_button_trait_ids == null || drone_imagery_analytics_simulated_environment_processes_select_example_button_trait_ids == undefined) {
+                alert('Please select at least one observation variable first!');
+                return false;
+            }
+        }
+
+        jQuery.ajax({
+            url : '/api/drone_imagery/show_example_simulations?field_trial_id='+manage_drone_imagery_analytics_field_trial_id_string+'&simulations='+drone_imagery_analytics_simulated_environment_processes_select_example_button_sims+'&real_data_trait_id='+drone_imagery_analytics_simulated_environment_processes_select_example_button_trait+'&trait_ids='+JSON.stringify(drone_imagery_analytics_simulated_environment_processes_select_example_button_trait_ids)+'&change_over_time='+jQuery('#drone_imagery_analytics_select_sim_env_change_over_time_type').val()+'&correlation_over_time='+jQuery('#drone_imagery_analytics_sim_env_change_over_time_correlation').val(),
+            beforeSend: function() {
+                jQuery("#working_modal").modal("show");
+            },
+            success: function(response){
+                console.log(response);
+                jQuery("#working_modal").modal("hide");
+
+                if (response.error) {
+                    alert(response.error);
+                }
+                else {
+
+                }
+            },
+            error: function(response){
+                jQuery("#working_modal").modal("hide");
+                alert('Error showing example sims!')
+            }
+        });
     });
 
     jQuery('#drone_imagery_analytics_select_observation_variable_type').change(function(){
