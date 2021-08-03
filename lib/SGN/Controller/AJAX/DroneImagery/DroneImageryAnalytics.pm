@@ -950,7 +950,7 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
             scale_fill_viridis(discrete=FALSE) +
             coord_equal() +
             facet_wrap(~trait_type, ncol='.$number_traits.');
-        ggsave(\''.$env_effects_first_figure_tempfile.'\', gg, device=\'png\', width=20, height=20, units=\'in\');
+        ggsave(\''.$env_effects_first_figure_tempfile.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
         "';
         print STDERR Dumper $cmd_spatialfirst_plot;
         my $status_spatialfirst_plot = system($cmd_spatialfirst_plot);
