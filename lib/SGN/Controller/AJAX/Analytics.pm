@@ -1579,11 +1579,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @plots_avg_data_header = ("plotName");
         my @plots_avg_data_values = ();
         my @plots_avg_data_values_header = ();
-        my @plots_avg_corrected_results;
-        my @plots_avg_corrected_data = ();
-        my @plots_avg_corrected_data_header = ("plotName");
-        my @plots_avg_corrected_data_values = ();
-        my @plots_avg_corrected_data_values_header = ();
         my @germplasm_data_iteration_header = ("germplasmName", "tmean", "time", "value");
         my @germplasm_data_iteration_data_values = ();
         my @plots_data_iteration_header = ("plotName", "tvalue", "time", "value");
@@ -1608,22 +1603,13 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             push @plots_avg_data_header, ("htpspatialeffectmean", "htpspatialeffectsd");
             push @plots_avg_data_values_header, "htpspatialeffectmean";
 
-            push @plots_avg_corrected_data_header, ("spatialeffectmean", "spatialeffectsd");
-            push @plots_avg_corrected_data_values_header, "spatialeffectmean";
-
             foreach my $t (@sorted_trait_names) {
                 push @plots_avg_data_header, ($t, $t."spatialcorrected", $t."spatialcorrecthtpmean");
                 push @plots_avg_data_values_header, ($t, $t."spatialcorrected", $t."spatialcorrecthtpmean");
 
-                push @plots_avg_corrected_data_header, ($t, $t."spatialcorrected", $t."spatialcorrecthtpmean");
-                push @plots_avg_corrected_data_values_header, ($t, $t."spatialcorrected", $t."spatialcorrecthtpmean");
-
                 foreach my $time (@sorted_seen_times_p) {
-                    push @plots_avg_data_header, "htpspatialeffect$time";
-                    push @plots_avg_data_values_header, "htpspatialeffect$time";
-
-                    push @plots_avg_corrected_data_header, "traithtpspatialcorrected$time";
-                    push @plots_avg_corrected_data_values_header, "traithtpspatialcorrected$time";
+                    push @plots_avg_data_header, ("htpspatialeffect$time", "traithtpspatialcorrected$time");
+                    push @plots_avg_data_values_header, ("htpspatialeffect$time", "traithtpspatialcorrected$time");
                 }
             }
         }
@@ -1673,9 +1659,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             my @line = ($p);
             my @values;
 
-            my @line_corrected = ($p);
-            my @values_corrected;
-
             foreach my $t (@sorted_trait_names) {
                 my $val = $plot_phenotypes{$p}->{$t};
 
@@ -1695,33 +1678,23 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 push @line, ($plot_mean, $plot_sd);
                 push @values, $plot_mean;
 
-                push @line_corrected, ($plot_mean, $plot_sd);
-                push @values_corrected, $plot_mean;
-
                 foreach my $t (@sorted_trait_names) {
                     my $trait_val = $plot_phenotypes{$p}->{$t};
                     my $val = $trait_val - $plot_mean;
                     my $env_trait_spatial_val = $result_blup_spatial_data_s->{$p}->{$t};
                     push @line, ($trait_val, $env_trait_spatial_val, $val);
                     push @values, ($trait_val, $env_trait_spatial_val, $val);
-                    push @line_corrected, ($trait_val, $env_trait_spatial_val, $val);
-                    push @values_corrected, ($trait_val, $env_trait_spatial_val, $val);
 
                     foreach my $time (@sorted_seen_times_p) {
                         my $time_val = $plot_result_time_blups{$p}->{$time};
                         my $val = $plot_phenotypes{$p}->{$t} - $time_val;
-                        push @line, $time_val;
-                        push @values, $time_val;
-                        push @line_corrected, $val;
-                        push @values_corrected, $val;
+                        push @line, ($time_val, $val);
+                        push @values, ($time_val, $val);
                     }
                 }
             }
             push @plots_avg_data, \@line;
             push @plots_avg_data_values, \@values;
-
-            push @plots_avg_corrected_data, \@line_corrected;
-            push @plots_avg_corrected_data_values, \@values_corrected;
         }
 
         open(my $F10, ">", $analytics_protocol_data_tempfile10) || die "Can't open file ".$analytics_protocol_data_tempfile10;
@@ -1763,26 +1736,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 print $F13 "$string\n";
             }
         close($F13);
-
-        open(my $F14, ">", $analytics_protocol_data_tempfile14) || die "Can't open file ".$analytics_protocol_data_tempfile14;
-            my $header_string14 = join ',', @plots_avg_corrected_data_header;
-            print $F14 "$header_string14\n";
-
-            foreach (@plots_avg_corrected_data) {
-                my $string = join ',', @$_;
-                print $F14 "$string\n";
-            }
-        close($F14);
-
-        open(my $F15, ">", $analytics_protocol_data_tempfile15) || die "Can't open file ".$analytics_protocol_data_tempfile15;
-            my $header_string15 = join ',', @plots_avg_corrected_data_values_header;
-            print $F15 "$header_string15\n";
-
-            foreach (@plots_avg_corrected_data_values) {
-                my $string = join ',', @$_;
-                print $F15 "$string\n";
-            }
-        close($F15);
 
         open(my $F19, ">", $analytics_protocol_data_tempfile19) || die "Can't open file ".$analytics_protocol_data_tempfile19;
             my $header_string19 = join ',', @germplasm_data_iteration_header;
@@ -1878,36 +1831,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($fh_i2);
 
-            my $r_cmd_i3 = 'R -e "library(ggplot2); library(data.table);
-            data <- data.frame(fread(\''.$analytics_protocol_data_tempfile15.'\', header=TRUE, sep=\',\'));
-            res <- cor(data, use = \'complete.obs\')
-            res_rounded <- round(res, 2)
-            write.table(res_rounded, file=\''.$analytics_protocol_data_tempfile18.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-            "';
-            print STDERR Dumper $r_cmd_i3;
-            my $status_i3 = system($r_cmd_i3);
-
-            open(my $fh_i3, '<', $analytics_protocol_data_tempfile18) or die "Could not open file '$analytics_protocol_data_tempfile18' $!";
-                print STDERR "Opened $analytics_protocol_data_tempfile18\n";
-                my $header3 = <$fh_i3>;
-                my @header_cols3;
-                if ($csv->parse($header3)) {
-                    @header_cols3 = $csv->fields();
-                }
-
-                my @header_trait_names3 = ("Trait", @header_cols3);
-                push @plots_avg_corrected_results, \@header_trait_names3;
-
-                while (my $row = <$fh_i3>) {
-                    my @columns;
-                    if ($csv->parse($row)) {
-                        @columns = $csv->fields();
-                    }
-
-                    push @plots_avg_corrected_results, \@columns;
-                }
-            close($fh_i3);
-
             my $r_cmd_p2 = 'R -e "library(data.table); library(ggplot2); library(GGally);
             data <- data.frame(fread(\''.$analytics_protocol_data_tempfile20.'\', header=TRUE, sep=\',\'));
             data\$time <- as.factor(data\$time);
@@ -1936,9 +1859,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             plots_avg_data_header => \@plots_avg_data_header,
             plots_avg_data => \@plots_avg_data,
             plots_avg_results => \@plots_avg_results,
-            plots_avg_corrected_data_header => \@plots_avg_corrected_data_header,
-            plots_avg_corrected_data => \@plots_avg_corrected_data,
-            plots_avg_corrected_results => \@plots_avg_corrected_results,
             germplasm_geno_corr_plot => $analytics_protocol_tempfile_string_1,
             plots_spatial_corr_plot => $analytics_protocol_tempfile_string_2
         }
@@ -1979,11 +1899,11 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             push @germplasm_data_header, ($t."mean", $t."sd", $t."spatialcorrectedgenoeffect");
             push @germplasm_data_values_header, ($t."mean", $t."spatialcorrectedgenoeffect");
 
-            push @plots_avg_data_header, $t;
-            push @plots_avg_data_values_header, $t;
+            push @plots_avg_data_header, ($t, $t."spatialeffect", $t."spatialcorrected");
+            push @plots_avg_data_values_header, ($t, $t."spatialeffect", $t."spatialcorrected");
 
-            push @plots_avg_corrected_data_header, $t;
-            push @plots_avg_corrected_data_values_header, $t;
+            push @plots_avg_corrected_data_header, ($t, $t."spatialeffect", $t."spatialcorrected");
+            push @plots_avg_corrected_data_values_header, ($t, $t."spatialeffect", $t."spatialcorrected");
         }
         my $result_gblup_iter = 1;
         my $result_sblup_iter = 1;
@@ -2001,8 +1921,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 push @plots_avg_corrected_data_values_header, "htpspatialeffectmean$result_sblup_iter";
 
                 foreach my $t (@sorted_trait_names) {
-                    push @plots_avg_corrected_data_header, ($t."spatialeffect$result_sblup_iter", $t."spatialcorrected$result_sblup_iter", $t."spatialcorrecthtpmean$result_sblup_iter");
-                    push @plots_avg_corrected_data_values_header, ($t."spatialeffect$result_sblup_iter", $t."spatialcorrected$result_sblup_iter", $t."spatialcorrecthtpmean$result_sblup_iter");
+                    push @plots_avg_corrected_data_header, $t."spatialcorrecthtpmean$result_sblup_iter";
+                    push @plots_avg_corrected_data_values_header, $t."spatialcorrecthtpmean$result_sblup_iter";
                 }
 
                 $result_sblup_iter++;
@@ -2052,11 +1972,14 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             foreach my $t (@sorted_trait_names) {
                 my $val = $plot_phenotypes{$p}->{$t};
-                push @line, $val;
-                push @values, $val;
+                my $env_trait_spatial_val = $result_blup_spatial_data_s->{$p}->{$t};
+                my $env_trait_spatial_correct = $val - $env_trait_spatial_val;
 
-                push @line_corrected, $val;
-                push @values_corrected, $val;
+                push @line, ($val, $env_trait_spatial_val, $env_trait_spatial_correct);
+                push @values, ($val, $env_trait_spatial_val, $env_trait_spatial_correct);
+
+                push @line_corrected, ($val, $env_trait_spatial_val, $env_trait_spatial_correct);
+                push @values_corrected, ($val, $env_trait_spatial_val, $env_trait_spatial_correct);
             }
 
             foreach my $r (@result_blups_all) {
@@ -2078,10 +2001,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     foreach my $t (@sorted_trait_names) {
                         my $trait_val = $plot_phenotypes{$p}->{$t};
                         my $val = $trait_val - $plot_mean;
-                        my $env_trait_spatial_val = $result_blup_spatial_data_s->{$p}->{$t};
-                        my $env_trait_spatial_correct = $trait_val - $env_trait_spatial_val;
-                        push @line_corrected, ($env_trait_spatial_val, $env_trait_spatial_correct, $val);
-                        push @values_corrected, ($env_trait_spatial_val, $env_trait_spatial_correct, $val);
+
+                        push @line_corrected, $val;
+                        push @values_corrected, $val;
                     }
                 }
             }
