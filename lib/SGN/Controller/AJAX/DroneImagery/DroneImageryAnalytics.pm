@@ -80,7 +80,7 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
     my $sims = $c->req->param('simulations');
     my $sim_env_change_over_time = $c->req->param('change_over_time');
-    my $correlation_over_time = $c->req->param('correlation_over_time');
+    my $correlation_between_times = $c->req->param('correlation_over_time');
     my $trait_id = $c->req->param('real_data_trait_id');
     my $field_trial_id = $c->req->param('field_trial_id');
     my $trait_id_list = decode_json $c->req->param('trait_ids');
@@ -115,6 +115,7 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
     my %seen_rows;
     my %seen_cols;
     my %stock_row_col_id;
+    my %stock_row_col_data;
     foreach my $obs_unit (@$data){
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
@@ -150,6 +151,16 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
         $seen_rows{$row_number}++;
         $seen_cols{$col_number}++;
         $stock_row_col_id{$row_number}->{$col_number} = $obsunit_stock_id;
+        $stock_row_col_data{$row_number}->{$col_number} = {
+            row_number => $row_number,
+            col_number => $col_number,
+            obsunit_stock_id => $obsunit_stock_id,
+            obsunit_name => $obsunit_stock_uniquename,
+            rep => $replicate_number,
+            block => $block_number,
+            germplasm_stock_id => $germplasm_stock_id,
+            germplasm_name => $germplasm_name
+        };
 
         my $observations = $obs_unit->{observations};
         foreach (@$observations){
@@ -172,6 +183,10 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
     my @plot_names_sorted = sort keys %phenotype_data;
     my @seen_row_numbers = sort keys %seen_rows;
     my @seen_col_numbers = sort keys %seen_cols;
+    my $number_plots = scalar(@plot_names_sorted);
+    my $number_traits = scalar(@sorted_trait_names);
+
+    my $csv = Text::CSV->new({ sep_char => "\t" });
 
     my $row_stat = Statistics::Descriptive::Full->new();
     $row_stat->add_data(@seen_row_numbers);
@@ -204,10 +219,14 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
     my ($permanent_environment_structure_env_tempfile_fh, $permanent_environment_structure_env_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($permanent_environment_structure_env_tempfile2_fh, $permanent_environment_structure_env_tempfile2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($permanent_environment_structure_env_tempfile_mat_fh, $permanent_environment_structure_env_tempfile_mat) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($sim_env_changing_mat_tempfile_fh, $sim_env_changing_mat_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($sim_env_changing_mat_full_tempfile_fh, $sim_env_changing_mat_full_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
 
     if ($sims eq '6sims') { #Linear, 1D Normal, 2D Normal, AR1xAR1, Random, Real Data
 
         my %sim_data_check_1_times;
+        my $time_count = 0;
+        my @sim_data_env_first;
         my $a_env_adjustment = 0;
         my $b_env_adjustment = 0;
         foreach my $t (@sorted_trait_names) {
@@ -216,11 +235,70 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
                 my $col_number = $stock_name_row_col{$p}->{col_number};
                 my $sim_val = eval $env_sim_exec->{'linear_gradient'};
                 $sim_data_check_1_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                if ($time_count == 0) {
+                    push @sim_data_env_first, $sim_val;
+                }
             }
+            $time_count++;
+        }
+
+        if ($sim_env_change_over_time eq 'changing_gradual') {
+            open(my $sim_change_f, ">", $sim_env_changing_mat_tempfile) || die "Can't open file ".$sim_env_changing_mat_tempfile;
+                foreach (@sim_data_env_first) {
+                    print $sim_change_f $_."\n";
+                }
+            close($sim_change_f);
+
+            my $sim_change_cmd = 'R -e "library(data.table);
+            mat <- fread(\''.$sim_env_changing_mat_tempfile.'\', header=FALSE, sep=\'\t\');
+            x1 <- mat\$V1;
+            x234 <- scale(matrix( rnorm('.$number_plots.'* ('.$number_traits.'-1) ), ncol='.$number_traits.'-1 ));
+            x1234 <- cbind(scale(x1),x234);
+            c1 <- var(x1234);
+            chol1 <- solve(chol(c1));
+            newx <-  x1234 %*% chol1;
+            zapsmall(cor(newx));
+            all.equal( x1234[,1], newx[,1] );
+            newc <- matrix(NA, ncol='.$number_traits.', nrow='.$number_traits.');
+            diag(newc) <- rep(1,'.$number_traits.');
+            newc[lower.tri(newc)] <- rep('.$correlation_between_times.',sum(seq(1,'.$number_traits.'-1)));
+            newc[upper.tri(newc)] <- rep('.$correlation_between_times.',sum(seq(1,'.$number_traits.'-1)));
+            eigen(newc);
+            chol2 <- chol(newc);
+            finalx <- newx %*% chol2 * sd(x1) + mean(x1);
+            write.table(finalx, file=\''.$sim_env_changing_mat_full_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
+            # print STDERR Dumper $sim_change_cmd;
+            my $status_sim_change = system($sim_change_cmd);
+
+            open(my $sim_change_res, '<', $sim_env_changing_mat_full_tempfile) or die "Could not open file '$sim_env_changing_mat_full_tempfile' $!";
+                print STDERR "OPENING ENV SIM CHANGING CORR $sim_env_changing_mat_full_tempfile\n";
+                my $sim_change_line_counter = 0;
+                while (my $row = <$sim_change_res>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    my $p = $plot_names_sorted[$sim_change_line_counter];
+                    my $row_number = $stock_name_row_col{$p}->{row_number};
+                    my $col_number = $stock_name_row_col{$p}->{col_number};
+
+                    my $sim_change_trait_counter = 0;
+                    foreach my $sim_val (@columns) {
+                        my $t = $sorted_trait_names[$sim_change_trait_counter];
+                        $sim_data_check_1_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                        $sim_change_trait_counter++;
+                    }
+                    $sim_change_line_counter++;
+                }
+            close($sim_change_res);
         }
         #print STDERR Dumper \%sim_data_check_1_times;
 
         my %sim_data_check_2_times;
+        $time_count = 0;
+        @sim_data_env_first = ();
         my $row_number_adjustment = 0;
         foreach my $t (@sorted_trait_names) {
             foreach my $p (@plot_names_sorted) {
@@ -228,11 +306,71 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
                 my $col_number = $stock_name_row_col{$p}->{col_number};
                 my $sim_val = eval $env_sim_exec->{'random_1d_normal_gradient'};
                 $sim_data_check_2_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                if ($time_count == 0) {
+                    push @sim_data_env_first, $sim_val;
+                }
             }
+            $time_count++;
+        }
+
+        if ($sim_env_change_over_time eq 'changing_gradual') {
+            open(my $sim_change_f, ">", $sim_env_changing_mat_tempfile) || die "Can't open file ".$sim_env_changing_mat_tempfile;
+                print STDERR "OPENING ENV SIM CHANGING GRADUAL CORR $sim_env_changing_mat_tempfile\n";
+                foreach (@sim_data_env_first) {
+                    print $sim_change_f $_."\n";
+                }
+            close($sim_change_f);
+
+            my $sim_change_cmd = 'R -e "library(data.table);
+            mat <- fread(\''.$sim_env_changing_mat_tempfile.'\', header=FALSE, sep=\'\t\');
+            x1 <- mat\$V1;
+            x234 <- scale(matrix( rnorm('.$number_plots.'* ('.$number_traits.'-1) ), ncol='.$number_traits.'-1 ));
+            x1234 <- cbind(scale(x1),x234);
+            c1 <- var(x1234);
+            chol1 <- solve(chol(c1));
+            newx <-  x1234 %*% chol1;
+            zapsmall(cor(newx));
+            all.equal( x1234[,1], newx[,1] );
+            newc <- matrix(NA, ncol='.$number_traits.', nrow='.$number_traits.');
+            diag(newc) <- rep(1,'.$number_traits.');
+            newc[lower.tri(newc)] <- rep('.$correlation_between_times.',sum(seq(1,'.$number_traits.'-1)));
+            newc[upper.tri(newc)] <- rep('.$correlation_between_times.',sum(seq(1,'.$number_traits.'-1)));
+            eigen(newc);
+            chol2 <- chol(newc);
+            finalx <- newx %*% chol2 * sd(x1) + mean(x1);
+            write.table(finalx, file=\''.$sim_env_changing_mat_full_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
+            # print STDERR Dumper $sim_change_cmd;
+            my $status_sim_change = system($sim_change_cmd);
+
+            open(my $sim_change_res, '<', $sim_env_changing_mat_full_tempfile) or die "Could not open file '$sim_env_changing_mat_full_tempfile' $!";
+                print STDERR "OPENING ENV SIM CHANGING GRADUAL VALUES CORR $sim_env_changing_mat_full_tempfile\n";
+                my $sim_change_line_counter = 0;
+                while (my $row = <$sim_change_res>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    my $p = $plot_names_sorted[$sim_change_line_counter];
+                    my $row_number = $stock_name_row_col{$p}->{row_number};
+                    my $col_number = $stock_name_row_col{$p}->{col_number};
+
+                    my $sim_change_trait_counter = 0;
+                    foreach my $sim_val (@columns) {
+                        my $t = $sorted_trait_names[$sim_change_trait_counter];
+                        $sim_data_check_2_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                        $sim_change_trait_counter++;
+                    }
+                    $sim_change_line_counter++;
+                }
+            close($sim_change_res);
         }
         #print STDERR Dumper \%sim_data_check_2_times;
 
         my %sim_data_check_3_times;
+        $time_count = 0;
+        @sim_data_env_first = ();
         my $col_number_adjustment = 0;
         foreach my $t (@sorted_trait_names) {
             foreach my $p (@plot_names_sorted) {
@@ -240,17 +378,135 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
                 my $col_number = $stock_name_row_col{$p}->{col_number};
                 my $sim_val = eval $env_sim_exec->{'random_2d_normal_gradient'};
                 $sim_data_check_3_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                if ($time_count == 0) {
+                    push @sim_data_env_first, $sim_val;
+                }
             }
+            $time_count++;
+        }
+
+        if ($sim_env_change_over_time eq 'changing_gradual') {
+            open(my $sim_change_f, ">", $sim_env_changing_mat_tempfile) || die "Can't open file ".$sim_env_changing_mat_tempfile;
+                print STDERR "OPENING ENV SIM CHANGING GRADUAL CORR $sim_env_changing_mat_tempfile\n";
+                foreach (@sim_data_env_first) {
+                    print $sim_change_f $_."\n";
+                }
+            close($sim_change_f);
+
+            my $sim_change_cmd = 'R -e "library(data.table);
+            mat <- fread(\''.$sim_env_changing_mat_tempfile.'\', header=FALSE, sep=\'\t\');
+            x1 <- mat\$V1;
+            x234 <- scale(matrix( rnorm('.$number_plots.'* ('.$number_traits.'-1) ), ncol='.$number_traits.'-1 ));
+            x1234 <- cbind(scale(x1),x234);
+            c1 <- var(x1234);
+            chol1 <- solve(chol(c1));
+            newx <-  x1234 %*% chol1;
+            zapsmall(cor(newx));
+            all.equal( x1234[,1], newx[,1] );
+            newc <- matrix(NA, ncol='.$number_traits.', nrow='.$number_traits.');
+            diag(newc) <- rep(1,'.$number_traits.');
+            newc[lower.tri(newc)] <- rep('.$correlation_between_times.',sum(seq(1,'.$number_traits.'-1)));
+            newc[upper.tri(newc)] <- rep('.$correlation_between_times.',sum(seq(1,'.$number_traits.'-1)));
+            eigen(newc);
+            chol2 <- chol(newc);
+            finalx <- newx %*% chol2 * sd(x1) + mean(x1);
+            write.table(finalx, file=\''.$sim_env_changing_mat_full_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
+            # print STDERR Dumper $sim_change_cmd;
+            my $status_sim_change = system($sim_change_cmd);
+
+            open(my $sim_change_res, '<', $sim_env_changing_mat_full_tempfile) or die "Could not open file '$sim_env_changing_mat_full_tempfile' $!";
+                print STDERR "OPENING ENV SIM CHANGING GRADUAL VALUES CORR $sim_env_changing_mat_full_tempfile\n";
+                my $sim_change_line_counter = 0;
+                while (my $row = <$sim_change_res>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    my $p = $plot_names_sorted[$sim_change_line_counter];
+                    my $row_number = $stock_name_row_col{$p}->{row_number};
+                    my $col_number = $stock_name_row_col{$p}->{col_number};
+
+                    my $sim_change_trait_counter = 0;
+                    foreach my $sim_val (@columns) {
+                        my $t = $sorted_trait_names[$sim_change_trait_counter];
+                        $sim_data_check_3_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                        $sim_change_trait_counter++;
+                    }
+                    $sim_change_line_counter++;
+                }
+            close($sim_change_res);
         }
         #print STDERR Dumper \%sim_data_check_3_times;
 
         my %sim_data_check_4_times;
-        foreach my $t (@sorted_trait_names) {
-            foreach my $p (@plot_names_sorted) {
-                my $row_number = $stock_name_row_col{$p}->{row_number};
-                my $col_number = $stock_name_row_col{$p}->{col_number};
-                my $sim_val = eval $env_sim_exec->{'random'};
-                $sim_data_check_4_times{$t}->{$row_number}->{$col_number} = $sim_val;
+        my %sim_data_check_4_first;
+        @sim_data_env_first = ();
+        foreach my $p (@plot_names_sorted) {
+            my $row_number = $stock_name_row_col{$p}->{row_number};
+            my $col_number = $stock_name_row_col{$p}->{col_number};
+            my $sim_val = eval $env_sim_exec->{'random'};
+            $sim_data_check_4_first{$row_number}->{$col_number} = $sim_val;
+
+            push @sim_data_env_first, $sim_val;
+        }
+
+        if ($sim_env_change_over_time eq 'changing_gradual') {
+            open(my $sim_change_f, ">", $sim_env_changing_mat_tempfile) || die "Can't open file ".$sim_env_changing_mat_tempfile;
+                print STDERR "OPENING ENV SIM CHANGING GRADUAL CORR $sim_env_changing_mat_tempfile\n";
+                foreach (@sim_data_env_first) {
+                    print $sim_change_f $_."\n";
+                }
+            close($sim_change_f);
+
+            my $sim_change_cmd = 'R -e "library(data.table);
+            mat <- fread(\''.$sim_env_changing_mat_tempfile.'\', header=FALSE, sep=\'\t\');
+            x1 <- mat\$V1;
+            x234 <- scale(matrix( rnorm('.$number_plots.'* ('.$number_traits.'-1) ), ncol='.$number_traits.'-1 ));
+            x1234 <- cbind(scale(x1),x234);
+            c1 <- var(x1234);
+            chol1 <- solve(chol(c1));
+            newx <-  x1234 %*% chol1;
+            zapsmall(cor(newx));
+            all.equal( x1234[,1], newx[,1] );
+            newc <- matrix(NA, ncol='.$number_traits.', nrow='.$number_traits.');
+            diag(newc) <- rep(1,'.$number_traits.');
+            newc[lower.tri(newc)] <- rep('.$correlation_between_times.',sum(seq(1,'.$number_traits.'-1)));
+            newc[upper.tri(newc)] <- rep('.$correlation_between_times.',sum(seq(1,'.$number_traits.'-1)));
+            eigen(newc);
+            chol2 <- chol(newc);
+            finalx <- newx %*% chol2 * sd(x1) + mean(x1);
+            write.table(finalx, file=\''.$sim_env_changing_mat_full_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
+            # print STDERR Dumper $sim_change_cmd;
+            my $status_sim_change = system($sim_change_cmd);
+
+            open(my $sim_change_res, '<', $sim_env_changing_mat_full_tempfile) or die "Could not open file '$sim_env_changing_mat_full_tempfile' $!";
+                print STDERR "OPENING ENV SIM CHANGING GRADUAL VALUES CORR $sim_env_changing_mat_full_tempfile\n";
+                my $sim_change_line_counter = 0;
+                while (my $row = <$sim_change_res>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    my $p = $plot_names_sorted[$sim_change_line_counter];
+                    my $row_number = $stock_name_row_col{$p}->{row_number};
+                    my $col_number = $stock_name_row_col{$p}->{col_number};
+
+                    my $sim_change_trait_counter = 0;
+                    foreach my $sim_val (@columns) {
+                        my $t = $sorted_trait_names[$sim_change_trait_counter];
+                        $sim_data_check_4_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                        $sim_change_trait_counter++;
+                    }
+                    $sim_change_line_counter++;
+                }
+            close($sim_change_res);
+        }
+        else {
+            foreach my $t (@sorted_trait_names) {
+                $sim_data_check_4_times{$t} = \%sim_data_check_4_first;
             }
         }
         #print STDERR Dumper \%sim_data_check_4_times;
@@ -338,6 +594,99 @@ sub drone_imagery_show_example_simulations_GET : Args(0) {
             }
         close($pe_rel_res);
         #print STDERR Dumper \%sim_data_check_5_times;
+
+        my %sim_data_check_6_times;
+        my $phenotypes_search_selected_env = CXGN::Phenotypes::SearchFactory->instantiate(
+            'MaterializedViewTable',
+            {
+                bcs_schema=>$schema,
+                data_level=>'plot',
+                trait_list=>[$trait_id],
+                trial_list=>[$field_trial_id],
+                include_timestamp=>0,
+                exclude_phenotype_outlier=>0
+            }
+        );
+        my ($data_phenotypes_search_selected_env, $unique_traits_phenotypes_search_selected_env) = $phenotypes_search_selected_env->search();
+
+        if (scalar(@$data_phenotypes_search_selected_env) == 0) {
+            return {error=>'There are no phenotypes for the trials and traits you have selected for the simulated environment from real data!'};
+        }
+
+        $time_count = 0;
+        @sim_data_env_first = ();
+        foreach my $t (@sorted_trait_names) {
+            foreach my $obs_unit (@$data_phenotypes_search_selected_env){
+                my $row_number = $obs_unit->{obsunit_row_number} || '';
+                my $col_number = $obs_unit->{obsunit_col_number} || '';
+
+                my $observations = $obs_unit->{observations};
+                foreach (@$observations){
+                    my $sim_val = $_->{value};
+
+                    $sim_data_check_6_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                    if ($time_count == 0) {
+                        push @sim_data_env_first, $sim_val;
+                    }
+                }
+            }
+            $time_count++;
+        }
+
+        if ($sim_env_change_over_time eq 'changing_gradual') {
+            open(my $sim_change_f, ">", $sim_env_changing_mat_tempfile) || die "Can't open file ".$sim_env_changing_mat_tempfile;
+                print STDERR "OPENING ENV SIM CHANGING GRADUAL CORR $sim_env_changing_mat_tempfile\n";
+                foreach (@sim_data_env_first) {
+                    print $sim_change_f $_."\n";
+                }
+            close($sim_change_f);
+
+            my $sim_change_cmd = 'R -e "library(data.table);
+            mat <- fread(\''.$sim_env_changing_mat_tempfile.'\', header=FALSE, sep=\'\t\');
+            x1 <- mat\$V1;
+            x234 <- scale(matrix( rnorm('.$number_plots.'* ('.$number_traits.'-1) ), ncol='.$number_traits.'-1 ));
+            x1234 <- cbind(scale(x1),x234);
+            c1 <- var(x1234);
+            chol1 <- solve(chol(c1));
+            newx <-  x1234 %*% chol1;
+            zapsmall(cor(newx));
+            all.equal( x1234[,1], newx[,1] );
+            newc <- matrix(NA, ncol='.$number_traits.', nrow='.$number_traits.');
+            diag(newc) <- rep(1,'.$number_traits.');
+            newc[lower.tri(newc)] <- rep('.$correlation_between_times.',sum(seq(1,'.$number_traits.'-1)));
+            newc[upper.tri(newc)] <- rep('.$correlation_between_times.',sum(seq(1,'.$number_traits.'-1)));
+            eigen(newc);
+            chol2 <- chol(newc);
+            finalx <- newx %*% chol2 * sd(x1) + mean(x1);
+            write.table(finalx, file=\''.$sim_env_changing_mat_full_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
+            # print STDERR Dumper $sim_change_cmd;
+            my $status_sim_change = system($sim_change_cmd);
+
+            open(my $sim_change_res, '<', $sim_env_changing_mat_full_tempfile) or die "Could not open file '$sim_env_changing_mat_full_tempfile' $!";
+                print STDERR "OPENING ENV SIM CHANGING GRADUAL VALUES CORR $sim_env_changing_mat_full_tempfile\n";
+                my $sim_change_line_counter = 0;
+                while (my $row = <$sim_change_res>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    my $p = $plot_names_sorted[$sim_change_line_counter];
+                    my $row_number = $stock_name_row_col{$p}->{row_number};
+                    my $col_number = $stock_name_row_col{$p}->{col_number};
+
+                    my $sim_change_trait_counter = 0;
+                    foreach my $sim_val (@columns) {
+                        my $t = $sorted_trait_names[$sim_change_trait_counter];
+                        $sim_data_check_6_times{$t}->{$row_number}->{$col_number} = $sim_val;
+
+                        $sim_change_trait_counter++;
+                    }
+                    $sim_change_line_counter++;
+                }
+            close($sim_change_res);
+        }
+        # print STDERR Dumper \%sim_data_check_6_times;
     }
 
     $c->stash->{rest} = {
