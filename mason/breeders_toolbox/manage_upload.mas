@@ -277,4 +277,28 @@ $design_types => ()
 <& /breeders_toolbox/upload_phenotype_spreadsheet.mas &>
 <& /breeders_toolbox/trial/create_spreadsheet_dialog.mas &>
 
+<div class="well well-sm">
+<h1>Genotypes</h1><br/>
+<table class="table table-bordered">
+<thead>
+<tr><th>Add</th><th>Manage</th><th>Search</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<button class="btn btn-sm btn-default" name="upload_genotyping_data_link"><p>Upload Genotyping Data File (VCF, Intertek, SSR, etc)</button>
+</td>
+<td>
+<a href="/breeders/genotyping"><p>Go To Manage Genotyping Page</p></a>
+</td>
+<td>
+<a href="/search/genotyping_protocols"><p>Go To Search Genotyping Protocols</p></a>
+<a href="/search/genotyping_data_projects"><p>Go To Search Genotyping Projects</p></a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<& /breeders_toolbox/genotyping_trials/upload_genotyping_data_dialogs.mas, facilities => $facilities &>
+
 </div>
