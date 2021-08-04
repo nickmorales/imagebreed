@@ -391,6 +391,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my %stock_name_row_col;
     my %stock_info;
     my %plot_id_map;
+    my %plot_germplasm_map;
     foreach my $obs_unit (@$data){
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
@@ -412,6 +413,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             germplasm_stock_id => $germplasm_stock_id,
             germplasm_name => $germplasm_name
         };
+        $plot_germplasm_map{$obsunit_stock_uniquename} = $germplasm_name;
 
         $stock_info{"S".$germplasm_stock_id} = {
             uniquename => $germplasm_name
@@ -1543,8 +1545,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             }
         close($fh);
-        print STDERR Dumper \%plot_result_time_blups;
-        print STDERR Dumper \%germplasm_result_time_blups;
+        # print STDERR Dumper \%plot_result_time_blups;
+        # print STDERR Dumper \%germplasm_result_time_blups;
 
         my @sorted_seen_times_g = sort { $a <=> $b } keys %seen_times_g;
         my @sorted_seen_times_p = sort { $a <=> $b } keys %seen_times_p;
@@ -1560,6 +1562,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $analytics_protocol_data_tempfile18 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile19 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile20 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile21= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
         my $analytics_protocol_tempfile_string_1 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
         $analytics_protocol_tempfile_string_1 .= '.png';
@@ -1576,9 +1579,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @germplasm_data_values_header = ();
         my @plots_avg_results;
         my @plots_avg_data = ();
-        my @plots_avg_data_header = ("plotName");
+        my @plots_avg_data_header = ("plotName", "germplasmName");
         my @plots_avg_data_values = ();
         my @plots_avg_data_values_header = ();
+        my @plots_h_results;
         my @germplasm_data_iteration_header = ("germplasmName", "tmean", "time", "value");
         my @germplasm_data_iteration_data_values = ();
         my @plots_data_iteration_header = ("plotName", "tvalue", "time", "value");
@@ -1656,7 +1660,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
 
         foreach my $p (@seen_plots) {
-            my @line = ($p);
+            my $germplasm_name = $plot_germplasm_map{$p};
+            my @line = ($p, $germplasm_name);
             my @values;
 
             foreach my $t (@sorted_trait_names) {
@@ -1842,7 +1847,41 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             print STDERR Dumper $r_cmd_p2;
             my $status_p2 = system($r_cmd_p2);
 
+            my $r_cmd_i3 = 'R -e "library(data.table); library(lme4);
+            data <- data.frame(fread(\''.$analytics_protocol_data_tempfile12.'\', header=TRUE, sep=\',\'));
+            num_columns <- ncol(data);
+            col_names_results <- c();
+            results <- c();
+            for (i in seq(3,num_columns)){
+                t <- names(data)[i];
+                print(t);
+                myformula <- as.formula(paste0(t, \' ~ (1|germplasmName)\'));
+                m <- lmer(myformula, data=data);
+                try (m.summary <- summary(m));
+                if (!is.null(m.summary\$varcor)) {
+                    h <- m.summary\$varcor\$germplasmName[1,1]/(m.summary\$varcor\$germplasmName[1,1] + (m.summary\$sigma)^2);
+                    col_names_results <- append(col_names_results, t);
+                    results <- append(results, h);
+                }
+            }
+            write.table(data.frame(names = col_names_results, results = results), file=\''.$analytics_protocol_data_tempfile21.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            "';
+            print STDERR Dumper $r_cmd_i3;
+            my $status_i3 = system($r_cmd_i3);
 
+            open(my $fh_i3, '<', $analytics_protocol_data_tempfile21) or die "Could not open file '$analytics_protocol_data_tempfile21' $!";
+                print STDERR "Opened $analytics_protocol_data_tempfile21\n";
+                my $header3 = <$fh_i3>;
+
+                while (my $row = <$fh_i3>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    push @plots_h_results, \@columns;
+                }
+            close($fh_i3);
         }
 
         push @result_blups_all, {
@@ -1859,6 +1898,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             plots_avg_data_header => \@plots_avg_data_header,
             plots_avg_data => \@plots_avg_data,
             plots_avg_results => \@plots_avg_results,
+            plots_h_results => \@plots_h_results,
             germplasm_geno_corr_plot => $analytics_protocol_tempfile_string_1,
             plots_spatial_corr_plot => $analytics_protocol_tempfile_string_2
         }

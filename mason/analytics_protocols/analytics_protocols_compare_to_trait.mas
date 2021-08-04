@@ -99,7 +99,7 @@ jQuery(document).ready(function() {
                 html = '<h2>Model Iterations</h2>';
                 for(var i=0; i<result_blups_all.length; i++) {
                     html = html + '<button type="button" class="btn btn-default btn-sm" data-toggle="collapse" data-target="#analytics_protocol_compare_to_trait_model_it'+i+'">('+i+')&nbsp;&nbsp;&nbsp;'+result_blups_all[i]["model_name"]+': '+result_blups_all[i]["result_type"]+'</button>';
-                    html = html + '<div id="analytics_protocol_compare_to_trait_model_it'+i+'" class="collapse">';
+                    html = html + '<div id="analytics_protocol_compare_to_trait_model_it'+i+'" class="collapse"><div class="well well-sm">';
                     console.log(result_blups_all[i]["result_type"]);
                     if (result_blups_all[i]["result_type"] == "originalgenoeff") {
                         html = html + '<table class="table table-hover table-bordered"><thead><tr>';
@@ -132,9 +132,14 @@ jQuery(document).ready(function() {
                             html = html + '</tr>';
                         }
                         html = html + '</tbody></table>';
+                        html = html + '<table class="table table-hover table-bordered"><thead><tr><th>Phenotype</th><th>Heritability</th></tr></thead><tbody>';
+                        for(var j=0; j<result_blups_all[i].plots_h_results.length; j++) {
+                            html = html + '<tr><td>'+result_blups_all[i].plots_h_results[j][0]+'</td><td>'+result_blups_all[i].plots_h_results[j][1]+'</td></tr>';
+                        }
+                        html = html + '</tbody></table>';
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_corr_plot"]+'">';
                     }
-                    html = html + '</div><br/>';
+                    html = html + '</div></div><br/>';
                 }
                 html = html + '</div><hr>';
 
