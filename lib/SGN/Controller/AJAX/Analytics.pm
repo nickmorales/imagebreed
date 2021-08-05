@@ -364,6 +364,16 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $perform_cv = $protocol_properties->{perform_cv} || 0;
     my $tolparinv_10 = $tolparinv*10;
 
+    my @legendre_coeff_exec = (
+        '1 * $b',
+        '$time * $b',
+        '(1/2*(3*$time**2 - 1)*$b)',
+        '1/2*(5*$time**3 - 3*$time)*$b',
+        '1/8*(35*$time**4 - 30*$time**2 + 3)*$b',
+        '1/16*(63*$time**5 - 70*$time**2 + 15*$time)*$b',
+        '1/16*(231*$time**6 - 315*$time**4 + 105*$time**2 - 5)*$b'
+    );
+
     my $field_trial_id_list = [$trial_id];
     my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
         'MaterializedViewTable',
@@ -392,6 +402,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my %stock_info;
     my %plot_id_map;
     my %plot_germplasm_map;
+    my $min_phenotype = 1000000000000000;
+    my $max_phenotype = -1000000000000000;
     foreach my $obs_unit (@$data){
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
@@ -424,6 +436,13 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             my $value = $_->{value};
             my $trait_name = $_->{trait_name};
 
+            if ($value < $min_phenotype) {
+                $min_phenotype = $value;
+            }
+            if ($value > $max_phenotype) {
+                $max_phenotype = $value;
+            }
+
             push @{$germplasm_phenotypes{$germplasm_name}->{$trait_name}}, $value;
             $plot_phenotypes{$obsunit_stock_uniquename}->{$trait_name} = $value;
 
@@ -440,6 +459,73 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my @seen_germplasm = sort keys %germplasm_phenotypes;
     my @seen_plots = sort keys %plot_phenotypes;
     my @accession_ids = sort keys %seen_accession_stock_ids;
+
+    my $phenotypes_search_htp = CXGN::Phenotypes::SearchFactory->instantiate(
+        'MaterializedViewTable',
+        {
+            bcs_schema=>$schema,
+            data_level=>'plot',
+            trait_list=>$observation_variable_id_list,
+            trial_list=>$field_trial_id_list,
+            include_timestamp=>0,
+            exclude_phenotype_outlier=>0
+        }
+    );
+    my ($data_htp, $unique_traits_htp) = $phenotypes_search_htp->search();
+    my @sorted_trait_names_htp = sort keys %$unique_traits_htp;
+
+    if (scalar(@$data_htp) == 0) {
+        $c->stash->{rest} = { error => "There are no htp phenotypes for the trials and traits you have selected!"};
+        return;
+    }
+
+    my $min_phenotype_htp = 1000000000000000;
+    my $max_phenotype_htp = -1000000000000000;
+    my $min_time_htp = 1000000000000000;
+    my $max_time_htp = -1000000000000000;
+    my %plot_phenotypes_htp;
+    my %seen_days_after_plantings_htp;
+    foreach my $obs_unit (@$data_htp){
+        my $germplasm_name = $obs_unit->{germplasm_uniquename};
+        my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
+        my $replicate_number = $obs_unit->{obsunit_rep} || '';
+        my $block_number = $obs_unit->{obsunit_block} || '';
+        my $obsunit_stock_id = $obs_unit->{observationunit_stock_id};
+        my $obsunit_stock_uniquename = $obs_unit->{observationunit_uniquename};
+        my $row_number = $obs_unit->{obsunit_row_number} || '';
+        my $col_number = $obs_unit->{obsunit_col_number} || '';
+
+        my $observations = $obs_unit->{observations};
+        foreach (@$observations){
+            my $value = $_->{value};
+            my $trait_name = $_->{trait_name};
+
+            if ($value < $min_phenotype_htp) {
+                $min_phenotype_htp = $value;
+            }
+            if ($value > $max_phenotype_htp) {
+                $max_phenotype_htp = $value;
+            }
+
+            $plot_phenotypes_htp{$obsunit_stock_uniquename}->{$trait_name} = $value;
+
+            if ($_->{associated_image_project_time_json}) {
+                my $related_time_terms_json = decode_json $_->{associated_image_project_time_json};
+                my $time_days_cvterm = $related_time_terms_json->{day};
+                my $time_term_string = $time_days_cvterm;
+                my $time_days = (split '\|', $time_days_cvterm)[0];
+                my $time_value = (split ' ', $time_days)[1];
+                $seen_days_after_plantings_htp{$time_value}++;
+
+                if ($time_value < $min_time_htp) {
+                    $min_time_htp = $time_value;
+                }
+                if ($time_value > $max_time_htp) {
+                    $max_time_htp = $time_value;
+                }
+            }
+        }
+    }
 
     my $grm_file;
     # Prepare GRM for Trait Spatial Correction
@@ -1455,7 +1541,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
 
         my $model_name = '';
+        my $is_random_regression;
         if (index($filetype, 'airemlf90_grm_random_regression') != -1) {
+            $is_random_regression = 1;
             if (index($filetype, 'identity') != -1) {
                 $model_name = "RR_IDPE";
             }
@@ -1524,23 +1612,52 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     my $plot_id = $columns[1];
 
                     my $total_num_t;
-                    if (index($filetype, 'airemlf90_grm_random_regression') == -1) {
+                    if (!$is_random_regression) {
                         $total_num_t = $observation_variable_number;
                     }
                     else {
                         $total_num_t = $legendre_poly_number;
                     }
 
-                    for my $iter (0..$total_num_t-1) {
-                        my $step = 10+($iter*22);
+                    if (!$is_random_regression) {
+                        for my $iter (0..$total_num_t-1) {
+                            my $step = 10+($iter*22);
 
-                        my $col_name = $header_columns[$step];
-                        my ($eff, $mod, $time) = split '_', $col_name;
-                        my $time_val = $trait_name_map{$time};
-                        my $value = $columns[$step];
-                        push @{$plot_result_blups{$plot_name}}, $value;
-                        $plot_result_time_blups{$plot_name}->{$time_val} = $value;
-                        $seen_times_p{$time_val}++;
+                            my $col_name = $header_columns[$step];
+                            my ($eff, $mod, $time) = split '_', $col_name;
+                            my $time_val = $trait_name_map{$time};
+                            my $value = $columns[$step];
+                            push @{$plot_result_blups{$plot_name}}, $value;
+                            $plot_result_time_blups{$plot_name}->{$time_val} = $value;
+                            $seen_times_p{$time_val}++;
+                        }
+                    }
+                    else {
+                        my @coeffs;
+                        for my $iter (0..$total_num_t-1) {
+                            my $step = 10+($iter*22);
+
+                            my $col_name = $header_columns[$step];
+                            my ($eff, $mod, $time) = split '_', $col_name;
+                            my $time_val = $trait_name_map{$time};
+                            my $value = $columns[$step];
+                        }
+                        foreach my $t_i (0..20) {
+                            my $time = $t_i*5/100;
+                            my $time_rescaled = sprintf("%.2f", $time*($max_time_htp - $min_time_htp) + $min_time_htp);
+
+                            my $value = 0;
+                            my $coeff_counter = 0;
+                            foreach my $b (@coeffs) {
+                                my $eval_string = $legendre_coeff_exec[$coeff_counter];
+                                # print STDERR Dumper [$eval_string, $b, $time];
+                                $value += eval $eval_string;
+                                $coeff_counter++;
+                            }
+                            push @{$plot_result_blups{$plot_name}}, $value;
+                            $plot_result_time_blups{$plot_name}->{$time_rescaled} = $value;
+                            $seen_times_p{$time_rescaled}++;
+                        }
                     }
                 }
             }
@@ -1604,7 +1721,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             }
         }
         elsif ($result_type eq 'fullcorr') {
-            push @plots_avg_data_header, ("htpspatialeffectmean", "htpspatialeffectsd");
+            push @plots_avg_data_header, ("htpspatialeffectsd","htpspatialeffectmean");
             push @plots_avg_data_values_header, "htpspatialeffectmean";
 
             foreach my $t (@sorted_trait_names) {
@@ -1619,7 +1736,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
 
         foreach my $g (@seen_germplasm) {
-            my @line = ($g);
+            my @line = ($g); #germplasmName
             my @values;
 
             foreach my $t (@sorted_trait_names) {
@@ -1630,12 +1747,12 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 my $mean = $trait_pheno_stat->mean();
 
                 my $geno_trait_spatial_val = $result_blup_data_s->{$g}->{$t};
-                push @line, ($mean, $sd, $geno_trait_spatial_val);
-                push @values, ($mean, $geno_trait_spatial_val);
+                push @line, ($mean, $sd, $geno_trait_spatial_val); #$t."mean", $t."sd", $t."spatialcorrectedgenoeffect"
+                push @values, ($mean, $geno_trait_spatial_val); #$t."mean", $t."spatialcorrectedgenoeffect"
 
                 foreach my $time (@sorted_seen_times_g) {
                     my $val = $germplasm_result_time_blups{$g}->{$time};
-                    push @germplasm_data_iteration_data_values, [$g, $mean, $time, $val];
+                    push @germplasm_data_iteration_data_values, [$g, $mean, $time, $val]; #"germplasmName", "tmean", "time", "value"
                 }
             }
 
@@ -1646,13 +1763,13 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 my $geno_sd = $geno_blups_stat->standard_deviation();
                 my $geno_mean = $geno_blups_stat->mean();
 
-                push @line, ($geno_mean, $geno_sd);
-                push @values, $geno_mean;
+                push @line, ($geno_mean, $geno_sd); #"htpspatialcorrectedgenoeffectmean", "htpspatialcorrectedgenoeffectsd"
+                push @values, $geno_mean; #"htpspatialcorrectedgenoeffectmean"
 
                 foreach my $time (@sorted_seen_times_g) {
                     my $val = $germplasm_result_time_blups{$g}->{$time};
-                    push @line, $val;
-                    push @values, $val;
+                    push @line, $val; #"htpspatialcorrectedgenoeffect$time"
+                    push @values, $val; #"htpspatialcorrectedgenoeffect$time"
                 }
             }
             push @germplasm_data, \@line;
@@ -1661,7 +1778,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
         foreach my $p (@seen_plots) {
             my $germplasm_name = $plot_germplasm_map{$p};
-            my @line = ($p, $germplasm_name);
+            my @line = ($p, $germplasm_name); #"plotName", "germplasmName"
             my @values;
 
             foreach my $t (@sorted_trait_names) {
@@ -1669,7 +1786,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
                 foreach my $time (@sorted_seen_times_p) {
                     my $sval = $plot_result_time_blups{$p}->{$time};
-                    push @plots_data_iteration_data_values, [$p, $val, $time, $sval];
+                    push @plots_data_iteration_data_values, [$p, $val, $time, $sval]; #"plotName", "tvalue", "time", "value"
                 }
             }
 
@@ -1679,22 +1796,24 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 $plot_blups_stat->add_data(@$plot_blups);
                 my $plot_sd = $plot_blups_stat->standard_deviation();
                 my $plot_mean = $plot_blups_stat->mean();
+                my $plot_mean_scaled = $plot_mean*(($max_phenotype - $min_phenotype)/($max_phenotype_htp - $min_phenotype_htp));
 
-                push @line, ($plot_mean, $plot_sd);
-                push @values, $plot_mean;
+                push @line, ($plot_sd, $plot_mean_scaled); #"htpspatialeffectsd","htpspatialeffectmean"
+                push @values, $plot_mean_scaled; #"htpspatialeffectmean"
 
                 foreach my $t (@sorted_trait_names) {
                     my $trait_val = $plot_phenotypes{$p}->{$t};
-                    my $val = $trait_val - $plot_mean;
                     my $env_trait_spatial_val = $result_blup_spatial_data_s->{$p}->{$t};
-                    push @line, ($trait_val, $env_trait_spatial_val, $val);
-                    push @values, ($trait_val, $env_trait_spatial_val, $val);
+                    my $val = $trait_val - $plot_mean_scaled;
+                    push @line, ($trait_val, $env_trait_spatial_val, $val); #$t, $t."spatialcorrected", $t."spatialcorrecthtpmean"
+                    push @values, ($trait_val, $env_trait_spatial_val, $val); #$t, $t."spatialcorrected", $t."spatialcorrecthtpmean"
 
                     foreach my $time (@sorted_seen_times_p) {
                         my $time_val = $plot_result_time_blups{$p}->{$time};
-                        my $val = $plot_phenotypes{$p}->{$t} - $time_val;
-                        push @line, ($time_val, $val);
-                        push @values, ($time_val, $val);
+                        my $time_val_scaled = $time_val*(($max_phenotype - $min_phenotype)/($max_phenotype_htp - $min_phenotype_htp));
+                        my $val = $plot_phenotypes{$p}->{$t} - $time_val_scaled;
+                        push @line, ($time_val_scaled, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
+                        push @values, ($time_val_scaled, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
                     }
                 }
             }
@@ -1852,16 +1971,19 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             num_columns <- ncol(data);
             col_names_results <- c();
             results <- c();
-            for (i in seq(3,num_columns)){
+            for (i in seq(4,num_columns)){
                 t <- names(data)[i];
                 print(t);
                 myformula <- as.formula(paste0(t, \' ~ (1|germplasmName)\'));
                 m <- lmer(myformula, data=data);
+                m.summary <- NULL;
                 try (m.summary <- summary(m));
-                if (!is.null(m.summary\$varcor)) {
-                    h <- m.summary\$varcor\$germplasmName[1,1]/(m.summary\$varcor\$germplasmName[1,1] + (m.summary\$sigma)^2);
-                    col_names_results <- append(col_names_results, t);
-                    results <- append(results, h);
+                if (!is.null(m.summary)) {
+                    if (!is.null(m.summary\$varcor)) {
+                        h <- m.summary\$varcor\$germplasmName[1,1]/(m.summary\$varcor\$germplasmName[1,1] + (m.summary\$sigma)^2);
+                        col_names_results <- append(col_names_results, t);
+                        results <- append(results, h);
+                    }
                 }
             }
             write.table(data.frame(names = col_names_results, results = results), file=\''.$analytics_protocol_data_tempfile21.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
