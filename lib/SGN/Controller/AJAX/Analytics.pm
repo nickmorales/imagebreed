@@ -2092,7 +2092,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
 
         foreach my $g (@seen_germplasm) {
-            my @line = ($g);
+            my @line = ($g); #"germplasmName"
             my @values;
 
             foreach my $t (@sorted_trait_names) {
@@ -2103,8 +2103,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 my $mean = $trait_pheno_stat->mean();
 
                 my $geno_trait_spatial_val = $result_blup_data_s->{$g}->{$t};
-                push @line, ($mean, $sd, $geno_trait_spatial_val);
-                push @values, ($mean, $geno_trait_spatial_val);
+                push @line, ($mean, $sd, $geno_trait_spatial_val); #$t."mean", $t."sd", $t."spatialcorrectedgenoeffect"
+                push @values, ($mean, $geno_trait_spatial_val); #$t."mean", $t."spatialcorrectedgenoeffect"
             }
 
             foreach my $r (@result_blups_all) {
@@ -2117,8 +2117,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     my $geno_sd = $geno_blups_stat->standard_deviation();
                     my $geno_mean = $geno_blups_stat->mean();
 
-                    push @line, ($geno_mean, $geno_sd);
-                    push @values, $geno_mean;
+                    push @line, ($geno_mean, $geno_sd); #"htpspatialcorrectedgenoeffectmean$result_gblup_iter", "htpspatialcorrectedgenoeffectsd$result_gblup_iter"
+                    push @values, $geno_mean; #"htpspatialcorrectedgenoeffectmean$result_gblup_iter"
                 }
             }
             push @germplasm_data, \@line;
@@ -2126,10 +2126,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
 
         foreach my $p (@seen_plots) {
-            my @line = ($p);
+            my @line = ($p); #"plotName"
             my @values;
 
-            my @line_corrected = ($p);
+            my @line_corrected = ($p); #"plotName"
             my @values_corrected;
 
             foreach my $t (@sorted_trait_names) {
@@ -2137,11 +2137,11 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 my $env_trait_spatial_val = $result_blup_spatial_data_s->{$p}->{$t};
                 my $env_trait_spatial_correct = $val - $env_trait_spatial_val;
 
-                push @line, ($val, $env_trait_spatial_val, $env_trait_spatial_correct);
-                push @values, ($val, $env_trait_spatial_val, $env_trait_spatial_correct);
+                push @line, ($val, $env_trait_spatial_val, $env_trait_spatial_correct); #$t, $t."spatialeffect", $t."spatialcorrected"
+                push @values, ($val, $env_trait_spatial_val, $env_trait_spatial_correct); #$t, $t."spatialeffect", $t."spatialcorrected"
 
-                push @line_corrected, ($val, $env_trait_spatial_val, $env_trait_spatial_correct);
-                push @values_corrected, ($val, $env_trait_spatial_val, $env_trait_spatial_correct);
+                push @line_corrected, ($val, $env_trait_spatial_val, $env_trait_spatial_correct); #$t, $t."spatialeffect", $t."spatialcorrected"
+                push @values_corrected, ($val, $env_trait_spatial_val, $env_trait_spatial_correct); #$t, $t."spatialeffect", $t."spatialcorrected"
             }
 
             foreach my $r (@result_blups_all) {
@@ -2153,19 +2153,20 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     $plot_blups_stat->add_data(@$plot_blups);
                     my $plot_sd = $plot_blups_stat->standard_deviation();
                     my $plot_mean = $plot_blups_stat->mean();
+                    my $plot_mean_scaled = $plot_mean*(($max_phenotype - $min_phenotype)/($max_phenotype_htp - $min_phenotype_htp));
 
-                    push @line, ($plot_mean, $plot_sd);
-                    push @values, $plot_mean;
+                    push @line, ($plot_mean_scaled, $plot_sd);#"htpspatialeffectmean$result_sblup_iter", "htpspatialeffectsd$result_sblup_iter"
+                    push @values, $plot_mean_scaled; #"htpspatialeffectmean$result_sblup_iter"
 
-                    push @line_corrected, ($plot_mean, $plot_sd);
-                    push @values_corrected, $plot_mean;
+                    push @line_corrected, ($plot_mean_scaled, $plot_sd); #"htpspatialeffectmean$result_sblup_iter", "htpspatialeffectsd$result_sblup_iter"
+                    push @values_corrected, $plot_mean_scaled; #"htpspatialeffectmean$result_sblup_iter"
 
                     foreach my $t (@sorted_trait_names) {
                         my $trait_val = $plot_phenotypes{$p}->{$t};
-                        my $val = $trait_val - $plot_mean;
+                        my $val = $trait_val - $plot_mean_scaled;
 
-                        push @line_corrected, $val;
-                        push @values_corrected, $val;
+                        push @line_corrected, $val; #$t."spatialcorrecthtpmean$result_sblup_iter"
+                        push @values_corrected, $val; #$t."spatialcorrecthtpmean$result_sblup_iter"
                     }
                 }
             }
