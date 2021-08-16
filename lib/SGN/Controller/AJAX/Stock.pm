@@ -1602,7 +1602,7 @@ sub get_stock_trait_list :Chained('/stock/get_stock') PathPart('datatables/trait
 
     my @formatted_list;
     foreach my $t (@trait_list) {
-        #print STDERR Dumper($t);
+        # print STDERR Dumper($t);
         my $avg = $t->[3] ? $t->[3] : '0.0';
         my $std = $t->[4] ? $t->[4] : '0.0';
         push @formatted_list, [ '<a href="/cvterm/'.$t->[0].'/view">'.$t->[1].'</a>', $t->[2], sprintf("%3.1f", $avg), sprintf("%3.1f", $std), sprintf("%.0f", $t->[5])];
