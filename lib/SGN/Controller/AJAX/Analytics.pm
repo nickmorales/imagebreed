@@ -2033,14 +2033,17 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 t <- names(data)[i];
                 print(t);
                 myformula <- as.formula(paste0(t, \' ~ (1|germplasmName)\'));
-                m <- lmer(myformula, data=data);
+                m <- NULL;
                 m.summary <- NULL;
-                try (m.summary <- summary(m));
-                if (!is.null(m.summary)) {
-                    if (!is.null(m.summary\$varcor)) {
-                        h <- m.summary\$varcor\$germplasmName[1,1]/(m.summary\$varcor\$germplasmName[1,1] + (m.summary\$sigma)^2);
-                        col_names_results <- append(col_names_results, t);
-                        results <- append(results, h);
+                try (m <- lmer(myformula, data=data));
+                if (!is.null(m)) {
+                    try (m.summary <- summary(m));
+                    if (!is.null(m.summary)) {
+                        if (!is.null(m.summary\$varcor)) {
+                            h <- m.summary\$varcor\$germplasmName[1,1]/(m.summary\$varcor\$germplasmName[1,1] + (m.summary\$sigma)^2);
+                            col_names_results <- append(col_names_results, t);
+                            results <- append(results, h);
+                        }
                     }
                 }
             }
