@@ -157,7 +157,7 @@ sub search {
     my $limit = $page_size;
     my $offset = $page*$page_size;
     my $total_count = 0;
-    my $q = "SELECT cvterm.cvterm_id, cvterm.name, cvterm.definition, db.name, db.db_id, db.url, dbxref.accession, array_agg(cvtermsynonym.synonym), cvterm.is_obsolete, count(cvterm.cvterm_id) OVER() AS full_count FROM cvterm ".
+    my $q = "SELECT cvterm.cvterm_id, cvterm.name, cvterm.definition, db.name, db.db_id, db.url, dbxref.accession, array_agg(cvtermsynonym.synonym ORDER BY CHAR_LENGTH(cvtermsynonym.synonym)), cvterm.is_obsolete, count(cvterm.cvterm_id) OVER() AS full_count FROM cvterm ".
         "JOIN dbxref USING(dbxref_id) ".
         "JOIN db using(db_id) ".
         "JOIN cvtermsynonym using(cvterm_id) ".
@@ -171,10 +171,10 @@ sub search {
     $sth->execute();
     while (my ($cvterm_id, $cvterm_name, $cvterm_definition, $db_name, $db_id, $db_url, $accession, $synonym, $obsolete, $count) = $sth->fetchrow_array()) {
         $total_count = $count;
-        foreach (@$synonym){
-            $_ =~ s/ EXACT \[\]//;
-            $_ =~ s/\"//g;
-        }
+        # foreach (@$synonym){
+        #     $_ =~ s/ EXACT \[\]//;
+        #     $_ =~ s/\"//g;
+        # }
 
         my $trait = CXGN::Trait->new({bcs_schema=>$self->bcs_schema, cvterm_id=>$cvterm_id});
         my $categories = $trait->categories;
@@ -297,7 +297,7 @@ sub detail {
     my $limit = $page_size;
     my $offset = $page*$page_size;
     my $total_count = 0;
-    my $q = "SELECT cvterm.cvterm_id, cvterm.name, cvterm.definition, db.name, db.db_id, db.url, dbxref.accession, array_agg(cvtermsynonym.synonym), cvterm.is_obsolete, count(cvterm.cvterm_id) OVER() AS full_count FROM cvterm ".
+    my $q = "SELECT cvterm.cvterm_id, cvterm.name, cvterm.definition, db.name, db.db_id, db.url, dbxref.accession, array_agg(cvtermsynonym.synonym ORDER BY CHAR_LENGTH(cvtermsynonym.synonym)), cvterm.is_obsolete, count(cvterm.cvterm_id) OVER() AS full_count FROM cvterm ".
         "JOIN dbxref USING(dbxref_id) ".
         "JOIN db using(db_id) ".
         "JOIN cvtermsynonym using(cvterm_id) ".
@@ -311,10 +311,10 @@ sub detail {
     $sth->execute();
     while (my ($cvterm_id, $cvterm_name, $cvterm_definition, $db_name, $db_id, $db_url, $accession, $synonym, $obsolete, $count) = $sth->fetchrow_array()) {
         $total_count = $count;
-        foreach (@$synonym){
-            $_ =~ s/ EXACT \[\]//;
-            $_ =~ s/\"//g;
-        }
+        # foreach (@$synonym){
+        #     $_ =~ s/ EXACT \[\]//;
+        #     $_ =~ s/\"//g;
+        # }
         my $trait = CXGN::Trait->new({bcs_schema=>$self->bcs_schema, cvterm_id=>$cvterm_id});
         my $categories = $trait->categories;
         my @brapi_categories = split '/', $categories;
