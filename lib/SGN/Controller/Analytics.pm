@@ -914,7 +914,7 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
                 geom_tile() +
                 scale_fill_viridis(discrete=FALSE) +
                 coord_equal() +
-                facet_wrap(~trait_type, ncol=2);
+                facet_wrap(~trait_type, ncol=7);
             ggsave(\''.$analytics_protocol_figure_tempfile_3.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
             "';
             print STDERR Dumper $r_cmd_i4;
