@@ -143,6 +143,7 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
             }
         }
     }
+    print STDERR Dumper [$min_time_htp, $max_time_htp];
 
     my @env_corr_results_array = (["id", "Time", "Models", "Accuracy", "Simulation", "SimulationVariance", "FixedEffect", "Parameters"]);
     my $result_props_json_array_total_counter = 1;
@@ -512,6 +513,7 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
                             my ($eff, $mod, $time) = split '_', $col_name;
                             my $time_val = $trait_name_map{$time};
                             my $value = $columns[$step];
+                            push @coeffs, $value;
                         }
                         foreach my $t_i (0..20) {
                             my $time = $t_i*5/100;
@@ -521,8 +523,8 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
                             my $coeff_counter = 0;
                             foreach my $b (@coeffs) {
                                 my $eval_string = $legendre_coeff_exec[$coeff_counter];
-                                # print STDERR Dumper [$eval_string, $b, $time];
                                 $value += eval $eval_string;
+                                # print STDERR Dumper [$eval_string, $b, $time, $value];
                                 $coeff_counter++;
                             }
                             push @{$plot_result_blups{$plot_name}}, $value;
