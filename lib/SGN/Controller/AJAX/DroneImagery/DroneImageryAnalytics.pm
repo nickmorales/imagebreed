@@ -1106,6 +1106,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     my $use_area_under_curve = $protocol_properties->{use_area_under_curve};
     my $protocol_id = $protocol_properties->{genotyping_protocol_id};
     my $tolparinv = $protocol_properties->{tolparinv};
+    my $tolparinv_10 = $tolparinv*10;
     my $legendre_order_number = $protocol_properties->{legendre_order_number};
     my $permanent_environment_structure = $protocol_properties->{permanent_environment_structure};
     my $permanent_environment_structure_phenotype_correlation_traits = $protocol_properties->{permanent_environment_structure_phenotype_correlation_traits};
@@ -1199,6 +1200,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     my ($permanent_environment_structure_env_tempfile_fh, $permanent_environment_structure_env_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($permanent_environment_structure_env_tempfile2_fh, $permanent_environment_structure_env_tempfile2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($permanent_environment_structure_env_tempfile_mat_fh, $permanent_environment_structure_env_tempfile_mat) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($permanent_environment_structure_env_tempfile_cormat_fh, $permanent_environment_structure_env_tempfile_cormat) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($sim_env_changing_mat_tempfile_fh, $sim_env_changing_mat_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($sim_env_changing_mat_full_tempfile_fh, $sim_env_changing_mat_full_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_tempfile_fh, $stats_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
@@ -2813,6 +2815,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         my %seen_plot_names_pe;
                         my %phenotype_data_pe;
                         my %stock_name_row_col_pe;
+                        my %plot_id_map_pe;
                         foreach my $obs_unit (@$data_permanent_environment_structure){
                             my $germplasm_name = $obs_unit->{germplasm_uniquename};
                             my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
@@ -2823,6 +2826,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             my $row_number = $obs_unit->{obsunit_row_number} || '';
                             my $col_number = $obs_unit->{obsunit_col_number} || '';
                             $seen_plot_names_pe{$obsunit_stock_uniquename}++;
+                            $plot_id_map_pe{$obsunit_stock_id} = $obsunit_stock_uniquename;
                             $stock_name_row_col_pe{$obsunit_stock_uniquename} = {
                                 row_number => $row_number,
                                 col_number => $col_number,
@@ -2997,6 +3001,262 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             $c->stash->{rest} = { error => "There was a problem running the 2D-spline model for the permanent environment structure!"};
                             return;
                         }
+                    }
+                    elsif ($permanent_environment_structure eq 'phenotype_2dspline_uni_effect') {
+                        my $phenotypes_search_permanent_environment_structure = CXGN::Phenotypes::SearchFactory->instantiate(
+                            'MaterializedViewTable',
+                            {
+                                bcs_schema=>$schema,
+                                data_level=>'plot',
+                                trial_list=>$field_trial_id_list,
+                                trait_list=>$permanent_environment_structure_phenotype_trait_ids,
+                                include_timestamp=>0,
+                                exclude_phenotype_outlier=>0
+                            }
+                        );
+                        my ($data_permanent_environment_structure, $unique_traits_permanent_environment_structure) = $phenotypes_search_permanent_environment_structure->search();
+                        my @sorted_trait_names_permanent_environment_structure = sort keys %$unique_traits_permanent_environment_structure;
+
+                        if (scalar(@$data_permanent_environment_structure) == 0) {
+                            $c->stash->{rest} = { error => "There are no phenotypes for the permanent environment structure traits you have selected!"};
+                            return;
+                        }
+
+                        my %seen_plot_names_pe;
+                        my %phenotype_data_pe;
+                        my %stock_name_row_col_pe;
+                        my %plot_id_map_pe;
+                        foreach my $obs_unit (@$data_permanent_environment_structure){
+                            my $germplasm_name = $obs_unit->{germplasm_uniquename};
+                            my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
+                            my $replicate_number = $obs_unit->{obsunit_rep} || '';
+                            my $block_number = $obs_unit->{obsunit_block} || '';
+                            my $obsunit_stock_id = $obs_unit->{observationunit_stock_id};
+                            my $obsunit_stock_uniquename = $obs_unit->{observationunit_uniquename};
+                            my $row_number = $obs_unit->{obsunit_row_number} || '';
+                            my $col_number = $obs_unit->{obsunit_col_number} || '';
+                            $seen_plot_names_pe{$obsunit_stock_uniquename}++;
+                            $plot_id_map_pe{$obsunit_stock_id} = $obsunit_stock_uniquename;
+                            $stock_name_row_col_pe{$obsunit_stock_uniquename} = {
+                                row_number => $row_number,
+                                col_number => $col_number,
+                                obsunit_stock_id => $obsunit_stock_id,
+                                obsunit_name => $obsunit_stock_uniquename,
+                                rep => $replicate_number,
+                                block => $block_number,
+                                germplasm_stock_id => $germplasm_stock_id,
+                                germplasm_name => $germplasm_name
+                            };
+                            my $observations = $obs_unit->{observations};
+                            foreach (@$observations){
+                                my $value = $_->{value};
+                                my $trait_name = $_->{trait_name};
+                                $phenotype_data_pe{$obsunit_stock_uniquename}->{$trait_name} = $value;
+                            }
+                        }
+
+                        my @unique_plot_names_pe = sort keys %seen_plot_names_pe;
+
+                        my %trait_name_encoder_permanent_environment_structure;
+                        my %trait_name_encoder_rev_permanent_environment_structure;
+                        my $trait_name_encoded_pe = 1;
+                        foreach my $trait_name (@sorted_trait_names_permanent_environment_structure) {
+                            if (!exists($trait_name_encoder_permanent_environment_structure{$trait_name})) {
+                                my $trait_name_e = 't'.$trait_name_encoded_pe;
+                                $trait_name_encoder_permanent_environment_structure{$trait_name} = $trait_name_e;
+                                $trait_name_encoder_rev_permanent_environment_structure{$trait_name_e} = $trait_name;
+                                $trait_name_encoded_pe++;
+                            }
+                        }
+
+                        my @data_matrix_pe;
+                        foreach my $p (@unique_plot_names_pe) {
+                            my $row_number = $stock_name_row_col_pe{$p}->{row_number};
+                            my $col_number = $stock_name_row_col_pe{$p}->{col_number};
+                            my $replicate = $stock_name_row_col_pe{$p}->{rep};
+                            my $block = $stock_name_row_col_pe{$p}->{block};
+                            my $germplasm_stock_id = $stock_name_row_col_pe{$p}->{germplasm_stock_id};
+                            my $germplasm_name = $stock_name_row_col_pe{$p}->{germplasm_name};
+                            my $obsunit_stock_id = $stock_name_row_col_pe{$p}->{obsunit_stock_id};
+
+                            my @row = ($replicate, $block, "S".$germplasm_stock_id, $obsunit_stock_id, $row_number, $col_number, $row_number, $col_number);
+
+                            foreach my $t (@sorted_trait_names_permanent_environment_structure) {
+                                if (defined($phenotype_data_pe{$p}->{$t})) {
+                                    push @row, $phenotype_data_pe{$p}->{$t};
+                                } else {
+                                    print STDERR $p." : $t : $germplasm_name : NA \n";
+                                    push @row, 'NA';
+                                }
+                            }
+                            push @data_matrix_pe, \@row;
+                        }
+
+                        my @phenotype_header_pe = ("replicate", "block", "id", "plot_id", "rowNumber", "colNumber", "rowNumberFactor", "colNumberFactor");
+                        foreach (@sorted_trait_names_permanent_environment_structure) {
+                            push @phenotype_header_pe, $trait_name_encoder_permanent_environment_structure{$_};
+                        }
+                        my $header_string_pe = join ',', @phenotype_header_pe;
+
+                        open($F, ">", $stats_out_pe_pheno_rel_tempfile3) || die "Can't open file ".$stats_out_pe_pheno_rel_tempfile3;
+                            print $F $header_string_pe."\n";
+                            foreach (@data_matrix_pe) {
+                                my $line = join ',', @$_;
+                                print $F "$line\n";
+                            }
+                        close($F);
+
+                        my @encoded_traits_pe = values %trait_name_encoder_permanent_environment_structure;
+                        my $encoded_trait_string_pe = join ',', @encoded_traits_pe;
+                        my $number_traits_pe = scalar(@encoded_traits_pe);
+
+                        my $result_blup_spatial_data_pe;
+                        foreach my $t (@encoded_traits_pe) {
+                            my $statistics_cmd_pe = 'R -e "library(sommer); library(data.table); library(reshape2);
+                            mat <- data.frame(fread(\''.$stats_out_pe_pheno_rel_tempfile3.'\', header=TRUE, sep=\',\'));
+                            geno_mat_3col <- data.frame(fread(\''.$stats_out_pe_pheno_rel_2dspline_grm_tempfile.'\', header=FALSE, sep=\'\t\'));
+                            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+                            geno_mat[is.na(geno_mat)] <- 0;
+                            mat\$rowNumber <- as.numeric(mat\$rowNumber);
+                            mat\$colNumber <- as.numeric(mat\$colNumber);
+                            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+                            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+                            mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.')
+                            if (!is.null(mix\$U)) {
+                            #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+                            X <- with(mat, spl2D(rowNumber, colNumber));
+                            spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
+                            blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
+                            spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
+                            write.table(spatial_blup_results, file=\''.$stats_out_pe_pheno_rel_tempfile5.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+                            }
+                            "';
+                            # print STDERR Dumper $statistics_cmd;
+                            eval {
+                                my $status = system($statistics_cmd_pe);
+                            };
+                            my $run_stats_fault = 0;
+                            my $current_env_row_count = 0;
+                            if ($@) {
+                                print STDERR "R ERROR\n";
+                                print STDERR Dumper $@;
+                                $run_stats_fault = 1;
+                            }
+                            else {
+                                open(my $fh_2dspl, '<', $stats_out_pe_pheno_rel_tempfile5) or die "Could not open file '$stats_out_pe_pheno_rel_tempfile5' $!";
+                                    print STDERR "Opened $stats_out_pe_pheno_rel_tempfile5\n";
+                                    my $header_2dspl = <$fh_2dspl>;
+                                    my @header_cols_2dspl;
+                                    if ($csv->parse($header_2dspl)) {
+                                        @header_cols_2dspl = $csv->fields();
+                                    }
+                                    shift @header_cols_2dspl;
+                                    while (my $row_2dspl = <$fh_2dspl>) {
+                                        my @columns;
+                                        if ($csv->parse($row_2dspl)) {
+                                            @columns = $csv->fields();
+                                        }
+                                        my $col_counter = 0;
+                                        foreach my $encoded_trait (@header_cols_2dspl) {
+                                            if ($encoded_trait eq $t) {
+                                                my $trait = $trait_name_encoder_rev_permanent_environment_structure{$encoded_trait};
+                                                my $plot_id = $columns[0];
+
+                                                my $plot_name = $plot_id_map_pe{$plot_id};
+                                                my $value = $columns[$col_counter+1];
+                                                if (defined $value && $value ne '') {
+                                                    $result_blup_spatial_data_pe->{$plot_name}->{$trait} = $value;
+                                                }
+                                            }
+                                            $col_counter++;
+                                        }
+                                        $current_env_row_count++;
+                                    }
+                                close($fh_2dspl);
+                            }
+
+                            if ($run_stats_fault || $current_env_row_count == 0) {
+                                $c->stash->{rest} = { error => "There was a problem running the 2D-spline model for the permanent environment structure!"};
+                                return;
+                            }
+                        }
+
+                        open(my $Fpecorr, ">", $permanent_environment_structure_env_tempfile_cormat) || die "Can't open file ".$permanent_environment_structure_env_tempfile_cormat;
+                            print $Fpecorr "plot_id,$encoded_trait_string_pe\n";
+                            foreach my $p (@unique_plot_names_pe) {
+                                my @line;
+                                my $obsunit_stock_id = $stock_name_row_col_pe{$p}->{obsunit_stock_id};
+                                push @line, $obsunit_stock_id;
+                                foreach my $t (@sorted_trait_names_permanent_environment_structure) {
+                                    my $val = $result_blup_spatial_data_pe->{$p}->{$t};
+                                    push @line, $val;
+                                }
+                                my $line_string = join ',', @line;
+                                print $Fpecorr "$line_string\n";
+                            }
+                        close($Fpecorr);
+
+                        my $statistics_cmd_corr_pe .= 'R -e "library(sommer); library(data.table); library(reshape2);
+                        spatial_blup_results <- data.frame(fread(\''.$permanent_environment_structure_env_tempfile_cormat.'\', header=TRUE, sep=\',\'));
+                        cor_mat <- cor(t(spatial_blup_results[,-1]));
+                        rownames(cor_mat) <- spatial_blup_results\$plot_id;
+                        colnames(cor_mat) <- spatial_blup_results\$plot_id;
+                        range01 <- function(x){(x-min(x))/(max(x)-min(x))};
+                        cor_mat <- range01(cor_mat);
+                        write.table(cor_mat, file=\''.$stats_out_pe_pheno_rel_tempfile4.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+                        "';
+                        print STDERR Dumper $statistics_cmd_corr_pe;
+                        my $status_statistics_cmd_corr_pe = system($statistics_cmd_corr_pe);
+
+                        my %rel_pe_result_hash;
+                        open(my $pe_rel_res, '<', $stats_out_pe_pheno_rel_tempfile4) or die "Could not open file '$stats_out_pe_pheno_rel_tempfile4' $!";
+                            print STDERR "Opened $stats_out_pe_pheno_rel_tempfile4\n";
+                            my $header_row = <$pe_rel_res>;
+                            my @header;
+                            if ($csv->parse($header_row)) {
+                                @header = $csv->fields();
+                            }
+
+                            while (my $row = <$pe_rel_res>) {
+                                my @columns;
+                                if ($csv->parse($row)) {
+                                    @columns = $csv->fields();
+                                }
+                                my $stock_id1 = $columns[0];
+                                my $counter = 1;
+                                foreach my $stock_id2 (@header) {
+                                    my $val = $columns[$counter];
+                                    $rel_pe_result_hash{$stock_id1}->{$stock_id2} = $val;
+                                    $counter++;
+                                }
+                            }
+                        close($pe_rel_res);
+                        # print STDERR Dumper \%rel_pe_result_hash;
+
+                        my $data_rel_pe = '';
+                        my %result_hash_pe;
+                        foreach my $s (sort { $a <=> $b } @plot_ids_ordered) {
+                            foreach my $r (sort { $a <=> $b } @plot_ids_ordered) {
+                                my $s_factor = $stock_name_row_col{$plot_id_map{$s}}->{plot_id_factor};
+                                my $r_factor = $stock_name_row_col{$plot_id_map{$r}}->{plot_id_factor};
+                                if (!exists($result_hash_pe{$s_factor}->{$r_factor}) && !exists($result_hash_pe{$r_factor}->{$s_factor})) {
+                                    $result_hash_pe{$s_factor}->{$r_factor} = $rel_pe_result_hash{$s}->{$r};
+                                }
+                            }
+                        }
+                        foreach my $r (sort { $a <=> $b } keys %result_hash_pe) {
+                            foreach my $s (sort { $a <=> $b } keys %{$result_hash_pe{$r}}) {
+                                my $val = $result_hash_pe{$r}->{$s};
+                                if (defined $val and length $val) {
+                                    $data_rel_pe .= "$r\t$s\t$val\n";
+                                }
+                            }
+                        }
+
+                        open(my $pe_rel_out, ">", $permanent_environment_structure_tempfile) || die "Can't open file ".$permanent_environment_structure_tempfile;
+                            print STDERR "Opened $permanent_environment_structure_tempfile\n";
+                            print $pe_rel_out $data_rel_pe;
+                        close($pe_rel_out);
                     }
                     elsif ($permanent_environment_structure eq 'phenotype_ar1xar1_effect') {
                         my $phenotypes_search_permanent_environment_structure = CXGN::Phenotypes::SearchFactory->instantiate(

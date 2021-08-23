@@ -325,7 +325,7 @@
                                             <option value="env_corr_structure">Simulated Phenotype Correlation Matrix</option>
                                             <option value="phenotype_correlation">Phenotype Correlation Matrix</option>
                                             <option value="phenotype_2dspline_effect">Multi 2D-Spline Effect of Phenotype Correlation Matrix</option>
-                                            <!--option value="phenotype_2dspline_uni_effect">Uni 2D-Spline Effect of Phenotype Correlation Matrix</option-->
+                                            <option value="phenotype_2dspline_uni_effect">Uni 2D-Spline Effect of Phenotype Correlation Matrix</option>
                                             <option value="phenotype_ar1xar1_effect">Multi AR1xAR1 Effect of Phenotype Correlation Matrix</option>
                                             <!--option value="phenotype_ar1xar1_uni_effect">Uni AR1xAR1 Effect of Phenotype Correlation Matrix</option-->
                                             <option value="euclidean_rows_and_columns">Euclidean Distance From Rows and Columns Matrix</option>
