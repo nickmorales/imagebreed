@@ -750,7 +750,7 @@ sub validate {
         my $uniquename = $r->uniquename;
         my $protocol_name = $r->get_column('protocol_name');
         my $project_name = $r->get_column('project_name');
-        push @warning_messages, "$uniquename in your file has already has genotype stored using the protocol $protocol_name in the project $project_name.";
+        push @warning_messages, "$uniquename in your file already has genotype stored using the protocol $protocol_name in the project $project_name.";
         $previous_genotypes_exist = 1;
     }
 
