@@ -600,6 +600,10 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
         $analytics_protocol_tempfile_string_3 .= '.png';
         my $analytics_protocol_figure_tempfile_3 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_3;
 
+        my $analytics_protocol_tempfile_string_4 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+        $analytics_protocol_tempfile_string_4 .= '.png';
+        my $analytics_protocol_figure_tempfile_4 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_4;
+
         my @germplasm_results;
         my @germplasm_data = ();
         my @germplasm_data_header = ("germplasmName");
@@ -631,6 +635,11 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
         elsif ($result_type eq 'fullcorr') {
             push @plots_avg_data_header, ("htpspatialeffectsd","htpspatialeffectmean");
             push @plots_avg_data_values_header, "htpspatialeffectmean";
+
+            foreach my $time (@sorted_seen_times_p) {
+                push @plots_avg_data_header, "HTPspatial$time";
+                push @plots_avg_data_values_header, "HTPspatial$time";
+            }
         }
 
         foreach my $g (@seen_germplasm) {
@@ -693,6 +702,9 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
                     if ($is_first_plot) {
                         push @type_names_first_line, ("HTPspatial$time");
                     }
+
+                    push @line, $time_val_scaled;
+                    push @values, $time_val_scaled;
                 }
             }
             push @plots_avg_data, \@line;
@@ -844,6 +856,14 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
         #         }
         #     close($fh_i2);
         #
+            my $r_cmd_ic1 = 'R -e "library(ggplot2); library(data.table); library(GGally);
+            data <- data.frame(fread(\''.$analytics_protocol_data_tempfile13.'\', header=TRUE, sep=\',\'));
+            plot <- ggcorr(data, hjust = 1, size = 3, color = \'grey50\', layout.exp = 1, label = TRUE);
+            ggsave(\''.$analytics_protocol_figure_tempfile_4.'\', plot, device=\'png\', width=10, height=10, units=\'in\');
+            "';
+            print STDERR Dumper $r_cmd_ic1;
+            my $status_ic1 = system($r_cmd_ic1);
+
         #     my $r_cmd_p2 = 'R -e "library(data.table); library(ggplot2); library(GGally);
         #     data <- data.frame(fread(\''.$analytics_protocol_data_tempfile20.'\', header=TRUE, sep=\',\'));
         #     data\$time <- as.factor(data\$time);
@@ -919,6 +939,9 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
             "';
             print STDERR Dumper $r_cmd_i4;
             my $status_i4 = system($r_cmd_i4);
+
+            push @analytics_protocol_charts, $analytics_protocol_tempfile_string_3;
+            push @analytics_protocol_charts, $analytics_protocol_tempfile_string_4;
         }
 
         push @result_blups_all, {
@@ -938,9 +961,9 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
             plots_h_results => \@plots_h_results,
             germplasm_geno_corr_plot => $analytics_protocol_tempfile_string_1,
             plots_spatial_corr_plot => $analytics_protocol_tempfile_string_2,
-            plots_spatial_heatmap_plot => $analytics_protocol_tempfile_string_3
+            plots_spatial_heatmap_plot => $analytics_protocol_tempfile_string_3,
+            plots_spatial_ggcorr_plot => $analytics_protocol_tempfile_string_4,
         };
-        push @analytics_protocol_charts, $analytics_protocol_tempfile_string_3;
     }
 
     $c->stash->{analytics_protocol_id} = $nd_protocol_id;
