@@ -515,6 +515,7 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
                             my $value = $columns[$step];
                             push @coeffs, $value;
                         }
+                        print STDERR Dumper \@coeffs;
                         foreach my $t_i (0..20) {
                             my $time = $t_i*5/100;
                             my $time_rescaled = sprintf("%.2f", $time*($max_time_htp - $min_time_htp) + $min_time_htp);
