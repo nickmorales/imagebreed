@@ -139,6 +139,8 @@ jQuery(document).ready(function() {
                         html = html + '</tbody></table>';
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_heatmap_plot"]+'"><hr>';
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_corr_plot"]+'">';
+                        html = html + '<img src="'+result_blups_all[i]["plots_spatial_heatmap_traits_plot"]+'">';
+                        html = html + '<img src="'+result_blups_all[i]["plots_spatial_ggcorr_plot"]+'">';
                     }
                     html = html + '</div></div><br/>';
                 }

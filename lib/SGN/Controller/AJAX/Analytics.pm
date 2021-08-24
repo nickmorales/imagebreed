@@ -1699,6 +1699,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $analytics_protocol_data_tempfile20 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile21= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile22= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile23= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile24= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
         my $analytics_protocol_tempfile_string_1 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
         $analytics_protocol_tempfile_string_1 .= '.png';
@@ -1712,6 +1714,14 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         $analytics_protocol_tempfile_string_3 .= '.png';
         my $analytics_protocol_figure_tempfile_3 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_3;
 
+        my $analytics_protocol_tempfile_string_4 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+        $analytics_protocol_tempfile_string_4 .= '.png';
+        my $analytics_protocol_figure_tempfile_4 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_4;
+
+        my $analytics_protocol_tempfile_string_5 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+        $analytics_protocol_tempfile_string_5 .= '.png';
+        my $analytics_protocol_figure_tempfile_5 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_5;
+
         my @germplasm_results;
         my @germplasm_data = ();
         my @germplasm_data_header = ("germplasmName");
@@ -1724,6 +1734,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @plots_avg_data_values_header = ();
         my @plots_avg_data_heatmap_values_header = ("trait_type", "row", "col", "value");
         my @plots_avg_data_heatmap_values = ();
+        my @plots_avg_data_heatmap_values_traits_header = ("trait_type", "row", "col", "value");
+        my @plots_avg_data_heatmap_values_traits = ();
         my @plots_h_results;
         my @germplasm_data_iteration_header = ("germplasmName", "tmean", "time", "value");
         my @germplasm_data_iteration_data_values = ();
@@ -1826,11 +1838,12 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 $plot_blups_stat->add_data(@$plot_blups);
                 my $plot_sd = $plot_blups_stat->standard_deviation();
                 my $plot_mean = $plot_blups_stat->mean();
-                my $plot_mean_scaled = $plot_mean*(($max_phenotype - $min_phenotype)/($max_phenotype_htp - $min_phenotype_htp));
+                # my $plot_mean_scaled = $plot_mean*(($max_phenotype - $min_phenotype)/($max_phenotype_htp - $min_phenotype_htp));
+                my $plot_mean_scaled = $plot_mean*($max_phenotype/$max_phenotype_htp);
 
                 push @line, ($plot_sd, $plot_mean_scaled); #"htpspatialeffectsd","htpspatialeffectmean"
                 push @values, $plot_mean_scaled; #"htpspatialeffectmean"
-                push @plots_avg_data_heatmap_values, ["HTPspatialmean", $row_number, $col_number, $plot_mean_scaled]; #"trait_type", "row", "col", "value"
+                push @plots_avg_data_heatmap_values, ["HTPspatialmean", $row_number, $col_number, $plot_mean]; #"trait_type", "row", "col", "value"
 
                 if ($is_first_plot) {
                     push @type_names_first_line, "HTPspatialmean";
@@ -1842,9 +1855,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     my $val = $trait_val - $plot_mean_scaled;
                     push @line, ($trait_val, $env_trait_spatial_val, $val); #$t, $t."spatialcorrected", $t."spatialcorrecthtpmean"
                     push @values, ($trait_val, $env_trait_spatial_val, $val); #$t, $t."spatialcorrected", $t."spatialcorrecthtpmean"
-                    push @plots_avg_data_heatmap_values, ["TraitPhenotype", $row_number, $col_number, $trait_val]; #"trait_type", "row", "col", "value"
-                    push @plots_avg_data_heatmap_values, ["TraitSpatial", $row_number, $col_number, $env_trait_spatial_val]; #"trait_type", "row", "col", "value"
-                    push @plots_avg_data_heatmap_values, ["TraitHTPspatialMeanCorrected", $row_number, $col_number, $val]; #"trait_type", "row", "col", "value"
+                    push @plots_avg_data_heatmap_values_traits, ["TraitPhenotype", $row_number, $col_number, $trait_val]; #"trait_type", "row", "col", "value"
+                    push @plots_avg_data_heatmap_values_traits, ["TraitSpatial", $row_number, $col_number, $env_trait_spatial_val]; #"trait_type", "row", "col", "value"
+                    push @plots_avg_data_heatmap_values_traits, ["TraitHTPspatialMeanCorrected", $row_number, $col_number, $val]; #"trait_type", "row", "col", "value"
 
                     if ($is_first_plot) {
                         push @type_names_first_line, ("TraitPhenotype", "TraitSpatial", "TraitHTPspatialMeanCorrected");
@@ -1852,12 +1865,13 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
                     foreach my $time (@sorted_seen_times_p) {
                         my $time_val = $plot_result_time_blups{$p}->{$time};
-                        my $time_val_scaled = $time_val*(($max_phenotype - $min_phenotype)/($max_phenotype_htp - $min_phenotype_htp));
+                        # my $time_val_scaled = $time_val*(($max_phenotype - $min_phenotype)/($max_phenotype_htp - $min_phenotype_htp));
+                        my $time_val_scaled = $time_val*($max_phenotype/$max_phenotype_htp);
                         my $val = $plot_phenotypes{$p}->{$t} - $time_val_scaled;
-                        push @line, ($time_val_scaled, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
-                        push @values, ($time_val_scaled, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
-                        push @plots_avg_data_heatmap_values, ["HTPspatial$time", $row_number, $col_number, $time_val_scaled]; #"trait_type", "row", "col", "value"
-                        push @plots_avg_data_heatmap_values, ["TraitHTPspatialCorrected$time", $row_number, $col_number, $val]; #"trait_type", "row", "col", "value"
+                        push @line, ($time_val, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
+                        push @values, ($time_val, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
+                        push @plots_avg_data_heatmap_values, ["HTPspatial$time", $row_number, $col_number, $time_val]; #"trait_type", "row", "col", "value"
+                        push @plots_avg_data_heatmap_values_traits, ["TraitHTPspatialCorrected$time", $row_number, $col_number, $val]; #"trait_type", "row", "col", "value"
 
                         if ($is_first_plot) {
                             push @type_names_first_line, ("HTPspatial$time", "TraitHTPspatialCorrected$time");
@@ -1939,6 +1953,16 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 print $F22 "$string\n";
             }
         close($F22);
+
+        open(my $F23, ">", $analytics_protocol_data_tempfile23) || die "Can't open file ".$analytics_protocol_data_tempfile23;
+            my $header_string23 = join ',', @plots_avg_data_heatmap_values_traits_header;
+            print $F23 "$header_string23\n";
+
+            foreach (@plots_avg_data_heatmap_values_traits) {
+                my $string = join ',', @$_;
+                print $F23 "$string\n";
+            }
+        close($F23);
 
         if ($result_type eq 'originalgenoeff') {
             my $r_cmd_i1 = 'R -e "library(ggplot2); library(data.table);
@@ -2084,11 +2108,34 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 geom_tile() +
                 scale_fill_viridis(discrete=FALSE) +
                 coord_equal() +
-                facet_wrap(~trait_type, ncol=2);
+                facet_wrap(~trait_type, ncol=7);
             ggsave(\''.$analytics_protocol_figure_tempfile_3.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
             "';
             print STDERR Dumper $r_cmd_i4;
             my $status_i4 = system($r_cmd_i4);
+
+            my $r_cmd_i5 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
+            pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile23.'\', header=TRUE, sep=\',\'));
+            pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_string.'\'));
+            options(device=\'png\');
+            par();
+            gg <- ggplot(pheno_mat, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) +
+                geom_tile() +
+                scale_fill_viridis(discrete=FALSE) +
+                coord_equal() +
+                facet_wrap(~trait_type, ncol=7);
+            ggsave(\''.$analytics_protocol_figure_tempfile_4.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
+            "';
+            print STDERR Dumper $r_cmd_i5;
+            my $status_i5 = system($r_cmd_i5);
+
+            my $r_cmd_ic6 = 'R -e "library(ggplot2); library(data.table); library(GGally);
+            data <- data.frame(fread(\''.$analytics_protocol_data_tempfile13.'\', header=TRUE, sep=\',\'));
+            plot <- ggcorr(data, hjust = 1, size = 3, color = \'grey50\', layout.exp = 1, label = TRUE);
+            ggsave(\''.$analytics_protocol_figure_tempfile_5.'\', plot, device=\'png\', width=10, height=10, units=\'in\');
+            "';
+            print STDERR Dumper $r_cmd_ic6;
+            my $status_ic6 = system($r_cmd_ic6);
         }
 
         push @result_blups_all, {
@@ -2108,7 +2155,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             plots_h_results => \@plots_h_results,
             germplasm_geno_corr_plot => $analytics_protocol_tempfile_string_1,
             plots_spatial_corr_plot => $analytics_protocol_tempfile_string_2,
-            plots_spatial_heatmap_plot => $analytics_protocol_tempfile_string_3
+            plots_spatial_heatmap_plot => $analytics_protocol_tempfile_string_3,
+            plots_spatial_heatmap_traits_plot => $analytics_protocol_tempfile_string_4,
+            plots_spatial_ggcorr_plot => $analytics_protocol_tempfile_string_5,
         }
     }
 
