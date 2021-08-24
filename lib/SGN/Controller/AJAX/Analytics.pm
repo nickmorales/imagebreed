@@ -1629,14 +1629,14 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     my $plot_id = $columns[1];
 
                     my $total_num_t;
-                    if (!$is_random_regression) {
+                    # if (!$is_random_regression) {
                         $total_num_t = $observation_variable_number;
-                    }
-                    else {
-                        $total_num_t = $legendre_poly_number;
-                    }
+                    # }
+                    # else {
+                    #     $total_num_t = $legendre_poly_number;
+                    # }
 
-                    if (!$is_random_regression) {
+                    # if (!$is_random_regression) {
                         for my $iter (0..$total_num_t-1) {
                             my $step = 10+($iter*22);
 
@@ -1648,34 +1648,35 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                             $plot_result_time_blups{$plot_name}->{$time_val} = $value;
                             $seen_times_p{$time_val}++;
                         }
-                    }
-                    else {
-                        my @coeffs;
-                        for my $iter (0..$total_num_t-1) {
-                            my $step = 10+($iter*22);
-
-                            my $col_name = $header_columns[$step];
-                            my ($eff, $mod, $time) = split '_', $col_name;
-                            my $time_val = $trait_name_map{$time};
-                            my $value = $columns[$step];
-                        }
-                        foreach my $t_i (0..20) {
-                            my $time = $t_i*5/100;
-                            my $time_rescaled = sprintf("%.2f", $time*($max_time_htp - $min_time_htp) + $min_time_htp);
-
-                            my $value = 0;
-                            my $coeff_counter = 0;
-                            foreach my $b (@coeffs) {
-                                my $eval_string = $legendre_coeff_exec[$coeff_counter];
-                                # print STDERR Dumper [$eval_string, $b, $time];
-                                $value += eval $eval_string;
-                                $coeff_counter++;
-                            }
-                            push @{$plot_result_blups{$plot_name}}, $value;
-                            $plot_result_time_blups{$plot_name}->{$time_rescaled} = $value;
-                            $seen_times_p{$time_rescaled}++;
-                        }
-                    }
+                    # }
+                    # else {
+                    #     my @coeffs;
+                    #     for my $iter (0..$total_num_t-1) {
+                    #         my $step = 10+($iter*22);
+                    #
+                    #         my $col_name = $header_columns[$step];
+                    #         my ($eff, $mod, $time) = split '_', $col_name;
+                    #         my $time_val = $trait_name_map{$time};
+                    #         my $value = $columns[$step];
+                    #         push @coeffs, $value;
+                    #     }
+                    #     foreach my $t_i (0..20) {
+                    #         my $time = $t_i*5/100;
+                    #         my $time_rescaled = sprintf("%.2f", $time*($max_time_htp - $min_time_htp) + $min_time_htp);
+                    #
+                    #         my $value = 0;
+                    #         my $coeff_counter = 0;
+                    #         foreach my $b (@coeffs) {
+                    #             my $eval_string = $legendre_coeff_exec[$coeff_counter];
+                    #             # print STDERR Dumper [$eval_string, $b, $time];
+                    #             $value += eval $eval_string;
+                    #             $coeff_counter++;
+                    #         }
+                    #         push @{$plot_result_blups{$plot_name}}, $value;
+                    #         $plot_result_time_blups{$plot_name}->{$time_rescaled} = $value;
+                    #         $seen_times_p{$time_rescaled}++;
+                    #     }
+                    # }
                 }
             }
         close($fh);
