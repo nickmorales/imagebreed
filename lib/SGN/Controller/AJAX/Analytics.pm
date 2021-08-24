@@ -1744,8 +1744,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
 
         foreach my $t (@sorted_trait_names) {
-            push @germplasm_data_header, ($t."mean", $t."sd", $t."spatialcorrectedgenoeffect");
-            push @germplasm_data_values_header, ($t."mean", $t."spatialcorrectedgenoeffect");
+            push @germplasm_data_header, ($t."mean", $t."sd", $t."spatialcorrected2Dsplgenoeffect");
+            push @germplasm_data_values_header, ($t."mean", $t."spatialcorrected2Dsplgenoeffect");
         }
 
         if ($result_type eq 'originalgenoeff') {
@@ -1762,8 +1762,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             push @plots_avg_data_values_header, "htpspatialeffectmean";
 
             foreach my $t (@sorted_trait_names) {
-                push @plots_avg_data_header, ($t, $t."spatialcorrected", $t."spatialcorrecthtpmean");
-                push @plots_avg_data_values_header, ($t, $t."spatialcorrected", $t."spatialcorrecthtpmean");
+                push @plots_avg_data_header, ($t, $t."spatial2Dspl", $t."2Dsplcorrected", $t."spatialcorrecthtpmean");
+                push @plots_avg_data_values_header, ($t, $t."spatial2Dspl", $t."2Dsplcorrected", $t."spatialcorrecthtpmean");
 
                 foreach my $time (@sorted_seen_times_p) {
                     push @plots_avg_data_header, ("htpspatialeffect$time", "traithtpspatialcorrected$time");
@@ -1784,8 +1784,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 my $mean = $trait_pheno_stat->mean();
 
                 my $geno_trait_spatial_val = $result_blup_data_s->{$g}->{$t};
-                push @line, ($mean, $sd, $geno_trait_spatial_val); #$t."mean", $t."sd", $t."spatialcorrectedgenoeffect"
-                push @values, ($mean, $geno_trait_spatial_val); #$t."mean", $t."spatialcorrectedgenoeffect"
+                push @line, ($mean, $sd, $geno_trait_spatial_val); #$t."mean", $t."sd", $t."spatialcorrected2Dsplgenoeffect"
+                push @values, ($mean, $geno_trait_spatial_val); #$t."mean", $t."spatialcorrected2Dsplgenoeffect"
 
                 foreach my $time (@sorted_seen_times_g) {
                     my $val = $germplasm_result_time_blups{$g}->{$time};
@@ -1852,15 +1852,17 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 foreach my $t (@sorted_trait_names) {
                     my $trait_val = $plot_phenotypes{$p}->{$t};
                     my $env_trait_spatial_val = $result_blup_spatial_data_s->{$p}->{$t};
+                    my $trait_val_2dspl_corrected = $trait_val - $env_trait_spatial_val;
                     my $val = $trait_val - $plot_mean_scaled;
-                    push @line, ($trait_val, $env_trait_spatial_val, $val); #$t, $t."spatialcorrected", $t."spatialcorrecthtpmean"
-                    push @values, ($trait_val, $env_trait_spatial_val, $val); #$t, $t."spatialcorrected", $t."spatialcorrecthtpmean"
+                    push @line, ($trait_val, $env_trait_spatial_val, $trait_val_2dspl_corrected, $val); #$t, $t."spatial2Dspl", $t."2Dsplcorrected", $t."spatialcorrecthtpmean"
+                    push @values, ($trait_val, $env_trait_spatial_val, $trait_val_2dspl_corrected, $val); #$t, $t."spatial2Dspl", $t."2Dsplcorrected", $t."spatialcorrecthtpmean"
                     push @plots_avg_data_heatmap_values_traits, ["TraitPhenotype", $row_number, $col_number, $trait_val]; #"trait_type", "row", "col", "value"
-                    push @plots_avg_data_heatmap_values_traits, ["TraitSpatial", $row_number, $col_number, $env_trait_spatial_val]; #"trait_type", "row", "col", "value"
+                    push @plots_avg_data_heatmap_values_traits, ["TraitSpatial2Dspl", $row_number, $col_number, $env_trait_spatial_val]; #"trait_type", "row", "col", "value"
+                    push @plots_avg_data_heatmap_values_traits, ["Trait2DsplCorrected", $row_number, $col_number, $trait_val_2dspl_corrected]; #"trait_type", "row", "col", "value"
                     push @plots_avg_data_heatmap_values_traits, ["TraitHTPspatialMeanCorrected", $row_number, $col_number, $val]; #"trait_type", "row", "col", "value"
 
                     if ($is_first_plot) {
-                        push @type_names_first_line, ("TraitPhenotype", "TraitSpatial", "TraitHTPspatialMeanCorrected");
+                        push @type_names_first_line, ("TraitPhenotype", "TraitSpatial2Dspl", "Trait2DsplCorrected", "TraitHTPspatialMeanCorrected");
                     }
 
                     foreach my $time (@sorted_seen_times_p) {
