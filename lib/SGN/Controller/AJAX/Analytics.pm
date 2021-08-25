@@ -3239,7 +3239,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my @plots_avg_corrected_data_values = ();
     my @plots_avg_corrected_data_values_header = ();
 
-    if (scalar(@result_blups_all) > 1) {
+    my $show_summarized_iterations;
+    if (scalar(@result_blups_all) > 1 && $show_summarized_iterations) {
         my $analytics_protocol_tempfile_string = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
         $analytics_protocol_tempfile_string .= '.png';
         my $analytics_protocol_figure_tempfile = $c->config->{basepath}."/".$analytics_protocol_tempfile_string;
