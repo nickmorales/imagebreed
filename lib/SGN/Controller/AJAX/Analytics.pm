@@ -2881,7 +2881,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
 
                 foreach my $t (@sorted_trait_names) {
-                    my $trait_val = $plot_phenotypes{$p}->{$t};
+                    my $trait_val = $plot_phenotypes{$p}->{$t} || 0;
                     my $val = $trait_val - $plot_mean_scaled;
 
                     push @plots_avg_data_heatmap_values_traits, ["TraitPhenotype", $row_number, $col_number, $trait_val]; #"trait_type", "row", "col", "value"
@@ -2923,7 +2923,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         my $time_val = $plot_result_time_blups{$p}->{$time};
                         # my $time_val_scaled = $time_val*(($max_phenotype - $min_phenotype)/($max_phenotype_htp - $min_phenotype_htp));
                         my $time_val_scaled = $time_val*($max_phenotype/$max_phenotype_htp);
-                        my $val = $plot_phenotypes{$p}->{$t} - $time_val_scaled;
+                        my $val = $trait_val - $time_val_scaled;
                         push @line, ($time_val, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
                         push @values, ($time_val, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
                         push @plots_avg_data_heatmap_values, ["HTPspatial$time", $row_number, $col_number, $time_val]; #"trait_type", "row", "col", "value"
