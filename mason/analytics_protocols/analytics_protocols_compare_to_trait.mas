@@ -33,6 +33,27 @@ $analytics_protocol_id
                     <button class="btn btn-primary" id="analytics_compare_results_to_trait_trait_select_step">Go to Next Step</button>
                     </center>
                 </&>
+                <&| /util/workflow.mas:step, title=> "Analysis" &>
+                    <& /page/page_title.mas, title=>"Select Analysis to Run" &>
+
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Analyses: </label>
+                            <div class="col-sm-9" >
+                                <select class="form-control" id="analytics_compare_results_to_trait_analysis_select">
+                                    <option value="2dspl">2D-Spline on Trait</option>
+                                    <option value="ar1">AR1xAR1 on Trait</option>
+                                    <option value="2dspl_ar1">2D-Spline and AR1xAR1 on Trait</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <center>
+                    <button class="btn btn-primary" id="analytics_compare_results_to_trait_analysis_select_step">Go to Next Step</button>
+                    </center>
+                </&>
                 <&| /util/workflow.mas:step, title=> "Results" &>
                     <& /page/page_title.mas, title=>"Results" &>
 
@@ -62,6 +83,7 @@ jQuery(document).ready(function() {
 
     var manage_drone_imagery_analytics_compare_results_trial_id = '';
     var manage_drone_imagery_analytics_compare_results_trait_id = '';
+    var manage_drone_imagery_analytics_compare_results_analysis = '';
 
     jQuery('#analytics_compare_results_to_trait_trial_select_step').click(function(){
         manage_drone_imagery_analytics_compare_results_trial_id = jQuery('#analytics_compare_results_to_trait_trial_id').val();
@@ -86,8 +108,15 @@ jQuery(document).ready(function() {
             return false;
         }
 
+        Workflow.complete("#analytics_compare_results_to_trait_trait_select_step");
+        Workflow.focus('#analytics_compare_results_to_trait_workflow', 2);
+    });
+
+    jQuery('#analytics_compare_results_to_trait_analysis_select_step').click(function(){
+        manage_drone_imagery_analytics_compare_results_analysis = jQuery('#analytics_compare_results_to_trait_analysis_select').val();
+
         jQuery.ajax({
-            url : '/ajax/analytics_protocols_compare_to_trait?protocol_id='+<% $analytics_protocol_id %>+'&trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id,
+            url : '/ajax/analytics_protocols_compare_to_trait?protocol_id='+<% $analytics_protocol_id %>+'&trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id+'&analysis='+manage_drone_imagery_analytics_compare_results_analysis,
             beforeSend: function() {
                 jQuery("#working_modal").modal("show");
             },
@@ -240,8 +269,8 @@ jQuery(document).ready(function() {
                 jQuery('#analytics_compare_results_to_trait_plots_data_table').DataTable({});
                 jQuery('#analytics_compare_results_to_trait_plots_corrected_data_table').DataTable({});
 
-                Workflow.complete("#analytics_compare_results_to_trait_trait_select_step");
-                Workflow.focus('#analytics_compare_results_to_trait_workflow', 2);
+                Workflow.complete("#analytics_compare_results_to_trait_analysis_select_step");
+                Workflow.focus('#analytics_compare_results_to_trait_workflow', 3);
             },
             error: function(response){
                 jQuery("#working_modal").modal("hide");
