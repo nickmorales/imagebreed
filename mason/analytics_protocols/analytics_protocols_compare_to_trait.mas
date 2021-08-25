@@ -175,89 +175,89 @@ jQuery(document).ready(function() {
                 }
                 html = html + '</div><hr>';
 
-                html = html + '<table class="table table-hover table-bordered"><thead><tr>';
-                for(var i=0; i<response.germplasm_results[0].length; i++) {
-                    html = html + '<th>'+response.germplasm_results[0][i]+'</th>';
-                }
-                html = html + '</tr></thead>';
-                for(var i=1; i<response.germplasm_results.length; i++) {
-                    html = html + '<tr>';
-                    for(var j=0; j<response.germplasm_results[i].length; j++) {
-                        html = html + '<td>'+response.germplasm_results[i][j]+'</td>';
-                    }
-                    html = html + '</tr>';
-                }
-                html = html + '</tbody></table>';
+                // html = html + '<table class="table table-hover table-bordered"><thead><tr>';
+                // for(var i=0; i<response.germplasm_results[0].length; i++) {
+                //     html = html + '<th>'+response.germplasm_results[0][i]+'</th>';
+                // }
+                // html = html + '</tr></thead>';
+                // for(var i=1; i<response.germplasm_results.length; i++) {
+                //     html = html + '<tr>';
+                //     for(var j=0; j<response.germplasm_results[i].length; j++) {
+                //         html = html + '<td>'+response.germplasm_results[i][j]+'</td>';
+                //     }
+                //     html = html + '</tr>';
+                // }
+                // html = html + '</tbody></table>';
 
-                html = html + '<div class="well well-sm"><table class="table table-hover table-bordered" id="analytics_compare_results_to_trait_germplasm_data_table"><thead><tr>';
-                for(var i=0; i<response.germplasm_data_header.length; i++) {
-                    html = html + '<th>'+response.germplasm_data_header[i]+'</th>';
-                }
-                html = html + '</tr></thead>';
-                for(var i=0; i<response.germplasm_data.length; i++) {
-                    html = html + '<tr>';
-                    for(var j=0; j<response.germplasm_data[i].length; j++) {
-                        html = html + '<td>'+response.germplasm_data[i][j]+'</td>';
-                    }
-                    html = html + '</tr>';
-                }
-                html = html + '</tbody></table></div>';
+                // html = html + '<div class="well well-sm"><table class="table table-hover table-bordered" id="analytics_compare_results_to_trait_germplasm_data_table"><thead><tr>';
+                // for(var i=0; i<response.germplasm_data_header.length; i++) {
+                //     html = html + '<th>'+response.germplasm_data_header[i]+'</th>';
+                // }
+                // html = html + '</tr></thead>';
+                // for(var i=0; i<response.germplasm_data.length; i++) {
+                //     html = html + '<tr>';
+                //     for(var j=0; j<response.germplasm_data[i].length; j++) {
+                //         html = html + '<td>'+response.germplasm_data[i][j]+'</td>';
+                //     }
+                //     html = html + '</tr>';
+                // }
+                // html = html + '</tbody></table></div>';
 
-                html = html + '<table class="table table-hover table-bordered"><thead><tr>';
-                for(var i=0; i<response.plots_avg_results[0].length; i++) {
-                    html = html + '<th>'+response.plots_avg_results[0][i]+'</th>';
-                }
-                html = html + '</tr></thead>';
-                for(var i=1; i<response.plots_avg_results.length; i++) {
-                    html = html + '<tr>';
-                    for(var j=0; j<response.plots_avg_results[i].length; j++) {
-                        html = html + '<td>'+response.plots_avg_results[i][j]+'</td>';
-                    }
-                    html = html + '</tr>';
-                }
-                html = html + '</tbody></table>';
+                // html = html + '<table class="table table-hover table-bordered"><thead><tr>';
+                // for(var i=0; i<response.plots_avg_results[0].length; i++) {
+                //     html = html + '<th>'+response.plots_avg_results[0][i]+'</th>';
+                // }
+                // html = html + '</tr></thead>';
+                // for(var i=1; i<response.plots_avg_results.length; i++) {
+                //     html = html + '<tr>';
+                //     for(var j=0; j<response.plots_avg_results[i].length; j++) {
+                //         html = html + '<td>'+response.plots_avg_results[i][j]+'</td>';
+                //     }
+                //     html = html + '</tr>';
+                // }
+                // html = html + '</tbody></table>';
 
-                html = html + '<div class="well well-sm"><table class="table table-hover table-bordered" id="analytics_compare_results_to_trait_plots_data_table"><thead><tr>';
-                for(var i=0; i<response.plots_avg_data_header.length; i++) {
-                    html = html + '<th>'+response.plots_avg_data_header[i]+'</th>';
-                }
-                html = html + '</tr></thead>';
-                for(var i=0; i<response.plots_avg_data.length; i++) {
-                    html = html + '<tr>';
-                    for(var j=0; j<response.plots_avg_data[i].length; j++) {
-                        html = html + '<td>'+response.plots_avg_data[i][j]+'</td>';
-                    }
-                    html = html + '</tr>';
-                }
-                html = html + '</tbody></table></div>';
+                // html = html + '<div class="well well-sm"><table class="table table-hover table-bordered" id="analytics_compare_results_to_trait_plots_data_table"><thead><tr>';
+                // for(var i=0; i<response.plots_avg_data_header.length; i++) {
+                //     html = html + '<th>'+response.plots_avg_data_header[i]+'</th>';
+                // }
+                // html = html + '</tr></thead>';
+                // for(var i=0; i<response.plots_avg_data.length; i++) {
+                //     html = html + '<tr>';
+                //     for(var j=0; j<response.plots_avg_data[i].length; j++) {
+                //         html = html + '<td>'+response.plots_avg_data[i][j]+'</td>';
+                //     }
+                //     html = html + '</tr>';
+                // }
+                // html = html + '</tbody></table></div>';
 
-                html = html + '<table class="table table-hover table-bordered"><thead><tr>';
-                for(var i=0; i<response.plots_avg_corrected_results[0].length; i++) {
-                    html = html + '<th>'+response.plots_avg_corrected_results[0][i]+'</th>';
-                }
-                html = html + '</tr></thead>';
-                for(var i=1; i<response.plots_avg_corrected_results.length; i++) {
-                    html = html + '<tr>';
-                    for(var j=0; j<response.plots_avg_corrected_results[i].length; j++) {
-                        html = html + '<td>'+response.plots_avg_corrected_results[i][j]+'</td>';
-                    }
-                    html = html + '</tr>';
-                }
-                html = html + '</tbody></table>';
+                // html = html + '<table class="table table-hover table-bordered"><thead><tr>';
+                // for(var i=0; i<response.plots_avg_corrected_results[0].length; i++) {
+                //     html = html + '<th>'+response.plots_avg_corrected_results[0][i]+'</th>';
+                // }
+                // html = html + '</tr></thead>';
+                // for(var i=1; i<response.plots_avg_corrected_results.length; i++) {
+                //     html = html + '<tr>';
+                //     for(var j=0; j<response.plots_avg_corrected_results[i].length; j++) {
+                //         html = html + '<td>'+response.plots_avg_corrected_results[i][j]+'</td>';
+                //     }
+                //     html = html + '</tr>';
+                // }
+                // html = html + '</tbody></table>';
 
-                html = html + '<div class="well well-sm"><table class="table table-hover table-bordered" id="analytics_compare_results_to_trait_plots_corrected_data_table"><thead><tr>';
-                for(var i=0; i<response.plots_avg_corrected_data_header.length; i++) {
-                    html = html + '<th>'+response.plots_avg_corrected_data_header[i]+'</th>';
-                }
-                html = html + '</tr></thead>';
-                for(var i=0; i<response.plots_avg_corrected_data.length; i++) {
-                    html = html + '<tr>';
-                    for(var j=0; j<response.plots_avg_corrected_data[i].length; j++) {
-                        html = html + '<td>'+response.plots_avg_corrected_data[i][j]+'</td>';
-                    }
-                    html = html + '</tr>';
-                }
-                html = html + '</tbody></table></div>';
+                // html = html + '<div class="well well-sm"><table class="table table-hover table-bordered" id="analytics_compare_results_to_trait_plots_corrected_data_table"><thead><tr>';
+                // for(var i=0; i<response.plots_avg_corrected_data_header.length; i++) {
+                //     html = html + '<th>'+response.plots_avg_corrected_data_header[i]+'</th>';
+                // }
+                // html = html + '</tr></thead>';
+                // for(var i=0; i<response.plots_avg_corrected_data.length; i++) {
+                //     html = html + '<tr>';
+                //     for(var j=0; j<response.plots_avg_corrected_data[i].length; j++) {
+                //         html = html + '<td>'+response.plots_avg_corrected_data[i][j]+'</td>';
+                //     }
+                //     html = html + '</tr>';
+                // }
+                // html = html + '</tbody></table></div>';
 
                 var charts = response.charts;
                 for (var i=0; i<charts.length; i++) {
