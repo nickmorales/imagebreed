@@ -26,7 +26,20 @@ $analytics_protocol_id
                 <&| /util/workflow.mas:step, title=> "Trait" &>
                     <& /page/page_title.mas, title=>"Select Trait to Compare With" &>
 
-                    <div id="analytics_compare_results_to_trait_trait_select_div">Loading...</div>
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Trait: </label>
+                            <div class="col-sm-9" >
+                                <div id="analytics_compare_results_to_trait_trait_select_div">Loading...</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Trait Secondary: </label>
+                            <div class="col-sm-9" >
+                                <div id="analytics_compare_results_to_trait_trait_secondary_select_div">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
 
                     <hr>
                     <center>
@@ -83,6 +96,7 @@ jQuery(document).ready(function() {
 
     var manage_drone_imagery_analytics_compare_results_trial_id = '';
     var manage_drone_imagery_analytics_compare_results_trait_id = '';
+    var manage_drone_imagery_analytics_compare_results_trait_secondary_id = '';
     var manage_drone_imagery_analytics_compare_results_analysis = '';
 
     jQuery('#analytics_compare_results_to_trait_trial_select_step').click(function(){
@@ -95,6 +109,8 @@ jQuery(document).ready(function() {
         else {
             get_select_box('traits', 'analytics_compare_results_to_trait_trait_select_div', { 'name' : 'analytics_compare_results_to_trait_trait_select', 'id' : 'analytics_compare_results_to_trait_trait_select', 'empty':1, 'multiple':0, 'trial_ids':manage_drone_imagery_analytics_compare_results_trial_id, 'stock_type':'plot' });
 
+            get_select_box('traits', 'analytics_compare_results_to_trait_trait_secondary_select_div', { 'name' : 'analytics_compare_results_to_trait_trait_secondary_select', 'id' : 'analytics_compare_results_to_trait_trait_secondary_select', 'empty':1, 'multiple':0, 'trial_ids':manage_drone_imagery_analytics_compare_results_trial_id, 'stock_type':'plot' });
+
             Workflow.complete("#analytics_compare_results_to_trait_trial_select_step");
             Workflow.focus('#analytics_compare_results_to_trait_workflow', 1);
         }
@@ -102,6 +118,7 @@ jQuery(document).ready(function() {
 
     jQuery('#analytics_compare_results_to_trait_trait_select_step').click(function(){
         manage_drone_imagery_analytics_compare_results_trait_id = jQuery('#analytics_compare_results_to_trait_trait_select').val();
+        manage_drone_imagery_analytics_compare_results_trait_secondary_id = jQuery('#analytics_compare_results_to_trait_trait_secondary_select').val();
 
         if (manage_drone_imagery_analytics_compare_results_trait_id == '') {
             alert('Please select a trait!');
@@ -116,7 +133,7 @@ jQuery(document).ready(function() {
         manage_drone_imagery_analytics_compare_results_analysis = jQuery('#analytics_compare_results_to_trait_analysis_select').val();
 
         jQuery.ajax({
-            url : '/ajax/analytics_protocols_compare_to_trait?protocol_id='+<% $analytics_protocol_id %>+'&trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id+'&analysis='+manage_drone_imagery_analytics_compare_results_analysis,
+            url : '/ajax/analytics_protocols_compare_to_trait?protocol_id='+<% $analytics_protocol_id %>+'&trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id+'&analysis='+manage_drone_imagery_analytics_compare_results_analysis+'&trait_secondary='+manage_drone_imagery_analytics_compare_results_trait_secondary_id,
             beforeSend: function() {
                 jQuery("#working_modal").modal("show");
             },

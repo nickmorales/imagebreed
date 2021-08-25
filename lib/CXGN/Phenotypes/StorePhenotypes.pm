@@ -459,6 +459,8 @@ sub store {
     my $subplot_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'subplot', 'stock_type')->cvterm_id();
     my $tissue_sample_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'tissue_sample', 'stock_type')->cvterm_id();
     my $analysis_instance_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analysis_instance', 'stock_type')->cvterm_id();
+    my $phenotype_addtional_info_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'phenotype_additional_info', 'phenotype_property')->cvterm_id();
+
     my @stored_details;
     my %nd_experiment_md_images;
 
@@ -555,6 +557,7 @@ sub store {
                     $operator = $value_array->[2] ? $value_array->[2] : $operator;
                     my $observation = $value_array->[3];
                     my $stored_image_id = $value_array->[4];
+                    my $additional_info = $value_array->[5] || undef;
                     my $unique_time = $timestamp && defined($timestamp) ? $timestamp : 'NA'.$upload_date;
 
                     if (defined($trait_value) && length($trait_value)) {
@@ -631,6 +634,14 @@ sub store {
                             if (!$stored_image_id) {$stored_image_id = undef;}
                             if (!$stored_protocol_id) {$stored_protocol_id = undef;}
                             $nd_experiment_phenotype_bridge_dbh->execute($stock_id, $project_id, $phenotype_id, $stored_protocol_id, $location_id, $stored_file_id, $stored_image_id, $stored_json_id, $upload_date);
+                        }
+
+                        if ($additional_info){
+                            my $pheno_additional_info = $schema->resultset("Phenotype::Phenotypeprop")->create({
+                                phenotype_id => $phenotype_id,
+                                type_id       => $phenotype_addtional_info_type_id,
+                                value => encode_json $additional_info,
+                            });
                         }
 
                         my $observationVariableDbId = $trait_cvterm->cvterm_id;

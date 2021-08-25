@@ -290,6 +290,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
     my $protocol_id = $c->req->param('protocol_id');
     my $trait_id = $c->req->param('trait_id');
+    my $trait_secondary_id = $c->req->param('trait_secondary');
     my $trial_id = $c->req->param('trial_id');
     my $analysis_run_type = $c->req->param('analysis');
 
@@ -391,7 +392,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my @sorted_trait_names = sort keys %$unique_traits;
 
     if (scalar(@$data) == 0) {
-        $c->stash->{rest} = { error => "There are no phenotypes for the trials and traits you have selected!"};
+        $c->stash->{rest} = { error => "There are no phenotypes for the trials and trait you have selected!"};
         return;
     }
 
@@ -442,6 +443,56 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 my $time_value = (split ' ', $time_days)[1];
                 $seen_days_after_plantings{$time_value}++;
             }
+        }
+    }
+
+    my $phenotypes_search_secondary = CXGN::Phenotypes::SearchFactory->instantiate(
+        'MaterializedViewTable',
+        {
+            bcs_schema=>$schema,
+            data_level=>'plot',
+            trait_list=>[$trait_secondary_id],
+            trial_list=>$field_trial_id_list,
+            include_timestamp=>0,
+            exclude_phenotype_outlier=>0
+        }
+    );
+    my ($data_secondary, $unique_traits_secondary) = $phenotypes_search_secondary->search();
+    my @sorted_trait_names_secondary = sort keys %$unique_traits_secondary;
+
+    if (scalar(@$data_secondary) == 0) {
+        $c->stash->{rest} = { error => "There are no phenotypes for the trials and secondary trait you have selected!"};
+        return;
+    }
+
+    my %germplasm_phenotypes_secondary;
+    my %plot_phenotypes_secondary;
+    my $min_phenotype_secondary = 1000000000000000;
+    my $max_phenotype_secondary = -1000000000000000;
+    foreach my $obs_unit (@$data){
+        my $germplasm_name = $obs_unit->{germplasm_uniquename};
+        my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
+        my $replicate_number = $obs_unit->{obsunit_rep} || '';
+        my $block_number = $obs_unit->{obsunit_block} || '';
+        my $obsunit_stock_id = $obs_unit->{observationunit_stock_id};
+        my $obsunit_stock_uniquename = $obs_unit->{observationunit_uniquename};
+        my $row_number = $obs_unit->{obsunit_row_number} || '';
+        my $col_number = $obs_unit->{obsunit_col_number} || '';
+
+        my $observations = $obs_unit->{observations};
+        foreach (@$observations){
+            my $value = $_->{value};
+            my $trait_name = $_->{trait_name};
+
+            if ($value < $min_phenotype_secondary) {
+                $min_phenotype_secondary = $value;
+            }
+            if ($value > $max_phenotype_secondary) {
+                $max_phenotype_secondary = $value;
+            }
+
+            push @{$germplasm_phenotypes_secondary{$germplasm_name}->{$trait_name}}, $value;
+            $plot_phenotypes_secondary{$obsunit_stock_uniquename}->{$trait_name} = $value;
         }
     }
 
@@ -2437,7 +2488,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
         attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat);
+        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.');
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
