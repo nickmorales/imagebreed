@@ -55,8 +55,8 @@ $analytics_protocol_id
                             <div class="col-sm-9" >
                                 <select class="form-control" id="analytics_compare_results_to_trait_analysis_select">
                                     <option value="2dspl">2D-Spline on Trait</option>
-                                    <option value="ar1">AR1xAR1 on Trait</option>
                                     <option value="2dspl_ar1">2D-Spline and AR1xAR1 on Trait</option>
+                                    <!--option value="ar1">AR1xAR1 on Trait</option-->
                                 </select>
                             </div>
                         </div>
