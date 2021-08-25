@@ -2855,7 +2855,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             my $col_number = $stock_name_row_col{$p}->{col_number};
 
             foreach my $t (@sorted_trait_names) {
-                my $val = $plot_phenotypes{$p}->{$t};
+                my $val = $plot_phenotypes{$p}->{$t} || '';
 
                 foreach my $time (@sorted_seen_times_p) {
                     my $sval = $plot_result_time_blups{$p}->{$time};
