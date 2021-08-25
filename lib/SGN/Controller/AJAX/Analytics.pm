@@ -417,36 +417,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $obsunit_stock_uniquename = $obs_unit->{observationunit_uniquename};
         my $row_number = $obs_unit->{obsunit_row_number} || '';
         my $col_number = $obs_unit->{obsunit_col_number} || '';
-        $seen_accession_stock_ids{$germplasm_stock_id}++;
-        $plot_id_map{$obsunit_stock_id} = $obsunit_stock_uniquename;
-        $stock_name_row_col{$obsunit_stock_uniquename} = {
-            row_number => $row_number,
-            col_number => $col_number,
-            obsunit_stock_id => $obsunit_stock_id,
-            obsunit_name => $obsunit_stock_uniquename,
-            rep => $replicate_number,
-            block => $block_number,
-            germplasm_stock_id => $germplasm_stock_id,
-            germplasm_name => $germplasm_name
-        };
-        $plot_germplasm_map{$obsunit_stock_uniquename} = $germplasm_name;
-
-        $stock_info{"S".$germplasm_stock_id} = {
-            uniquename => $germplasm_name
-        };
-
-        if ($row_number < $min_row) {
-            $min_row = $row_number;
-        }
-        if ($row_number > $max_row) {
-            $max_row = $row_number;
-        }
-        if ($col_number < $min_col) {
-            $min_col = $col_number;
-        }
-        if ($col_number > $max_col) {
-            $max_col = $col_number;
-        }
 
         my $observations = $obs_unit->{observations};
         foreach (@$observations){
@@ -510,6 +480,37 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $obsunit_stock_uniquename = $obs_unit->{observationunit_uniquename};
         my $row_number = $obs_unit->{obsunit_row_number} || '';
         my $col_number = $obs_unit->{obsunit_col_number} || '';
+
+        $seen_accession_stock_ids{$germplasm_stock_id}++;
+        $plot_id_map{$obsunit_stock_id} = $obsunit_stock_uniquename;
+        $stock_name_row_col{$obsunit_stock_uniquename} = {
+            row_number => $row_number,
+            col_number => $col_number,
+            obsunit_stock_id => $obsunit_stock_id,
+            obsunit_name => $obsunit_stock_uniquename,
+            rep => $replicate_number,
+            block => $block_number,
+            germplasm_stock_id => $germplasm_stock_id,
+            germplasm_name => $germplasm_name
+        };
+        $plot_germplasm_map{$obsunit_stock_uniquename} = $germplasm_name;
+
+        $stock_info{"S".$germplasm_stock_id} = {
+            uniquename => $germplasm_name
+        };
+
+        if ($row_number < $min_row) {
+            $min_row = $row_number;
+        }
+        if ($row_number > $max_row) {
+            $max_row = $row_number;
+        }
+        if ($col_number < $min_col) {
+            $min_col = $col_number;
+        }
+        if ($col_number > $max_col) {
+            $max_col = $col_number;
+        }
 
         my $observations = $obs_unit->{observations};
         foreach (@$observations){
