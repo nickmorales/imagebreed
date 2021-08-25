@@ -2940,25 +2940,27 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             $is_first_plot = 0;
         }
 
-        open(my $F10, ">", $analytics_protocol_data_tempfile10) || die "Can't open file ".$analytics_protocol_data_tempfile10;
-            my $header_string10 = join ',', @germplasm_data_header;
-            print $F10 "$header_string10\n";
+        if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1') {
+            open(my $F10, ">", $analytics_protocol_data_tempfile10) || die "Can't open file ".$analytics_protocol_data_tempfile10;
+                my $header_string10 = join ',', @germplasm_data_header;
+                print $F10 "$header_string10\n";
 
-            foreach (@germplasm_data) {
-                my $string = join ',', @$_;
-                print $F10 "$string\n";
-            }
-        close($F10);
+                foreach (@germplasm_data) {
+                    my $string = join ',', @$_;
+                    print $F10 "$string\n";
+                }
+            close($F10);
 
-        open(my $F11, ">", $analytics_protocol_data_tempfile11) || die "Can't open file ".$analytics_protocol_data_tempfile11;
-            my $header_string11 = join ',', @germplasm_data_values_header;
-            print $F11 "$header_string11\n";
+            open(my $F11, ">", $analytics_protocol_data_tempfile11) || die "Can't open file ".$analytics_protocol_data_tempfile11;
+                my $header_string11 = join ',', @germplasm_data_values_header;
+                print $F11 "$header_string11\n";
 
-            foreach (@germplasm_data_values) {
-                my $string = join ',', @$_;
-                print $F11 "$string\n";
-            }
-        close($F11);
+                foreach (@germplasm_data_values) {
+                    my $string = join ',', @$_;
+                    print $F11 "$string\n";
+                }
+            close($F11);
+        }
 
         open(my $F12, ">", $analytics_protocol_data_tempfile12) || die "Can't open file ".$analytics_protocol_data_tempfile12;
             my $header_string12 = join ',', @plots_avg_data_header;
@@ -3021,35 +3023,38 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         close($F23);
 
         if ($result_type eq 'originalgenoeff') {
-            my $r_cmd_i1 = 'R -e "library(ggplot2); library(data.table);
-            data <- data.frame(fread(\''.$analytics_protocol_data_tempfile11.'\', header=TRUE, sep=\',\'));
-            res <- cor(data, use = \'complete.obs\')
-            res_rounded <- round(res, 2)
-            write.table(res_rounded, file=\''.$analytics_protocol_data_tempfile16.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-            "';
-            print STDERR Dumper $r_cmd_i1;
-            my $status_i1 = system($r_cmd_i1);
 
-            open(my $fh_i1, '<', $analytics_protocol_data_tempfile16) or die "Could not open file '$analytics_protocol_data_tempfile16' $!";
-                print STDERR "Opened $analytics_protocol_data_tempfile16\n";
-                my $header = <$fh_i1>;
-                my @header_cols;
-                if ($csv->parse($header)) {
-                    @header_cols = $csv->fields();
-                }
+            if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1') {
+                my $r_cmd_i1 = 'R -e "library(ggplot2); library(data.table);
+                data <- data.frame(fread(\''.$analytics_protocol_data_tempfile11.'\', header=TRUE, sep=\',\'));
+                res <- cor(data, use = \'complete.obs\')
+                res_rounded <- round(res, 2)
+                write.table(res_rounded, file=\''.$analytics_protocol_data_tempfile16.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                "';
+                print STDERR Dumper $r_cmd_i1;
+                my $status_i1 = system($r_cmd_i1);
 
-                my @header_trait_names = ("Trait", @header_cols);
-                push @germplasm_results, \@header_trait_names;
-
-                while (my $row = <$fh_i1>) {
-                    my @columns;
-                    if ($csv->parse($row)) {
-                        @columns = $csv->fields();
+                open(my $fh_i1, '<', $analytics_protocol_data_tempfile16) or die "Could not open file '$analytics_protocol_data_tempfile16' $!";
+                    print STDERR "Opened $analytics_protocol_data_tempfile16\n";
+                    my $header = <$fh_i1>;
+                    my @header_cols;
+                    if ($csv->parse($header)) {
+                        @header_cols = $csv->fields();
                     }
 
-                    push @germplasm_results, \@columns;
-                }
-            close($fh_i1);
+                    my @header_trait_names = ("Trait", @header_cols);
+                    push @germplasm_results, \@header_trait_names;
+
+                    while (my $row = <$fh_i1>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        push @germplasm_results, \@columns;
+                    }
+                close($fh_i1);
+            }
 
             my $r_cmd_p1 = 'R -e "library(data.table); library(ggplot2); library(GGally);
             data <- data.frame(fread(\''.$analytics_protocol_data_tempfile19.'\', header=TRUE, sep=\',\'));
