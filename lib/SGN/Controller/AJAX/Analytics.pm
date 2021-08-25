@@ -474,7 +474,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
     }
     my @seen_germplasm = sort keys %germplasm_phenotypes;
-    my @seen_plots = sort keys %plot_phenotypes;
     my @accession_ids = sort keys %seen_accession_stock_ids;
 
     my $phenotypes_search_htp = CXGN::Phenotypes::SearchFactory->instantiate(
@@ -543,6 +542,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             }
         }
     }
+    my @seen_plots = sort keys %plot_phenotypes_htp;
 
     my $grm_file;
     # Prepare GRM for Trait Spatial Correction
@@ -2095,7 +2095,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $output_plot_row = 'row';
             my $output_plot_col = 'col';
-            if ($max_col < $max_row) {
+            if ($max_col > $max_row) {
                 $output_plot_row = 'col';
                 $output_plot_col = 'row';
             }
