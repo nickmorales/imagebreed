@@ -131,21 +131,23 @@ jQuery(document).ready(function() {
                     html = html + '<div id="analytics_protocol_compare_to_trait_model_it'+i+'" class="collapse"><div class="well well-sm">';
                     console.log(result_blups_all[i]["result_type"]);
                     if (result_blups_all[i]["result_type"] == "originalgenoeff") {
-                        html = html + '<table class="table table-hover table-bordered"><thead><tr>';
-                        for(var j=0; j<result_blups_all[i]["germplasm_results"][0].length; j++) {
-                            html = html + '<th>'+result_blups_all[i]["germplasm_results"][0][j]+'</th>';
-                        }
-                        html = html + '</tr></thead>';
-                        for(var j=1; j<result_blups_all[i]["germplasm_results"].length; j++) {
-                            html = html + '<tr>';
-                            for(var k=0; k<result_blups_all[i]["germplasm_results"][j].length; k++) {
-                                html = html + '<td>'+result_blups_all[i]["germplasm_results"][j][k]+'</td>';
+                        if (result_blups_all[i]["germplasm_results"].length>1) {
+                            html = html + '<table class="table table-hover table-bordered"><thead><tr>';
+                            for(var j=0; j<result_blups_all[i]["germplasm_results"][0].length; j++) {
+                                html = html + '<th>'+result_blups_all[i]["germplasm_results"][0][j]+'</th>';
                             }
-                            html = html + '</tr>';
-                        }
+                            html = html + '</tr></thead>';
+                            for(var j=1; j<result_blups_all[i]["germplasm_results"].length; j++) {
+                                html = html + '<tr>';
+                                for(var k=0; k<result_blups_all[i]["germplasm_results"][j].length; k++) {
+                                    html = html + '<td>'+result_blups_all[i]["germplasm_results"][j][k]+'</td>';
+                                }
+                                html = html + '</tr>';
+                            }
 
-                        html = html + '</tbody></table>';
-                        html = html + '<img src="'+result_blups_all[i]["germplasm_geno_corr_plot"]+'">';
+                            html = html + '</tbody></table>';
+                            html = html + '<img src="'+result_blups_all[i]["germplasm_geno_corr_plot"]+'">';
+                        }
                     }
                     if (result_blups_all[i]["result_type"] == "fullcorr") {
                         html = html + '<table class="table table-hover table-bordered"><thead><tr>';
