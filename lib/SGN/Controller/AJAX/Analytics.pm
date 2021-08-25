@@ -443,8 +443,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             }
         }
     }
-    my @seen_germplasm = sort keys %germplasm_phenotypes;
-    my @accession_ids = sort keys %seen_accession_stock_ids;
 
     my $phenotypes_search_htp = CXGN::Phenotypes::SearchFactory->instantiate(
         'MaterializedViewTable',
@@ -544,6 +542,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
     }
     my @seen_plots = sort keys %plot_phenotypes_htp;
+    my @seen_germplasm = sort keys %germplasm_phenotypes;
+    my @accession_ids = sort keys %seen_accession_stock_ids;
 
     my $grm_file;
     # Prepare GRM for Trait Spatial Correction
