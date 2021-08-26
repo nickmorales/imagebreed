@@ -28,13 +28,13 @@ $analytics_protocol_id
 
                     <div class="form-horizontal">
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Trait: </label>
+                            <label class="col-sm-3 control-label">Trait to Spatial Correct and Plot: </label>
                             <div class="col-sm-9" >
                                 <div id="analytics_compare_results_to_trait_trait_select_div">Loading...</div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Trait Secondary: </label>
+                            <label class="col-sm-3 control-label">Trait(s) to Plot Alongside: </label>
                             <div class="col-sm-9" >
                                 <div id="analytics_compare_results_to_trait_trait_secondary_select_div">Loading...</div>
                             </div>
@@ -96,7 +96,8 @@ jQuery(document).ready(function() {
 
     var manage_drone_imagery_analytics_compare_results_trial_id = '';
     var manage_drone_imagery_analytics_compare_results_trait_id = '';
-    var manage_drone_imagery_analytics_compare_results_trait_secondary_id = '';
+    var manage_drone_imagery_analytics_compare_results_trait_secondary_ids = [];
+    var manage_drone_imagery_analytics_compare_results_trait_secondary_id_string = '';
     var manage_drone_imagery_analytics_compare_results_analysis = '';
 
     jQuery('#analytics_compare_results_to_trait_trial_select_step').click(function(){
@@ -109,7 +110,7 @@ jQuery(document).ready(function() {
         else {
             get_select_box('traits', 'analytics_compare_results_to_trait_trait_select_div', { 'name' : 'analytics_compare_results_to_trait_trait_select', 'id' : 'analytics_compare_results_to_trait_trait_select', 'empty':1, 'multiple':0, 'trial_ids':manage_drone_imagery_analytics_compare_results_trial_id, 'stock_type':'plot' });
 
-            get_select_box('traits', 'analytics_compare_results_to_trait_trait_secondary_select_div', { 'name' : 'analytics_compare_results_to_trait_trait_secondary_select', 'id' : 'analytics_compare_results_to_trait_trait_secondary_select', 'empty':1, 'multiple':0, 'trial_ids':manage_drone_imagery_analytics_compare_results_trial_id, 'stock_type':'plot' });
+            get_select_box('traits', 'analytics_compare_results_to_trait_trait_secondary_select_div', { 'name' : 'analytics_compare_results_to_trait_trait_secondary_select', 'id' : 'analytics_compare_results_to_trait_trait_secondary_select', 'empty':1, 'multiple':1, 'trial_ids':manage_drone_imagery_analytics_compare_results_trial_id, 'stock_type':'plot' });
 
             Workflow.complete("#analytics_compare_results_to_trait_trial_select_step");
             Workflow.focus('#analytics_compare_results_to_trait_workflow', 1);
@@ -118,7 +119,10 @@ jQuery(document).ready(function() {
 
     jQuery('#analytics_compare_results_to_trait_trait_select_step').click(function(){
         manage_drone_imagery_analytics_compare_results_trait_id = jQuery('#analytics_compare_results_to_trait_trait_select').val();
-        manage_drone_imagery_analytics_compare_results_trait_secondary_id = jQuery('#analytics_compare_results_to_trait_trait_secondary_select').val();
+        manage_drone_imagery_analytics_compare_results_trait_secondary_ids = jQuery('#analytics_compare_results_to_trait_trait_secondary_select').val();
+        if (manage_drone_imagery_analytics_compare_results_trait_secondary_ids != '' && manage_drone_imagery_analytics_compare_results_trait_secondary_ids != null) {
+            manage_drone_imagery_analytics_compare_results_trait_secondary_id_string = manage_drone_imagery_analytics_compare_results_trait_secondary_ids.join();
+        }
 
         if (manage_drone_imagery_analytics_compare_results_trait_id == '') {
             alert('Please select a trait!');
@@ -133,7 +137,7 @@ jQuery(document).ready(function() {
         manage_drone_imagery_analytics_compare_results_analysis = jQuery('#analytics_compare_results_to_trait_analysis_select').val();
 
         jQuery.ajax({
-            url : '/ajax/analytics_protocols_compare_to_trait?protocol_id='+<% $analytics_protocol_id %>+'&trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id+'&analysis='+manage_drone_imagery_analytics_compare_results_analysis+'&trait_secondary='+manage_drone_imagery_analytics_compare_results_trait_secondary_id,
+            url : '/ajax/analytics_protocols_compare_to_trait?protocol_id='+<% $analytics_protocol_id %>+'&trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id+'&analysis='+manage_drone_imagery_analytics_compare_results_analysis+'&traits_secondary='+manage_drone_imagery_analytics_compare_results_trait_secondary_id_string,
             beforeSend: function() {
                 jQuery("#working_modal").modal("show");
             },
@@ -186,9 +190,10 @@ jQuery(document).ready(function() {
                         }
                         html = html + '</tbody></table>';
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_heatmap_plot"]+'"><hr>';
-                        html = html + '<img src="'+result_blups_all[i]["plots_spatial_corr_plot"]+'">';
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_heatmap_traits_plot"]+'">';
+                        html = html + '<img src="'+result_blups_all[i]["plots_spatial_heatmap_traits_secondary_plot"]+'">';
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_ggcorr_plot"]+'">';
+                        html = html + '<img src="'+result_blups_all[i]["plots_spatial_corr_plot"]+'">';
                     }
                     html = html + '</div></div><br/>';
                 }

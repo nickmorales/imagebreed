@@ -288,9 +288,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
+    print STDERR Dumper $c->req->params();
     my $protocol_id = $c->req->param('protocol_id');
     my $trait_id = $c->req->param('trait_id');
-    my $trait_secondary_id = $c->req->param('trait_secondary');
+    my @traits_secondary_id = $c->req->param('traits_secondary') ? split(',', $c->req->param('traits_secondary')) : ();
     my $trial_id = $c->req->param('trial_id');
     my $analysis_run_type = $c->req->param('analysis');
 
@@ -450,28 +451,28 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my %plot_phenotypes_secondary;
     my $min_phenotype_secondary = 1000000000000000;
     my $max_phenotype_secondary = -1000000000000000;
-    if ($trait_secondary_id) {
+    my @sorted_trait_names_secondary;
+    if (scalar(@traits_secondary_id)>0) {
         my $phenotypes_search_secondary = CXGN::Phenotypes::SearchFactory->instantiate(
             'MaterializedViewTable',
             {
                 bcs_schema=>$schema,
                 data_level=>'plot',
-                trait_list=>[$trait_secondary_id],
+                trait_list=>\@traits_secondary_id,
                 trial_list=>$field_trial_id_list,
                 include_timestamp=>0,
                 exclude_phenotype_outlier=>0
             }
         );
         my ($data_secondary, $unique_traits_secondary) = $phenotypes_search_secondary->search();
-        my @sorted_trait_names_secondary = sort keys %$unique_traits_secondary;
-        my $sorted_trait_names_secondary_string = join ',', @sorted_trait_names_secondary;
+        @sorted_trait_names_secondary = sort keys %$unique_traits_secondary;
 
         if (scalar(@$data_secondary) == 0) {
             $c->stash->{rest} = { error => "There are no phenotypes for the trials and secondary trait you have selected!"};
             return;
         }
 
-        foreach my $obs_unit (@$data){
+        foreach my $obs_unit (@$data_secondary){
             my $germplasm_name = $obs_unit->{germplasm_uniquename};
             my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
             my $replicate_number = $obs_unit->{obsunit_rep} || '';
@@ -2775,6 +2776,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $analytics_protocol_data_tempfile22= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile23= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile24= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile25= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
         my $analytics_protocol_tempfile_string_1 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
         $analytics_protocol_tempfile_string_1 .= '.png';
@@ -2796,6 +2798,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         $analytics_protocol_tempfile_string_5 .= '.png';
         my $analytics_protocol_figure_tempfile_5 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_5;
 
+        my $analytics_protocol_tempfile_string_6 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+        $analytics_protocol_tempfile_string_6 .= '.png';
+        my $analytics_protocol_figure_tempfile_6 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_6;
+
         my @germplasm_results;
         my @germplasm_data = ();
         my @germplasm_data_header = ("germplasmName");
@@ -2810,6 +2816,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @plots_avg_data_heatmap_values = ();
         my @plots_avg_data_heatmap_values_traits_header = ("trait_type", "row", "col", "value");
         my @plots_avg_data_heatmap_values_traits = ();
+        my @plots_avg_data_heatmap_values_traits_secondary_header = ("trait_type", "row", "col", "value");
+        my @plots_avg_data_heatmap_values_traits_secondary = ();
         my @plots_h_results;
         my @germplasm_data_iteration_header = ("germplasmName", "tmean", "time", "value");
         my @germplasm_data_iteration_data_values = ();
@@ -2854,6 +2862,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     push @plots_avg_data_header, ("htpspatialeffect$time", "traithtpspatialcorrected$time");
                     push @plots_avg_data_values_header, ("htpspatialeffect$time", "traithtpspatialcorrected$time");
                 }
+            }
+            foreach my $t (@sorted_trait_names_secondary) {
+                push @plots_avg_data_header, $t;
+                push @plots_avg_data_values_header, $t;
             }
         }
 
@@ -2988,6 +3000,16 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         }
                     }
                 }
+                foreach my $t (@sorted_trait_names_secondary) {
+                    my $trait_secondary_val = $plot_phenotypes_secondary{$p}->{$t} || 0;
+                    push @line, $trait_secondary_val;
+                    push @values, $trait_secondary_val;
+                    push @plots_avg_data_heatmap_values_traits_secondary, [$t, $row_number, $col_number, $trait_secondary_val]; #"trait_type", "row", "col", "value"
+
+                    if ($is_first_plot) {
+                        push @type_names_first_line, $t;
+                    }
+                }
             }
             push @plots_avg_data, \@line;
             push @plots_avg_data_values, \@values;
@@ -3075,6 +3097,16 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 print $F23 "$string\n";
             }
         close($F23);
+
+        open(my $F25, ">", $analytics_protocol_data_tempfile25) || die "Can't open file ".$analytics_protocol_data_tempfile25;
+            my $header_string25 = join ',', @plots_avg_data_heatmap_values_traits_secondary_header;
+            print $F25 "$header_string25\n";
+
+            foreach (@plots_avg_data_heatmap_values_traits_secondary) {
+                my $string = join ',', @$_;
+                print $F25 "$string\n";
+            }
+        close($F25);
 
         if ($result_type eq 'originalgenoeff') {
 
@@ -3251,6 +3283,21 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             "';
             print STDERR Dumper $r_cmd_ic6;
             my $status_ic6 = system($r_cmd_ic6);
+
+            my $r_cmd_i7 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
+            pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile25.'\', header=TRUE, sep=\',\'));
+            pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_string.'\'));
+            options(device=\'png\');
+            par();
+            gg <- ggplot(pheno_mat, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) +
+                geom_tile() +
+                scale_fill_viridis(discrete=FALSE) +
+                coord_equal() +
+                facet_wrap(~trait_type, ncol=7);
+            ggsave(\''.$analytics_protocol_figure_tempfile_6.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
+            "';
+            print STDERR Dumper $r_cmd_i7;
+            my $status_i7 = system($r_cmd_i7);
         }
 
         push @result_blups_all, {
@@ -3273,6 +3320,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             plots_spatial_heatmap_plot => $analytics_protocol_tempfile_string_3,
             plots_spatial_heatmap_traits_plot => $analytics_protocol_tempfile_string_4,
             plots_spatial_ggcorr_plot => $analytics_protocol_tempfile_string_5,
+            plots_spatial_heatmap_traits_secondary_plot => $analytics_protocol_tempfile_string_6,
         }
     }
 
