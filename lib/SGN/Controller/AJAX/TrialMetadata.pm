@@ -1194,7 +1194,7 @@ sub trial_change_plot_accessions_upload : Chained('trial') PathPart('change_plot
     $parser->load_plugin('TrialChangePlotAccessionsCSV');
     my $parsed_data = $parser->parse();
     #print STDERR Dumper $parsed_data;
-        
+
     if (!$parsed_data) {
         my $return_error = '';
         my $parse_errors;
@@ -1280,7 +1280,7 @@ sub trial_change_plot_accessions_upload : Chained('trial') PathPart('change_plot
             });
 
             $stock_rs->update({
-                uniquename => $new_plot_name 
+                uniquename => $new_plot_name
             });
 
         }
@@ -1820,6 +1820,8 @@ sub replace_plot_accession : Chained('trial') PathPart('replace_plot_accessions'
   my $new_accession = $c->req->param('new_accession');
   my $old_plot_id = $c->req->param('old_plot_id');
   my $old_plot_name = $c->req->param('old_plot_name');
+  my $new_plot_name = $c->req->param('new_plot_name');
+  my $override = $c->req->param('override');
   my $trial_id = $c->stash->{trial_id};
 
   if ($self->privileges_denied($c)) {
@@ -1839,7 +1841,7 @@ sub replace_plot_accession : Chained('trial') PathPart('replace_plot_accessions'
     old_accession => $old_accession,
     old_plot_id => $old_plot_id,
     old_plot_name => $old_plot_name,
-
+    new_plot_name => $new_plot_name,
   });
 
   my $return_error = $replace_plot_accession_fieldmap->update_fieldmap_precheck();
@@ -1855,7 +1857,13 @@ sub replace_plot_accession : Chained('trial') PathPart('replace_plot_accessions'
     return;
   }
 
-  print "OldAccession: $old_accession, NewAcc: $new_accession, OldPlotId: $old_plot_id\n";
+  my $replace_plot_name_return_error = $replace_plot_accession_fieldmap->replace_plot_name_fieldMap();
+  if ($replace_plot_name_return_error) {
+    $c->stash->{rest} = { error => $replace_plot_name_return_error };
+    return;
+  }
+
+  print "OldAccession: $old_accession, NewAcc: $new_accession, OldPlotName: $old_plot_name, NewPlotName: $new_plot_name OldPlotId: $old_plot_id\n";
   $c->stash->{rest} = { success => 1};
 }
 
