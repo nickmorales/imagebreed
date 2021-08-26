@@ -1190,11 +1190,11 @@ sub trial_change_plot_accessions_upload : Chained('trial') PathPart('change_plot
         $c->detach();
     }
     unlink $upload_tempfile;
-    my $parser = CXGN::Trial::ParseUpload->new(chado_schema => $schema, filename => $archived_filename_with_path);
+    my $parser = CXGN::Trial::ParseUpload->new(chado_schema => $schema, filename => $archived_filename_with_path, trial_id => $trial_id);
     $parser->load_plugin('TrialChangePlotAccessionsCSV');
     my $parsed_data = $parser->parse();
     #print STDERR Dumper $parsed_data;
-
+        
     if (!$parsed_data) {
         my $return_error = '';
         my $parse_errors;
@@ -1278,7 +1278,6 @@ sub trial_change_plot_accessions_upload : Chained('trial') PathPart('change_plot
                 stock_id => $plot_id,
                 type_id => $plot_type_id
             });
-
 
             $stock_rs->update({
                 uniquename => $new_plot_name 
