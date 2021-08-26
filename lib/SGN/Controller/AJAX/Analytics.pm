@@ -2935,8 +2935,15 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 $plot_blups_stat->add_data(@$plot_blups);
                 my $plot_sd = $plot_blups_stat->standard_deviation();
                 my $plot_mean = $plot_blups_stat->mean();
+                my $plot_mean_scaled;
                 # my $plot_mean_scaled = $plot_mean*(($max_phenotype - $min_phenotype)/($max_phenotype_htp - $min_phenotype_htp));
-                my $plot_mean_scaled = $plot_mean*($max_phenotype/$max_phenotype_htp);
+                # my $plot_mean_scaled = $plot_mean*($max_phenotype/$max_phenotype_htp);
+                # my $plot_mean_scaled = (($plot_mean - $min_phenotype_htp)/($max_phenotype_htp - $min_phenotype_htp))*($max_phenotype-$min_phenotype)/($max_phenotype_htp-$min_phenotype_htp);
+                if ($max_phenotype > 1) {
+                    $plot_mean_scaled = (($plot_mean - $min_phenotype_htp)/($max_phenotype_htp - $min_phenotype_htp))*$max_phenotype;
+                } else {
+                    $plot_mean_scaled = $plot_mean;
+                }
 
                 push @line, ($plot_sd, $plot_mean_scaled); #"htpspatialeffectsd","htpspatialeffectmean"
                 push @values, $plot_mean_scaled; #"htpspatialeffectmean"
@@ -2987,16 +2994,24 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
                     foreach my $time (@sorted_seen_times_p) {
                         my $time_val = $plot_result_time_blups{$p}->{$time};
+                        my $time_val_scaled;
                         # my $time_val_scaled = $time_val*(($max_phenotype - $min_phenotype)/($max_phenotype_htp - $min_phenotype_htp));
-                        my $time_val_scaled = $time_val*($max_phenotype/$max_phenotype_htp);
+                        # my $time_val_scaled = $time_val*($max_phenotype/$max_phenotype_htp);
+                        # $time_val_scaled = (($time_val - $min_phenotype_htp)/($max_phenotype_htp - $min_phenotype_htp))*($max_phenotype-$min_phenotype)/($max_phenotype_htp-$min_phenotype_htp);
+                        if ($max_phenotype > 1) {
+                            $time_val_scaled = (($time_val - $min_phenotype_htp)/($max_phenotype_htp - $min_phenotype_htp))*$max_phenotype;
+                        } else {
+                            $time_val_scaled = $time_val;
+                        }
                         my $val = $trait_val - $time_val_scaled;
                         push @line, ($time_val, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
                         push @values, ($time_val, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
                         push @plots_avg_data_heatmap_values, ["HTPspatial$time", $row_number, $col_number, $time_val]; #"trait_type", "row", "col", "value"
                         push @plots_avg_data_heatmap_values_traits, ["TraitHTPspatialCorrected$time", $row_number, $col_number, $val]; #"trait_type", "row", "col", "value"
+                        push @plots_avg_data_heatmap_values_traits, ["HTPspatialCorrectedScaled$time", $row_number, $col_number, $time_val_scaled]; #"trait_type", "row", "col", "value"
 
                         if ($is_first_plot) {
-                            push @type_names_first_line, ("HTPspatial$time", "TraitHTPspatialCorrected$time");
+                            push @type_names_first_line, ("HTPspatial$time", "TraitHTPspatialCorrected$time", "HTPspatialCorrectedScaled$time");
                         }
                     }
                 }
