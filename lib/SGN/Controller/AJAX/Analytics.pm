@@ -452,6 +452,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $min_phenotype_secondary = 1000000000000000;
     my $max_phenotype_secondary = -1000000000000000;
     my @sorted_trait_names_secondary;
+    my $number_secondary_traits = scalar(@traits_secondary_id);
     if (scalar(@traits_secondary_id)>0) {
         my $phenotypes_search_secondary = CXGN::Phenotypes::SearchFactory->instantiate(
             'MaterializedViewTable',
@@ -2918,6 +2919,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
 
         my @type_names_first_line;
+        my @type_names_first_line_secondary;
         my $is_first_plot = 1;
         foreach my $p (@seen_plots) {
             my $germplasm_name = $plot_germplasm_map{$p};
@@ -3012,7 +3014,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     push @plots_avg_data_heatmap_values_traits_secondary, [$t, $row_number, $col_number, $trait_secondary_val]; #"trait_type", "row", "col", "value"
 
                     if ($is_first_plot) {
-                        push @type_names_first_line, $t;
+                        push @type_names_first_line_secondary, $t;
                     }
                 }
             }
@@ -3299,16 +3301,14 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             print STDERR Dumper $r_cmd_ic6;
             my $status_ic6 = system($r_cmd_ic6);
 
+            my $secondary_type_list_string = join '\',\'', @type_names_first_line_secondary;
             my $r_cmd_i7 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
             pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile25.'\', header=TRUE, sep=\',\'));
-            pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_string.'\'));
-            options(device=\'png\');
-            par();
-            gg <- ggplot(pheno_mat, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) +
-                geom_tile() +
-                scale_fill_viridis(discrete=FALSE) +
-                coord_equal() +
-                facet_wrap(~trait_type, ncol=7);
+            type_list <- c(\''.$secondary_type_list_string.'\');
+            pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = type_list);
+            lapply(type_list, function(cc) { gg <- ggplot(filter(pheno_mat, trait_type==cc), aes('.$output_plot_col.', '.$output_plot_row.', fill=value, frame=trait_type)) + geom_tile() + scale_fill_viridis(discrete=FALSE) + coord_equal() + labs(x=NULL, y=NULL, title=sprintf(\'%s\', cc)); gg; }) -> cclist;
+            cclist[[\'ncol\']] <- '.$number_secondary_traits.';
+            gg <- do.call(grid.arrange, cclist);
             ggsave(\''.$analytics_protocol_figure_tempfile_6.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
             "';
             print STDERR Dumper $r_cmd_i7;
@@ -3324,7 +3324,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 scale_fill_viridis(discrete=FALSE) +
                 coord_equal() +
                 facet_wrap(~trait_type, ncol=7);
-            ggsave(\''.$analytics_protocol_figure_tempfile_7.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
+            ggsave(\''.$analytics_protocol_figure_tempfile_7.'\', gg, device=\'png\', width=10, height=10, units=\'in\');
             "';
             print STDERR Dumper $r_cmd_i8;
             my $status_i8 = system($r_cmd_i8);
