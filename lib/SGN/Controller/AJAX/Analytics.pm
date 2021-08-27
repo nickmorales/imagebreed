@@ -2857,18 +2857,21 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 push @plots_avg_data_values_header, $t;
                 if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1') {
                     push @plots_avg_data_header, ($t."spatial2Dspl", $t."2Dsplcorrected");
-                    push @plots_avg_data_values_header, ($t."spatial2Dspl", $t."2Dsplcorrected");
+                    # push @plots_avg_data_values_header, ($t."spatial2Dspl", $t."2Dsplcorrected");
+                    push @plots_avg_data_values_header, $t."spatial2Dspl";
                 }
                 if ($analysis_run_type eq 'ar1' || $analysis_run_type eq '2dspl_ar1') {
                     push @plots_avg_data_header, ($t."spatialAR1", $t."AR1corrected");
-                    push @plots_avg_data_values_header, ($t."spatialAR1", $t."AR1corrected");
+                    # push @plots_avg_data_values_header, ($t."spatialAR1", $t."AR1corrected");
+                    push @plots_avg_data_values_header, $t."spatialAR1";
                 }
                 push @plots_avg_data_header, $t."spatialcorrecthtpmean";
-                push @plots_avg_data_values_header, $t."spatialcorrecthtpmean";
+                # push @plots_avg_data_values_header, $t."spatialcorrecthtpmean";
 
                 foreach my $time (@sorted_seen_times_p) {
                     push @plots_avg_data_header, ("htpspatialeffect$time", "traithtpspatialcorrected$time");
-                    push @plots_avg_data_values_header, ("htpspatialeffect$time", "traithtpspatialcorrected$time");
+                    # push @plots_avg_data_values_header, ("htpspatialeffect$time", "traithtpspatialcorrected$time");
+                    push @plots_avg_data_values_header, "htpspatialeffect$time";
                 }
             }
             foreach my $t (@sorted_trait_names_secondary) {
@@ -2972,7 +2975,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         my $env_trait_spatial_val = $result_blup_spatial_data_s->{$p}->{$t};
                         my $trait_val_2dspl_corrected = $trait_val - $env_trait_spatial_val;
                         push @line, ($env_trait_spatial_val, $trait_val_2dspl_corrected);
-                        push @values, ($env_trait_spatial_val, $trait_val_2dspl_corrected);
+                        # push @values, ($env_trait_spatial_val, $trait_val_2dspl_corrected);
+                        push @values, $env_trait_spatial_val;
                         push @plots_avg_data_heatmap_values_traits_corrected, ["TraitSpatial2Dspl", $row_number, $col_number, $env_trait_spatial_val]; #"trait_type", "row", "col", "value"
                         push @plots_avg_data_heatmap_values_traits, ["Trait2DsplCorrected", $row_number, $col_number, $trait_val_2dspl_corrected]; #"trait_type", "row", "col", "value"
 
@@ -2985,7 +2989,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         my $env_trait_spatial_ar1_val = $result_blup_spatial_data_ar1->{$p}->{$t};
                         my $trait_val_ar1_corrected = $trait_val - $env_trait_spatial_ar1_val;
                         push @line, ($env_trait_spatial_ar1_val, $trait_val_ar1_corrected);
-                        push @values, ($env_trait_spatial_ar1_val, $trait_val_ar1_corrected);
+                        # push @values, ($env_trait_spatial_ar1_val, $trait_val_ar1_corrected);
+                        push @values, $env_trait_spatial_ar1_val;
                         push @plots_avg_data_heatmap_values_traits_corrected, ["TraitSpatialAR1", $row_number, $col_number, $env_trait_spatial_ar1_val]; #"trait_type", "row", "col", "value"
                         push @plots_avg_data_heatmap_values_traits, ["TraitAR1Corrected", $row_number, $col_number, $trait_val_ar1_corrected]; #"trait_type", "row", "col", "value"
 
@@ -2995,14 +3000,15 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         }
                     }
                     push @line, $val; #$t, $t."spatial2Dspl", $t."2Dsplcorrected", $t."spatialAR1", $t."AR1corrected", $t."spatialcorrecthtpmean"
-                    push @values, $val; #$t, $t."spatial2Dspl", $t."2Dsplcorrected", $t."spatialAR1", $t."AR1corrected", $t."spatialcorrecthtpmean"
+                    # push @values, $val; #$t, $t."spatial2Dspl", $t."2Dsplcorrected", $t."spatialAR1", $t."AR1corrected", $t."spatialcorrecthtpmean"
 
                     foreach my $time (@sorted_seen_times_p) {
                         my $time_val = $plot_result_time_blups{$p}->{$time};
                         my $time_val_scaled = $time_val*($max_phenotype/$max_phenotype_htp);
                         my $val = $trait_val - $time_val_scaled;
                         push @line, ($time_val, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
-                        push @values, ($time_val, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
+                        # push @values, ($time_val, $val); #"htpspatialeffect$time", "traithtpspatialcorrected$time"
+                        push @values, $time_val; #"htpspatialeffect$time"
                         push @plots_avg_data_heatmap_values, ["HTPspatial$time", $row_number, $col_number, $time_val]; #"trait_type", "row", "col", "value"
                         push @plots_avg_data_heatmap_values_traits, ["TraitHTPspatialCorrected$time", $row_number, $col_number, $val]; #"trait_type", "row", "col", "value"
 
