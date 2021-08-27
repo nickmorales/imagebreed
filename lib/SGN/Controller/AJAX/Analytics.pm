@@ -2455,7 +2455,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     if ($tolparinv eq '0.08') {
         $tol_asr = 'c(-1,-2)';
     }
-    if ($$tolparinv_10 eq '0.1' || $tolparinv eq '0.1' || $tolparinv eq '0.2' || $tolparinv eq '0.5') {
+    if ($tolparinv_10 eq '0.1' || $tolparinv eq '0.1' || $tolparinv eq '0.2' || $tolparinv eq '0.5') {
         $tol_asr = 'c(-1,-2)';
     }
 
