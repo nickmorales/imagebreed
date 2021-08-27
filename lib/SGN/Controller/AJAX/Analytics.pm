@@ -2434,19 +2434,19 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     close($fh_grm_new);
 
     my $tol_asr = 'c(-8,-10)';
-    if ($tolparinv eq '0.000001') {
+    if ($tolparinv_10 eq '0.000001') {
         $tol_asr = 'c(-6,-8)';
     }
-    if ($tolparinv eq '0.00001') {
+    if ($tolparinv_10 eq '0.00001') {
         $tol_asr = 'c(-5,-7)';
     }
-    if ($tolparinv eq '0.0001') {
+    if ($tolparinv_10 eq '0.0001') {
         $tol_asr = 'c(-4,-6)';
     }
-    if ($tolparinv eq '0.001') {
+    if ($tolparinv_10 eq '0.001') {
         $tol_asr = 'c(-3,-5)';
     }
-    if ($tolparinv eq '0.01') {
+    if ($tolparinv_10 eq '0.01') {
         $tol_asr = 'c(-2,-4)';
     }
     if ($tolparinv eq '0.05') {
@@ -2455,7 +2455,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     if ($tolparinv eq '0.08') {
         $tol_asr = 'c(-1,-2)';
     }
-    if ($tolparinv eq '0.1' || $tolparinv eq '0.2' || $tolparinv eq '0.5') {
+    if ($$tolparinv_10 eq '0.1' || $tolparinv eq '0.1' || $tolparinv eq '0.2' || $tolparinv eq '0.5') {
         $tol_asr = 'c(-1,-2)';
     }
 
@@ -2919,6 +2919,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
 
         my @type_names_first_line;
+        my @type_names_first_line_traits;
+        my @type_names_first_line_traits_corrected;
         my @type_names_first_line_secondary;
         my $is_first_plot = 1;
         foreach my $p (@seen_plots) {
@@ -2961,7 +2963,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     push @plots_avg_data_heatmap_values_traits, ["TraitPhenotype", $row_number, $col_number, $trait_val]; #"trait_type", "row", "col", "value"
                     push @plots_avg_data_heatmap_values_traits, ["TraitHTPspatialMeanCorrected", $row_number, $col_number, $val]; #"trait_type", "row", "col", "value"
                     if ($is_first_plot) {
-                        push @type_names_first_line, ("TraitPhenotype", "TraitHTPspatialMeanCorrected");
+                        push @type_names_first_line_traits, ("TraitPhenotype", "TraitHTPspatialMeanCorrected");
                     }
 
                     push @line, $trait_val;
@@ -2975,7 +2977,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         push @plots_avg_data_heatmap_values_traits, ["Trait2DsplCorrected", $row_number, $col_number, $trait_val_2dspl_corrected]; #"trait_type", "row", "col", "value"
 
                         if ($is_first_plot) {
-                            push @type_names_first_line, ("TraitSpatial2Dspl","Trait2DsplCorrected");
+                            push @type_names_first_line_traits_corrected, "TraitSpatial2Dspl";
+                            push @type_names_first_line_traits, "Trait2DsplCorrected";
                         }
                     }
                     if ($analysis_run_type eq 'ar1' || $analysis_run_type eq '2dspl_ar1') {
@@ -2987,7 +2990,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         push @plots_avg_data_heatmap_values_traits, ["TraitAR1Corrected", $row_number, $col_number, $trait_val_ar1_corrected]; #"trait_type", "row", "col", "value"
 
                         if ($is_first_plot) {
-                            push @type_names_first_line, ("TraitSpatialAR1", "TraitAR1Corrected");
+                            push @type_names_first_line_traits_corrected, "TraitSpatialAR1";
+                            push @type_names_first_line_traits, "TraitAR1Corrected";
                         }
                     }
                     push @line, $val; #$t, $t."spatial2Dspl", $t."2Dsplcorrected", $t."spatialAR1", $t."AR1corrected", $t."spatialcorrecthtpmean"
@@ -3003,7 +3007,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         push @plots_avg_data_heatmap_values_traits, ["TraitHTPspatialCorrected$time", $row_number, $col_number, $val]; #"trait_type", "row", "col", "value"
 
                         if ($is_first_plot) {
-                            push @type_names_first_line, ("HTPspatial$time", "TraitHTPspatialCorrected$time");
+                            push @type_names_first_line, "HTPspatial$time";
+                            push @type_names_first_line_traits, "TraitHTPspatialCorrected$time";
                         }
                     }
                 }
@@ -3278,16 +3283,18 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             print STDERR Dumper $r_cmd_i4;
             my $status_i4 = system($r_cmd_i4);
 
+            my $type_list_traits_string = join '\',\'', @type_names_first_line_traits;
+            my $type_list_traits_string_number = scalar(@type_names_first_line_traits);
             my $r_cmd_i5 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
             pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile23.'\', header=TRUE, sep=\',\'));
-            pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_string.'\'));
+            pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_traits_string.'\'));
             options(device=\'png\');
             par();
             gg <- ggplot(pheno_mat, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) +
                 geom_tile() +
                 scale_fill_viridis(discrete=FALSE) +
                 coord_equal() +
-                facet_wrap(~trait_type, ncol=7);
+                facet_wrap(~trait_type, ncol='.$type_list_traits_string_number.');
             ggsave(\''.$analytics_protocol_figure_tempfile_4.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
             "';
             print STDERR Dumper $r_cmd_i5;
@@ -3314,16 +3321,18 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             print STDERR Dumper $r_cmd_i7;
             my $status_i7 = system($r_cmd_i7);
 
+            my $type_list_traits_corrected_string = join '\',\'', @type_names_first_line_traits_corrected;
+            my $type_list_traits_corrected_string_number = scalar(@type_names_first_line_traits_corrected);
             my $r_cmd_i8 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
             pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile26.'\', header=TRUE, sep=\',\'));
-            pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_string.'\'));
+            pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_traits_corrected_string.'\'));
             options(device=\'png\');
             par();
             gg <- ggplot(pheno_mat, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) +
                 geom_tile() +
                 scale_fill_viridis(discrete=FALSE) +
                 coord_equal() +
-                facet_wrap(~trait_type, ncol=7);
+                facet_wrap(~trait_type, ncol='.$type_list_traits_corrected_string_number.');
             ggsave(\''.$analytics_protocol_figure_tempfile_7.'\', gg, device=\'png\', width=10, height=10, units=\'in\');
             "';
             print STDERR Dumper $r_cmd_i8;
