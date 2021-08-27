@@ -3268,6 +3268,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             }
 
             my $type_list_string = join '\',\'', @type_names_first_line;
+            my $type_list_string_number = scalar(@type_names_first_line);
             my $r_cmd_i4 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
             pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile22.'\', header=TRUE, sep=\',\'));
             pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_string.'\'));
@@ -3277,7 +3278,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 geom_tile() +
                 scale_fill_viridis(discrete=FALSE) +
                 coord_equal() +
-                facet_wrap(~trait_type, ncol=7);
+                facet_wrap(~trait_type, ncol='.$type_list_string_number.');
             ggsave(\''.$analytics_protocol_figure_tempfile_3.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
             "';
             print STDERR Dumper $r_cmd_i4;
