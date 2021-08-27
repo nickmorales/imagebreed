@@ -2434,19 +2434,19 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     close($fh_grm_new);
 
     my $tol_asr = 'c(-8,-10)';
-    if ($tolparinv_10 eq '0.000001') {
+    if ($tolparinv eq '0.000001') {
         $tol_asr = 'c(-6,-8)';
     }
-    if ($tolparinv_10 eq '0.00001') {
+    if ($tolparinv eq '0.00001') {
         $tol_asr = 'c(-5,-7)';
     }
-    if ($tolparinv_10 eq '0.0001') {
+    if ($tolparinv eq '0.0001') {
         $tol_asr = 'c(-4,-6)';
     }
-    if ($tolparinv_10 eq '0.001') {
+    if ($tolparinv eq '0.001') {
         $tol_asr = 'c(-3,-5)';
     }
-    if ($tolparinv_10 eq '0.01') {
+    if ($tolparinv eq '0.01') {
         $tol_asr = 'c(-2,-4)';
     }
     if ($tolparinv eq '0.05') {
@@ -2455,10 +2455,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     if ($tolparinv eq '0.08') {
         $tol_asr = 'c(-1,-2)';
     }
-    if ($tolparinv_10 eq '0.1' || $tolparinv eq '0.1' || $tolparinv eq '0.2' || $tolparinv eq '0.5') {
+    if ($tolparinv eq '0.1' || $tolparinv eq '0.2' || $tolparinv eq '0.5') {
         $tol_asr = 'c(-1,-2)';
     }
-    $tol_asr = 'c(-1,-2)';
 
     my $number_traits = scalar(@sorted_trait_names);
     my $number_accessions = scalar(@accession_ids);
