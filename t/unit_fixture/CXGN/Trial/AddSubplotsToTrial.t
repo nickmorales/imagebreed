@@ -55,7 +55,7 @@ ok(
         trial_type=>$ayt_cvterm_id,
         design_type => "RCBD",
         operator => "janedoe"
-    }), 
+    }),
     "create trial object"
 );
 
@@ -67,11 +67,11 @@ ok(my $trial_id = $save->{'trial_id'}, "save trial");
 # ADD SUBPLOTS TO PLOTS
 #
 
-my $trial = CXGN::Trial->new({ 
-    bcs_schema => $chado_schema, 
+my $trial = CXGN::Trial->new({
+    bcs_schema => $chado_schema,
     metadata_schema => $metadata_schema,
     phenome_schema => $phenome_schema,
-    trial_id => $trial_id 
+    trial_id => $trial_id
 });
 $trial->create_subplot_entities('2');
 
@@ -98,7 +98,7 @@ is(scalar(@subplot_names_flat), 20);
 # ADD PLANTS TO SUBPLOTS
 #
 
-$trial->create_plant_subplot_entities(4);
+$trial->create_plant_subplot_entities(4, 1, 41);
 $tl = CXGN::Trial::TrialLayout->new({ schema => $chado_schema, trial_id => $trial_id, experiment_type => 'field_layout' });
 $d = $tl->get_design();
 

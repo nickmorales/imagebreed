@@ -102,9 +102,9 @@ sub create_design {
 	$r_block->add_command('augmented<-design.dau(control_trt,trt,number_of_blocks,serie=3,kinds=randomization_method)');
     }
     $r_block->add_command('augmented<-augmented$book'); #added for agricolae 1.1-8 changes in output
-    if ($plot_start == 1) { #Use row numbers as plot names to avoid unwanted agricolae plot num pattern
-      $r_block->add_command('augmented$plots <- row.names(augmented)');
-    }
+    # if ($plot_start == 1) { #Use row numbers as plot names to avoid unwanted agricolae plot num pattern
+    #   $r_block->add_command('augmented$plots <- row.names(augmented)');
+    # }
     $r_block->add_command('augmented<-as.matrix(augmented)');
 
     $r_block->run_block();
