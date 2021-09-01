@@ -1052,6 +1052,9 @@ CXGN.List.prototype = {
             case "plots":
                 new_type = 'plots_2_plot_ids';
                 break;
+            case "seedlots":
+                new_type = 'stocks_2_stock_ids';
+                break;
             default:
                 return { 'error' : "cannot convert the list because of unknown type" };
         }
