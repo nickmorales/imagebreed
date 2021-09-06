@@ -34,12 +34,16 @@
 
             <div class="row">
                 <div class="col-sm-12">
+                    <button class="btn btn-sm btn-primary" id="drone_imagery_standard_process_plot_polygons_rectangles_start">Click Here To Start Templating</button>
+
+                    <!--
                     <h4> Either (A) click the four corners of the area of interest: </h4>
 
                     <button class="btn btn-sm btn-info" id="drone_imagery_standard_process_plot_polygons_top_left_click">Click Top Left Corner</button>
                     <button class="btn btn-sm btn-info" id="drone_imagery_standard_process_plot_polygons_top_right_click">Click Top Right Corner</button>
                     <button class="btn btn-sm btn-info" id="drone_imagery_standard_process_plot_polygons_bottom_left_click">Click Bottom Left Corner</button>
                     <button class="btn btn-sm btn-info" id="drone_imagery_standard_process_plot_polygons_bottom_right_click">Click Bottom Right Corner</button>
+                    -->
                 </div>
             </div>
             <hr>
@@ -105,13 +109,15 @@
                 </div>
             </&>
 
+            <!--
             <br/>
             <button class="btn btn-sm btn-primary" id="drone_imagery_standard_process_plot_polygons_rectangles_apply">(A) Draw Plot Polygon Template (Does not save. Apply multiple templates if needed.)</button>
-            
+            -->
+
         </div>
     </div>
 
-    <div class="panel panel-default">
+    <!--div class="panel panel-default">
         <div class="panel-body">
 
             <div class="row">
@@ -139,7 +145,7 @@
                 </div>
             </&>
         </div>
-    </div>
+    </div-->
 
     <div id="drone_imagery_standard_process_plot_polygons_active_templates"></div>
 
