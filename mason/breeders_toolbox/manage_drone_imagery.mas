@@ -5722,8 +5722,6 @@ jQuery(document).ready(function() {
     var drone_imagery_plot_generated_polygons = {};
     var drone_imagery_plot_polygons_display = {};
     var plot_polygons_generated_polygons = [];
-    var plot_polygons_generated_polygons_rows_svg = [];
-    var plot_polygons_generated_polygons_circles_svg = [];
     var drone_imagery_plot_polygons_removed_numbers = [];
     var field_trial_layout_response = {};
     var plot_polygon_name;
@@ -5955,7 +5953,7 @@ jQuery(document).ready(function() {
                             var section_left_column_bottom_offset_val = jQuery('#drone_imagery_standard_process_plot_polygons_left_column_bottom_offset').val();
                             var section_right_column_bottom_offset_val = jQuery('#drone_imagery_standard_process_plot_polygons_right_col_bottom_offset').val();
 
-                            plotPolygonsRectanglesApplySVG(num_rows_val, num_cols_val, section_top_row_left_offset_val, section_bottom_row_left_offset_val, section_left_column_top_offset_val, section_left_column_bottom_offset_val, section_top_row_right_offset_val, section_right_column_bottom_offset_val, 'drone_imagery_standard_process_generated_polygons_div', 'drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_plot_polygons_generated_assign', 'drone_imagery_standard_process_plot_polygons_submit_bottom', 'drone_imagery_standard_process_plot_polygons_active_templates');
+                            plotPolygonsRectanglesApplySVG(num_rows_val, num_cols_val, section_top_row_left_offset_val, section_bottom_row_left_offset_val, section_left_column_top_offset_val, section_left_column_bottom_offset_val, section_top_row_right_offset_val, section_right_column_bottom_offset_val, 'drone_imagery_standard_process_generated_polygons_div', 'drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_plot_polygons_generated_assign', 'drone_imagery_standard_process_plot_polygons_submit_bottom', 'drone_imagery_standard_process_plot_polygons_active_templates', null);
 
                             plotPolygonManualAssignPlotNumberTableStandard('drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_generated_polygons_table_id', 'drone_imagery_standard_process_generated_polygons_table_input', 'drone_imagery_standard_process_generated_polygons_table_input_generate_button', 'drone_imagery_standard_process_plot_polygons_submit_bottom');
                         }
@@ -6240,7 +6238,9 @@ jQuery(document).ready(function() {
     var plot_polygons_num_cols_generated;
     var plot_polygons_number_generated;
     var plot_polygons_total_height_generated;
-    var plot_polygons_template_dimensions = [];
+    var plot_polygons_template_dimensions_svg = [];
+    var plot_polygons_template_dimensions_template_number_svg = 0;
+    var plot_polygons_template_dimensions_deleted_templates_svg = [];
 
     jQuery('#drone_imagery_plot_polygons_rectangles_apply').click(function() {
         plot_polygons_display_points = [];
@@ -6397,7 +6397,8 @@ jQuery(document).ready(function() {
         var x = d3.event.x;
         var y = d3.event.y;
         var corner = d3.select(this).attr('corner');
-        //console.log([x,y,corner]);
+        var template_number = d3.select(this).attr('template_number');
+        //console.log([x,y,corner,template_number]);
 
         if (corner == 'top_left') {
             jQuery('#drone_imagery_standard_process_plot_polygons_top_row_left_offset').val(x);
@@ -6417,6 +6418,9 @@ jQuery(document).ready(function() {
 
     function dragended(d) {
         d3.select(this).classed('active', false);
+        var template_number = d3.select(this).attr('template_number');
+
+        plot_polygons_template_dimensions_deleted_templates_svg.push(parseInt(template_number));
 
         var num_rows_val = jQuery('#drone_imagery_standard_process_plot_polygons_num_rows').val();
         var num_cols_val = jQuery('#drone_imagery_standard_process_plot_polygons_num_cols').val();
@@ -6427,7 +6431,7 @@ jQuery(document).ready(function() {
         var section_left_column_bottom_offset_val = jQuery('#drone_imagery_standard_process_plot_polygons_left_column_bottom_offset').val();
         var section_right_column_bottom_offset_val = jQuery('#drone_imagery_standard_process_plot_polygons_right_col_bottom_offset').val();
 
-        plotPolygonsRectanglesApplySVG(num_rows_val, num_cols_val, section_top_row_left_offset_val, section_bottom_row_left_offset_val, section_left_column_top_offset_val, section_left_column_bottom_offset_val, section_top_row_right_offset_val, section_right_column_bottom_offset_val, 'drone_imagery_standard_process_generated_polygons_div', 'drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_plot_polygons_generated_assign', 'drone_imagery_standard_process_plot_polygons_submit_bottom', 'drone_imagery_standard_process_plot_polygons_active_templates');
+        plotPolygonsRectanglesApplySVG(num_rows_val, num_cols_val, section_top_row_left_offset_val, section_bottom_row_left_offset_val, section_left_column_top_offset_val, section_left_column_bottom_offset_val, section_top_row_right_offset_val, section_right_column_bottom_offset_val, 'drone_imagery_standard_process_generated_polygons_div', 'drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_plot_polygons_generated_assign', 'drone_imagery_standard_process_plot_polygons_submit_bottom', 'drone_imagery_standard_process_plot_polygons_active_templates', parseInt(template_number) );
     }
 
     let drag = d3.drag()
@@ -6435,7 +6439,7 @@ jQuery(document).ready(function() {
         .on('drag', dragged)
         .on('end', dragended);
 
-    function plotPolygonsRectanglesApplySVG(num_rows_val, num_cols_val, section_top_row_left_offset_val, section_bottom_row_left_offset_val, section_left_column_top_offset_val, section_left_column_bottom_offset_val, section_top_row_right_offset_val, section_right_column_bottom_offset_val, plot_polygons_assignment_info, plot_polygons_assignment_table, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button, drone_imagery_plot_polygons_active_templates) {
+    function plotPolygonsRectanglesApplySVG(num_rows_val, num_cols_val, section_top_row_left_offset_val, section_bottom_row_left_offset_val, section_left_column_top_offset_val, section_left_column_bottom_offset_val, section_top_row_right_offset_val, section_right_column_bottom_offset_val, plot_polygons_assignment_info, plot_polygons_assignment_table, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button, drone_imagery_plot_polygons_active_templates, template_replacement_number) {
         if (num_rows_val == ''){
             alert('Please give the number of rows!');
             return;
@@ -6494,12 +6498,16 @@ jQuery(document).ready(function() {
         var y_pos = section_left_column_top_offset;
 
         var row_num = 1;
+
+        var plot_polygons_generated_polygons_svg = [];
+        var plot_polygons_generated_polygons_rows_svg = [];
+        var plot_polygons_generated_polygons_circles_svg = [];
         for (var i=0; i<plot_polygons_num_rows_generated; i++) {
 
             for (var j=0; j<plot_polygons_num_cols_generated; j++) {
                 var x_pos_val = x_pos;
                 var y_pos_val = y_pos;
-                plot_polygons_generated_polygons.push([
+                plot_polygons_generated_polygons_svg.push([
                     {x:x_pos_val, y:y_pos_val},
                     {x:x_pos_val + col_width, y:y_pos_val},
                     {x:x_pos_val + col_width, y:y_pos_val + row_height},
@@ -6534,9 +6542,9 @@ jQuery(document).ready(function() {
             y_pos = y_pos + row_height + total_gradual_vertical_shift;
             row_num = row_num + 1;
         }
-        //console.log(plot_polygons_generated_polygons);
-        console.log(plot_polygons_generated_polygons_rows_svg);
-        console.log(plot_polygons_generated_polygons_circles_svg);
+        //console.log(plot_polygons_generated_polygons_svg);
+        //console.log(plot_polygons_generated_polygons_rows_svg);
+        //console.log(plot_polygons_generated_polygons_circles_svg);
 
         plot_polygons_total_height_generated = row_height * plot_polygons_num_rows_generated;
         plot_polygons_number_generated = plot_polygons_generated_polygons.length;
@@ -6544,82 +6552,142 @@ jQuery(document).ready(function() {
         var drone_imagery_plot_polygons_new = {};
         var drone_imagery_plot_polygons_display_new = {};
 
-        var svg = d3.select("svg");
-        focus = svg.append("g");
-
-        for (var k=0; k<plot_polygons_generated_polygons_rows_svg.length; k++) {
-            var poly_points = plot_polygons_generated_polygons_rows_svg[k];
-            focus.append("path")
-                .datum(poly_points)
-                .attr("fill", "none")
-                .attr("stroke", "steelblue")
-                .attr("stroke-linejoin", "round")
-                .attr("stroke-linecap", "round")
-                .attr("stroke-width", 4.5)
-                .attr("d", line);
-
-            var label;
-            var label_stroke;
-            var label_x;
-            var label_y;
-            if (drone_imagery_plot_polygons_removed_numbers.includes(label)) {
-                label = 'NA';
-                label_stroke = 'blue';
-                label_x = poly_points[0][0] + 3;
-                label_y = poly_points[0][1] + 14;
-            } else {
-                label = k;
-                label_stroke = 'red';
-                label_x = parseInt(poly_points[0][0]) + 3;
-                label_y = parseInt(poly_points[0][1]) + 14;
-            }
-
-            focus.append("text")
-                .attr("x", label_x)
-                .attr("y", label_y)
-                .style('fill', label_stroke)
-                .style("font-size", "18px")
-                .style("font-weight", 500)
-                .text(label);
-        }
-
-        focus.selectAll('circle')
-            .data(plot_polygons_generated_polygons_circles_svg)
-            .enter()
-            .append('circle')
-            .attr('r', 10.0)
-            .attr('cx', function(d) { return d[0];  })
-            .attr('cy', function(d) { return d[1]; })
-            .attr('corner', function(d) { return d[2]; })
-            .style('cursor', 'pointer')
-            .style('fill', 'red');
-
-        focus.selectAll('circle')
-                .call(drag);
-
         for (var i=0; i<plot_polygons_generated_polygons.length; i++) {
             plot_polygons_ind_4_points = plot_polygons_generated_polygons[i];
             plot_polygons_display_points = plot_polygons_ind_4_points;
             if (plot_polygons_display_points.length == 4) {
                 plot_polygons_display_points.push(plot_polygons_ind_4_points[0]);
             }
-            drawPolyline(plot_polygons_display_points);
-            drawWaypoints(plot_polygons_display_points, i, 0);
+            //drawPolyline(plot_polygons_display_points);
+            //drawWaypoints(plot_polygons_display_points, i, 0);
             drone_imagery_plot_generated_polygons[i] = plot_polygons_ind_4_points;
             drone_imagery_plot_polygons_new[i] = plot_polygons_ind_4_points;
             drone_imagery_plot_polygons_display[i] = plot_polygons_display_points;
             drone_imagery_plot_polygons_display_new[i] = plot_polygons_display_points;
         }
 
-        plot_polygons_template_dimensions.push({
+        var current_template_number;
+        if (template_replacement_number) {
+            current_template_number = template_replacement_number;
+        }
+        else {
+            current_template_number = plot_polygons_template_dimensions_template_number_svg;
+            plot_polygons_template_dimensions_template_number_svg = plot_polygons_template_dimensions_template_number_svg + 1;
+        }
+
+        plot_polygons_template_dimensions_svg.push({
+            'template_number':current_template_number,
             'num_rows':plot_polygons_num_rows_generated,
             'num_cols':plot_polygons_num_cols_generated,
+            'num_rows_val':num_rows_val,
+            'num_cols_val':num_rows_val,
+            'section_top_row_left_offset_val':section_top_row_left_offset_val,
+            'section_bottom_row_left_offset_val':section_bottom_row_left_offset_val,
+            'section_left_column_top_offset_val':section_left_column_top_offset_val,
+            'section_left_column_bottom_offset_val':section_left_column_bottom_offset_val,
+            'section_top_row_right_offset_val':section_top_row_right_offset_val,
+            'section_right_column_bottom_offset_val':section_right_column_bottom_offset_val,
             'total_plot_polygons':plot_polygons_num_rows_generated*plot_polygons_num_cols_generated,
             'plot_polygons':drone_imagery_plot_polygons_new,
-            'plot_polygons_display':drone_imagery_plot_polygons_display_new
+            'plot_polygons_display':drone_imagery_plot_polygons_display_new,
+            'plot_polygons_generated_polygons_svg':plot_polygons_generated_polygons_svg,
+            'plot_polygons_generated_polygons_rows_svg':plot_polygons_generated_polygons_rows_svg,
+            'plot_polygons_generated_polygons_circles_svg':plot_polygons_generated_polygons_circles_svg
         });
+        console.log(plot_polygons_template_dimensions_svg);
 
-        droneImageryDrawPlotPolygonActiveTemplatesTable(drone_imagery_plot_polygons_active_templates, plot_polygons_template_dimensions);
+        d3.selectAll("path").remove();
+        d3.selectAll("text").remove();
+        d3.selectAll("circle").remove();
+        var svg = d3.select("svg");
+        focus = svg.append("g");
+
+        //console.log(plot_polygons_template_dimensions_deleted_templates_svg);
+
+        var label_count = 0;
+        var plot_polygons_generated_polygons_circles_svg_iteration_template = [];
+        plot_polygons_generated_polygons = [];
+        for (var l=0; l<plot_polygons_template_dimensions_template_number_svg; l++) {
+            for (var i=0; i<plot_polygons_template_dimensions_svg.length; i++) {
+                var template_number = plot_polygons_template_dimensions_svg[i]['template_number'];
+                console.log(template_number, l);
+                if (parseInt(template_number) == l) {
+                    if (plot_polygons_template_dimensions_deleted_templates_svg.includes(parseInt(template_number))) {
+                        console.log('Not showing template: '+template_number);
+                    }
+                    else {
+                        var plot_polygons_generated_polygons_svg_iteration = plot_polygons_template_dimensions_svg[i]['plot_polygons_generated_polygons_svg'];
+                        var plot_polygons_generated_polygons_rows_svg_iteration = plot_polygons_template_dimensions_svg[i]['plot_polygons_generated_polygons_rows_svg'];
+                        var plot_polygons_generated_polygons_circles_svg_iteration = plot_polygons_template_dimensions_svg[i]['plot_polygons_generated_polygons_circles_svg'];
+
+                        for (var j=0; j<plot_polygons_generated_polygons_svg_iteration.length; j++) {
+                            plot_polygons_generated_polygons.push(plot_polygons_generated_polygons_svg_iteration[j]);
+                        }
+                        //console.log(plot_polygons_generated_polygons);
+
+                        for (var j=0; j<plot_polygons_generated_polygons_circles_svg_iteration.length; j++) {
+                            var circles_val = plot_polygons_generated_polygons_circles_svg_iteration[j];
+                            circles_val.push(template_number);
+                            plot_polygons_generated_polygons_circles_svg_iteration_template.push(circles_val);
+                        }
+
+                        for (var k=0; k<plot_polygons_generated_polygons_rows_svg_iteration.length; k++) {
+                            var poly_points = plot_polygons_generated_polygons_rows_svg_iteration[k];
+                            focus.append("path")
+                                .datum(poly_points)
+                                .attr("fill", "none")
+                                .attr("stroke", "steelblue")
+                                .attr("stroke-linejoin", "round")
+                                .attr("stroke-linecap", "round")
+                                .attr("stroke-width", 4.5)
+                                .attr("d", line);
+
+                            var label_stroke;
+                            var label_x;
+                            var label_y;
+                            if (drone_imagery_plot_polygons_removed_numbers.includes(label_count)) {
+                                label = 'NA';
+                                label_stroke = 'blue';
+                                label_x = poly_points[0][0] + 3;
+                                label_y = poly_points[0][1] + 14;
+                            } else {
+                                label = label_count;
+                                label_stroke = 'red';
+                                label_x = parseInt(poly_points[0][0]) + 3;
+                                label_y = parseInt(poly_points[0][1]) + 14;
+                            }
+
+                            focus.append("text")
+                                .attr("x", label_x)
+                                .attr("y", label_y)
+                                .style('fill', label_stroke)
+                                .style("font-size", "18px")
+                                .style("font-weight", 500)
+                                .text(label);
+
+                            label_count = label_count + 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        focus.selectAll('circle')
+            .data(plot_polygons_generated_polygons_circles_svg_iteration_template)
+            .enter()
+            .append('circle')
+            .attr('r', 10.0)
+            .attr('cx', function(d) { return d[0];  })
+            .attr('cy', function(d) { return d[1]; })
+            .attr('corner', function(d) { return d[2]; })
+            .attr('template_number', function(d) { return d[3]; })
+            .style('cursor', 'pointer')
+            .style('fill', 'red');
+
+        focus.selectAll('circle')
+                .call(drag);
+
+        droneImageryDrawPlotPolygonActiveTemplatesTableSVG(drone_imagery_plot_polygons_active_templates, plot_polygons_template_dimensions_svg);
 
         droneImageryRectangleLayoutTable(drone_imagery_plot_generated_polygons, plot_polygons_assignment_info, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button);
     }
@@ -6705,6 +6773,15 @@ jQuery(document).ready(function() {
         var html = '<table class="table table-bordered table-hover"><thead><tr><th>Template Number</th><th>Rows</th><th>Columns</th><th>Total Polygons</th><th>Options</th></tr></thead><tbody>';
         for (var i=0; i<plot_polygons_template_dimensions.length; i++) {
             html = html + '<tr><td>'+i+'</td><td>'+plot_polygons_template_dimensions[i]['num_rows']+'</td><td>'+plot_polygons_template_dimensions[i]['num_cols']+'</td><td>'+plot_polygons_template_dimensions[i]['total_plot_polygons']+'</td><td><button class="btn btn-sm btn-primary" name="drone_imagery_plot_polygon_template_options" data-plot_polygon_template_id="'+i+'" >Options</button></td></tr>';
+        }
+        html = html + '</tbody></table>';
+        jQuery('#'+div_id).html(html);
+    }
+
+    function droneImageryDrawPlotPolygonActiveTemplatesTableSVG(div_id, plot_polygons_template_dimensions_svg){
+        var html = '<table class="table table-bordered table-hover"><thead><tr><th>Template Number</th><th>Rows</th><th>Columns</th><th>Total Polygons</th><th>Options</th></tr></thead><tbody>';
+        for (var i=0; i<plot_polygons_template_dimensions_svg.length; i++) {
+            html = html + '<tr><td>'+plot_polygons_template_dimensions_svg[i]['template_number']+'</td><td>'+plot_polygons_template_dimensions_svg[i]['num_rows']+'</td><td>'+plot_polygons_template_dimensions_svg[i]['num_cols']+'</td><td>'+plot_polygons_template_dimensions_svg[i]['total_plot_polygons']+'</td><td><button class="btn btn-sm btn-primary" name="drone_imagery_plot_polygon_template_options" data-plot_polygon_template_id="'+plot_polygons_template_dimensions_svg[i]['template_number']+'" >Options</button></td></tr>';
         }
         html = html + '</tbody></table>';
         jQuery('#'+div_id).html(html);
