@@ -6698,6 +6698,51 @@ jQuery(document).ready(function() {
                 .call(drag);
     }
 
+    function draw_polygons_svg_plots_labeled(random_factor) {
+        console.log(drone_imagery_plot_polygons_display);
+
+        var plot_polygon_random_number = Math.random() * random_factor;
+
+        d3.selectAll("path").remove();
+        d3.selectAll("text").remove();
+        d3.selectAll("circle").remove();
+        var svg = d3.select("svg");
+        focus = svg.append("g");
+
+        for (key in drone_imagery_plot_polygons_display) {
+            if (drone_imagery_plot_polygons_display.hasOwnProperty(key)) {
+                var plot_polygons_display_points_again = drone_imagery_plot_polygons_display[key];
+                var line_points = [
+                    [plot_polygons_display_points_again[0].x, plot_polygons_display_points_again[0].y],
+                    [plot_polygons_display_points_again[1].x, plot_polygons_display_points_again[1].y],
+                    [plot_polygons_display_points_again[2].x, plot_polygons_display_points_again[2].y],
+                    [plot_polygons_display_points_again[3].x, plot_polygons_display_points_again[3].y],
+                    [plot_polygons_display_points_again[0].x, plot_polygons_display_points_again[0].y],
+                ];
+
+                focus.append("path")
+                    .datum(line_points)
+                    .attr("fill", "none")
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-linejoin", "round")
+                    .attr("stroke-linecap", "round")
+                    .attr("stroke-width", 4.5)
+                    .attr("d", line);
+
+                focus.append("text")
+                    .attr("x", parseInt(plot_polygons_display_points_again[0].x) + 3 )
+                    .attr("y", parseInt(plot_polygons_display_points_again[0].y) + 14 + plot_polygon_random_number)
+                    .style('fill', 'red')
+                    .style("font-size", "18px")
+                    .style("font-weight", 500)
+                    .text(key);
+            }
+        }
+
+        focus.selectAll('circle')
+                .call(drag);
+    }
+
     function plotPolygonsTemplatePaste(posx, posy, plot_polygon_template_id, plot_polygons_assignment_info, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button, drone_imagery_plot_polygons_active_templates) {
         var plot_polygon_template_to_paste = plot_polygons_template_dimensions[plot_polygon_template_id];
 
@@ -7497,7 +7542,7 @@ jQuery(document).ready(function() {
         droneImageryDrawLayoutTable(field_trial_layout_response, drone_imagery_plot_polygons, trial_layout_div, trial_layout_table);
 
         drone_imagery_plot_polygons_display = plot_polygon_new_display;
-        draw_polygons_svg();
+        draw_polygons_svg_plots_labeled(plot_polygons_total_height_generated/plot_polygons_num_rows_generated);
     }
 
     function droneImageryRectangleLayoutTable(generated_polygons, plot_polygons_layout_assignment_info, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button) {
