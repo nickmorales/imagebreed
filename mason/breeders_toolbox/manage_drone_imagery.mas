@@ -1926,6 +1926,9 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
             <&| /page/info_section.mas, title => 'Copy/Paste Template', collapsible=>1, collapsed => 0, subtitle=> 'Copy/Paste this template onto the image.' &>
                 <button class="btn btn-primary" id="drone_imagery_plot_polygon_template_options_paste_click">Click To Paste</button>
             </&>
+            <&| /page/info_section.mas, title => 'Delete Template', collapsible=>1, collapsed => 0, subtitle=> 'Remove this template.' &>
+                <button class="btn btn-danger" id="drone_imagery_plot_polygon_template_options_remove_click">Click To Remove</button>
+            </&>
         </div>
       </div>
       <div class="modal-footer">
@@ -3083,6 +3086,7 @@ jQuery(document).ready(function() {
         jQuery('#drone_imagery_standard_process_generated_polygons_div').html('');
         droneImageryDrawLayoutTable(field_trial_layout_response, drone_imagery_plot_polygons, 'drone_imagery_standard_process_trial_layout_div', 'drone_imagery_standard_process_layout_table');
         droneImageryDrawPlotPolygonActiveTemplatesTable("drone_imagery_standard_process_plot_polygons_active_templates", plot_polygons_template_dimensions);
+        plotPolygonManualAssignPlotNumberTableStandard('drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_generated_polygons_table_id', 'drone_imagery_standard_process_generated_polygons_table_input', 'drone_imagery_standard_process_generated_polygons_table_input_generate_button', 'drone_imagery_standard_process_plot_polygons_submit_bottom');
     });
 
     jQuery(document).on('click', '#drone_imagery_standard_process_plot_polygons_clear_one', function(){
@@ -5955,7 +5959,7 @@ jQuery(document).ready(function() {
                             var section_left_column_bottom_offset_val = jQuery('#drone_imagery_standard_process_plot_polygons_left_column_bottom_offset').val();
                             var section_right_column_bottom_offset_val = jQuery('#drone_imagery_standard_process_plot_polygons_right_col_bottom_offset').val();
 
-                            plotPolygonsRectanglesApplySVG(num_rows_val, num_cols_val, section_top_row_left_offset_val, section_bottom_row_left_offset_val, section_left_column_top_offset_val, section_left_column_bottom_offset_val, section_top_row_right_offset_val, section_right_column_bottom_offset_val, 'drone_imagery_standard_process_generated_polygons_div', 'drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_plot_polygons_generated_assign', 'drone_imagery_standard_process_plot_polygons_submit_bottom', 'drone_imagery_standard_process_plot_polygons_active_templates', null);
+                            plotPolygonsRectanglesApplySVG(num_rows_val, num_cols_val, section_top_row_left_offset_val, section_bottom_row_left_offset_val, section_left_column_top_offset_val, section_left_column_bottom_offset_val, section_top_row_right_offset_val, section_right_column_bottom_offset_val, 'drone_imagery_standard_process_generated_polygons_div', 'drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_plot_polygons_generated_assign', 'drone_imagery_standard_process_plot_polygons_submit_bottom', 'drone_imagery_standard_process_plot_polygons_active_templates');
 
                             plotPolygonManualAssignPlotNumberTableStandard('drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_generated_polygons_table_id', 'drone_imagery_standard_process_generated_polygons_table_input', 'drone_imagery_standard_process_generated_polygons_table_input_generate_button', 'drone_imagery_standard_process_plot_polygons_submit_bottom');
                         }
@@ -6418,7 +6422,7 @@ jQuery(document).ready(function() {
         var section_left_column_bottom_offset_val = plot_polygons_template_dimensions_svg[template_number]['section_left_column_bottom_offset_val'];
         var section_right_column_bottom_offset_val = plot_polygons_template_dimensions_svg[template_number]['section_right_column_bottom_offset_val'];
 
-        plotPolygonsRectanglesApplySVG(num_rows_val, num_cols_val, section_top_row_left_offset_val, section_bottom_row_left_offset_val, section_left_column_top_offset_val, section_left_column_bottom_offset_val, section_top_row_right_offset_val, section_right_column_bottom_offset_val, 'drone_imagery_standard_process_generated_polygons_div', 'drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_plot_polygons_generated_assign', 'drone_imagery_standard_process_plot_polygons_submit_bottom', 'drone_imagery_standard_process_plot_polygons_active_templates', parseInt(template_number) );
+        plotPolygonsRectanglesApplySVG(num_rows_val, num_cols_val, section_top_row_left_offset_val, section_bottom_row_left_offset_val, section_left_column_top_offset_val, section_left_column_bottom_offset_val, section_top_row_right_offset_val, section_right_column_bottom_offset_val, 'drone_imagery_standard_process_generated_polygons_div', 'drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_plot_polygons_generated_assign', 'drone_imagery_standard_process_plot_polygons_submit_bottom', 'drone_imagery_standard_process_plot_polygons_active_templates' );
     }
 
     let drag = d3.drag()
@@ -6426,7 +6430,7 @@ jQuery(document).ready(function() {
         .on('drag', dragged)
         .on('end', dragended);
 
-    function plotPolygonsRectanglesApplySVG(num_rows_val, num_cols_val, section_top_row_left_offset_val, section_bottom_row_left_offset_val, section_left_column_top_offset_val, section_left_column_bottom_offset_val, section_top_row_right_offset_val, section_right_column_bottom_offset_val, plot_polygons_assignment_info, plot_polygons_assignment_table, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button, drone_imagery_plot_polygons_active_templates, template_replacement_number) {
+    function plotPolygonsRectanglesApplySVG(num_rows_val, num_cols_val, section_top_row_left_offset_val, section_bottom_row_left_offset_val, section_left_column_top_offset_val, section_left_column_bottom_offset_val, section_top_row_right_offset_val, section_right_column_bottom_offset_val, plot_polygons_assignment_info, plot_polygons_assignment_table, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button, drone_imagery_plot_polygons_active_templates) {
         if (num_rows_val == ''){
             alert('Please give the number of rows!');
             return;
@@ -6575,6 +6579,7 @@ jQuery(document).ready(function() {
         draw_polygons_svg();
         droneImageryDrawPlotPolygonActiveTemplatesTableSVG(drone_imagery_plot_polygons_active_templates, plot_polygons_template_dimensions_svg);
         droneImageryRectangleLayoutTable(drone_imagery_plot_generated_polygons, plot_polygons_assignment_info, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button);
+        plotPolygonManualAssignPlotNumberTableStandard('drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_generated_polygons_table_id', 'drone_imagery_standard_process_generated_polygons_table_input', 'drone_imagery_standard_process_generated_polygons_table_input_generate_button', 'drone_imagery_standard_process_plot_polygons_submit_bottom');
     }
 
     function draw_polygons_svg() {
@@ -6812,8 +6817,8 @@ jQuery(document).ready(function() {
         });
 
         droneImageryDrawPlotPolygonActiveTemplatesTable(drone_imagery_plot_polygons_active_templates, plot_polygons_template_dimensions);
-
         droneImageryRectangleLayoutTable(drone_imagery_plot_generated_polygons, plot_polygons_assignment_info, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button);
+        plotPolygonManualAssignPlotNumberTableStandard('drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_generated_polygons_table_id', 'drone_imagery_standard_process_generated_polygons_table_input', 'drone_imagery_standard_process_generated_polygons_table_input_generate_button', 'drone_imagery_standard_process_plot_polygons_submit_bottom');
     }
 
     function plotPolygonsTemplatePasteSVG(posx, posy, plot_polygon_template_id, plot_polygons_assignment_info, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button, drone_imagery_plot_polygons_active_templates) {
@@ -6903,6 +6908,7 @@ jQuery(document).ready(function() {
         draw_polygons_svg();
         droneImageryDrawPlotPolygonActiveTemplatesTableSVG('drone_imagery_standard_process_plot_polygons_active_templates', plot_polygons_template_dimensions_svg);
         droneImageryRectangleLayoutTable(drone_imagery_plot_generated_polygons, plot_polygons_assignment_info, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button);
+        plotPolygonManualAssignPlotNumberTableStandard('drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_generated_polygons_table_id', 'drone_imagery_standard_process_generated_polygons_table_input', 'drone_imagery_standard_process_generated_polygons_table_input_generate_button', 'drone_imagery_standard_process_plot_polygons_submit_bottom');
     }
 
     function plotPolygonsTemplatePasteRawImage(posx, posy, polygon) {
@@ -6956,6 +6962,17 @@ jQuery(document).ready(function() {
         jQuery('#drone_imagery_plot_polygon_template_options_dialog').modal('hide');
         alert('Click on where the top left corner of the template will be pasted.');
         drone_imagery_plot_polygon_click_type = 'plot_polygon_template_paste';
+    });
+
+    jQuery('#drone_imagery_plot_polygon_template_options_remove_click').click(function(){
+        plot_polygons_template_dimensions_deleted_templates_svg.push(parseInt(drone_imagery_current_plot_polygon_index_options_id));
+
+        draw_polygons_svg();
+        droneImageryDrawPlotPolygonActiveTemplatesTableSVG('drone_imagery_standard_process_plot_polygons_active_templates', plot_polygons_template_dimensions_svg);
+        droneImageryRectangleLayoutTable(drone_imagery_plot_generated_polygons, 'drone_imagery_standard_process_generated_polygons_div', 'drone_imagery_standard_process_plot_polygons_generated_assign', 'drone_imagery_standard_process_plot_polygons_submit_bottom');
+        plotPolygonManualAssignPlotNumberTableStandard('drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_generated_polygons_table_id', 'drone_imagery_standard_process_generated_polygons_table_input', 'drone_imagery_standard_process_generated_polygons_table_input_generate_button', 'drone_imagery_standard_process_plot_polygons_submit_bottom');
+
+        jQuery('#drone_imagery_plot_polygon_template_options_dialog').modal('hide');
     });
 
     jQuery('input[name=drone_imagery_plot_polygons_autocomplete]').autocomplete({
