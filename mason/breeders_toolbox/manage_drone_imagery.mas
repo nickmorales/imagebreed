@@ -373,8 +373,6 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
             </div>
 
             <div id="drone_imagery_standard_process_plot_polygons_original_stitched_div_svg"></div>
-            <br/><br/>
-            <canvas id="drone_imagery_standard_process_plot_polygons_original_stitched_div"></canvas>
 
             <hr>
             <div class="well well-sm">
@@ -6715,48 +6713,65 @@ jQuery(document).ready(function() {
         for (key in drone_imagery_plot_polygons_display) {
             if (drone_imagery_plot_polygons_display.hasOwnProperty(key)) {
                 var plot_polygons_display_points_again = drone_imagery_plot_polygons_display[key];
-                var line_points = [
-                    [plot_polygons_display_points_again[0].x, plot_polygons_display_points_again[0].y],
-                    [plot_polygons_display_points_again[1].x, plot_polygons_display_points_again[1].y],
-                    [plot_polygons_display_points_again[2].x, plot_polygons_display_points_again[2].y],
-                    [plot_polygons_display_points_again[3].x, plot_polygons_display_points_again[3].y],
-                    [plot_polygons_display_points_again[0].x, plot_polygons_display_points_again[0].y],
-                ];
 
-                focus = svg.append("g");
+                if (plot_polygons_display_points_again != undefined) {
+                    var line_points = [
+                        [plot_polygons_display_points_again[0].x, plot_polygons_display_points_again[0].y],
+                        [plot_polygons_display_points_again[1].x, plot_polygons_display_points_again[1].y],
+                        [plot_polygons_display_points_again[2].x, plot_polygons_display_points_again[2].y],
+                        [plot_polygons_display_points_again[3].x, plot_polygons_display_points_again[3].y],
+                        [plot_polygons_display_points_again[0].x, plot_polygons_display_points_again[0].y],
+                    ];
 
-                focus.append('rect')
-                  .attr('x', plot_polygons_display_points_again[0].x)
-                  .attr('y', plot_polygons_display_points_again[0].y)
-                  .attr('width', plot_polygons_display_points_again[1].x - plot_polygons_display_points_again[0].x)
-                  .attr('height', plot_polygons_display_points_again[3].y - plot_polygons_display_points_again[0].y)
-                  .attr('stroke', 'black')
-                  .attr('fill', '#69a3b2')
-                  .attr('plot_name', key)
-                  .append("svg:title")
-                      .text(key);
+                    var label = '';
+                    var label_stroke = '';
+                    var label_disp = '';
+                    if (drone_imagery_plot_polygons_removed_numbers.includes(key.toString())) {
+                        label = 'NA';
+                        label_stroke = 'blue';
+                        label_disp = 'NA';
+                    }
+                    else {
+                        label = key;
+                        label_stroke = 'red';
+                        label_disp = draw_polygons_svg_counter;
+                        draw_polygons_svg_counter = draw_polygons_svg_counter + 1;
+                    }
 
-                focus.append("path")
-                    .datum(line_points)
-                    .attr("fill", "none")
-                    .attr("stroke", "steelblue")
-                    .attr("stroke-linejoin", "round")
-                    .attr("stroke-linecap", "round")
-                    .attr("stroke-width", 4.5)
-                    .attr("d", line);
+                    focus = svg.append("g");
 
-                focus.append("text")
-                    .attr("x", parseInt(plot_polygons_display_points_again[0].x) + 3 )
-                    .attr("y", parseInt(plot_polygons_display_points_again[0].y) + 14 )
-                    .style('fill', 'red')
-                    .style("font-size", "18px")
-                    .style("font-weight", 500)
-                    .attr("class", "visible")
-                    .text(draw_polygons_svg_counter)
-                    .append("svg:title")
-                        .text(key);
+                    focus.append('rect')
+                      .attr('x', plot_polygons_display_points_again[0].x)
+                      .attr('y', plot_polygons_display_points_again[0].y)
+                      .attr('width', plot_polygons_display_points_again[1].x - plot_polygons_display_points_again[0].x)
+                      .attr('height', plot_polygons_display_points_again[3].y - plot_polygons_display_points_again[0].y)
+                      .attr('stroke', 'black')
+                      .attr('fill', '#69a3b2')
+                      .attr('plot_name', label)
+                      .style("opacity", 0.5)
+                      .append("svg:title")
+                          .text(label);
 
-                draw_polygons_svg_counter = draw_polygons_svg_counter + 1;
+                    focus.append("path")
+                        .datum(line_points)
+                        .attr("fill", "none")
+                        .attr("stroke", "steelblue")
+                        .attr("stroke-linejoin", "round")
+                        .attr("stroke-linecap", "round")
+                        .attr("stroke-width", 4.5)
+                        .attr("d", line);
+
+                    focus.append("text")
+                        .attr("x", parseInt(plot_polygons_display_points_again[0].x) + 3 )
+                        .attr("y", parseInt(plot_polygons_display_points_again[0].y) + 14 )
+                        .style('fill', label_stroke)
+                        .style("font-size", "18px")
+                        .style("font-weight", 500)
+                        .attr("class", "visible")
+                        .text(label_disp)
+                        .append("svg:title")
+                            .text(label);
+                }
             }
         }
 
