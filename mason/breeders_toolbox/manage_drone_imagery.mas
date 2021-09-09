@@ -6710,7 +6710,6 @@ jQuery(document).ready(function() {
         d3.selectAll("circle").remove();
         d3.selectAll("rect").remove();
         var svg = d3.select("svg");
-        focus = svg.append("g");
 
         var draw_polygons_svg_counter = 0;
         for (key in drone_imagery_plot_polygons_display) {
@@ -6724,16 +6723,9 @@ jQuery(document).ready(function() {
                     [plot_polygons_display_points_again[0].x, plot_polygons_display_points_again[0].y],
                 ];
 
-                focus.append("path")
-                    .datum(line_points)
-                    .attr("fill", "none")
-                    .attr("stroke", "steelblue")
-                    .attr("stroke-linejoin", "round")
-                    .attr("stroke-linecap", "round")
-                    .attr("stroke-width", 4.5)
-                    .attr("d", line);
+                focus = svg.append("g");
 
-                svg.append('rect')
+                focus.append('rect')
                   .attr('x', plot_polygons_display_points_again[0].x)
                   .attr('y', plot_polygons_display_points_again[0].y)
                   .attr('width', plot_polygons_display_points_again[1].x - plot_polygons_display_points_again[0].x)
@@ -6744,12 +6736,22 @@ jQuery(document).ready(function() {
                   .append("svg:title")
                       .text(key);
 
+                focus.append("path")
+                    .datum(line_points)
+                    .attr("fill", "none")
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-linejoin", "round")
+                    .attr("stroke-linecap", "round")
+                    .attr("stroke-width", 4.5)
+                    .attr("d", line);
+
                 focus.append("text")
                     .attr("x", parseInt(plot_polygons_display_points_again[0].x) + 3 )
                     .attr("y", parseInt(plot_polygons_display_points_again[0].y) + 14 )
                     .style('fill', 'red')
                     .style("font-size", "18px")
                     .style("font-weight", 500)
+                    .attr("class", "visible")
                     .text(draw_polygons_svg_counter)
                     .append("svg:title")
                         .text(key);
@@ -6757,6 +6759,8 @@ jQuery(document).ready(function() {
                 draw_polygons_svg_counter = draw_polygons_svg_counter + 1;
             }
         }
+
+        alert('Plots successfully assigned to the polygons above. You can hover over to verify the plot names.');
     }
 
     function plotPolygonsTemplatePaste(posx, posy, plot_polygon_template_id, plot_polygons_assignment_info, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button, drone_imagery_plot_polygons_active_templates) {
