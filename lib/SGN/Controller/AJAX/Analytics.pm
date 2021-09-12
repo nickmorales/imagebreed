@@ -3309,7 +3309,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $r_cmd_ic6 = 'R -e "library(ggplot2); library(data.table); library(GGally);
             data <- data.frame(fread(\''.$analytics_protocol_data_tempfile13.'\', header=TRUE, sep=\',\'));
-            plot <- ggcorr(data, hjust = 1, size = 3, color = \'grey50\', label = TRUE, label_size = 3, label_round = 2, layout.exp = 1, label = TRUE);
+            plot <- ggcorr(data, hjust = 1, size = 3, color = \'grey50\', label = TRUE, label_size = 3, label_round = 2, layout.exp = 1);
             ggsave(\''.$analytics_protocol_figure_tempfile_5.'\', plot, device=\'png\', width=10, height=10, units=\'in\');
             "';
             print STDERR Dumper $r_cmd_ic6;
