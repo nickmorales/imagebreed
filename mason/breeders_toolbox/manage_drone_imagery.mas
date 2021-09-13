@@ -323,6 +323,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                                 </div>
                             </div>
                             <hr>
+
                             <input type="checkbox" id="drone_imagery_standard_process_remove_background_upper_threshold_percentage_change_button">&nbsp;&nbsp;&nbsp;&nbsp; Change Threshold Values
                         </div>
                     </div>
@@ -460,6 +461,28 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                     <label class="col-sm-6 control-label">Zonal Statistics to Calculate and Save in Database: </label>
                     <div class="col-sm-6">
                         <input name="drone_imagery_standard_process_phenotypes_select" value="zonal" type="checkbox" checked disabled> Zonal Statistics: nonzero_pixel_count, total_pixel_sum, mean_pixel_value, harmonic_mean_value, median_pixel_value, variance_pixel_value, stdev_pixel_value, pstdev_pixel_value, min_pixel_value, max_pixel_value, minority_pixel_value, minority_pixel_count, majority_pixel_value, majority_pixel_count, pixel_variety_count <br/>
+                    </div>
+                </div>
+                <div class="well well-sm">
+                    <input type="checkbox" id="drone_imagery_standard_process_phenotypes_margin_button">&nbsp;&nbsp;&nbsp;&nbsp; Change Margin Values
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group form-group-sm">
+                                <label class="col-sm-6 control-label">Buffer Margin On Top/Bottom of Plot Polygons (%): </label>
+                                <div class="col-sm-6">
+                                    <input class="form-control" id="drone_imagery_standard_process_phenotypes_margin_top_bottom" name="drone_imagery_standard_process_phenotypes_margin_top_bottom" type="number" value=5 disabled/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group form-group-sm">
+                                <label class="col-sm-6 control-label">Buffer Margin On Left/Right of Plot Polygons (%): </label>
+                                <div class="col-sm-6">
+                                    <input class="form-control" id="drone_imagery_standard_process_phenotypes_margin_left_right" name="drone_imagery_standard_process_phenotypes_margin_left_right" type="number" value=5 disabled/>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group form-group-sm">
@@ -2956,6 +2979,23 @@ jQuery(document).ready(function() {
         }
     });
 
+    jQuery('#drone_imagery_standard_process_phenotypes_margin_button').change(function() {
+        if (this.checked) {
+            if (confirm("When viewing phenotypes derived from these images, you will need to remember or look up the margins you used. You can look up the margins you used on the Manage Aerial Imagery page.")) {
+                jQuery("#drone_imagery_standard_process_phenotypes_margin_top_bottom").prop('disabled', false);
+                jQuery("#drone_imagery_standard_process_phenotypes_margin_left_right").prop('disabled', false);
+            }
+            else {
+                jQuery("#drone_imagery_standard_process_phenotypes_margin_top_bottom").prop('disabled', true);
+                jQuery("#drone_imagery_standard_process_phenotypes_margin_left_right").prop('disabled', true);
+            }
+        }
+        else {
+            jQuery("#drone_imagery_standard_process_phenotypes_margin_top_bottom").prop('disabled', true);
+            jQuery("#drone_imagery_standard_process_phenotypes_margin_left_right").prop('disabled', true);
+        }
+    });
+
     function manage_drone_imagery_standard_process_remove_background_threshold_percentage_save(image_id, image_type, drone_run_band_project_id, lower_threshold_percentage, upper_threshold_percentage){
         jQuery.ajax({
             type: 'POST',
@@ -3235,7 +3275,9 @@ jQuery(document).ready(function() {
                     'time_cvterm_id': manage_drone_imagery_standard_process_phenotype_time,
                     'standard_process_type': 'minimal',
                     'field_trial_id':manage_drone_imagery_standard_process_field_trial_id,
-                    'apply_to_all_drone_runs_from_same_camera_rig':jQuery('#drone_imagery_standard_process_camera_rig_apply_select').val()
+                    'apply_to_all_drone_runs_from_same_camera_rig':jQuery('#drone_imagery_standard_process_camera_rig_apply_select').val(),
+                    'phenotypes_plot_margin_top_bottom':jQuery('#drone_imagery_standard_process_phenotypes_margin_top_bottom').val(),
+                    'phenotypes_plot_margin_right_left':jQuery('#drone_imagery_standard_process_phenotypes_margin_left_right').val()
                 },
                 success: function(response){
                     console.log(response);
@@ -3244,7 +3286,7 @@ jQuery(document).ready(function() {
                     }
                 },
                 error: function(response){
-                    //alert('Error saving standard process assigned plot polygons!')
+                    alert('Error saving standard process assigned plot polygons!')
                 }
             });
 

@@ -6827,6 +6827,8 @@ sub standard_process_apply_POST : Args(0) {
     my $vegetative_indices = decode_json $c->req->param('vegetative_indices');
     my $phenotype_methods = $c->req->param('phenotype_types') ? decode_json $c->req->param('phenotype_types') : ['zonal'];
     my $standard_process_type = $c->req->param('standard_process_type');
+    my $plot_margin_top_bottom = $c->req->param('phenotypes_plot_margin_top_bottom') || 5;
+    my $plot_margin_left_right = $c->req->param('phenotypes_plot_margin_right_left') || 5;
     my $camera_rig_apply = $c->req->param('apply_to_all_drone_runs_from_same_camera_rig') eq 'Yes' ? 1 : 0;
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
@@ -6841,6 +6843,7 @@ sub standard_process_apply_POST : Args(0) {
     my $processed_minimal_vi_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_standard_process_vi_completed', 'project_property')->cvterm_id();
     my $project_image_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'stitched_drone_imagery', 'project_md_image')->cvterm_id();
     my $drone_run_band_type_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
+    my $drone_run_band_plot_polygons_phenotype_margins_json_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_plot_polygons_phenotype_margins_json', 'project_property')->cvterm_id();
 
     my @apply_projects;
     if ($camera_rig_apply) {
@@ -6920,6 +6923,16 @@ sub standard_process_apply_POST : Args(0) {
             project_id=>$drone_run_project_id_in,
             rank=>0,
             value=>0
+        },
+        {
+            key=>'projectprop_c1'
+        });
+
+        my $drone_run_process_phenotype_margins = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+            type_id=>$drone_run_band_plot_polygons_phenotype_margins_json_type_id,
+            project_id=>$drone_run_project_id_in,
+            rank=>0,
+            value=>encode_json {top_bottom => $plot_margin_top_bottom, left_right => $plot_margin_left_right}
         },
         {
             key=>'projectprop_c1'
@@ -7065,7 +7078,7 @@ sub standard_process_apply_POST : Args(0) {
             key=>'projectprop_c1'
         });
 
-        my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_in, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $user_id, $user_name, $user_role);
+        my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_in, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
     }
 
     my @result;
@@ -7104,6 +7117,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
 
     my $drone_run_band_drone_run_project_relationship_type_id_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
     my $drone_run_band_drone_run_project_type = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
+    my $drone_run_band_plot_polygons_phenotype_margins_json_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_plot_polygons_phenotype_margins_json', 'project_property')->cvterm_id();
 
     my $project_image_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'stitched_drone_imagery', 'project_md_image')->cvterm_id();
     my $rotated_image_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'rotated_stitched_drone_imagery', 'project_md_image')->cvterm_id();
@@ -7742,8 +7756,21 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
         key=>'projectprop_c1'
     });
 
+    my $drone_run_process_phenotype_margins = $bcs_schema->resultset('Project::Projectprop')->search({
+        type_id=>$drone_run_band_plot_polygons_phenotype_margins_json_type_id,
+        project_id=>$gcp_drone_run_project_id_input,
+    });
+    my $plot_margin_top_bottom = 5;
+    my $plot_margin_left_right = 5;
+    if ($drone_run_process_phenotype_margins->count() > 0) {
+        my $drone_run_process_phenotype_margins_json = $drone_run_process_phenotype_margins->first->value;
+        my $drone_run_process_phenotype_margins_hash = decode_json $drone_run_process_phenotype_margins_json;
+        $plot_margin_top_bottom = $drone_run_process_phenotype_margins_hash->{top_bottom};
+        $plot_margin_left_right = $drone_run_process_phenotype_margins_hash->{left_right};
+    }
+
     if (!$is_test) {
-        my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $user_id, $user_name, $user_role);
+        my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
     }
 
     my @result;
@@ -7780,6 +7807,7 @@ sub standard_process_apply_previous_imaging_event_POST : Args(0) {
 
     my $drone_run_band_drone_run_project_relationship_type_id_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
     my $drone_run_band_drone_run_project_type = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
+    my $drone_run_band_plot_polygons_phenotype_margins_json_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_plot_polygons_phenotype_margins_json', 'project_property')->cvterm_id();
 
     my $project_image_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'stitched_drone_imagery', 'project_md_image')->cvterm_id();
     my $rotated_image_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'rotated_stitched_drone_imagery', 'project_md_image')->cvterm_id();
@@ -7982,7 +8010,20 @@ sub standard_process_apply_previous_imaging_event_POST : Args(0) {
         key=>'projectprop_c1'
     });
 
-    my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $user_id, $user_name, $user_role);
+    my $drone_run_process_phenotype_margins = $bcs_schema->resultset('Project::Projectprop')->search({
+        type_id=>$drone_run_band_plot_polygons_phenotype_margins_json_type_id,
+        project_id=>$gcp_drone_run_project_id_input,
+    });
+    my $plot_margin_top_bottom = 5;
+    my $plot_margin_left_right = 5;
+    if ($drone_run_process_phenotype_margins->count() > 0) {
+        my $drone_run_process_phenotype_margins_json = $drone_run_process_phenotype_margins->first->value;
+        my $drone_run_process_phenotype_margins_hash = decode_json $drone_run_process_phenotype_margins_json;
+        $plot_margin_top_bottom = $drone_run_process_phenotype_margins_hash->{top_bottom};
+        $plot_margin_left_right = $drone_run_process_phenotype_margins_hash->{left_right};
+    }
+
+    my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
 
     my @result;
     $c->stash->{rest} = { data => \@result, success => 1 };
@@ -8003,11 +8044,14 @@ sub standard_process_apply_raw_images_interactive_POST : Args(0) {
     my $phenotype_methods = $c->req->param('phenotype_types') ? decode_json $c->req->param('phenotype_types') : ['zonal'];
     my $time_cvterm_id = $c->req->param('time_cvterm_id');
     my $standard_process_type = $c->req->param('standard_process_type');
+    my $plot_margin_top_bottom = $c->req->param('phenotypes_plot_margin_top_bottom') || 5;
+    my $plot_margin_left_right = $c->req->param('phenotypes_plot_margin_right_left') || 5;
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $process_indicator_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_in_progress', 'project_property')->cvterm_id();
     my $processed_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_completed', 'project_property')->cvterm_id();
     my $processed_minimal_vi_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_vi_completed', 'project_property')->cvterm_id();
+    my $drone_run_band_plot_polygons_phenotype_margins_json_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons_phenotype_margins_json', 'project_property')->cvterm_id();
 
     my $drone_run_process_in_progress = $schema->resultset('Project::Projectprop')->update_or_create({
         type_id=>$process_indicator_cvterm_id,
@@ -8034,6 +8078,16 @@ sub standard_process_apply_raw_images_interactive_POST : Args(0) {
         project_id=>$drone_run_project_id_input,
         rank=>0,
         value=>0
+    },
+    {
+        key=>'projectprop_c1'
+    });
+
+    my $drone_run_process_phenotype_margins = $schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$drone_run_band_plot_polygons_phenotype_margins_json_type_id,
+        project_id=>$drone_run_project_id_input,
+        rank=>0,
+        value=>encode_json {top_bottom => $plot_margin_top_bottom, left_right => $plot_margin_left_right}
     },
     {
         key=>'projectprop_c1'
@@ -8285,7 +8339,7 @@ sub standard_process_apply_raw_images_interactive_POST : Args(0) {
         key=>'projectprop_c1'
     });
 
-    my $return = _perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $user_id, $user_name, $user_role);
+    my $return = _perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
 
     my @result;
     $c->stash->{rest} = { data => \@result, success => 1 };
@@ -8755,10 +8809,14 @@ sub standard_process_extended_apply_GET : Args(0) {
     my $time_cvterm_id = $c->req->param('time_days_cvterm_id');
     my $standard_process_type = $c->req->param('standard_process_type');
     my $phenotype_methods = $c->req->param('phenotype_types') ? decode_json $c->req->param('phenotype_types') : ['zonal'];
+    my $plot_margin_top_bottom = $c->req->param('phenotypes_plot_margin_top_bottom') || 5;
+    my $plot_margin_left_right = $c->req->param('phenotypes_plot_margin_right_left') || 5;
     my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
 
     my $process_indicator_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_standard_process_in_progress', 'project_property')->cvterm_id();
     my $processed_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_standard_process_extended_completed', 'project_property')->cvterm_id();
+    my $drone_run_band_plot_polygons_phenotype_margins_json_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_plot_polygons_phenotype_margins_json', 'project_property')->cvterm_id();
+
     my $drone_run_process_in_progress = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
         type_id=>$process_indicator_cvterm_id,
         project_id=>$drone_run_project_id_input,
@@ -8774,6 +8832,16 @@ sub standard_process_extended_apply_GET : Args(0) {
         project_id=>$drone_run_project_id_input,
         rank=>0,
         value=>0
+    },
+    {
+        key=>'projectprop_c1'
+    });
+
+    my $drone_run_process_phenotype_margins = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$drone_run_band_plot_polygons_phenotype_margins_json_type_id,
+        project_id=>$drone_run_project_id_input,
+        rank=>0,
+        value=>encode_json {top_bottom => $plot_margin_top_bottom, left_right => $plot_margin_left_right}
     },
     {
         key=>'projectprop_c1'
@@ -8895,7 +8963,7 @@ sub standard_process_extended_apply_GET : Args(0) {
         key=>'projectprop_c1'
     });
 
-    my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $user_id, $user_name, $user_role);
+    my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
 
     $c->stash->{rest} = {success => 1};
 }
@@ -9925,6 +9993,8 @@ sub _perform_phenotype_automated {
     my $standard_process_type = shift;
     my $ignore_new_phenotype_values = shift;
     my $overwrite_phenotype_values = shift;
+    my $plot_margin_top_bottom = shift || 5;
+    my $plot_margin_left_right = shift || 5;
     my $user_id = shift;
     my $user_name = shift;
     my $user_role = shift;
@@ -9995,7 +10065,7 @@ sub _perform_phenotype_automated {
             #my $pm = Parallel::ForkManager->new(floor(int($number_system_cores)*0.5));
             foreach my $plot_polygon_type (@{$project_observation_unit_plot_polygons_types{$drone_run_band_project_type}->{$standard_process_type}}) {
                 #my $pid = $pm->start and next;
-                my $return = _perform_phenotype_calculation($c, $schema, $metadata_schema, $phenome_schema, $drone_run_band_project_id, $drone_run_band_project_type, $phenotype_method, $time_cvterm_id, $plot_polygon_type, $user_id, $user_name, $user_role, \@allowed_composed_cvs, $composable_cvterm_delimiter, $composable_cvterm_format, 1, $ignore_new_phenotype_values, $overwrite_phenotype_values);
+                my $return = _perform_phenotype_calculation($c, $schema, $metadata_schema, $phenome_schema, $drone_run_band_project_id, $drone_run_band_project_type, $phenotype_method, $time_cvterm_id, $plot_polygon_type, $user_id, $user_name, $user_role, \@allowed_composed_cvs, $composable_cvterm_delimiter, $composable_cvterm_format, 1, $ignore_new_phenotype_values, $overwrite_phenotype_values, $plot_margin_top_bottom, $plot_margin_left_right);
                 if ($return->{error}){
                     print STDERR Dumper $return->{error};
                 }
@@ -10411,9 +10481,34 @@ sub drone_imagery_calculate_phenotypes_POST : Args(0) {
     my @allowed_composed_cvs = split ',', $c->config->{composable_cvs};
     my $composable_cvterm_delimiter = $c->config->{composable_cvterm_delimiter};
     my $composable_cvterm_format = $c->config->{composable_cvterm_format};
+    my $plot_margin_top_bottom = $c->req->param('phenotypes_plot_margin_top_bottom') || 5;
+    my $plot_margin_left_right = $c->req->param('phenotypes_plot_margin_right_left') || 5;
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
-    my $return = _perform_phenotype_calculation($c, $schema, $metadata_schema, $phenome_schema, $drone_run_band_project_id, $drone_run_band_project_type, $phenotype_method, $time_cvterm_id, $plot_polygons_type, $user_id, $user_name, $user_role, \@allowed_composed_cvs, $composable_cvterm_delimiter, $composable_cvterm_format, undef, undef, 1);
+    my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
+    my $drone_run_band_plot_polygons_phenotype_margins_json_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons_phenotype_margins_json', 'project_property')->cvterm_id();
+
+    my $q1 = "SELECT drone_run.project_id
+        FROM project AS drone_run_band
+        JOIN project_relationship ON(project_relationship.subject_project_id = drone_run_band.project_id AND project_relationship.type_id = $drone_run_drone_run_band_type_id)
+        JOIN project AS drone_run ON(project_relationship.object_project_id = drone_run.project_id)
+        WHERE drone_run_band.project_id = ?;";
+
+    my $h1 = $schema->storage->dbh()->prepare($q1);
+    $h1->execute($drone_run_band_project_id);
+    my ($drone_run_project_id_input) = $h1->fetchrow_array();
+
+    my $drone_run_process_phenotype_margins = $schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$drone_run_band_plot_polygons_phenotype_margins_json_type_id,
+        project_id=>$drone_run_project_id_input,
+        rank=>0,
+        value=>encode_json {top_bottom => $plot_margin_top_bottom, left_right => $plot_margin_left_right}
+    },
+    {
+        key=>'projectprop_c1'
+    });
+
+    my $return = _perform_phenotype_calculation($c, $schema, $metadata_schema, $phenome_schema, $drone_run_band_project_id, $drone_run_band_project_type, $phenotype_method, $time_cvterm_id, $plot_polygons_type, $user_id, $user_name, $user_role, \@allowed_composed_cvs, $composable_cvterm_delimiter, $composable_cvterm_format, undef, undef, 1, $plot_margin_top_bottom, $plot_margin_left_right);
 
     $c->stash->{rest} = $return;
 }
@@ -10429,12 +10524,26 @@ sub drone_imagery_generate_phenotypes_GET : Args(0) {
     my $time_cvterm_id = $c->req->param('time_cvterm_id');
     my $phenotype_methods = $c->req->param('phenotype_types') ? decode_json $c->req->param('phenotype_types') : ['zonal'];
     my $standard_process_type = $c->req->param('standard_process_type');
+    my $plot_margin_top_bottom = $c->req->param('phenotypes_plot_margin_top_bottom') || 5;
+    my $plot_margin_left_right = $c->req->param('phenotypes_plot_margin_right_left') || 5;
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
+
+    my $drone_run_band_plot_polygons_phenotype_margins_json_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons_phenotype_margins_json', 'project_property')->cvterm_id();
+
+    my $drone_run_process_phenotype_margins = $schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$drone_run_band_plot_polygons_phenotype_margins_json_type_id,
+        project_id=>$drone_run_project_id,
+        rank=>0,
+        value=>encode_json {top_bottom => $plot_margin_top_bottom, left_right => $plot_margin_left_right}
+    },
+    {
+        key=>'projectprop_c1'
+    });
 
     my @standard_processes = split ',', $standard_process_type;
     my $return;
     foreach my $standard_process_type (@standard_processes) {
-        $return = _perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id, $time_cvterm_id, $phenotype_methods, $standard_process_type, undef, 1, $user_id, $user_name, $user_role);
+        $return = _perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id, $time_cvterm_id, $phenotype_methods, $standard_process_type, undef, 1, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
     }
 
     $c->stash->{rest} = $return;
@@ -10459,6 +10568,8 @@ sub _perform_phenotype_calculation {
     my $do_not_run_materialized_view_refresh = shift;
     my $ignore_new_phenotype_values = shift;
     my $overwrite_phenotype_values = shift;
+    my $plot_margin_top_bottom = shift || 5;
+    my $plot_margin_left_right = shift || 5;
 
     print STDERR Dumper [$drone_run_band_project_id, $drone_run_band_project_type, $phenotype_method, $time_cvterm_id, $plot_polygons_type];
 
@@ -10625,7 +10736,7 @@ sub _perform_phenotype_calculation {
             $temp_images_subdir = 'drone_imagery_calc_phenotypes_zonal_stats';
             $temp_results_subdir = 'drone_imagery_calc_phenotypes_zonal_stats_results';
             $calculate_phenotypes_script = 'CalculatePhenotypeZonalStats.py';
-            $calculate_phenotypes_extra_args = ' --image_band_index '.$image_band_selected.' --plot_polygon_type '.$plot_polygons_type. ' --margin_percent 5';
+            $calculate_phenotypes_extra_args = ' --image_band_index '.$image_band_selected.' --plot_polygon_type '.$plot_polygons_type. ' --margin_percent_top_bottom '.$plot_margin_top_bottom.' --margin_percent_left_right '.$plot_margin_left_right;
             $archive_file_type = 'zonal_statistics_image_phenotypes';
         } elsif ($phenotype_method eq 'sift') {
             $temp_images_subdir = 'drone_imagery_calc_phenotypes_sift';
