@@ -1428,7 +1428,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $residual_sum_square_s = 0;
     my $model_sum_square_residual_s = 0;
 
-    if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1') {
+    if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq 'ar1') {
         my $spatial_correct_2dspl_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
         mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
         geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
