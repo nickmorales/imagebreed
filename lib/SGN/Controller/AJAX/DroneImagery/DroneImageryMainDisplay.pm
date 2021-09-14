@@ -595,8 +595,8 @@ sub _draw_drone_imagery_section {
         $html .= '<br/><b>Thresholded</b>: '.$threshold_value;
     }
     if ($plot_phenotype_margins) {
-        my $top_bottom = $plot_phenotype_margins->{top_bottom} || 5;
-        my $left_right = $plot_phenotype_margins->{left_right} || 5;
+        my $top_bottom = defined($plot_phenotype_margins->{top_bottom}) ? $plot_phenotype_margins->{top_bottom} : 5;
+        my $left_right = defined($plot_phenotype_margins->{left_right}) ? $plot_phenotype_margins->{left_right} : 5;
         $html .= '<br/><b>Plot-polygon Phenotype Margins</b>: Top/Bottom: '.$top_bottom.'%, Left/Right: '.$left_right.'%';
     }
     $html .= '<hr>'.$imagery.'</div><div class="col-sm-9">';

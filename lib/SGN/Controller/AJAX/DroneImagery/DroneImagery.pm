@@ -6196,26 +6196,35 @@ sub _perform_image_background_remove_threshold_percentage {
 sub _get_image_background_remove_threshold_percentage {
     my $schema = shift;
     my $drone_run_band_project_id = shift;
-    my $image_type = shift;
 
-    my $imagery_attribute_map = CXGN::DroneImagery::ImageTypes::get_imagery_attribute_map();
-    my $drone_run_band_remove_background_threshold_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, $imagery_attribute_map->{$image_type}->{key}, 'project_property')->cvterm_id();
+    my $drone_run_band_remove_background_threshold_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_background_removed_threshold', 'project_property')->cvterm_id();
+    my $drone_run_band_background_removed_vari_threshold_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_background_removed_vari_threshold', 'project_property')->cvterm_id();
+    my $drone_run_band_background_removed_tgi_threshold_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_background_removed_tgi_threshold', 'project_property')->cvterm_id();
+    my $drone_run_band_background_removed_ndvi_threshold_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_background_removed_ndvi_threshold', 'project_property')->cvterm_id();
+    my $drone_run_band_background_removed_ndre_threshold_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_background_removed_ndre_threshold', 'project_property')->cvterm_id();
 
     my $drone_run_band_remove_background_threshold = $schema->resultset('Project::Projectprop')->search({
-        type_id=>$drone_run_band_remove_background_threshold_type_id,
+        type_id=>[
+            $drone_run_band_remove_background_threshold_type_id,
+            $drone_run_band_background_removed_tgi_threshold_type_id,
+            $drone_run_band_background_removed_vari_threshold_type_id,
+            $drone_run_band_background_removed_ndvi_threshold_type_id,
+            $drone_run_band_background_removed_ndre_threshold_type_id
+        ],
         project_id=>$drone_run_band_project_id,
     });
+    my $val;
     my $upper;
     my $lower;
     if ($drone_run_band_remove_background_threshold->count > 0) {
-        my $val = $drone_run_band_remove_background_threshold->first->value;
+        $val = $drone_run_band_remove_background_threshold->first->value;
         my @val1 = split '. Upper Threshold Percentage:', $val;
         $upper = $val1[1];
         my @val2 = split 'Lower Threshold Percentage:', $val1[0];
-        print STDERR [$val. \@val1, \@val2];
-        $lower = $val2[0];
+        $lower = $val2[1];
     }
-    return [$lower, $upper];
+    # print STDERR Dumper [$lower, $upper, $val];
+    return [$lower, $upper, $val];
 }
 
 sub get_drone_run_projects : Path('/api/drone_imagery/drone_runs') : ActionClass('REST') { }
@@ -6841,6 +6850,7 @@ sub standard_process_apply : Path('/api/drone_imagery/standard_process_apply') :
 sub standard_process_apply_POST : Args(0) {
     my $self = shift;
     my $c = shift;
+    print STDERR Dumper $c->req->params();
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
     my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
@@ -6854,6 +6864,8 @@ sub standard_process_apply_POST : Args(0) {
     my $standard_process_type = $c->req->param('standard_process_type');
     my $plot_margin_top_bottom = defined ($c->req->param('phenotypes_plot_margin_top_bottom')) ? $c->req->param('phenotypes_plot_margin_top_bottom') : 5;
     my $plot_margin_left_right = defined ($c->req->param('phenotypes_plot_margin_right_left')) ? $c->req->param('phenotypes_plot_margin_right_left') : 5;
+    my $drone_imagery_remove_background_lower_percentage = defined ($c->req->param('drone_imagery_remove_background_lower_percentage')) ? $c->req->param('drone_imagery_remove_background_lower_percentage') : 0;
+    my $drone_imagery_remove_background_upper_percentage = defined ($c->req->param('drone_imagery_remove_background_upper_percentage')) ? $c->req->param('drone_imagery_remove_background_upper_percentage') : 0;
     my $camera_rig_apply = $c->req->param('apply_to_all_drone_runs_from_same_camera_rig') eq 'Yes' ? 1 : 0;
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
@@ -7046,7 +7058,8 @@ sub standard_process_apply_POST : Args(0) {
                 drone_run_project_name => $drone_run_project_name,
                 plot_polygons_value => $plot_polygons_value,
                 check_resize => 1,
-                keep_original_size_rotate => 0
+                keep_original_size_rotate => 0,
+                threshold_values => "Lower Threshold Percentage:$drone_imagery_remove_background_lower_percentage. Upper Threshold Percentage:$drone_imagery_remove_background_upper_percentage"
             };
 
             my @denoised_plot_polygon_type = @{$term_map->{$drone_run_band_type}->{observation_unit_plot_polygon_types}->{base}};
@@ -7062,7 +7075,9 @@ sub standard_process_apply_POST : Args(0) {
                 my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
                 $archive_remove_background_temp_image .= '.png';
 
-                my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $denoised_background_threshold_removed_imagery_types[$iterator], '25', '25', $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+                my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $denoised_background_threshold_removed_imagery_types[$iterator], $drone_imagery_remove_background_lower_percentage, $drone_imagery_remove_background_upper_percentage, $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+
+                my $threshold_values = _get_image_background_remove_threshold_percentage($bcs_schema, $drone_run_band_project_id);
 
                 my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square');
             }
@@ -7740,7 +7755,11 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
             my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
             $archive_remove_background_temp_image .= '.png';
 
-            my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $denoised_background_threshold_removed_imagery_types[$iterator], '25', '25', $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+            my $threshold_values = _get_image_background_remove_threshold_percentage($bcs_schema, $gcp_drone_run_band_project_id);
+
+            $drone_run_band_info{$drone_run_band_project_id}->{threshold_values} = $threshold_values->[2];
+
+            my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $denoised_background_threshold_removed_imagery_types[$iterator], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
 
             my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square');
         }
@@ -7994,7 +8013,11 @@ sub standard_process_apply_previous_imaging_event_POST : Args(0) {
             my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
             $archive_remove_background_temp_image .= '.png';
 
-            my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $denoised_background_threshold_removed_imagery_types[$iterator], '25', '25', $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+            my $threshold_values = _get_image_background_remove_threshold_percentage($bcs_schema, $gcp_drone_run_band_project_id);
+
+            $drone_run_band_info{$drone_run_band_project_id}->{threshold_values} = $threshold_values->[2];
+
+            my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $denoised_background_threshold_removed_imagery_types[$iterator], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
 
             my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, $plot_polygons_value_json, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square');
         }
@@ -8770,6 +8793,9 @@ sub standard_process_minimal_vi_apply_POST : Args(0) {
             check_resize => 1,
             keep_original_size_rotate => 0
         };
+
+        my $threshold_values = _get_image_background_remove_threshold_percentage($bcs_schema, $drone_run_band_project_id);
+        $drone_run_band_info{$drone_run_band_project_id}->{threshold_values} = $threshold_values->[2];
     }
 
     print STDERR Dumper \%selected_drone_run_band_types;
@@ -9058,7 +9084,9 @@ sub _perform_standard_process_extended_vi_calc {
     my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
     $archive_remove_background_temp_image .= '.png';
 
-    my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $index_image_id, $merged_drone_run_band_project_id, (%{$vi_map{$vi}->{index_threshold_background}})[0], '25', '25', $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+    my $threshold_values = _get_image_background_remove_threshold_percentage($bcs_schema, $merged_drone_run_band_project_id);
+
+    my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $index_image_id, $merged_drone_run_band_project_id, (%{$vi_map{$vi}->{index_threshold_background}})[0], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
     my $background_removed_threshold_image_id = $background_removed_threshold_return->{removed_background_image_id};
 
     my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_image_id, $merged_drone_run_band_project_id, $plot_polygons_value, $vi_map{$vi}->{index_threshold_background}->{(%{$vi_map{$vi}->{index_threshold_background}})[0]}->[0], $user_id, $user_name, $user_role, 0, 0, 1, 1, 'rectangular_square');
@@ -9249,7 +9277,7 @@ sub _perform_minimal_vi_standard_process {
 
     if (exists($vegetative_indices->{'TGI'}) || exists($vegetative_indices->{'VARI'})) {
         if(exists($selected_drone_run_band_types->{'Blue (450-520nm)'}) && exists($selected_drone_run_band_types->{'Green (515-600nm)'}) && exists($selected_drone_run_band_types->{'Red (600-690nm)'}) ) {
-            my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{drone_run_project_name}, $selected_drone_run_band_types->{'Blue (450-520nm)'}, $selected_drone_run_band_types->{'Green (515-600nm)'}, $selected_drone_run_band_types->{'Red (600-690nm)'}, 'BGR', $user_id, $user_name, $user_role);
+            my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{drone_run_project_name}, $selected_drone_run_band_types->{'Blue (450-520nm)'}, $selected_drone_run_band_types->{'Green (515-600nm)'}, $selected_drone_run_band_types->{'Red (600-690nm)'}, 'BGR', $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{threshold_values}, $user_id, $user_name, $user_role);
             my $merged_image_id = $merged_return->{merged_image_id};
             my $merged_drone_run_band_project_id = $merged_return->{merged_drone_run_band_project_id};
 
@@ -9294,7 +9322,7 @@ sub _perform_minimal_vi_standard_process {
     }
     if (exists($vegetative_indices->{'NDVI'})) {
         if(exists($selected_drone_run_band_types->{'NIR (780-3000nm)'}) && exists($selected_drone_run_band_types->{'Red (600-690nm)'}) ) {
-            my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_name}, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, $selected_drone_run_band_types->{'Red (600-690nm)'}, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, 'NRN', $user_id, $user_name, $user_role);
+            my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_name}, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, $selected_drone_run_band_types->{'Red (600-690nm)'}, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, 'NRN', $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{threshold_values}, $user_id, $user_name, $user_role);
             my $merged_image_id = $merged_return->{merged_image_id};
             my $merged_drone_run_band_project_id = $merged_return->{merged_drone_run_band_project_id};
 
@@ -9326,7 +9354,7 @@ sub _perform_minimal_vi_standard_process {
     }
     if (exists($vegetative_indices->{'NDRE'})) {
         if(exists($selected_drone_run_band_types->{'NIR (780-3000nm)'}) && exists($selected_drone_run_band_types->{'Red Edge (690-750nm)'}) ) {
-            my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_name}, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, $selected_drone_run_band_types->{'Red Edge (690-750nm)'}, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, 'NReN', $user_id, $user_name, $user_role);
+            my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_name}, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, $selected_drone_run_band_types->{'Red Edge (690-750nm)'}, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, 'NReN', $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{threshold_values}, $user_id, $user_name, $user_role);
             my $merged_image_id = $merged_return->{merged_image_id};
             my $merged_drone_run_band_project_id = $merged_return->{merged_drone_run_band_project_id};
 
@@ -9912,7 +9940,9 @@ sub drone_imagery_merge_bands_POST : Args(0) {
     my $band_3_drone_run_band_project_id = $c->req->param('band_3_drone_run_band_project_id');
     my $merged_image_type = $c->req->param('merged_image_type');
 
-    my $return = _perform_image_merge($c, $schema, $metadata_schema, $drone_run_project_id, $drone_run_project_name, $band_1_drone_run_band_project_id, $band_2_drone_run_band_project_id, $band_3_drone_run_band_project_id, $merged_image_type, $user_id, $user_name, $user_role);
+    my $threshold_values = _get_image_background_remove_threshold_percentage($schema, $band_1_drone_run_band_project_id);
+
+    my $return = _perform_image_merge($c, $schema, $metadata_schema, $drone_run_project_id, $drone_run_project_name, $band_1_drone_run_band_project_id, $band_2_drone_run_band_project_id, $band_3_drone_run_band_project_id, $merged_image_type, $threshold_values->[2], $user_id, $user_name, $user_role);
 
     $c->stash->{rest} = $return;
 }
@@ -9927,6 +9957,7 @@ sub _perform_image_merge {
     my $band_2_drone_run_band_project_id = shift;
     my $band_3_drone_run_band_project_id = shift;
     my $merged_image_type = shift;
+    my $threshold_values_string = shift;
     my $user_id = shift;
     my $user_name = shift;
     my $user_role = shift;
@@ -9974,6 +10005,7 @@ sub _perform_image_merge {
     my $drone_run_band_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
     my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
     my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
+    my $background_removed_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_background_removed_threshold', 'project_property')->cvterm_id();
 
     my $band_1_drone_run_band_project_type = $schema->resultset("Project::Projectprop")->search({project_id => $band_1_drone_run_band_project_id, type_id => $drone_run_band_type_cvterm_id})->first->value;
     my $band_2_drone_run_band_project_type = $schema->resultset("Project::Projectprop")->search({project_id => $band_2_drone_run_band_project_id, type_id => $drone_run_band_type_cvterm_id})->first->value;
@@ -9989,7 +10021,11 @@ sub _perform_image_merge {
         my $project_rs = $schema->resultset("Project::Project")->create({
             name => "$drone_run_project_name Merged:$band_1_drone_run_band_project_type (project_id:$band_1_drone_run_band_project_id),$band_2_drone_run_band_project_type (project_id:$band_2_drone_run_band_project_id),$band_3_drone_run_band_project_type (project_id:$band_3_drone_run_band_project_id)",
             description => "Merged $band_1_drone_run_band_project_type (project_id:$band_1_drone_run_band_project_id),$band_2_drone_run_band_project_type (project_id:$band_2_drone_run_band_project_id),$band_3_drone_run_band_project_type (project_id:$band_3_drone_run_band_project_id)",
-            projectprops => [{type_id => $drone_run_band_type_cvterm_id, value => 'Merged 3 Bands '.$merged_image_type}, {type_id => $design_cvterm_id, value => 'drone_run_band'}],
+            projectprops => [
+                {type_id => $drone_run_band_type_cvterm_id, value => 'Merged 3 Bands '.$merged_image_type},
+                {type_id => $design_cvterm_id, value => 'drone_run_band'},
+                {type_id => $background_removed_type_id, value => $threshold_values_string}
+            ],
             project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $drone_run_project_id}]
         });
         $merged_drone_run_band_id = $project_rs->project_id();

@@ -2954,8 +2954,8 @@ jQuery(document).ready(function() {
     });
 
     jQuery('#drone_imagery_standard_process_remove_background_defined_percentage_submit').click(function(){
-        var drone_imagery_remove_background_lower_percentage = Number(jQuery('#drone_imagery_standard_process_remove_background_lower_threshold_percentage').val());
-        var drone_imagery_remove_background_upper_percentage = Number(jQuery('#drone_imagery_standard_process_remove_background_upper_threshold_percentage').val());
+        drone_imagery_remove_background_lower_percentage = Number(jQuery('#drone_imagery_standard_process_remove_background_lower_threshold_percentage').val());
+        drone_imagery_remove_background_upper_percentage = Number(jQuery('#drone_imagery_standard_process_remove_background_upper_threshold_percentage').val());
 
         //var threshold_value_return = calculateThresholdPercentageValues('drone_imagery_remove_background_original', drone_imagery_remove_background_lower_percentage, drone_imagery_remove_background_upper_percentage);
 
@@ -3277,7 +3277,9 @@ jQuery(document).ready(function() {
                     'field_trial_id':manage_drone_imagery_standard_process_field_trial_id,
                     'apply_to_all_drone_runs_from_same_camera_rig':jQuery('#drone_imagery_standard_process_camera_rig_apply_select').val(),
                     'phenotypes_plot_margin_top_bottom':jQuery('#drone_imagery_standard_process_phenotypes_margin_top_bottom').val(),
-                    'phenotypes_plot_margin_right_left':jQuery('#drone_imagery_standard_process_phenotypes_margin_left_right').val()
+                    'phenotypes_plot_margin_right_left':jQuery('#drone_imagery_standard_process_phenotypes_margin_left_right').val(),
+                    'drone_imagery_remove_background_lower_percentage':drone_imagery_remove_background_lower_percentage,
+                    'drone_imagery_remove_background_upper_percentage':drone_imagery_remove_background_upper_percentage
                 },
                 success: function(response){
                     console.log(response);
@@ -7847,6 +7849,8 @@ jQuery(document).ready(function() {
     var remove_background_current_image_id;
     var remove_background_current_image_type;
     var remove_background_drone_run_band_project_id;
+    var drone_imagery_remove_background_lower_percentage = 0;
+    var drone_imagery_remove_background_upper_percentage = 0;
 
     jQuery(document).on('click', 'button[name=project_drone_imagery_remove_background]', function(){
         showManageDroneImagerySection('manage_drone_imagery_remove_background_div');
@@ -8176,8 +8180,8 @@ jQuery(document).ready(function() {
     }
 
     jQuery('#drone_imagery_remove_background_defined_percentage_submit').click(function(){
-        var drone_imagery_remove_background_lower_percentage = Number(jQuery('#drone_imagery_remove_background_lower_threshold_percentage').val())/100;
-        var drone_imagery_remove_background_upper_percentage = Number(jQuery('#drone_imagery_remove_background_upper_threshold_percentage').val())/100;
+        drone_imagery_remove_background_lower_percentage = Number(jQuery('#drone_imagery_remove_background_lower_threshold_percentage').val())/100;
+        drone_imagery_remove_background_upper_percentage = Number(jQuery('#drone_imagery_remove_background_upper_threshold_percentage').val())/100;
 
         var threshold_value_return = calculateThresholdPercentageValues('drone_imagery_remove_background_original', drone_imagery_remove_background_lower_percentage, drone_imagery_remove_background_upper_percentage);
 

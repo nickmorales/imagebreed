@@ -2568,7 +2568,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                 drone_run_project_name => $drone_run_project_info{$drone_run_project_id_in}->{name},
                 plot_polygons_value => $plot_polygons_value,
                 check_resize => 1,
-                keep_original_size_rotate => 1
+                keep_original_size_rotate => 1,
+                threshold_values => "Lower Threshold Percentage:25. Upper Threshold Percentage:25"
             };
 
             my @denoised_plot_polygon_type = @{$term_map->{$drone_run_band_type}->{observation_unit_plot_polygon_types}->{base}};
@@ -3243,7 +3244,8 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
             drone_run_project_name => $drone_run_project_info{$drone_run_project_id_in}->{name},
             plot_polygons_value => $plot_polygons_value,
             check_resize => 1,
-            keep_original_size_rotate => 1
+            keep_original_size_rotate => 1,
+            threshold_values => "Lower Threshold Percentage:25. Upper Threshold Percentage:25"
         };
 
         my @denoised_plot_polygon_type = @{$term_map->{$drone_run_band_type}->{observation_unit_plot_polygon_types}->{base}};
