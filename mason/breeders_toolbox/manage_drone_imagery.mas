@@ -6473,10 +6473,33 @@ jQuery(document).ready(function() {
     }
 
     function dragended(d) {
+        var x = d3.event.x;
+        var y = d3.event.y;
         d3.select(this).classed('active', false);
         var template_number = d3.select(this).attr('template_number');
+        var corner = d3.select(this).attr('corner');
 
         plot_polygons_template_dimensions_deleted_templates_svg.push(parseInt(template_number));
+
+        var circles = plot_polygons_template_dimensions_svg[template_number]['plot_polygons_generated_polygons_circles_svg'];
+        var corners_circles = {};
+        for (var i=0; i<circles.length; i++) {
+            corners_circles[circles[i][2]] = [circles[i][0], circles[i][1]];
+        }
+        //console.log(corners_circles);
+
+        if (corner == 'top_right') {
+            var tr_corner_y = corners_circles[corner][1];
+            var tr_y_diff = tr_corner_y - y;
+            var old = parseInt(plot_polygons_template_dimensions_svg[template_number]['section_right_column_bottom_offset_val']);
+            plot_polygons_template_dimensions_svg[template_number]['section_right_column_bottom_offset_val'] = old + tr_y_diff;
+        }
+        if (corner == 'bottom_right') {
+            var br_corner_x = corners_circles[corner][0];
+            var br_x_diff = br_corner_x - x;
+            var old = plot_polygons_template_dimensions_svg[template_number]['section_top_row_right_offset_val'];
+            plot_polygons_template_dimensions_svg[template_number]['section_top_row_right_offset_val'] = old + br_x_diff;
+        }
 
         var num_rows_val = plot_polygons_template_dimensions_svg[template_number]['num_rows_val'];
         var num_cols_val = plot_polygons_template_dimensions_svg[template_number]['num_cols_val'];
