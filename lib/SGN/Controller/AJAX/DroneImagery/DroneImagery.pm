@@ -6193,6 +6193,31 @@ sub _perform_image_background_remove_threshold_percentage {
     };
 }
 
+sub _get_image_background_remove_threshold_percentage {
+    my $schema = shift;
+    my $drone_run_band_project_id = shift;
+    my $image_type = shift;
+
+    my $imagery_attribute_map = CXGN::DroneImagery::ImageTypes::get_imagery_attribute_map();
+    my $drone_run_band_remove_background_threshold_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, $imagery_attribute_map->{$image_type}->{key}, 'project_property')->cvterm_id();
+
+    my $drone_run_band_remove_background_threshold = $schema->resultset('Project::Projectprop')->search({
+        type_id=>$drone_run_band_remove_background_threshold_type_id,
+        project_id=>$drone_run_band_project_id,
+    });
+    my $upper;
+    my $lower;
+    if ($drone_run_band_remove_background_threshold->count > 0) {
+        my $val = $drone_run_band_remove_background_threshold->first->value;
+        my @val1 = split '. Upper Threshold Percentage:', $val;
+        $upper = $val1[1];
+        my @val2 = split 'Lower Threshold Percentage:', $val1[0];
+        print STDERR [$val. \@val1, \@val2];
+        $lower = $val2[0];
+    }
+    return [$lower, $upper];
+}
+
 sub get_drone_run_projects : Path('/api/drone_imagery/drone_runs') : ActionClass('REST') { }
 sub get_drone_run_projects_GET : Args(0) {
     my $self = shift;
@@ -6827,8 +6852,8 @@ sub standard_process_apply_POST : Args(0) {
     my $vegetative_indices = decode_json $c->req->param('vegetative_indices');
     my $phenotype_methods = $c->req->param('phenotype_types') ? decode_json $c->req->param('phenotype_types') : ['zonal'];
     my $standard_process_type = $c->req->param('standard_process_type');
-    my $plot_margin_top_bottom = $c->req->param('phenotypes_plot_margin_top_bottom') || 5;
-    my $plot_margin_left_right = $c->req->param('phenotypes_plot_margin_right_left') || 5;
+    my $plot_margin_top_bottom = defined ($c->req->param('phenotypes_plot_margin_top_bottom')) ? $c->req->param('phenotypes_plot_margin_top_bottom') : 5;
+    my $plot_margin_left_right = defined ($c->req->param('phenotypes_plot_margin_right_left')) ? $c->req->param('phenotypes_plot_margin_right_left') : 5;
     my $camera_rig_apply = $c->req->param('apply_to_all_drone_runs_from_same_camera_rig') eq 'Yes' ? 1 : 0;
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
@@ -8044,8 +8069,8 @@ sub standard_process_apply_raw_images_interactive_POST : Args(0) {
     my $phenotype_methods = $c->req->param('phenotype_types') ? decode_json $c->req->param('phenotype_types') : ['zonal'];
     my $time_cvterm_id = $c->req->param('time_cvterm_id');
     my $standard_process_type = $c->req->param('standard_process_type');
-    my $plot_margin_top_bottom = $c->req->param('phenotypes_plot_margin_top_bottom') || 5;
-    my $plot_margin_left_right = $c->req->param('phenotypes_plot_margin_right_left') || 5;
+    my $plot_margin_top_bottom = defined ($c->req->param('phenotypes_plot_margin_top_bottom')) ? $c->req->param('phenotypes_plot_margin_top_bottom') : 5;
+    my $plot_margin_left_right = defined ($c->req->param('phenotypes_plot_margin_right_left')) ? $c->req->param('phenotypes_plot_margin_right_left') : 5;
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $process_indicator_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_in_progress', 'project_property')->cvterm_id();
@@ -8809,8 +8834,8 @@ sub standard_process_extended_apply_GET : Args(0) {
     my $time_cvterm_id = $c->req->param('time_days_cvterm_id');
     my $standard_process_type = $c->req->param('standard_process_type');
     my $phenotype_methods = $c->req->param('phenotype_types') ? decode_json $c->req->param('phenotype_types') : ['zonal'];
-    my $plot_margin_top_bottom = $c->req->param('phenotypes_plot_margin_top_bottom') || 5;
-    my $plot_margin_left_right = $c->req->param('phenotypes_plot_margin_right_left') || 5;
+    my $plot_margin_top_bottom = defined ($c->req->param('phenotypes_plot_margin_top_bottom')) ? $c->req->param('phenotypes_plot_margin_top_bottom') : 5;
+    my $plot_margin_left_right = defined ($c->req->param('phenotypes_plot_margin_right_left')) ? $c->req->param('phenotypes_plot_margin_right_left') : 5;
     my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
 
     my $process_indicator_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_standard_process_in_progress', 'project_property')->cvterm_id();
@@ -9993,8 +10018,8 @@ sub _perform_phenotype_automated {
     my $standard_process_type = shift;
     my $ignore_new_phenotype_values = shift;
     my $overwrite_phenotype_values = shift;
-    my $plot_margin_top_bottom = shift || 5;
-    my $plot_margin_left_right = shift || 5;
+    my $plot_margin_top_bottom = shift;
+    my $plot_margin_left_right = shift;
     my $user_id = shift;
     my $user_name = shift;
     my $user_role = shift;
@@ -10481,8 +10506,8 @@ sub drone_imagery_calculate_phenotypes_POST : Args(0) {
     my @allowed_composed_cvs = split ',', $c->config->{composable_cvs};
     my $composable_cvterm_delimiter = $c->config->{composable_cvterm_delimiter};
     my $composable_cvterm_format = $c->config->{composable_cvterm_format};
-    my $plot_margin_top_bottom = $c->req->param('phenotypes_plot_margin_top_bottom') || 5;
-    my $plot_margin_left_right = $c->req->param('phenotypes_plot_margin_right_left') || 5;
+    my $plot_margin_top_bottom = defined ($c->req->param('phenotypes_plot_margin_top_bottom')) ? $c->req->param('phenotypes_plot_margin_top_bottom') : 5;
+    my $plot_margin_left_right = defined ($c->req->param('phenotypes_plot_margin_right_left')) ? $c->req->param('phenotypes_plot_margin_right_left') : 5;
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
@@ -10524,8 +10549,8 @@ sub drone_imagery_generate_phenotypes_GET : Args(0) {
     my $time_cvterm_id = $c->req->param('time_cvterm_id');
     my $phenotype_methods = $c->req->param('phenotype_types') ? decode_json $c->req->param('phenotype_types') : ['zonal'];
     my $standard_process_type = $c->req->param('standard_process_type');
-    my $plot_margin_top_bottom = $c->req->param('phenotypes_plot_margin_top_bottom') || 5;
-    my $plot_margin_left_right = $c->req->param('phenotypes_plot_margin_right_left') || 5;
+    my $plot_margin_top_bottom = defined ($c->req->param('phenotypes_plot_margin_top_bottom')) ? $c->req->param('phenotypes_plot_margin_top_bottom') : 5;
+    my $plot_margin_left_right = defined ($c->req->param('phenotypes_plot_margin_right_left')) ? $c->req->param('phenotypes_plot_margin_right_left') : 5;
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $drone_run_band_plot_polygons_phenotype_margins_json_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons_phenotype_margins_json', 'project_property')->cvterm_id();
@@ -10568,8 +10593,8 @@ sub _perform_phenotype_calculation {
     my $do_not_run_materialized_view_refresh = shift;
     my $ignore_new_phenotype_values = shift;
     my $overwrite_phenotype_values = shift;
-    my $plot_margin_top_bottom = shift || 5;
-    my $plot_margin_left_right = shift || 5;
+    my $plot_margin_top_bottom = shift;
+    my $plot_margin_left_right = shift;
 
     print STDERR Dumper [$drone_run_band_project_id, $drone_run_band_project_type, $phenotype_method, $time_cvterm_id, $plot_polygons_type];
 

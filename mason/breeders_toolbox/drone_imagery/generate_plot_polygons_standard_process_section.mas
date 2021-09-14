@@ -26,6 +26,24 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group form-group-sm">
+                                <label class="col-sm-6 control-label">Plot-polygon Margins Top/Bottom (%): </label>
+                                <div class="col-sm-6">
+                                    <input class="form-control" id="drone_imagery_standard_process_plot_polygons_margin_top_bottom" name="drone_imagery_standard_process_plot_polygons_margin_top_bottom" type="number" value=0 />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group form-group-sm">
+                                <label class="col-sm-6 control-label">Plot-polygon Margins Left/Right (%): </label>
+                                <div class="col-sm-6">
+                                    <input class="form-control" id="drone_imagery_standard_process_plot_polygons_margin_left_right" name="drone_imagery_standard_process_plot_polygons_margin_left_right" type="number" value=0 />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </form>
                 <button class="btn btn btn-primary" id="drone_imagery_standard_process_plot_polygons_rectangles_start">Click Here To Start Templating. Create As Many Templates As Needed.</button>
             </div>
