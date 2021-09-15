@@ -1,5 +1,5 @@
-# SGN Documentation
-[**View the documentation**](http://solgenomics.github.io/sgn/)
+# ImageBreed Documentation
+[**View the documentation**](http://nickmorales.github.io/imagebreed/)
 
 ### Syntax and Use
 The documentation is written in [kramdown-flavored](https://kramdown.gettalong.org/) markdown. It also takes advantage of the [Liquid](https://shopify.github.io/liquid/) templating system and the built-in variable in [Jekyll](https://jekyllrb.com), the static site generator that GitHub pages uses.
@@ -28,11 +28,11 @@ Header 2 OR
 
 ###### Header 6
 ```
-You probably shouldnt use h1 headers, as the title of the page is always displayed as an h1, and using them elsewhere could be visualy confusing. 
+You probably shouldnt use h1 headers, as the title of the page is always displayed as an h1, and using them elsewhere could be visualy confusing.
 
 **DONT USE BOLD INSTEAD OF HEADERS** (except in tables). Doing so makes generating a TOC impossible (and also visually looks off.)
 
-#### Horizontal Rules (Section Seperators) 
+#### Horizontal Rules (Section Seperators)
 
 In kramdown, a horizontal rule must be preceeded and followed by a blank line:
 ```markdown
@@ -47,7 +47,7 @@ I am below the hr
 
 _For screenshots_: try to make sure that the image is of an unbranded version of the db.
 
-To insert an image, we need to tell Jekyll to generate the relative path to the file like so 
+To insert an image, we need to tell Jekyll to generate the relative path to the file like so
 ```markdown
 ![YOUR ALT TEXT]({{'assets/images/YOURIMAGE.png' | relative_url }})
 ```
@@ -60,7 +60,7 @@ To insert an link to something outside of the docs, we can use the usual markdow
 If you want to link to a docs page, use this syntax. Note that we put the **path to the file** (from the `docs` directory), **not the rendered HTML page**, after `link`.):
 ```markdown
 [LINK TEXT]({{ site.baseurl }}{% link your_folder/YOUR_FILE.md %})
-``` 
+```
 If you want to link to a header on a docs page, we can extend the syntax above like so:  
 First, we assign the header we are linking to an ID:
 ```markdown
