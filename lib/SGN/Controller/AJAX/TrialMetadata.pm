@@ -1864,12 +1864,11 @@ sub trial_change_plot_accessions_upload : Chained('trial') PathPart('change_plot
         } else {
             $parse_errors = $parser->get_parse_errors();
             #print STDERR Dumper $parse_errors;
-
             foreach my $error_string (@{$parse_errors->{'error_messages'}}){
                 $return_error .= $error_string."<br>";
             }
         }
-        $c->stash->{rest} = {error => $return_error, missing_plots => $parse_errors->{'missing_plots'}, missing_accessions => $parse_errors->{'missing_stocks'}, invalid_new_plot_name => $parse_errors->{'not_valid_names'}};
+        $c->stash->{rest} = {error => $return_error};
         return;
     }
 
@@ -1934,15 +1933,16 @@ sub trial_change_plot_accessions_upload : Chained('trial') PathPart('change_plot
                 type_id => $plot_of_type_id
             });
 
-            my $stock_rs = $schema->resultset("Stock::Stock")->search({
-                stock_id => $plot_id,
-                type_id => $plot_type_id
-            });
+            if ($new_plot_name) {
+                my $stock_rs = $schema->resultset("Stock::Stock")->search({
+                    stock_id => $plot_id,
+                    type_id => $plot_type_id
+                });
 
-            $stock_rs->update({
-                uniquename => $new_plot_name
-            });
-
+                $stock_rs->update({
+                    uniquename => $new_plot_name
+                });
+            }
         }
 
 
@@ -2455,8 +2455,6 @@ sub replace_trial_stock : Chained('trial') PathPart('replace_stock') Args(0) {
   my $replace_stock_fieldmap = CXGN::Trial::FieldMap->new({
     bcs_schema => $schema,
     trial_id => $trial_id,
-    old_accession_id => $old_stock_id,
-    new_accession => $new_stock,
     trial_stock_type => $trial_stock_type,
   });
 
@@ -2466,7 +2464,7 @@ sub replace_trial_stock : Chained('trial') PathPart('replace_stock') Args(0) {
        return;
      }
 
-  my $replace_return_error = $replace_stock_fieldmap->replace_trial_stock_fieldMap();
+  my $replace_return_error = $replace_stock_fieldmap->replace_trial_stock_fieldMap($new_stock, $old_stock_id);
   if ($replace_return_error) {
     $c->stash->{rest} = { error => $replace_return_error };
     return;
@@ -2476,58 +2474,60 @@ sub replace_trial_stock : Chained('trial') PathPart('replace_stock') Args(0) {
 }
 
 sub replace_plot_accession : Chained('trial') PathPart('replace_plot_accessions') Args(0) {
-  my $self = shift;
-  my $c = shift;
-  my $schema = $c->dbic_schema('Bio::Chado::Schema');
-  my $old_accession = $c->req->param('old_accession');
-  my $new_accession = $c->req->param('new_accession');
-  my $old_plot_id = $c->req->param('old_plot_id');
-  my $old_plot_name = $c->req->param('old_plot_name');
-  my $new_plot_name = $c->req->param('new_plot_name');
-  my $override = $c->req->param('override');
-  my $trial_id = $c->stash->{trial_id};
+    my $self = shift;
+    my $c = shift;
+    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $old_accession = $c->req->param('old_accession');
+    my $new_accession = $c->req->param('new_accession');
+    my $old_plot_id = $c->req->param('old_plot_id');
+    my $old_plot_name = $c->req->param('old_plot_name');
+    my $new_plot_name = $c->req->param('new_plot_name');
+    my $override = $c->req->param('override');
+    my $trial_id = $c->stash->{trial_id};
 
-  if ($self->privileges_denied($c)) {
-    $c->stash->{rest} = { error => "You have insufficient access privileges to edit this map." };
-    return;
-  }
+    if (!$c->user){
+        $c->stash->{rest} = {error=>'You must be logged in to change a plot accession!'};
+        return;
+    }
 
-  if (!$new_accession){
-    $c->stash->{rest} = { error => "Provide new accession name." };
-    return;
-  }
+    if ($self->privileges_denied($c)) {
+        $c->stash->{rest} = { error => "You have insufficient access privileges to edit this map." };
+        return;
+    }
 
-  my $replace_plot_accession_fieldmap = CXGN::Trial::FieldMap->new({
-    bcs_schema => $schema,
-    trial_id => $trial_id,
-    new_accession => $new_accession,
-    old_accession => $old_accession,
-    old_plot_id => $old_plot_id,
-    old_plot_name => $old_plot_name,
-    new_plot_name => $new_plot_name,
-  });
+    if (!$new_accession) {
+        $c->stash->{rest} = { error => "Provide new accession name." };
+        return;
+    }
 
-  my $return_error = $replace_plot_accession_fieldmap->update_fieldmap_precheck();
-     if ($return_error) {
-       $c->stash->{rest} = { error => $return_error };
-       return;
-     }
+    my $replace_plot_accession_fieldmap = CXGN::Trial::FieldMap->new({
+        trial_id => $trial_id,
+        bcs_schema => $schema,
+    });
 
-  print "Calling Replace Function...............\n";
-  my $replace_return_error = $replace_plot_accession_fieldmap->replace_plot_accession_fieldMap();
-  if ($replace_return_error) {
-    $c->stash->{rest} = { error => $replace_return_error };
-    return;
-  }
+    my $return_error = $replace_plot_accession_fieldmap->update_fieldmap_precheck();
+    if ($return_error) {
+        $c->stash->{rest} = { error => $return_error };
+        return;
+    }
 
-  my $replace_plot_name_return_error = $replace_plot_accession_fieldmap->replace_plot_name_fieldMap();
-  if ($replace_plot_name_return_error) {
-    $c->stash->{rest} = { error => $replace_plot_name_return_error };
-    return;
-  }
+    print "Calling Replace Function...............\n";
+    my $replace_return_error = $replace_plot_accession_fieldmap->replace_plot_accession_fieldMap($new_accession, $old_accession, $old_plot_id, $old_plot_name);
+    if ($replace_return_error) {
+        $c->stash->{rest} = { error => $replace_return_error };
+        return;
+    }
 
-  print "OldAccession: $old_accession, NewAcc: $new_accession, OldPlotName: $old_plot_name, NewPlotName: $new_plot_name OldPlotId: $old_plot_id\n";
-  $c->stash->{rest} = { success => 1};
+    if ($new_plot_name) {
+        my $replace_plot_name_return_error = $replace_plot_accession_fieldmap->replace_plot_name_fieldMap($old_plot_id, $new_plot_name);
+        if ($replace_plot_name_return_error) {
+            $c->stash->{rest} = { error => $replace_plot_name_return_error };
+            return;
+        }
+    }
+
+    print "OldAccession: $old_accession, NewAcc: $new_accession, OldPlotName: $old_plot_name, NewPlotName: $new_plot_name OldPlotId: $old_plot_id\n";
+    $c->stash->{rest} = { success => 1};
 }
 
 sub replace_well_accession : Chained('trial') PathPart('replace_well_accessions') Args(0) {
