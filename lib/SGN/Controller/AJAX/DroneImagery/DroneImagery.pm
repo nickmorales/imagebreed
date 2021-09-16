@@ -405,8 +405,10 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
     my %plot_id_map;
 
     my ($effects_ggcor_tempfile_fh, $effects_ggcor_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($effects_line_tempfile_fh, $effects_line_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my @eff_ggcor_data;
     my @eff_ggcor_header;
+    my @eff_line_data;
 
     if ($statistics_select eq 'lmer_germplasmname_replicate' || $statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_temporal_random_regression_dap_genetic_blups' || $statistics_select eq 'sommer_grm_temporal_random_regression_gdd_genetic_blups' || $statistics_select eq 'sommer_grm_genetic_only_random_regression_dap_genetic_blups' || $statistics_select eq 'sommer_grm_genetic_only_random_regression_gdd_genetic_blups' || $statistics_select eq 'blupf90_grm_random_regression_dap_blups' || $statistics_select eq 'blupf90_grm_random_regression_gdd_blups' || $statistics_select eq 'airemlf90_grm_random_regression_dap_blups' || $statistics_select eq 'airemlf90_grm_random_regression_gdd_blups' || $statistics_select eq 'sommer_grm_genetic_blups') {
 
@@ -3257,6 +3259,7 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
 
                     $result_blup_pe_data->{$plot_name}->{$time_term_string_pe} = [$value, $timestamp, $user_name, '', ''];
                     push @eff_row, $value;
+                    push @eff_line_data, [$plot_name, $time_rescaled, $value];
                 }
                 push @eff_ggcor_data, \@eff_row;
                 $is_first_row = 0;
@@ -3532,8 +3535,6 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
         my $cmd_gen_plot = 'R -e "library(data.table); library(ggplot2);
         mat <- fread(\''.$effects_original_line_chart_tempfile.'\', header=TRUE, sep=\',\');
         mat\$time <- as.numeric(as.character(mat\$time));
-        options(device=\'png\');
-        par();
         sp <- ggplot(mat, aes(x = time, y = value)) +
             geom_line(aes(color = germplasmName), size = 1) +
             scale_fill_manual(values = c(\''.$color_string.'\')) +
@@ -3545,10 +3546,11 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
             $cmd_gen_plot .= 'sp <- sp + theme(legend.position = \'none\');';
         }
         $cmd_gen_plot .= 'ggsave(\''.$genetic_effects_figure_tempfile.'\', sp, device=\'png\', width=12, height=6, units=\'in\');
-        dev.off();"';
+        "';
         my $status_gen_plot = system($cmd_gen_plot);
     }
 
+    my $env_effects_line_figure_tempfile_string;
     my $env_effects_figure_tempfile_string;
     my $env_effects_ggcorr_figure_tempfile_string;
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_temporal_random_regression_dap_genetic_blups' || $statistics_select eq 'sommer_grm_temporal_random_regression_gdd_genetic_blups' || $statistics_select eq 'blupf90_grm_random_regression_gdd_blups' || $statistics_select eq 'blupf90_grm_random_regression_dap_blups' || $statistics_select eq 'airemlf90_grm_random_regression_gdd_blups' || $statistics_select eq 'airemlf90_grm_random_regression_dap_blups') {
@@ -3611,6 +3613,44 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
         "';
         # print STDERR Dumper $cmd;
         my $status_effcorr_plot = system($cmd_effcorr_plot);
+
+        open(my $F_eff_line, ">", $effects_line_tempfile) || die "Can't open file ".$effects_line_tempfile;
+            print $F_eff_line "plotName,time,value\n";
+
+            foreach (@eff_line_data) {
+                my $row = join ',', @$_;
+                print $F_eff_line $row."\n";
+            }
+        close($F_eff_line);
+
+        my @set = ('0' ..'9', 'A' .. 'F');
+        my @colors;
+        for (1..scalar(@unique_plot_names)) {
+            my $str = join '' => map $set[rand @set], 1 .. 6;
+            push @colors, '#'.$str;
+        }
+        my $color_string = join '\',\'', @colors;
+
+        $env_effects_line_figure_tempfile_string = $c->tempfile( TEMPLATE => 'tmp_drone_statistics/figureXXXX');
+        $env_effects_line_figure_tempfile_string .= '.png';
+        my $env_effects_line_figure_tempfile = $c->config->{basepath}."/".$env_effects_line_figure_tempfile_string;
+
+        my $cmd_env_line_plot = 'R -e "library(data.table); library(ggplot2);
+        mat <- fread(\''.$effects_line_tempfile.'\', header=TRUE, sep=\',\');
+        mat\$time <- as.numeric(as.character(mat\$time));
+        sp <- ggplot(mat, aes(x = time, y = value)) +
+            geom_line(aes(color = plotName), size = 1) +
+            scale_fill_manual(values = c(\''.$color_string.'\')) +
+            theme_minimal();
+        sp <- sp + guides(shape = guide_legend(override.aes = list(size = 0.5)));
+        sp <- sp + guides(color = guide_legend(override.aes = list(size = 0.5)));
+        sp <- sp + theme(legend.title = element_text(size = 3), legend.text = element_text(size = 3));';
+        if (scalar(@unique_plot_names) > 100) {
+            $cmd_env_line_plot .= 'sp <- sp + theme(legend.position = \'none\');';
+        }
+        $cmd_env_line_plot .= 'ggsave(\''.$env_effects_line_figure_tempfile.'\', sp, device=\'png\', width=12, height=6, units=\'in\');
+        "';
+        my $status_env_line_plot = system($cmd_env_line_plot);
 
         $env_effects_figure_tempfile_string = $c->tempfile( TEMPLATE => 'tmp_drone_statistics/figureXXXX');
         $env_effects_figure_tempfile_string .= '.png';
@@ -3683,7 +3723,8 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
         trait_composing_info => \%trait_composing_info,
         genetic_effects_line_plot => $genetic_effects_figure_tempfile_string,
         env_effects_heatmap_plot => $env_effects_figure_tempfile_string,
-        env_effects_ggcorr_plot => $env_effects_ggcorr_figure_tempfile_string
+        env_effects_ggcorr_plot => $env_effects_ggcorr_figure_tempfile_string,
+        env_effects_line_plot => $env_effects_line_figure_tempfile_string
     };
 }
 
