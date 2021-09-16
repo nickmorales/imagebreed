@@ -404,6 +404,10 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
     my %seen_plot_names;
     my %plot_id_map;
 
+    my ($effects_ggcor_tempfile_fh, $effects_ggcor_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my @eff_ggcor_data;
+    my @eff_ggcor_header;
+
     if ($statistics_select eq 'lmer_germplasmname_replicate' || $statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_temporal_random_regression_dap_genetic_blups' || $statistics_select eq 'sommer_grm_temporal_random_regression_gdd_genetic_blups' || $statistics_select eq 'sommer_grm_genetic_only_random_regression_dap_genetic_blups' || $statistics_select eq 'sommer_grm_genetic_only_random_regression_gdd_genetic_blups' || $statistics_select eq 'blupf90_grm_random_regression_dap_blups' || $statistics_select eq 'blupf90_grm_random_regression_gdd_blups' || $statistics_select eq 'airemlf90_grm_random_regression_dap_blups' || $statistics_select eq 'airemlf90_grm_random_regression_gdd_blups' || $statistics_select eq 'sommer_grm_genetic_blups') {
 
         if ($statistics_select eq 'lmer_germplasmname_replicate' || $statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_genetic_blups') {
@@ -3207,14 +3211,20 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
             open(my $Fpc, ">", $coeff_pe_tempfile) || die "Can't open file ".$coeff_pe_tempfile;
             print STDERR "OPENED $coeff_pe_tempfile\n";
 
+            my $is_first_row = 1;
             while ( my ($plot_name, $coeffs) = each %rr_temporal_coefficients) {
                 my @line = ($plot_name, @$coeffs);
                 my $line_string = join ',', @line;
                 print $Fpc "$line_string\n";
 
+                my @eff_row;
                 foreach my $t_i (0..20) {
                     my $time = $t_i*5/100;
                     my $time_rescaled = sprintf("%.2f", $time*($time_max - $time_min) + $time_min);
+
+                    if ($is_first_row) {
+                        push @eff_ggcor_header, "t$time_rescaled";
+                    }
 
                     my $value = 0;
                     my $coeff_counter = 0;
@@ -3246,7 +3256,10 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
                     $rr_unique_traits{$time_term_string_pe}++;
 
                     $result_blup_pe_data->{$plot_name}->{$time_term_string_pe} = [$value, $timestamp, $user_name, '', ''];
+                    push @eff_row, $value;
                 }
+                push @eff_ggcor_data, \@eff_row;
+                $is_first_row = 0;
             }
             close($Fpc);
 
@@ -3537,6 +3550,7 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
     }
 
     my $env_effects_figure_tempfile_string;
+    my $env_effects_ggcorr_figure_tempfile_string;
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_temporal_random_regression_dap_genetic_blups' || $statistics_select eq 'sommer_grm_temporal_random_regression_gdd_genetic_blups' || $statistics_select eq 'blupf90_grm_random_regression_gdd_blups' || $statistics_select eq 'blupf90_grm_random_regression_dap_blups' || $statistics_select eq 'airemlf90_grm_random_regression_gdd_blups' || $statistics_select eq 'airemlf90_grm_random_regression_dap_blups') {
         my ($phenotypes_original_heatmap_tempfile_fh, $phenotypes_original_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
         open(my $F_pheno, ">", $phenotypes_original_heatmap_tempfile) || die "Can't open file ".$phenotypes_original_heatmap_tempfile;
@@ -3575,6 +3589,28 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
                 }
             }
         close($F_eff);
+
+        open(my $F_eff_corr, ">", $effects_ggcor_tempfile) || die "Can't open file ".$effects_ggcor_tempfile;
+            my $header_eff_corr = join ',', @eff_ggcor_header;
+            print $F_eff_corr $header_eff_corr."\n";
+
+            foreach (@eff_ggcor_data) {
+                my $row = join ',', @$_;
+                print $F_eff_corr $row."\n";
+            }
+        close($F_eff_corr);
+
+        $env_effects_ggcorr_figure_tempfile_string = $c->tempfile( TEMPLATE => 'tmp_drone_statistics/figureXXXX');
+        $env_effects_ggcorr_figure_tempfile_string .= '.png';
+        my $env_effects_ggcorr_figure_tempfile = $c->config->{basepath}."/".$env_effects_ggcorr_figure_tempfile_string;
+
+        my $cmd_effcorr_plot = 'R -e "library(ggplot2); library(data.table); library(GGally);
+        data <- data.frame(fread(\''.$effects_ggcor_tempfile.'\', header=TRUE, sep=\',\'));
+        plot <- ggcorr(data, hjust = 1, size = 3, color = \'grey50\', label = TRUE, label_size = 3, label_round = 2, layout.exp = 1);
+        ggsave(\''.$env_effects_ggcorr_figure_tempfile.'\', plot, device=\'png\', width=10, height=10, units=\'in\');
+        "';
+        # print STDERR Dumper $cmd;
+        my $status_effcorr_plot = system($cmd_effcorr_plot);
 
         $env_effects_figure_tempfile_string = $c->tempfile( TEMPLATE => 'tmp_drone_statistics/figureXXXX');
         $env_effects_figure_tempfile_string .= '.png';
@@ -3646,7 +3682,8 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
         sum_square_residual => $model_sum_square_residual,
         trait_composing_info => \%trait_composing_info,
         genetic_effects_line_plot => $genetic_effects_figure_tempfile_string,
-        env_effects_heatmap_plot => $env_effects_figure_tempfile_string
+        env_effects_heatmap_plot => $env_effects_figure_tempfile_string,
+        env_effects_ggcorr_plot => $env_effects_ggcorr_figure_tempfile_string
     };
 }
 
