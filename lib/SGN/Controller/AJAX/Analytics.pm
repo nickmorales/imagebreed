@@ -3546,7 +3546,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile25.'\', header=TRUE, sep=\',\'));
             type_list <- c(\''.$secondary_type_list_string.'\');
             pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = type_list);
-            lapply(type_list, function(cc) { gg <- ggplot(filter(pheno_mat, trait_type==cc), aes('.$output_plot_col.', '.$output_plot_row.', fill=value, frame=trait_type)) + geom_tile() + scale_fill_viridis(discrete=FALSE) + coord_equal() + labs(x=NULL, y=NULL, title=sprintf(\'%s\', cc)); gg; }) -> cclist;
+            lapply(type_list, function(cc) { gg <- ggplot(filter(pheno_mat, trait_type==cc), aes('.$output_plot_col.', '.$output_plot_row.', fill=value, frame=trait_type)) + geom_tile() + scale_fill_viridis(discrete=FALSE) + coord_equal() + labs(x=NULL, y=NULL, title=sprintf(\'%s\', cc)); }) -> cclist;
             cclist[[\'ncol\']] <- '.$number_secondary_traits.';
             gg <- do.call(grid.arrange, cclist);
             ggsave(\''.$analytics_protocol_figure_tempfile_6.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
@@ -3559,13 +3559,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             my $r_cmd_i8 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
             pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile26.'\', header=TRUE, sep=\',\'));
             pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_traits_corrected_string.'\'));
-            options(device=\'png\');
-            par();
-            gg <- ggplot(pheno_mat, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) +
-                geom_tile() +
-                scale_fill_viridis(discrete=FALSE) +
-                coord_equal() +
-                facet_wrap(~trait_type, ncol='.$type_list_traits_corrected_string_number.');
+            lapply(type_list, function(cc) { gg <- ggplot(filter(pheno_mat, trait_type==cc), aes('.$output_plot_col.', '.$output_plot_row.', fill=value, frame=trait_type)) + geom_tile() + scale_fill_viridis(discrete=FALSE) + coord_equal() + labs(x=NULL, y=NULL, title=sprintf(\'%s\', cc)); }) -> cclist;
+            cclist[[\'ncol\']] <- '.$type_list_traits_corrected_string_number.';
+            gg <- do.call(grid.arrange, cclist);
             ggsave(\''.$analytics_protocol_figure_tempfile_7.'\', gg, device=\'png\', width=10, height=10, units=\'in\');
             "';
             print STDERR Dumper $r_cmd_i8;
