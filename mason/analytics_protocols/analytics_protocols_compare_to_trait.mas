@@ -61,6 +61,7 @@ $analytics_protocol_id
                                     <option value="2dspl_ar1">2D-Spline and AR1xAR1 on Trait</option>
                                     <option value="2dspl_ar1_wCol">2D-Spline and AR1xAR1 + Column on Trait</option>
                                     <option value="2dspl_ar1_wRow">2D-Spline and AR1xAR1 + Row on Trait</option>
+                                    <option value="2dspl_ar1_wRowCol">2D-Spline and AR1xAR1 + Column + Row on Trait</option>
                                 </select>
                             </div>
                         </div>
