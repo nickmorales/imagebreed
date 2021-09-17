@@ -2654,7 +2654,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 my $z_ratio = $columns[3];
                 if (defined $value && $value ne '') {
                     if ($solution_file_counter_ar1_skipping < scalar(@seen_cols_numbers_sorted)) {
-                        print STDERR "skipping\n";
                         $solution_file_counter_ar1_skipping++;
                         next;
                     }
