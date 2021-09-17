@@ -2604,7 +2604,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
         attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + colNumber, residual=~idv(units), data=mat, tol='.$tol_asr.');
+        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + colNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -2714,7 +2714,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
         attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + rowNumber, residual=~idv(units), data=mat, tol='.$tol_asr.');
+        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + rowNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
