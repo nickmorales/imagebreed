@@ -3558,7 +3558,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             my $type_list_traits_corrected_string_number = scalar(@type_names_first_line_traits_corrected);
             my $r_cmd_i8 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
             pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile26.'\', header=TRUE, sep=\',\'));
-            pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_traits_corrected_string.'\'));
+            type_list <- c(\''.$type_list_traits_corrected_string.'\');
+            pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = type_list);
             lapply(type_list, function(cc) { gg <- ggplot(filter(pheno_mat, trait_type==cc), aes('.$output_plot_col.', '.$output_plot_row.', fill=value, frame=trait_type)) + geom_tile() + scale_fill_viridis(discrete=FALSE) + coord_equal() + labs(x=NULL, y=NULL, title=sprintf(\'%s\', cc)); }) -> cclist;
             cclist[[\'ncol\']] <- '.$type_list_traits_corrected_string_number.';
             gg <- do.call(grid.arrange, cclist);
