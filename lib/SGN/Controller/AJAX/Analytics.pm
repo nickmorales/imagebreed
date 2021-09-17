@@ -3084,12 +3084,12 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1') {
                     push @plots_avg_data_header, ($t."spatial2Dspl", $t."2Dsplcorrected");
                     # push @plots_avg_data_values_header, ($t."spatial2Dspl", $t."2Dsplcorrected");
-                    push @plots_avg_data_values_header, $t."spatial2Dspl";
+                    push @plots_avg_data_values_header, $t."spatialEffect";
                 }
                 if ($analysis_run_type eq 'ar1' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq 'ar1_wCol' || $analysis_run_type eq 'ar1_wRow') {
                     push @plots_avg_data_header, ($t."spatialAR1", $t."AR1corrected");
                     # push @plots_avg_data_values_header, ($t."spatialAR1", $t."AR1corrected");
-                    push @plots_avg_data_values_header, $t."spatialAR1";
+                    push @plots_avg_data_values_header, $t."spatialEffect";
                 }
                 push @plots_avg_data_header, $t."spatialcorrecthtpmean";
                 # push @plots_avg_data_values_header, $t."spatialcorrecthtpmean";
