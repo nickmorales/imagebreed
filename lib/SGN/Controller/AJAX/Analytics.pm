@@ -1408,109 +1408,111 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_data_ar1;
     my $result_blup_spatial_data_ar1;
 
-    my $spatial_correct_ar1_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
-    mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
-    geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
-    mat\$rowNumber <- as.numeric(mat\$rowNumber);
-    mat\$colNumber <- as.numeric(mat\$colNumber);
-    mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
-    mat\$colNumberFactor <- as.factor(mat\$colNumber);
-    mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
-    mat\$colNumberFactorSep <- mat\$colNumberFactor;
-    mat\$id_factor <- as.factor(mat\$id_factor);
-    mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
-    attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-    mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.');
-    if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-    summary(mix);
-    write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-    }
-    "';
-    print STDERR Dumper $spatial_correct_ar1_cmd;
-    my $spatial_correct_ar1_status = system($spatial_correct_ar1_cmd);
-
-    open(my $fh_residual_ar1, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
-        print STDERR "Opened $stats_out_tempfile_residual\n";
-        my $header_residual_ar1 = <$fh_residual_ar1>;
-        my @header_cols_residual_ar1;
-        if ($csv->parse($header_residual_ar1)) {
-            @header_cols_residual_ar1 = $csv->fields();
+    eval {
+        my $spatial_correct_ar1_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
+        mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
+        geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
+        mat\$rowNumber <- as.numeric(mat\$rowNumber);
+        mat\$colNumber <- as.numeric(mat\$colNumber);
+        mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
+        mat\$colNumberFactor <- as.factor(mat\$colNumber);
+        mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
+        mat\$colNumberFactorSep <- mat\$colNumberFactor;
+        mat\$id_factor <- as.factor(mat\$id_factor);
+        mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
+        attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'INVERSE\') <- TRUE;
+        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.');
+        if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
+        summary(mix);
+        write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         }
-        while (my $row = <$fh_residual_ar1>) {
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
+        "';
+        print STDERR Dumper $spatial_correct_ar1_cmd;
+        my $spatial_correct_ar1_status = system($spatial_correct_ar1_cmd);
+
+        open(my $fh_residual_ar1, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+            print STDERR "Opened $stats_out_tempfile_residual\n";
+            my $header_residual_ar1 = <$fh_residual_ar1>;
+            my @header_cols_residual_ar1;
+            if ($csv->parse($header_residual_ar1)) {
+                @header_cols_residual_ar1 = $csv->fields();
             }
-
-            my $stock_id = $columns[0];
-            my $residual = $columns[1];
-            my $fitted = $columns[2];
-            my $stock_name = $plot_id_map{$stock_id};
-            push @row_col_ordered_plots_names_ar1, $stock_name;
-            if (defined $residual && $residual ne '') {
-                $residual_sum_ar1 += abs($residual);
-                $residual_sum_square_ar1 = $residual_sum_square_ar1 + $residual*$residual;
-            }
-        }
-    close($fh_residual_ar1);
-
-    open(my $fh_ar1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-        print STDERR "Opened $stats_out_tempfile\n";
-        my $header_ar1 = <$fh_ar1>;
-
-        my $solution_file_counter_ar1 = 0;
-        while (defined(my $row = <$fh_ar1>)) {
-            # print STDERR $row;
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
-            my $level = $columns[0];
-            my $value = $columns[1];
-            my $std = $columns[2];
-            my $z_ratio = $columns[3];
-            if (defined $value && $value ne '') {
-                if ($solution_file_counter_ar1 < $number_accessions) {
-                    my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1 + 1};
-                    $result_blup_data_ar1->{$stock_name}->{$trait_name_string} = $value;
-
-                    if ($value < $genetic_effect_min_ar1) {
-                        $genetic_effect_min_ar1 = $value;
-                    }
-                    elsif ($value >= $genetic_effect_max_ar1) {
-                        $genetic_effect_max_ar1 = $value;
-                    }
-
-                    $genetic_effect_sum_ar1 += abs($value);
-                    $genetic_effect_sum_square_ar1 = $genetic_effect_sum_square_ar1 + $value*$value;
-
-                    $current_gen_row_count_ar1++;
+            while (my $row = <$fh_residual_ar1>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
                 }
-                else {
-                    my $plot_name = $row_col_ordered_plots_names_ar1[$current_env_row_count_ar1];
-                    $result_blup_spatial_data_ar1->{$plot_name}->{$trait_name_string} = $value;
 
-                    if ($value < $env_effect_min_ar1) {
-                        $env_effect_min_ar1 = $value;
-                    }
-                    elsif ($value >= $env_effect_max_ar1) {
-                        $env_effect_max_ar1 = $value;
-                    }
-
-                    $env_effect_sum_ar1 += abs($value);
-                    $env_effect_sum_square_ar1 = $env_effect_sum_square_ar1 + $value*$value;
-
-                    $current_env_row_count_ar1++;
+                my $stock_id = $columns[0];
+                my $residual = $columns[1];
+                my $fitted = $columns[2];
+                my $stock_name = $plot_id_map{$stock_id};
+                push @row_col_ordered_plots_names_ar1, $stock_name;
+                if (defined $residual && $residual ne '') {
+                    $residual_sum_ar1 += abs($residual);
+                    $residual_sum_square_ar1 = $residual_sum_square_ar1 + $residual*$residual;
                 }
             }
-            $solution_file_counter_ar1++;
-        }
-    close($fh_ar1);
-    # print STDERR Dumper $result_blup_spatial_data_ar1;
+        close($fh_residual_ar1);
+
+        open(my $fh_ar1, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            my $header_ar1 = <$fh_ar1>;
+
+            my $solution_file_counter_ar1 = 0;
+            while (defined(my $row = <$fh_ar1>)) {
+                # print STDERR $row;
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+                my $level = $columns[0];
+                my $value = $columns[1];
+                my $std = $columns[2];
+                my $z_ratio = $columns[3];
+                if (defined $value && $value ne '') {
+                    if ($solution_file_counter_ar1 < $number_accessions) {
+                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1 + 1};
+                        $result_blup_data_ar1->{$stock_name}->{$trait_name_string} = $value;
+
+                        if ($value < $genetic_effect_min_ar1) {
+                            $genetic_effect_min_ar1 = $value;
+                        }
+                        elsif ($value >= $genetic_effect_max_ar1) {
+                            $genetic_effect_max_ar1 = $value;
+                        }
+
+                        $genetic_effect_sum_ar1 += abs($value);
+                        $genetic_effect_sum_square_ar1 = $genetic_effect_sum_square_ar1 + $value*$value;
+
+                        $current_gen_row_count_ar1++;
+                    }
+                    else {
+                        my $plot_name = $row_col_ordered_plots_names_ar1[$current_env_row_count_ar1];
+                        $result_blup_spatial_data_ar1->{$plot_name}->{$trait_name_string} = $value;
+
+                        if ($value < $env_effect_min_ar1) {
+                            $env_effect_min_ar1 = $value;
+                        }
+                        elsif ($value >= $env_effect_max_ar1) {
+                            $env_effect_max_ar1 = $value;
+                        }
+
+                        $env_effect_sum_ar1 += abs($value);
+                        $env_effect_sum_square_ar1 = $env_effect_sum_square_ar1 + $value*$value;
+
+                        $current_env_row_count_ar1++;
+                    }
+                }
+                $solution_file_counter_ar1++;
+            }
+        close($fh_ar1);
+        # print STDERR Dumper $result_blup_spatial_data_ar1;
+    };
 
     my $current_gen_row_count_ar1wCol = 0;
     my $current_env_row_count_ar1wCol = 0;
@@ -1528,114 +1530,116 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_data_ar1wCol;
     my $result_blup_spatial_data_ar1wCol;
 
-    my $spatial_correct_ar1wCol_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
-    mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
-    geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
-    mat\$rowNumber <- as.numeric(mat\$rowNumber);
-    mat\$colNumber <- as.numeric(mat\$colNumber);
-    mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
-    mat\$colNumberFactor <- as.factor(mat\$colNumber);
-    mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
-    mat\$colNumberFactorSep <- mat\$colNumberFactor;
-    mat\$id_factor <- as.factor(mat\$id_factor);
-    mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
-    attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-    mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + colNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
-    if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-    summary(mix);
-    write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-    }
-    "';
-    print STDERR Dumper $spatial_correct_ar1wCol_cmd;
-    my $spatial_correct_ar1wCol_status = system($spatial_correct_ar1wCol_cmd);
-
-    open(my $fh_residual_ar1wCol, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
-        print STDERR "Opened $stats_out_tempfile_residual\n";
-        my $header_residual_ar1wCol = <$fh_residual_ar1wCol>;
-        my @header_cols_residual_ar1wCol = ();
-        if ($csv->parse($header_residual_ar1wCol)) {
-            @header_cols_residual_ar1wCol = $csv->fields();
+    eval {
+        my $spatial_correct_ar1wCol_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
+        mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
+        geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
+        mat\$rowNumber <- as.numeric(mat\$rowNumber);
+        mat\$colNumber <- as.numeric(mat\$colNumber);
+        mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
+        mat\$colNumberFactor <- as.factor(mat\$colNumber);
+        mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
+        mat\$colNumberFactorSep <- mat\$colNumberFactor;
+        mat\$id_factor <- as.factor(mat\$id_factor);
+        mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
+        attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'INVERSE\') <- TRUE;
+        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + colNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
+        if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
+        summary(mix);
+        write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         }
-        while (my $row = <$fh_residual_ar1wCol>) {
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
+        "';
+        print STDERR Dumper $spatial_correct_ar1wCol_cmd;
+        my $spatial_correct_ar1wCol_status = system($spatial_correct_ar1wCol_cmd);
 
-            my $stock_id = $columns[0];
-            my $residual = $columns[1];
-            my $fitted = $columns[2];
-            my $stock_name = $plot_id_map{$stock_id};
-            push @row_col_ordered_plots_names_ar1wCol, $stock_name;
-            if (defined $residual && $residual ne '') {
-                $residual_sum_ar1wCol += abs($residual);
-                $residual_sum_square_ar1wCol = $residual_sum_square_ar1wCol + $residual*$residual;
+        open(my $fh_residual_ar1wCol, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+            print STDERR "Opened $stats_out_tempfile_residual\n";
+            my $header_residual_ar1wCol = <$fh_residual_ar1wCol>;
+            my @header_cols_residual_ar1wCol = ();
+            if ($csv->parse($header_residual_ar1wCol)) {
+                @header_cols_residual_ar1wCol = $csv->fields();
             }
-        }
-    close($fh_residual_ar1wCol);
-
-    open(my $fh_ar1wCol, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-        print STDERR "Opened $stats_out_tempfile\n";
-        my $header_ar1wCol = <$fh_ar1wCol>;
-
-        my $solution_file_counter_ar1wCol_skipping = 0;
-        my $solution_file_counter_ar1wCol = 0;
-        while (defined(my $row = <$fh_ar1wCol>)) {
-            # print STDERR $row;
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
-            my $level = $columns[0];
-            my $value = $columns[1];
-            my $std = $columns[2];
-            my $z_ratio = $columns[3];
-            if (defined $value && $value ne '') {
-                if ($solution_file_counter_ar1wCol_skipping < scalar(@seen_cols_numbers_sorted)) {
-                    $solution_file_counter_ar1wCol_skipping++;
-                    next;
+            while (my $row = <$fh_residual_ar1wCol>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
                 }
-                elsif ($solution_file_counter_ar1wCol < $number_accessions) {
-                    my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wCol + 1};
-                    $result_blup_data_ar1wCol->{$stock_name}->{$trait_name_string} = $value;
 
-                    if ($value < $genetic_effect_min_ar1wCol) {
-                        $genetic_effect_min_ar1wCol = $value;
-                    }
-                    elsif ($value >= $genetic_effect_max_ar1wCol) {
-                        $genetic_effect_max_ar1wCol = $value;
-                    }
-
-                    $genetic_effect_sum_ar1wCol += abs($value);
-                    $genetic_effect_sum_square_ar1wCol = $genetic_effect_sum_square_ar1wCol + $value*$value;
-
-                    $current_gen_row_count_ar1wCol++;
-                }
-                else {
-                    my $plot_name = $row_col_ordered_plots_names_ar1wCol[$current_env_row_count_ar1wCol];
-                    $result_blup_spatial_data_ar1wCol->{$plot_name}->{$trait_name_string} = $value;
-
-                    if ($value < $env_effect_min_ar1wCol) {
-                        $env_effect_min_ar1wCol = $value;
-                    }
-                    elsif ($value >= $env_effect_max_ar1wCol) {
-                        $env_effect_max_ar1wCol = $value;
-                    }
-
-                    $env_effect_sum_ar1wCol += abs($value);
-                    $env_effect_sum_square_ar1wCol = $env_effect_sum_square_ar1wCol + $value*$value;
-
-                    $current_env_row_count_ar1wCol++;
+                my $stock_id = $columns[0];
+                my $residual = $columns[1];
+                my $fitted = $columns[2];
+                my $stock_name = $plot_id_map{$stock_id};
+                push @row_col_ordered_plots_names_ar1wCol, $stock_name;
+                if (defined $residual && $residual ne '') {
+                    $residual_sum_ar1wCol += abs($residual);
+                    $residual_sum_square_ar1wCol = $residual_sum_square_ar1wCol + $residual*$residual;
                 }
             }
-            $solution_file_counter_ar1wCol++;
-        }
-    close($fh_ar1wCol);
-    # print STDERR Dumper $result_blup_spatial_data_ar1wCol;
+        close($fh_residual_ar1wCol);
+
+        open(my $fh_ar1wCol, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            my $header_ar1wCol = <$fh_ar1wCol>;
+
+            my $solution_file_counter_ar1wCol_skipping = 0;
+            my $solution_file_counter_ar1wCol = 0;
+            while (defined(my $row = <$fh_ar1wCol>)) {
+                # print STDERR $row;
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+                my $level = $columns[0];
+                my $value = $columns[1];
+                my $std = $columns[2];
+                my $z_ratio = $columns[3];
+                if (defined $value && $value ne '') {
+                    if ($solution_file_counter_ar1wCol_skipping < scalar(@seen_cols_numbers_sorted)) {
+                        $solution_file_counter_ar1wCol_skipping++;
+                        next;
+                    }
+                    elsif ($solution_file_counter_ar1wCol < $number_accessions) {
+                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wCol + 1};
+                        $result_blup_data_ar1wCol->{$stock_name}->{$trait_name_string} = $value;
+
+                        if ($value < $genetic_effect_min_ar1wCol) {
+                            $genetic_effect_min_ar1wCol = $value;
+                        }
+                        elsif ($value >= $genetic_effect_max_ar1wCol) {
+                            $genetic_effect_max_ar1wCol = $value;
+                        }
+
+                        $genetic_effect_sum_ar1wCol += abs($value);
+                        $genetic_effect_sum_square_ar1wCol = $genetic_effect_sum_square_ar1wCol + $value*$value;
+
+                        $current_gen_row_count_ar1wCol++;
+                    }
+                    else {
+                        my $plot_name = $row_col_ordered_plots_names_ar1wCol[$current_env_row_count_ar1wCol];
+                        $result_blup_spatial_data_ar1wCol->{$plot_name}->{$trait_name_string} = $value;
+
+                        if ($value < $env_effect_min_ar1wCol) {
+                            $env_effect_min_ar1wCol = $value;
+                        }
+                        elsif ($value >= $env_effect_max_ar1wCol) {
+                            $env_effect_max_ar1wCol = $value;
+                        }
+
+                        $env_effect_sum_ar1wCol += abs($value);
+                        $env_effect_sum_square_ar1wCol = $env_effect_sum_square_ar1wCol + $value*$value;
+
+                        $current_env_row_count_ar1wCol++;
+                    }
+                }
+                $solution_file_counter_ar1wCol++;
+            }
+        close($fh_ar1wCol);
+        # print STDERR Dumper $result_blup_spatial_data_ar1wCol;
+    };
 
     my $current_gen_row_count_ar1wRow = 0;
     my $current_env_row_count_ar1wRow = 0;
@@ -1653,114 +1657,116 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_data_ar1wRow;
     my $result_blup_spatial_data_ar1wRow;
 
-    my $spatial_correct_ar1wRow_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
-    mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
-    geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
-    mat\$rowNumber <- as.numeric(mat\$rowNumber);
-    mat\$colNumber <- as.numeric(mat\$colNumber);
-    mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
-    mat\$colNumberFactor <- as.factor(mat\$colNumber);
-    mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
-    mat\$colNumberFactorSep <- mat\$colNumberFactor;
-    mat\$id_factor <- as.factor(mat\$id_factor);
-    mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
-    attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-    mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + rowNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
-    if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-    summary(mix);
-    write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-    }
-    "';
-    print STDERR Dumper $spatial_correct_ar1wRow_cmd;
-    my $spatial_correct_ar1wRow_status = system($spatial_correct_ar1wRow_cmd);
-
-    open(my $fh_residual_ar1wRow, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
-        print STDERR "Opened $stats_out_tempfile_residual\n";
-        my $header_residual_ar1wRow = <$fh_residual_ar1wRow>;
-        my @header_cols_residual_ar1wRow = ();
-        if ($csv->parse($header_residual_ar1wRow)) {
-            @header_cols_residual_ar1wRow = $csv->fields();
+    eval {
+        my $spatial_correct_ar1wRow_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
+        mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
+        geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
+        mat\$rowNumber <- as.numeric(mat\$rowNumber);
+        mat\$colNumber <- as.numeric(mat\$colNumber);
+        mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
+        mat\$colNumberFactor <- as.factor(mat\$colNumber);
+        mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
+        mat\$colNumberFactorSep <- mat\$colNumberFactor;
+        mat\$id_factor <- as.factor(mat\$id_factor);
+        mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
+        attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'INVERSE\') <- TRUE;
+        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + rowNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
+        if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
+        summary(mix);
+        write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         }
-        while (my $row = <$fh_residual_ar1wRow>) {
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
+        "';
+        print STDERR Dumper $spatial_correct_ar1wRow_cmd;
+        my $spatial_correct_ar1wRow_status = system($spatial_correct_ar1wRow_cmd);
 
-            my $stock_id = $columns[0];
-            my $residual = $columns[1];
-            my $fitted = $columns[2];
-            my $stock_name = $plot_id_map{$stock_id};
-            push @row_col_ordered_plots_names_ar1wRow, $stock_name;
-            if (defined $residual && $residual ne '') {
-                $residual_sum_ar1wRow += abs($residual);
-                $residual_sum_square_ar1wRow = $residual_sum_square_ar1wRow + $residual*$residual;
+        open(my $fh_residual_ar1wRow, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+            print STDERR "Opened $stats_out_tempfile_residual\n";
+            my $header_residual_ar1wRow = <$fh_residual_ar1wRow>;
+            my @header_cols_residual_ar1wRow = ();
+            if ($csv->parse($header_residual_ar1wRow)) {
+                @header_cols_residual_ar1wRow = $csv->fields();
             }
-        }
-    close($fh_residual_ar1wRow);
-
-    open(my $fh_ar1wRow, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-        print STDERR "Opened $stats_out_tempfile\n";
-        my $header_ar1wRow = <$fh_ar1wRow>;
-
-        my $solution_file_counter_ar1wRow_skipping = 0;
-        my $solution_file_counter_ar1wRow = 0;
-        while (defined(my $row = <$fh_ar1wRow>)) {
-            # print STDERR $row;
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
-            my $level = $columns[0];
-            my $value = $columns[1];
-            my $std = $columns[2];
-            my $z_ratio = $columns[3];
-            if (defined $value && $value ne '') {
-                if ($solution_file_counter_ar1wRow_skipping < scalar(@seen_rows_numbers_sorted)) {
-                    $solution_file_counter_ar1wRow_skipping++;
-                    next;
+            while (my $row = <$fh_residual_ar1wRow>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
                 }
-                elsif ($solution_file_counter_ar1wRow < $number_accessions) {
-                    my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRow + 1};
-                    $result_blup_data_ar1wRow->{$stock_name}->{$trait_name_string} = $value;
 
-                    if ($value < $genetic_effect_min_ar1wRow) {
-                        $genetic_effect_min_ar1wRow = $value;
-                    }
-                    elsif ($value >= $genetic_effect_max_ar1wRow) {
-                        $genetic_effect_max_ar1wRow = $value;
-                    }
-
-                    $genetic_effect_sum_ar1wRow += abs($value);
-                    $genetic_effect_sum_square_ar1wRow = $genetic_effect_sum_square_ar1wRow + $value*$value;
-
-                    $current_gen_row_count_ar1wRow++;
-                }
-                else {
-                    my $plot_name = $row_col_ordered_plots_names_ar1wRow[$current_env_row_count_ar1wRow];
-                    $result_blup_spatial_data_ar1wRow->{$plot_name}->{$trait_name_string} = $value;
-
-                    if ($value < $env_effect_min_ar1wRow) {
-                        $env_effect_min_ar1wRow = $value;
-                    }
-                    elsif ($value >= $env_effect_max_ar1wRow) {
-                        $env_effect_max_ar1wRow = $value;
-                    }
-
-                    $env_effect_sum_ar1wRow += abs($value);
-                    $env_effect_sum_square_ar1wRow = $env_effect_sum_square_ar1wRow + $value*$value;
-
-                    $current_env_row_count_ar1wRow++;
+                my $stock_id = $columns[0];
+                my $residual = $columns[1];
+                my $fitted = $columns[2];
+                my $stock_name = $plot_id_map{$stock_id};
+                push @row_col_ordered_plots_names_ar1wRow, $stock_name;
+                if (defined $residual && $residual ne '') {
+                    $residual_sum_ar1wRow += abs($residual);
+                    $residual_sum_square_ar1wRow = $residual_sum_square_ar1wRow + $residual*$residual;
                 }
             }
-            $solution_file_counter_ar1wRow++;
-        }
-    close($fh_ar1wRow);
-    # print STDERR Dumper $result_blup_spatial_data_ar1wRow;
+        close($fh_residual_ar1wRow);
+
+        open(my $fh_ar1wRow, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            my $header_ar1wRow = <$fh_ar1wRow>;
+
+            my $solution_file_counter_ar1wRow_skipping = 0;
+            my $solution_file_counter_ar1wRow = 0;
+            while (defined(my $row = <$fh_ar1wRow>)) {
+                # print STDERR $row;
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+                my $level = $columns[0];
+                my $value = $columns[1];
+                my $std = $columns[2];
+                my $z_ratio = $columns[3];
+                if (defined $value && $value ne '') {
+                    if ($solution_file_counter_ar1wRow_skipping < scalar(@seen_rows_numbers_sorted)) {
+                        $solution_file_counter_ar1wRow_skipping++;
+                        next;
+                    }
+                    elsif ($solution_file_counter_ar1wRow < $number_accessions) {
+                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRow + 1};
+                        $result_blup_data_ar1wRow->{$stock_name}->{$trait_name_string} = $value;
+
+                        if ($value < $genetic_effect_min_ar1wRow) {
+                            $genetic_effect_min_ar1wRow = $value;
+                        }
+                        elsif ($value >= $genetic_effect_max_ar1wRow) {
+                            $genetic_effect_max_ar1wRow = $value;
+                        }
+
+                        $genetic_effect_sum_ar1wRow += abs($value);
+                        $genetic_effect_sum_square_ar1wRow = $genetic_effect_sum_square_ar1wRow + $value*$value;
+
+                        $current_gen_row_count_ar1wRow++;
+                    }
+                    else {
+                        my $plot_name = $row_col_ordered_plots_names_ar1wRow[$current_env_row_count_ar1wRow];
+                        $result_blup_spatial_data_ar1wRow->{$plot_name}->{$trait_name_string} = $value;
+
+                        if ($value < $env_effect_min_ar1wRow) {
+                            $env_effect_min_ar1wRow = $value;
+                        }
+                        elsif ($value >= $env_effect_max_ar1wRow) {
+                            $env_effect_max_ar1wRow = $value;
+                        }
+
+                        $env_effect_sum_ar1wRow += abs($value);
+                        $env_effect_sum_square_ar1wRow = $env_effect_sum_square_ar1wRow + $value*$value;
+
+                        $current_env_row_count_ar1wRow++;
+                    }
+                }
+                $solution_file_counter_ar1wRow++;
+            }
+        close($fh_ar1wRow);
+        # print STDERR Dumper $result_blup_spatial_data_ar1wRow;
+    };
 
     my $current_gen_row_count_ar1wRowCol = 0;
     my $current_env_row_count_ar1wRowCol = 0;
@@ -1778,114 +1784,116 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_data_ar1wRowCol;
     my $result_blup_spatial_data_ar1wRowCol;
 
-    my $spatial_correct_ar1wRowCol_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
-    mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
-    geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
-    mat\$rowNumber <- as.numeric(mat\$rowNumber);
-    mat\$colNumber <- as.numeric(mat\$colNumber);
-    mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
-    mat\$colNumberFactor <- as.factor(mat\$colNumber);
-    mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
-    mat\$colNumberFactorSep <- mat\$colNumberFactor;
-    mat\$id_factor <- as.factor(mat\$id_factor);
-    mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
-    attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-    mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + rowNumberFactor + colNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
-    if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-    summary(mix);
-    write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-    }
-    "';
-    print STDERR Dumper $spatial_correct_ar1wRowCol_cmd;
-    my $spatial_correct_ar1wRowCol_status = system($spatial_correct_ar1wRowCol_cmd);
-
-    open(my $fh_residual_ar1wRowCol, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
-        print STDERR "Opened $stats_out_tempfile_residual\n";
-        my $header_residual_ar1wRowCol = <$fh_residual_ar1wRowCol>;
-        my @header_cols_residual_ar1wRowCol = ();
-        if ($csv->parse($header_residual_ar1wRowCol)) {
-            @header_cols_residual_ar1wRowCol = $csv->fields();
+    eval {
+        my $spatial_correct_ar1wRowCol_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
+        mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
+        geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
+        mat\$rowNumber <- as.numeric(mat\$rowNumber);
+        mat\$colNumber <- as.numeric(mat\$colNumber);
+        mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
+        mat\$colNumberFactor <- as.factor(mat\$colNumber);
+        mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
+        mat\$colNumberFactorSep <- mat\$colNumberFactor;
+        mat\$id_factor <- as.factor(mat\$id_factor);
+        mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
+        attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'INVERSE\') <- TRUE;
+        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + rowNumberFactor + colNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
+        if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
+        summary(mix);
+        write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         }
-        while (my $row = <$fh_residual_ar1wRowCol>) {
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
+        "';
+        print STDERR Dumper $spatial_correct_ar1wRowCol_cmd;
+        my $spatial_correct_ar1wRowCol_status = system($spatial_correct_ar1wRowCol_cmd);
 
-            my $stock_id = $columns[0];
-            my $residual = $columns[1];
-            my $fitted = $columns[2];
-            my $stock_name = $plot_id_map{$stock_id};
-            push @row_col_ordered_plots_names_ar1wRowCol, $stock_name;
-            if (defined $residual && $residual ne '') {
-                $residual_sum_ar1wRowCol += abs($residual);
-                $residual_sum_square_ar1wRowCol = $residual_sum_square_ar1wRowCol + $residual*$residual;
+        open(my $fh_residual_ar1wRowCol, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+            print STDERR "Opened $stats_out_tempfile_residual\n";
+            my $header_residual_ar1wRowCol = <$fh_residual_ar1wRowCol>;
+            my @header_cols_residual_ar1wRowCol = ();
+            if ($csv->parse($header_residual_ar1wRowCol)) {
+                @header_cols_residual_ar1wRowCol = $csv->fields();
             }
-        }
-    close($fh_residual_ar1wRowCol);
-
-    open(my $fh_ar1wRowCol, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-        print STDERR "Opened $stats_out_tempfile\n";
-        my $header_ar1wRowCol = <$fh_ar1wRowCol>;
-
-        my $solution_file_counter_ar1wRowCol_skipping = 0;
-        my $solution_file_counter_ar1wRowCol = 0;
-        while (defined(my $row = <$fh_ar1wRowCol>)) {
-            # print STDERR $row;
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
-            my $level = $columns[0];
-            my $value = $columns[1];
-            my $std = $columns[2];
-            my $z_ratio = $columns[3];
-            if (defined $value && $value ne '') {
-                if ($solution_file_counter_ar1wRowCol_skipping < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted)) {
-                    $solution_file_counter_ar1wRowCol_skipping++;
-                    next;
+            while (my $row = <$fh_residual_ar1wRowCol>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
                 }
-                elsif ($solution_file_counter_ar1wRowCol < $number_accessions) {
-                    my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRowCol + 1};
-                    $result_blup_data_ar1wRowCol->{$stock_name}->{$trait_name_string} = $value;
 
-                    if ($value < $genetic_effect_min_ar1wRowCol) {
-                        $genetic_effect_min_ar1wRowCol = $value;
-                    }
-                    elsif ($value >= $genetic_effect_max_ar1wRowCol) {
-                        $genetic_effect_max_ar1wRowCol = $value;
-                    }
-
-                    $genetic_effect_sum_ar1wRowCol += abs($value);
-                    $genetic_effect_sum_square_ar1wRowCol = $genetic_effect_sum_square_ar1wRowCol + $value*$value;
-
-                    $current_gen_row_count_ar1wRowCol++;
-                }
-                else {
-                    my $plot_name = $row_col_ordered_plots_names_ar1wRowCol[$current_env_row_count_ar1wRowCol];
-                    $result_blup_spatial_data_ar1wRowCol->{$plot_name}->{$trait_name_string} = $value;
-
-                    if ($value < $env_effect_min_ar1wRowCol) {
-                        $env_effect_min_ar1wRowCol = $value;
-                    }
-                    elsif ($value >= $env_effect_max_ar1wRowCol) {
-                        $env_effect_max_ar1wRowCol = $value;
-                    }
-
-                    $env_effect_sum_ar1wRowCol += abs($value);
-                    $env_effect_sum_square_ar1wRowCol = $env_effect_sum_square_ar1wRowCol + $value*$value;
-
-                    $current_env_row_count_ar1wRowCol++;
+                my $stock_id = $columns[0];
+                my $residual = $columns[1];
+                my $fitted = $columns[2];
+                my $stock_name = $plot_id_map{$stock_id};
+                push @row_col_ordered_plots_names_ar1wRowCol, $stock_name;
+                if (defined $residual && $residual ne '') {
+                    $residual_sum_ar1wRowCol += abs($residual);
+                    $residual_sum_square_ar1wRowCol = $residual_sum_square_ar1wRowCol + $residual*$residual;
                 }
             }
-            $solution_file_counter_ar1wRowCol++;
-        }
-    close($fh_ar1wRowCol);
-    # print STDERR Dumper $result_blup_spatial_data_ar1wRowCol;
+        close($fh_residual_ar1wRowCol);
+
+        open(my $fh_ar1wRowCol, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            my $header_ar1wRowCol = <$fh_ar1wRowCol>;
+
+            my $solution_file_counter_ar1wRowCol_skipping = 0;
+            my $solution_file_counter_ar1wRowCol = 0;
+            while (defined(my $row = <$fh_ar1wRowCol>)) {
+                # print STDERR $row;
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+                my $level = $columns[0];
+                my $value = $columns[1];
+                my $std = $columns[2];
+                my $z_ratio = $columns[3];
+                if (defined $value && $value ne '') {
+                    if ($solution_file_counter_ar1wRowCol_skipping < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted)) {
+                        $solution_file_counter_ar1wRowCol_skipping++;
+                        next;
+                    }
+                    elsif ($solution_file_counter_ar1wRowCol < $number_accessions) {
+                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRowCol + 1};
+                        $result_blup_data_ar1wRowCol->{$stock_name}->{$trait_name_string} = $value;
+
+                        if ($value < $genetic_effect_min_ar1wRowCol) {
+                            $genetic_effect_min_ar1wRowCol = $value;
+                        }
+                        elsif ($value >= $genetic_effect_max_ar1wRowCol) {
+                            $genetic_effect_max_ar1wRowCol = $value;
+                        }
+
+                        $genetic_effect_sum_ar1wRowCol += abs($value);
+                        $genetic_effect_sum_square_ar1wRowCol = $genetic_effect_sum_square_ar1wRowCol + $value*$value;
+
+                        $current_gen_row_count_ar1wRowCol++;
+                    }
+                    else {
+                        my $plot_name = $row_col_ordered_plots_names_ar1wRowCol[$current_env_row_count_ar1wRowCol];
+                        $result_blup_spatial_data_ar1wRowCol->{$plot_name}->{$trait_name_string} = $value;
+
+                        if ($value < $env_effect_min_ar1wRowCol) {
+                            $env_effect_min_ar1wRowCol = $value;
+                        }
+                        elsif ($value >= $env_effect_max_ar1wRowCol) {
+                            $env_effect_max_ar1wRowCol = $value;
+                        }
+
+                        $env_effect_sum_ar1wRowCol += abs($value);
+                        $env_effect_sum_square_ar1wRowCol = $env_effect_sum_square_ar1wRowCol + $value*$value;
+
+                        $current_env_row_count_ar1wRowCol++;
+                    }
+                }
+                $solution_file_counter_ar1wRowCol++;
+            }
+        close($fh_ar1wRowCol);
+        # print STDERR Dumper $result_blup_spatial_data_ar1wRowCol;
+    };
 
     my $current_gen_row_count_ar1wRowColOnly = 0;
     my $current_env_row_count_ar1wRowColOnly = 0;
@@ -1903,114 +1911,116 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_data_ar1wRowColOnly;
     my $result_blup_spatial_data_ar1wRowColOnly;
 
-    my $spatial_correct_ar1wRowColOnly_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
-    mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
-    geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
-    mat\$rowNumber <- as.numeric(mat\$rowNumber);
-    mat\$colNumber <- as.numeric(mat\$colNumber);
-    mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
-    mat\$colNumberFactor <- as.factor(mat\$colNumber);
-    mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
-    mat\$colNumberFactorSep <- mat\$colNumberFactor;
-    mat\$id_factor <- as.factor(mat\$id_factor);
-    mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
-    attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-    mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactor + colNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
-    if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-    summary(mix);
-    write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-    }
-    "';
-    print STDERR Dumper $spatial_correct_ar1wRowColOnly_cmd;
-    my $spatial_correct_ar1wRowColOnly_status = system($spatial_correct_ar1wRowColOnly_cmd);
-
-    open(my $fh_residual_ar1wRowColOnly, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
-        print STDERR "Opened $stats_out_tempfile_residual\n";
-        my $header_residual_ar1wRowColOnly = <$fh_residual_ar1wRowColOnly>;
-        my @header_cols_residual_ar1wRowColOnly = ();
-        if ($csv->parse($header_residual_ar1wRowColOnly)) {
-            @header_cols_residual_ar1wRowColOnly = $csv->fields();
+    eval {
+        my $spatial_correct_ar1wRowColOnly_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
+        mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
+        geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
+        mat\$rowNumber <- as.numeric(mat\$rowNumber);
+        mat\$colNumber <- as.numeric(mat\$colNumber);
+        mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
+        mat\$colNumberFactor <- as.factor(mat\$colNumber);
+        mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
+        mat\$colNumberFactorSep <- mat\$colNumberFactor;
+        mat\$id_factor <- as.factor(mat\$id_factor);
+        mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
+        attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'INVERSE\') <- TRUE;
+        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactor + colNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
+        if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
+        summary(mix);
+        write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         }
-        while (my $row = <$fh_residual_ar1wRowColOnly>) {
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
+        "';
+        print STDERR Dumper $spatial_correct_ar1wRowColOnly_cmd;
+        my $spatial_correct_ar1wRowColOnly_status = system($spatial_correct_ar1wRowColOnly_cmd);
 
-            my $stock_id = $columns[0];
-            my $residual = $columns[1];
-            my $fitted = $columns[2];
-            my $stock_name = $plot_id_map{$stock_id};
-            push @row_col_ordered_plots_names_ar1wRowColOnly, $stock_name;
-            if (defined $residual && $residual ne '') {
-                $residual_sum_ar1wRowColOnly += abs($residual);
-                $residual_sum_square_ar1wRowColOnly = $residual_sum_square_ar1wRowColOnly + $residual*$residual;
+        open(my $fh_residual_ar1wRowColOnly, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+            print STDERR "Opened $stats_out_tempfile_residual\n";
+            my $header_residual_ar1wRowColOnly = <$fh_residual_ar1wRowColOnly>;
+            my @header_cols_residual_ar1wRowColOnly = ();
+            if ($csv->parse($header_residual_ar1wRowColOnly)) {
+                @header_cols_residual_ar1wRowColOnly = $csv->fields();
             }
-        }
-    close($fh_residual_ar1wRowColOnly);
-
-    open(my $fh_ar1wRowColOnly, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-        print STDERR "Opened $stats_out_tempfile\n";
-        my $header_ar1wRowColOnly = <$fh_ar1wRowColOnly>;
-
-        my $solution_file_counter_ar1wRowColOnly_skipping = 0;
-        my $solution_file_counter_ar1wRowColOnly = 0;
-        while (defined(my $row = <$fh_ar1wRowColOnly>)) {
-            # print STDERR $row;
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
-            my $level = $columns[0];
-            my $value = $columns[1];
-            my $std = $columns[2];
-            my $z_ratio = $columns[3];
-            if (defined $value && $value ne '') {
-                if ($solution_file_counter_ar1wRowColOnly_skipping < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted)) {
-                    $solution_file_counter_ar1wRowColOnly_skipping++;
-                    next;
+            while (my $row = <$fh_residual_ar1wRowColOnly>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
                 }
-                elsif ($solution_file_counter_ar1wRowColOnly < $number_accessions) {
-                    my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRowColOnly + 1};
-                    $result_blup_data_ar1wRowColOnly->{$stock_name}->{$trait_name_string} = $value;
 
-                    if ($value < $genetic_effect_min_ar1wRowColOnly) {
-                        $genetic_effect_min_ar1wRowColOnly = $value;
-                    }
-                    elsif ($value >= $genetic_effect_max_ar1wRowColOnly) {
-                        $genetic_effect_max_ar1wRowColOnly = $value;
-                    }
-
-                    $genetic_effect_sum_ar1wRowColOnly += abs($value);
-                    $genetic_effect_sum_square_ar1wRowColOnly = $genetic_effect_sum_square_ar1wRowColOnly + $value*$value;
-
-                    $current_gen_row_count_ar1wRowColOnly++;
-                }
-                else {
-                    my $plot_name = $row_col_ordered_plots_names_ar1wRowColOnly[$current_env_row_count_ar1wRowColOnly];
-                    $result_blup_spatial_data_ar1wRowColOnly->{$plot_name}->{$trait_name_string} = $value;
-
-                    if ($value < $env_effect_min_ar1wRowColOnly) {
-                        $env_effect_min_ar1wRowColOnly = $value;
-                    }
-                    elsif ($value >= $env_effect_max_ar1wRowColOnly) {
-                        $env_effect_max_ar1wRowColOnly = $value;
-                    }
-
-                    $env_effect_sum_ar1wRowColOnly += abs($value);
-                    $env_effect_sum_square_ar1wRowColOnly = $env_effect_sum_square_ar1wRowColOnly + $value*$value;
-
-                    $current_env_row_count_ar1wRowColOnly++;
+                my $stock_id = $columns[0];
+                my $residual = $columns[1];
+                my $fitted = $columns[2];
+                my $stock_name = $plot_id_map{$stock_id};
+                push @row_col_ordered_plots_names_ar1wRowColOnly, $stock_name;
+                if (defined $residual && $residual ne '') {
+                    $residual_sum_ar1wRowColOnly += abs($residual);
+                    $residual_sum_square_ar1wRowColOnly = $residual_sum_square_ar1wRowColOnly + $residual*$residual;
                 }
             }
-            $solution_file_counter_ar1wRowColOnly++;
-        }
-    close($fh_ar1wRowColOnly);
-    # print STDERR Dumper $result_blup_spatial_data_ar1wRowColOnly;
+        close($fh_residual_ar1wRowColOnly);
+
+        open(my $fh_ar1wRowColOnly, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            my $header_ar1wRowColOnly = <$fh_ar1wRowColOnly>;
+
+            my $solution_file_counter_ar1wRowColOnly_skipping = 0;
+            my $solution_file_counter_ar1wRowColOnly = 0;
+            while (defined(my $row = <$fh_ar1wRowColOnly>)) {
+                # print STDERR $row;
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+                my $level = $columns[0];
+                my $value = $columns[1];
+                my $std = $columns[2];
+                my $z_ratio = $columns[3];
+                if (defined $value && $value ne '') {
+                    if ($solution_file_counter_ar1wRowColOnly_skipping < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted)) {
+                        $solution_file_counter_ar1wRowColOnly_skipping++;
+                        next;
+                    }
+                    elsif ($solution_file_counter_ar1wRowColOnly < $number_accessions) {
+                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRowColOnly + 1};
+                        $result_blup_data_ar1wRowColOnly->{$stock_name}->{$trait_name_string} = $value;
+
+                        if ($value < $genetic_effect_min_ar1wRowColOnly) {
+                            $genetic_effect_min_ar1wRowColOnly = $value;
+                        }
+                        elsif ($value >= $genetic_effect_max_ar1wRowColOnly) {
+                            $genetic_effect_max_ar1wRowColOnly = $value;
+                        }
+
+                        $genetic_effect_sum_ar1wRowColOnly += abs($value);
+                        $genetic_effect_sum_square_ar1wRowColOnly = $genetic_effect_sum_square_ar1wRowColOnly + $value*$value;
+
+                        $current_gen_row_count_ar1wRowColOnly++;
+                    }
+                    else {
+                        my $plot_name = $row_col_ordered_plots_names_ar1wRowColOnly[$current_env_row_count_ar1wRowColOnly];
+                        $result_blup_spatial_data_ar1wRowColOnly->{$plot_name}->{$trait_name_string} = $value;
+
+                        if ($value < $env_effect_min_ar1wRowColOnly) {
+                            $env_effect_min_ar1wRowColOnly = $value;
+                        }
+                        elsif ($value >= $env_effect_max_ar1wRowColOnly) {
+                            $env_effect_max_ar1wRowColOnly = $value;
+                        }
+
+                        $env_effect_sum_ar1wRowColOnly += abs($value);
+                        $env_effect_sum_square_ar1wRowColOnly = $env_effect_sum_square_ar1wRowColOnly + $value*$value;
+
+                        $current_env_row_count_ar1wRowColOnly++;
+                    }
+                }
+                $solution_file_counter_ar1wRowColOnly++;
+            }
+        close($fh_ar1wRowColOnly);
+        # print STDERR Dumper $result_blup_spatial_data_ar1wRowColOnly;
+    };
 
     my $current_gen_row_count_ar1wRowPlusCol = 0;
     my $current_env_row_count_ar1wRowPlusCol = 0;
@@ -2028,114 +2038,116 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_data_ar1wRowPlusCol;
     my $result_blup_spatial_data_ar1wRowPlusCol;
 
-    my $spatial_correct_ar1wRowPlusCol_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
-    mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
-    geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
-    mat\$rowNumber <- as.numeric(mat\$rowNumber);
-    mat\$colNumber <- as.numeric(mat\$colNumber);
-    mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
-    mat\$colNumberFactor <- as.factor(mat\$colNumber);
-    mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
-    mat\$colNumberFactorSep <- mat\$colNumberFactor;
-    mat\$id_factor <- as.factor(mat\$id_factor);
-    mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
-    attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-    mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor) + colNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
-    if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-    summary(mix);
-    write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-    }
-    "';
-    print STDERR Dumper $spatial_correct_ar1wRowPlusCol_cmd;
-    my $spatial_correct_ar1wRowPlusCol_status = system($spatial_correct_ar1wRowPlusCol_cmd);
-
-    open(my $fh_residual_ar1wRowPlusCol, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
-        print STDERR "Opened $stats_out_tempfile_residual\n";
-        my $header_residual_ar1wRowPlusCol = <$fh_residual_ar1wRowPlusCol>;
-        my @header_cols_residual_ar1wRowPlusCol = ();
-        if ($csv->parse($header_residual_ar1wRowPlusCol)) {
-            @header_cols_residual_ar1wRowPlusCol = $csv->fields();
+    eval {
+        my $spatial_correct_ar1wRowPlusCol_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
+        mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
+        geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
+        mat\$rowNumber <- as.numeric(mat\$rowNumber);
+        mat\$colNumber <- as.numeric(mat\$colNumber);
+        mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
+        mat\$colNumberFactor <- as.factor(mat\$colNumber);
+        mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
+        mat\$colNumberFactorSep <- mat\$colNumberFactor;
+        mat\$id_factor <- as.factor(mat\$id_factor);
+        mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
+        attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'INVERSE\') <- TRUE;
+        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor) + colNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
+        if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
+        summary(mix);
+        write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         }
-        while (my $row = <$fh_residual_ar1wRowPlusCol>) {
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
+        "';
+        print STDERR Dumper $spatial_correct_ar1wRowPlusCol_cmd;
+        my $spatial_correct_ar1wRowPlusCol_status = system($spatial_correct_ar1wRowPlusCol_cmd);
 
-            my $stock_id = $columns[0];
-            my $residual = $columns[1];
-            my $fitted = $columns[2];
-            my $stock_name = $plot_id_map{$stock_id};
-            push @row_col_ordered_plots_names_ar1wRowPlusCol, $stock_name;
-            if (defined $residual && $residual ne '') {
-                $residual_sum_ar1wRowPlusCol += abs($residual);
-                $residual_sum_square_ar1wRowPlusCol = $residual_sum_square_ar1wRowPlusCol + $residual*$residual;
+        open(my $fh_residual_ar1wRowPlusCol, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+            print STDERR "Opened $stats_out_tempfile_residual\n";
+            my $header_residual_ar1wRowPlusCol = <$fh_residual_ar1wRowPlusCol>;
+            my @header_cols_residual_ar1wRowPlusCol = ();
+            if ($csv->parse($header_residual_ar1wRowPlusCol)) {
+                @header_cols_residual_ar1wRowPlusCol = $csv->fields();
             }
-        }
-    close($fh_residual_ar1wRowPlusCol);
-
-    open(my $fh_ar1wRowPlusCol, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-        print STDERR "Opened $stats_out_tempfile\n";
-        my $header_ar1wRowPlusCol = <$fh_ar1wRowPlusCol>;
-
-        my $solution_file_counter_ar1wRowPlusCol_skipping = 0;
-        my $solution_file_counter_ar1wRowPlusCol = 0;
-        while (defined(my $row = <$fh_ar1wRowPlusCol>)) {
-            # print STDERR $row;
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
-            my $level = $columns[0];
-            my $value = $columns[1];
-            my $std = $columns[2];
-            my $z_ratio = $columns[3];
-            if (defined $value && $value ne '') {
-                if ($solution_file_counter_ar1wRowPlusCol_skipping < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted)) {
-                    $solution_file_counter_ar1wRowPlusCol_skipping++;
-                    next;
+            while (my $row = <$fh_residual_ar1wRowPlusCol>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
                 }
-                elsif ($solution_file_counter_ar1wRowPlusCol < $number_accessions) {
-                    my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRowPlusCol + 1};
-                    $result_blup_data_ar1wRowPlusCol->{$stock_name}->{$trait_name_string} = $value;
 
-                    if ($value < $genetic_effect_min_ar1wRowPlusCol) {
-                        $genetic_effect_min_ar1wRowPlusCol = $value;
-                    }
-                    elsif ($value >= $genetic_effect_max_ar1wRowPlusCol) {
-                        $genetic_effect_max_ar1wRowPlusCol = $value;
-                    }
-
-                    $genetic_effect_sum_ar1wRowPlusCol += abs($value);
-                    $genetic_effect_sum_square_ar1wRowPlusCol = $genetic_effect_sum_square_ar1wRowPlusCol + $value*$value;
-
-                    $current_gen_row_count_ar1wRowPlusCol++;
-                }
-                else {
-                    my $plot_name = $row_col_ordered_plots_names_ar1wRowPlusCol[$current_env_row_count_ar1wRowPlusCol];
-                    $result_blup_spatial_data_ar1wRowPlusCol->{$plot_name}->{$trait_name_string} = $value;
-
-                    if ($value < $env_effect_min_ar1wRowPlusCol) {
-                        $env_effect_min_ar1wRowPlusCol = $value;
-                    }
-                    elsif ($value >= $env_effect_max_ar1wRowPlusCol) {
-                        $env_effect_max_ar1wRowPlusCol = $value;
-                    }
-
-                    $env_effect_sum_ar1wRowPlusCol += abs($value);
-                    $env_effect_sum_square_ar1wRowPlusCol = $env_effect_sum_square_ar1wRowPlusCol + $value*$value;
-
-                    $current_env_row_count_ar1wRowPlusCol++;
+                my $stock_id = $columns[0];
+                my $residual = $columns[1];
+                my $fitted = $columns[2];
+                my $stock_name = $plot_id_map{$stock_id};
+                push @row_col_ordered_plots_names_ar1wRowPlusCol, $stock_name;
+                if (defined $residual && $residual ne '') {
+                    $residual_sum_ar1wRowPlusCol += abs($residual);
+                    $residual_sum_square_ar1wRowPlusCol = $residual_sum_square_ar1wRowPlusCol + $residual*$residual;
                 }
             }
-            $solution_file_counter_ar1wRowPlusCol++;
-        }
-    close($fh_ar1wRowPlusCol);
-    # print STDERR Dumper $result_blup_spatial_data_ar1wRowPlusCol;
+        close($fh_residual_ar1wRowPlusCol);
+
+        open(my $fh_ar1wRowPlusCol, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            my $header_ar1wRowPlusCol = <$fh_ar1wRowPlusCol>;
+
+            my $solution_file_counter_ar1wRowPlusCol_skipping = 0;
+            my $solution_file_counter_ar1wRowPlusCol = 0;
+            while (defined(my $row = <$fh_ar1wRowPlusCol>)) {
+                # print STDERR $row;
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+                my $level = $columns[0];
+                my $value = $columns[1];
+                my $std = $columns[2];
+                my $z_ratio = $columns[3];
+                if (defined $value && $value ne '') {
+                    if ($solution_file_counter_ar1wRowPlusCol_skipping < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted)) {
+                        $solution_file_counter_ar1wRowPlusCol_skipping++;
+                        next;
+                    }
+                    elsif ($solution_file_counter_ar1wRowPlusCol < $number_accessions) {
+                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRowPlusCol + 1};
+                        $result_blup_data_ar1wRowPlusCol->{$stock_name}->{$trait_name_string} = $value;
+
+                        if ($value < $genetic_effect_min_ar1wRowPlusCol) {
+                            $genetic_effect_min_ar1wRowPlusCol = $value;
+                        }
+                        elsif ($value >= $genetic_effect_max_ar1wRowPlusCol) {
+                            $genetic_effect_max_ar1wRowPlusCol = $value;
+                        }
+
+                        $genetic_effect_sum_ar1wRowPlusCol += abs($value);
+                        $genetic_effect_sum_square_ar1wRowPlusCol = $genetic_effect_sum_square_ar1wRowPlusCol + $value*$value;
+
+                        $current_gen_row_count_ar1wRowPlusCol++;
+                    }
+                    else {
+                        my $plot_name = $row_col_ordered_plots_names_ar1wRowPlusCol[$current_env_row_count_ar1wRowPlusCol];
+                        $result_blup_spatial_data_ar1wRowPlusCol->{$plot_name}->{$trait_name_string} = $value;
+
+                        if ($value < $env_effect_min_ar1wRowPlusCol) {
+                            $env_effect_min_ar1wRowPlusCol = $value;
+                        }
+                        elsif ($value >= $env_effect_max_ar1wRowPlusCol) {
+                            $env_effect_max_ar1wRowPlusCol = $value;
+                        }
+
+                        $env_effect_sum_ar1wRowPlusCol += abs($value);
+                        $env_effect_sum_square_ar1wRowPlusCol = $env_effect_sum_square_ar1wRowPlusCol + $value*$value;
+
+                        $current_env_row_count_ar1wRowPlusCol++;
+                    }
+                }
+                $solution_file_counter_ar1wRowPlusCol++;
+            }
+        close($fh_ar1wRowPlusCol);
+        # print STDERR Dumper $result_blup_spatial_data_ar1wRowPlusCol;
+    };
 
     my $current_gen_row_count_ar1wColPlusRow = 0;
     my $current_env_row_count_ar1wColPlusRow = 0;
@@ -2153,115 +2165,116 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_data_ar1wColPlusRow;
     my $result_blup_spatial_data_ar1wColPlusRow;
 
-    my $spatial_correct_ar1wColPlusRow_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
-    mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
-    geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
-    mat\$rowNumber <- as.numeric(mat\$rowNumber);
-    mat\$colNumber <- as.numeric(mat\$colNumber);
-    mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
-    mat\$colNumberFactor <- as.factor(mat\$colNumber);
-    mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
-    mat\$colNumberFactorSep <- mat\$colNumberFactor;
-    mat\$id_factor <- as.factor(mat\$id_factor);
-    mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
-    attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
-    attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-    mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(colNumberFactor) + rowNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
-    if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-    summary(mix);
-    write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-    }
-    "';
-    print STDERR Dumper $spatial_correct_ar1wColPlusRow_cmd;
-    my $spatial_correct_ar1wColPlusRow_status = system($spatial_correct_ar1wColPlusRow_cmd);
-
-    open(my $fh_residual_ar1wColPlusRow, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
-        print STDERR "Opened $stats_out_tempfile_residual\n";
-        my $header_residual_ar1wColPlusRow = <$fh_residual_ar1wColPlusRow>;
-        my @header_cols_residual_ar1wColPlusRow = ();
-        if ($csv->parse($header_residual_ar1wColPlusRow)) {
-            @header_cols_residual_ar1wColPlusRow = $csv->fields();
+    eval {
+        my $spatial_correct_ar1wColPlusRow_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
+        mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
+        geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
+        mat\$rowNumber <- as.numeric(mat\$rowNumber);
+        mat\$colNumber <- as.numeric(mat\$colNumber);
+        mat\$rowNumberFactor <- as.factor(mat\$rowNumber);
+        mat\$colNumberFactor <- as.factor(mat\$colNumber);
+        mat\$rowNumberFactorSep <- mat\$rowNumberFactor;
+        mat\$colNumberFactorSep <- mat\$colNumberFactor;
+        mat\$id_factor <- as.factor(mat\$id_factor);
+        mat <- mat[order(mat\$rowNumber, mat\$colNumber),];
+        attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'INVERSE\') <- TRUE;
+        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(colNumberFactor) + rowNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
+        if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
+        summary(mix);
+        write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         }
-        while (my $row = <$fh_residual_ar1wColPlusRow>) {
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
+        "';
+        print STDERR Dumper $spatial_correct_ar1wColPlusRow_cmd;
+        my $spatial_correct_ar1wColPlusRow_status = system($spatial_correct_ar1wColPlusRow_cmd);
 
-            my $stock_id = $columns[0];
-            my $residual = $columns[1];
-            my $fitted = $columns[2];
-            my $stock_name = $plot_id_map{$stock_id};
-            push @row_col_ordered_plots_names_ar1wColPlusRow, $stock_name;
-            if (defined $residual && $residual ne '') {
-                $residual_sum_ar1wColPlusRow += abs($residual);
-                $residual_sum_square_ar1wColPlusRow = $residual_sum_square_ar1wColPlusRow + $residual*$residual;
+        open(my $fh_residual_ar1wColPlusRow, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+            print STDERR "Opened $stats_out_tempfile_residual\n";
+            my $header_residual_ar1wColPlusRow = <$fh_residual_ar1wColPlusRow>;
+            my @header_cols_residual_ar1wColPlusRow = ();
+            if ($csv->parse($header_residual_ar1wColPlusRow)) {
+                @header_cols_residual_ar1wColPlusRow = $csv->fields();
             }
-        }
-    close($fh_residual_ar1wColPlusRow);
-
-    open(my $fh_ar1wColPlusRow, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-        print STDERR "Opened $stats_out_tempfile\n";
-        my $header_ar1wColPlusRow = <$fh_ar1wColPlusRow>;
-
-        my $solution_file_counter_ar1wColPlusRow_skipping = 0;
-        my $solution_file_counter_ar1wColPlusRow = 0;
-        while (defined(my $row = <$fh_ar1wColPlusRow>)) {
-            # print STDERR $row;
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
-            }
-            my $level = $columns[0];
-            my $value = $columns[1];
-            my $std = $columns[2];
-            my $z_ratio = $columns[3];
-            if (defined $value && $value ne '') {
-                if ($solution_file_counter_ar1wColPlusRow_skipping < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted)) {
-                    $solution_file_counter_ar1wColPlusRow_skipping++;
-                    next;
+            while (my $row = <$fh_residual_ar1wColPlusRow>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
                 }
-                elsif ($solution_file_counter_ar1wColPlusRow < $number_accessions) {
-                    my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wColPlusRow + 1};
-                    $result_blup_data_ar1wColPlusRow->{$stock_name}->{$trait_name_string} = $value;
 
-                    if ($value < $genetic_effect_min_ar1wColPlusRow) {
-                        $genetic_effect_min_ar1wColPlusRow = $value;
-                    }
-                    elsif ($value >= $genetic_effect_max_ar1wColPlusRow) {
-                        $genetic_effect_max_ar1wColPlusRow = $value;
-                    }
-
-                    $genetic_effect_sum_ar1wColPlusRow += abs($value);
-                    $genetic_effect_sum_square_ar1wColPlusRow = $genetic_effect_sum_square_ar1wColPlusRow + $value*$value;
-
-                    $current_gen_row_count_ar1wColPlusRow++;
-                }
-                else {
-                    my $plot_name = $row_col_ordered_plots_names_ar1wColPlusRow[$current_env_row_count_ar1wColPlusRow];
-                    $result_blup_spatial_data_ar1wColPlusRow->{$plot_name}->{$trait_name_string} = $value;
-
-                    if ($value < $env_effect_min_ar1wColPlusRow) {
-                        $env_effect_min_ar1wColPlusRow = $value;
-                    }
-                    elsif ($value >= $env_effect_max_ar1wColPlusRow) {
-                        $env_effect_max_ar1wColPlusRow = $value;
-                    }
-
-                    $env_effect_sum_ar1wColPlusRow += abs($value);
-                    $env_effect_sum_square_ar1wColPlusRow = $env_effect_sum_square_ar1wColPlusRow + $value*$value;
-
-                    $current_env_row_count_ar1wColPlusRow++;
+                my $stock_id = $columns[0];
+                my $residual = $columns[1];
+                my $fitted = $columns[2];
+                my $stock_name = $plot_id_map{$stock_id};
+                push @row_col_ordered_plots_names_ar1wColPlusRow, $stock_name;
+                if (defined $residual && $residual ne '') {
+                    $residual_sum_ar1wColPlusRow += abs($residual);
+                    $residual_sum_square_ar1wColPlusRow = $residual_sum_square_ar1wColPlusRow + $residual*$residual;
                 }
             }
-            $solution_file_counter_ar1wColPlusRow++;
-        }
-    close($fh_ar1wColPlusRow);
-    # print STDERR Dumper $result_blup_spatial_data_ar1wColPlusRow;
+        close($fh_residual_ar1wColPlusRow);
 
+        open(my $fh_ar1wColPlusRow, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            my $header_ar1wColPlusRow = <$fh_ar1wColPlusRow>;
+
+            my $solution_file_counter_ar1wColPlusRow_skipping = 0;
+            my $solution_file_counter_ar1wColPlusRow = 0;
+            while (defined(my $row = <$fh_ar1wColPlusRow>)) {
+                # print STDERR $row;
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+                my $level = $columns[0];
+                my $value = $columns[1];
+                my $std = $columns[2];
+                my $z_ratio = $columns[3];
+                if (defined $value && $value ne '') {
+                    if ($solution_file_counter_ar1wColPlusRow_skipping < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted)) {
+                        $solution_file_counter_ar1wColPlusRow_skipping++;
+                        next;
+                    }
+                    elsif ($solution_file_counter_ar1wColPlusRow < $number_accessions) {
+                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wColPlusRow + 1};
+                        $result_blup_data_ar1wColPlusRow->{$stock_name}->{$trait_name_string} = $value;
+
+                        if ($value < $genetic_effect_min_ar1wColPlusRow) {
+                            $genetic_effect_min_ar1wColPlusRow = $value;
+                        }
+                        elsif ($value >= $genetic_effect_max_ar1wColPlusRow) {
+                            $genetic_effect_max_ar1wColPlusRow = $value;
+                        }
+
+                        $genetic_effect_sum_ar1wColPlusRow += abs($value);
+                        $genetic_effect_sum_square_ar1wColPlusRow = $genetic_effect_sum_square_ar1wColPlusRow + $value*$value;
+
+                        $current_gen_row_count_ar1wColPlusRow++;
+                    }
+                    else {
+                        my $plot_name = $row_col_ordered_plots_names_ar1wColPlusRow[$current_env_row_count_ar1wColPlusRow];
+                        $result_blup_spatial_data_ar1wColPlusRow->{$plot_name}->{$trait_name_string} = $value;
+
+                        if ($value < $env_effect_min_ar1wColPlusRow) {
+                            $env_effect_min_ar1wColPlusRow = $value;
+                        }
+                        elsif ($value >= $env_effect_max_ar1wColPlusRow) {
+                            $env_effect_max_ar1wColPlusRow = $value;
+                        }
+
+                        $env_effect_sum_ar1wColPlusRow += abs($value);
+                        $env_effect_sum_square_ar1wColPlusRow = $env_effect_sum_square_ar1wColPlusRow + $value*$value;
+
+                        $current_env_row_count_ar1wColPlusRow++;
+                    }
+                }
+                $solution_file_counter_ar1wColPlusRow++;
+            }
+        close($fh_ar1wColPlusRow);
+        # print STDERR Dumper $result_blup_spatial_data_ar1wColPlusRow;
+    };
 }
 
 sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compare_to_trait') Args(0) {
