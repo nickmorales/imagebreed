@@ -142,6 +142,13 @@ jQuery(document).ready(function() {
     });
 
     jQuery('#analytics_compare_results_to_trait_analysis_test_ar1_models').click(function(){
+        manage_drone_imagery_analytics_compare_results_trait_id = jQuery('#analytics_compare_results_to_trait_trait_select').val();
+
+        if (manage_drone_imagery_analytics_compare_results_trait_id == '') {
+            alert('Please select a trait!');
+            return false;
+        }
+
         jQuery.ajax({
             url : '/ajax/analytics_protocols_compare_to_trait_test_ar1_models?protocol_id='+<% $analytics_protocol_id %>+'&trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id,
             beforeSend: function() {
