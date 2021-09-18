@@ -29,8 +29,11 @@ $analytics_protocol_id
                     <div class="form-horizontal">
                         <div class="form-group">
                             <label class="col-sm-3 control-label">Trait to Spatial Correct and Plot: </label>
-                            <div class="col-sm-9" >
+                            <div class="col-sm-6" >
                                 <div id="analytics_compare_results_to_trait_trait_select_div">Loading...</div>
+                            </div>
+                            <div class="col-sm-3" >
+                                <button class="btn btn-default" id="analytics_compare_results_to_trait_analysis_test_ar1_models">Test AR(1) Models</button>
                             </div>
                         </div>
                         <div class="form-group">
@@ -136,6 +139,24 @@ jQuery(document).ready(function() {
 
         Workflow.complete("#analytics_compare_results_to_trait_trait_select_step");
         Workflow.focus('#analytics_compare_results_to_trait_workflow', 2);
+    });
+
+    jQuery('#analytics_compare_results_to_trait_analysis_test_ar1_models').click(function(){
+        jQuery.ajax({
+            url : '/ajax/analytics_protocols_compare_to_trait_test_ar1_models?protocol_id='+<% $analytics_protocol_id %>+'&trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id,
+            beforeSend: function() {
+                jQuery("#working_modal").modal("show");
+            },
+            success: function(response){
+                console.log(response);
+                jQuery("#working_modal").modal("hide");
+
+            },
+            error: function(response){
+                jQuery("#working_modal").modal("hide");
+                alert('Error testing AR(1) models!')
+            }
+        });
     });
 
     jQuery('#analytics_compare_results_to_trait_analysis_select_step').click(function(){
