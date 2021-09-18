@@ -447,13 +447,9 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
 
     # Prepare phenotype file for Trait Spatial Correction
     my $stats_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
-    my $stats_out_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
-    my $stats_out_tempfile_ar1_indata = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
-    my $stats_out_tempfile_2dspl = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
-    my $stats_out_tempfile_residual = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
-    my $stats_out_tempfile_varcomp = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $stats_out_tempfile_factors = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $grm_rename_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+    my $stats_out_tempfile_ar1_indata = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
     my @data_matrix_original;
     foreach my $p (@seen_plots) {
@@ -1409,6 +1405,10 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_spatial_data_ar1;
 
     eval {
+        my $stats_out_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_residual = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_varcomp = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+
         my $spatial_correct_ar1_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
         mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
         geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
@@ -1531,6 +1531,10 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_spatial_data_ar1wCol;
 
     eval {
+        my $stats_out_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_residual = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_varcomp = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+
         my $spatial_correct_ar1wCol_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
         mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
         geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
@@ -1658,6 +1662,10 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_spatial_data_ar1wRow;
 
     eval {
+        my $stats_out_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_residual = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_varcomp = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+
         my $spatial_correct_ar1wRow_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
         mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
         geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
@@ -1785,6 +1793,10 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_spatial_data_ar1wRowCol;
 
     eval {
+        my $stats_out_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_residual = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_varcomp = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+
         my $spatial_correct_ar1wRowCol_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
         mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
         geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
@@ -1912,6 +1924,10 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_spatial_data_ar1wRowColOnly;
 
     eval {
+        my $stats_out_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_residual = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_varcomp = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+
         my $spatial_correct_ar1wRowColOnly_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
         mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
         geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
@@ -2039,6 +2055,10 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_spatial_data_ar1wRowPlusCol;
 
     eval {
+        my $stats_out_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_residual = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_varcomp = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+
         my $spatial_correct_ar1wRowPlusCol_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
         mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
         geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
@@ -2166,6 +2186,10 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $result_blup_spatial_data_ar1wColPlusRow;
 
     eval {
+        my $stats_out_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_residual = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $stats_out_tempfile_varcomp = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+
         my $spatial_correct_ar1wColPlusRow_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
         mat <- data.frame(fread(\''.$stats_out_tempfile_ar1_indata.'\', header=TRUE, sep=\',\'));
         geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
