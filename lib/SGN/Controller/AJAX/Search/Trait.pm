@@ -23,6 +23,32 @@ sub search : Path('/ajax/search/traits') Args(0) {
     my $params = $c->req->params() || {};
     #print STDERR Dumper $params;
 
+    my $user_id;
+    my $user_name;
+    my $user_role;
+    my $session_id = $c->req->param("sgn_session_id");
+
+    if ($session_id){
+        my $dbh = $c->dbc->dbh;
+        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+        if (!$user_info[0]){
+            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+            $c->detach();
+        }
+        $user_id = $user_info[0];
+        $user_role = $user_info[1];
+        my $p = CXGN::People::Person->new($dbh, $user_id);
+        $user_name = $p->get_username;
+    } else {
+        if (!$c->user){
+            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+            $c->detach();
+        }
+        $user_id = $c->user()->get_object()->get_sp_person_id();
+        $user_name = $c->user()->get_object()->get_username();
+        $user_role = $c->user->get_object->get_user_type();
+    }
+
     my $ontology_db_ids;
     if ($params->{'ontology_db_id[]'}){
         $ontology_db_ids = ref($params->{'ontology_db_id[]'}) eq 'ARRAY' ? $params->{'ontology_db_id[]'} : [$params->{'ontology_db_id[]'}];
@@ -91,7 +117,7 @@ sub search : Path('/ajax/search/traits') Args(0) {
         my $trial_results_ref = $bs->metadata_query($trial_criteria_list, $trial_dataref, $trial_queryref);
         my $trials = $trial_results_ref->{results};
         my $trial_count = $#{$trials} + 1;
-        
+
         # Get the number of plots that observed the trait
         if ( $trial_count && $trial_count > 0 ) {
             my $plot_criteria_list  = ['traits', 'plots'];

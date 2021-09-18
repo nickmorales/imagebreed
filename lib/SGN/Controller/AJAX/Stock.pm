@@ -1510,6 +1510,33 @@ sub get_shared_trials_GET :Args(1) {
 
     my $self = shift;
     my $c = shift;
+
+    my $user_id;
+    my $user_name;
+    my $user_role;
+    my $session_id = $c->req->param("sgn_session_id");
+
+    if ($session_id){
+        my $dbh = $c->dbc->dbh;
+        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+        if (!$user_info[0]){
+            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+            $c->detach();
+        }
+        $user_id = $user_info[0];
+        $user_role = $user_info[1];
+        my $p = CXGN::People::Person->new($dbh, $user_id);
+        $user_name = $p->get_username;
+    } else {
+        if (!$c->user){
+            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+            $c->detach();
+        }
+        $user_id = $c->user()->get_object()->get_sp_person_id();
+        $user_name = $c->user()->get_object()->get_username();
+        $user_role = $c->user->get_object->get_user_type();
+    }
+
     my @stock_ids = $c->request->param( 'stock_ids[]' );
     my $stock_string = join ",", map { "'$_'" } (@stock_ids);
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');

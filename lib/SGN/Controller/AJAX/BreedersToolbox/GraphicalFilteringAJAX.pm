@@ -34,14 +34,32 @@ sub common_traits_by_trial_list_GET : Args(0) {
 
    #get userinfo from db
    my $schema = $c->dbic_schema("Bio::Chado::Schema");
-   my $user = $c->user();
-   if (! $c->user) {
-     $c->stash->{rest} = {
-       status => "not logged in"
-     };
-     return;
+
+   my $user_id;
+   my $user_name;
+   my $user_role;
+   my $session_id = $c->req->param("sgn_session_id");
+
+   if ($session_id){
+       my $dbh = $c->dbc->dbh;
+       my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+       if (!$user_info[0]){
+           $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+           $c->detach();
+       }
+       $user_id = $user_info[0];
+       $user_role = $user_info[1];
+       my $p = CXGN::People::Person->new($dbh, $user_id);
+       $user_name = $p->get_username;
+   } else {
+       if (!$c->user){
+           $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+           $c->detach();
+       }
+       $user_id = $c->user()->get_object()->get_sp_person_id();
+       $user_name = $c->user()->get_object()->get_username();
+       $user_role = $c->user->get_object->get_user_type();
    }
-   my $user_id = $user->get_object()->get_sp_person_id();
 
    #get list contents
    my $dbh = $schema->storage()->dbh();
@@ -113,14 +131,32 @@ sub common_traits_by_plot_list_GET : Args(0) {
 
    #get userinfo from db
    my $schema = $c->dbic_schema("Bio::Chado::Schema");
-   my $user = $c->user();
-   if (! $c->user) {
-     $c->stash->{rest} = {
-       status => "not logged in"
-     };
-     return;
+
+   my $user_id;
+   my $user_name;
+   my $user_role;
+   my $session_id = $c->req->param("sgn_session_id");
+
+   if ($session_id){
+       my $dbh = $c->dbc->dbh;
+       my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+       if (!$user_info[0]){
+           $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+           $c->detach();
+       }
+       $user_id = $user_info[0];
+       $user_role = $user_info[1];
+       my $p = CXGN::People::Person->new($dbh, $user_id);
+       $user_name = $p->get_username;
+   } else {
+       if (!$c->user){
+           $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+           $c->detach();
+       }
+       $user_id = $c->user()->get_object()->get_sp_person_id();
+       $user_name = $c->user()->get_object()->get_username();
+       $user_role = $c->user->get_object->get_user_type();
    }
-   my $user_id = $user->get_object()->get_sp_person_id();
 
    #get list contents
    my $dbh = $schema->storage()->dbh();
@@ -166,6 +202,32 @@ sub common_traits_by_trials : Path('/ajax/plot/common_traits_by/trials') : Actio
 sub common_traits_by_trials_GET : Args(0) {
    my $self = shift;
    my $c = shift;
+
+   my $user_id;
+   my $user_name;
+   my $user_role;
+   my $session_id = $c->req->param("sgn_session_id");
+
+   if ($session_id){
+       my $dbh = $c->dbc->dbh;
+       my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+       if (!$user_info[0]){
+           $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+           $c->detach();
+       }
+       $user_id = $user_info[0];
+       $user_role = $user_info[1];
+       my $p = CXGN::People::Person->new($dbh, $user_id);
+       $user_name = $p->get_username;
+   } else {
+       if (!$c->user){
+           $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+           $c->detach();
+       }
+       $user_id = $c->user()->get_object()->get_sp_person_id();
+       $user_name = $c->user()->get_object()->get_username();
+       $user_role = $c->user->get_object->get_user_type();
+   }
 
    #get schema
    my $schema = $c->dbic_schema("Bio::Chado::Schema");
