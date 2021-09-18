@@ -365,7 +365,6 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
 
     my %germplasm_phenotypes;
     my %plot_phenotypes;
-    my %seen_germplasm_ids;
     my %seen_accession_stock_ids;
     my %seen_days_after_plantings;
     my %stock_name_row_col;
@@ -387,7 +386,24 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         my $obsunit_stock_uniquename = $obs_unit->{observationunit_uniquename};
         my $row_number = $obs_unit->{obsunit_row_number} || '';
         my $col_number = $obs_unit->{obsunit_col_number} || '';
-        $seen_germplasm_ids{$germplasm_stock_id}++;
+
+        $seen_accession_stock_ids{$germplasm_stock_id}++;
+        $plot_id_map{$obsunit_stock_id} = $obsunit_stock_uniquename;
+        $stock_name_row_col{$obsunit_stock_uniquename} = {
+            row_number => $row_number,
+            col_number => $col_number,
+            obsunit_stock_id => $obsunit_stock_id,
+            obsunit_name => $obsunit_stock_uniquename,
+            rep => $replicate_number,
+            block => $block_number,
+            germplasm_stock_id => $germplasm_stock_id,
+            germplasm_name => $germplasm_name
+        };
+        $plot_germplasm_map{$obsunit_stock_uniquename} = $germplasm_name;
+
+        $stock_info{"S".$germplasm_stock_id} = {
+            uniquename => $germplasm_name
+        };
 
         my $observations = $obs_unit->{observations};
         foreach (@$observations){
@@ -415,7 +431,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         }
     }
     my @seen_plots = sort keys %plot_phenotypes;
-    my @accession_ids = sort keys %seen_germplasm_ids;
+    my @accession_ids = sort keys %seen_accession_stock_ids;
 
     my $trait_name_encoded_s = 1;
     my %trait_name_encoder_s;
