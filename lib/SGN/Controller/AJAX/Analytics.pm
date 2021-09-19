@@ -365,13 +365,6 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
 
     my %germplasm_phenotypes;
     my %plot_phenotypes;
-    my %seen_accession_stock_ids;
-    my %seen_days_after_plantings;
-    my %stock_name_row_col;
-    my %plot_row_col_hash;
-    my %stock_info;
-    my %plot_id_map;
-    my %plot_germplasm_map;
     my $min_phenotype = 1000000000000000;
     my $max_phenotype = -1000000000000000;
     my $min_col = 100000000000000;
@@ -379,6 +372,61 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $min_row = 100000000000000;
     my $max_row = -100000000000000;
     foreach my $obs_unit (@$data){
+        my $germplasm_name = $obs_unit->{germplasm_uniquename};
+        my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
+        my $replicate_number = $obs_unit->{obsunit_rep} || '';
+        my $block_number = $obs_unit->{obsunit_block} || '';
+        my $obsunit_stock_id = $obs_unit->{observationunit_stock_id};
+        my $obsunit_stock_uniquename = $obs_unit->{observationunit_uniquename};
+        my $row_number = $obs_unit->{obsunit_row_number} || '';
+        my $col_number = $obs_unit->{obsunit_col_number} || '';
+
+        my $observations = $obs_unit->{observations};
+        foreach (@$observations){
+            my $value = $_->{value};
+            my $trait_name = $_->{trait_name};
+
+            if ($value < $min_phenotype) {
+                $min_phenotype = $value;
+            }
+            if ($value > $max_phenotype) {
+                $max_phenotype = $value;
+            }
+
+            push @{$germplasm_phenotypes{$germplasm_name}->{$trait_name}}, $value;
+            $plot_phenotypes{$obsunit_stock_uniquename}->{$trait_name} = $value;
+        }
+    }
+
+    my $phenotypes_search_htp = CXGN::Phenotypes::SearchFactory->instantiate(
+        'MaterializedViewTable',
+        {
+            bcs_schema=>$schema,
+            data_level=>'plot',
+            trait_list=>[$trait_id],
+            trial_list=>$field_trial_id_list,
+            include_timestamp=>0,
+            exclude_phenotype_outlier=>0
+        }
+    );
+    my ($data_htp, $unique_traits_htp) = $phenotypes_search_htp->search();
+    my @sorted_trait_names_htp = sort keys %$unique_traits_htp;
+
+    if (scalar(@$data_htp) == 0) {
+        $c->stash->{rest} = { error => "There are no phenotypes for the trials and trait you have selected!"};
+        return;
+    }
+
+    my %germplasm_phenotypes_htp;
+    my %plot_phenotypes_htp;
+    my %seen_accession_stock_ids;
+    my %seen_days_after_plantings;
+    my %stock_name_row_col;
+    my %plot_row_col_hash;
+    my %stock_info;
+    my %plot_id_map;
+    my %plot_germplasm_map;
+    foreach my $obs_unit (@$data_htp){
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
         my $replicate_number = $obs_unit->{obsunit_rep} || '';
@@ -416,15 +464,8 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
             my $value = $_->{value};
             my $trait_name = $_->{trait_name};
 
-            if ($value < $min_phenotype) {
-                $min_phenotype = $value;
-            }
-            if ($value > $max_phenotype) {
-                $max_phenotype = $value;
-            }
-
-            push @{$germplasm_phenotypes{$germplasm_name}->{$trait_name}}, $value;
-            $plot_phenotypes{$obsunit_stock_uniquename}->{$trait_name} = $value;
+            push @{$germplasm_phenotypes_htp{$germplasm_name}->{$trait_name}}, $value;
+            $plot_phenotypes_htp{$obsunit_stock_uniquename}->{$trait_name} = $value;
 
             if ($_->{associated_image_project_time_json}) {
                 my $related_time_terms_json = decode_json $_->{associated_image_project_time_json};
@@ -436,7 +477,8 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
             }
         }
     }
-    my @seen_plots = sort keys %plot_phenotypes;
+
+    my @seen_plots = sort keys %plot_phenotypes_htp;
     my @accession_ids = sort keys %seen_accession_stock_ids;
 
     my $trait_name_encoded_s = 1;
@@ -2037,7 +2079,6 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
 
         while (my($row_level, $row_val) = each %result_blup_row_spatial_data_ar1wRowColOnly) {
             while (my($col_level, $col_val) = each %result_blup_col_spatial_data_ar1wRowColOnly) {
-                print STDERR Dumper [$row_level, $col_level];
                 my $plot_name = $plot_row_col_hash{$row_level}->{$col_level}->{obsunit_name};
 
                 my $value = $row_val + $col_val;
