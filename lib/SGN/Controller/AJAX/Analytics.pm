@@ -2396,13 +2396,13 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     foreach my $p (@seen_plots) {
         my $row = $stock_name_row_col{$p}->{row_number};
         my $col = $stock_name_row_col{$p}->{col_number};
-        push @plots_avg_data_heatmap_values, [$type_names_plot[0], $row, $col, $result_blup_spatial_data_ar1->{$p}->{$trait_name_string}];
-        push @plots_avg_data_heatmap_values, [$type_names_plot[1], $row, $col, $result_blup_spatial_data_ar1wCol->{$p}->{$trait_name_string}];
-        push @plots_avg_data_heatmap_values, [$type_names_plot[2], $row, $col, $result_blup_spatial_data_ar1wRow->{$p}->{$trait_name_string}];
-        push @plots_avg_data_heatmap_values, [$type_names_plot[3], $row, $col, $result_blup_spatial_data_ar1wRowCol->{$p}->{$trait_name_string}];
-        push @plots_avg_data_heatmap_values, [$type_names_plot[4], $row, $col, $result_blup_spatial_data_ar1wRowColOnly->{$p}->{$trait_name_string}];
-        push @plots_avg_data_heatmap_values, [$type_names_plot[5], $row, $col, $result_blup_spatial_data_ar1wRowPlusCol->{$p}->{$trait_name_string}];
-        push @plots_avg_data_heatmap_values, [$type_names_plot[6], $row, $col, $result_blup_spatial_data_ar1wColPlusRow->{$p}->{$trait_name_string}];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[0], $row, $col, $result_blup_spatial_data_ar1->{$p}->{$trait_name_string} || 'NA'];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[1], $row, $col, $result_blup_spatial_data_ar1wCol->{$p}->{$trait_name_string} || 'NA'];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[2], $row, $col, $result_blup_spatial_data_ar1wRow->{$p}->{$trait_name_string} || 'NA'];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[3], $row, $col, $result_blup_spatial_data_ar1wRowCol->{$p}->{$trait_name_string} || 'NA'];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[4], $row, $col, $result_blup_spatial_data_ar1wRowColOnly->{$p}->{$trait_name_string} || 'NA'];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[5], $row, $col, $result_blup_spatial_data_ar1wRowPlusCol->{$p}->{$trait_name_string} || 'NA'];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[6], $row, $col, $result_blup_spatial_data_ar1wColPlusRow->{$p}->{$trait_name_string} || 'NA'];
     }
 
     my $analytics_protocol_data_tempfile1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
