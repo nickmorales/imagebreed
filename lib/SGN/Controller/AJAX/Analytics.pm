@@ -1986,6 +1986,9 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         my %result_blup_row_spatial_data_ar1wRowColOnly;
         my %result_blup_col_spatial_data_ar1wRowColOnly;
 
+        print STDERR Dumper \@seen_rows_numbers_sorted;
+        print STDERR Dumper scalar(@seen_rows_numbers_sorted);
+
         open(my $fh_ar1wRowColOnly, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
             print STDERR "Opened $stats_out_tempfile\n";
             my $header_ar1wRowColOnly = <$fh_ar1wRowColOnly>;
