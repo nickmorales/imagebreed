@@ -2079,6 +2079,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
 
         while (my($row_level, $row_val) = each %result_blup_row_spatial_data_ar1wRowColOnly) {
             while (my($col_level, $col_val) = each %result_blup_col_spatial_data_ar1wRowColOnly) {
+                print STDERR Dumper [$row_level, $col_level];
                 my $plot_name = $plot_row_col_hash{$row_level}->{$col_level}->{obsunit_name};
 
                 my $value = $row_val + $col_val;
