@@ -1986,9 +1986,6 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         my %result_blup_row_spatial_data_ar1wRowColOnly;
         my %result_blup_col_spatial_data_ar1wRowColOnly;
 
-        print STDERR Dumper \@seen_rows_numbers_sorted;
-        print STDERR Dumper scalar(@seen_rows_numbers_sorted);
-
         open(my $fh_ar1wRowColOnly, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
             print STDERR "Opened $stats_out_tempfile\n";
             my $header_ar1wRowColOnly = <$fh_ar1wRowColOnly>;
@@ -2008,16 +2005,13 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     if ($solution_file_counter_ar1wRowColOnly < scalar(@seen_cols_numbers_sorted)) {
                         my @level_split = split '_', $level;
                         $result_blup_col_spatial_data_ar1wRowColOnly{$level_split[1]} = $value;
-                        print STDERR "C $solution_file_counter_ar1wRowColOnly\n";
                     }
                     elsif ($solution_file_counter_ar1wRowColOnly < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted) ) {
                         my @level_split = split '_', $level;
                         $result_blup_row_spatial_data_ar1wRowColOnly{$level_split[1]} = $value;
-                        print STDERR "R $solution_file_counter_ar1wRowColOnly\n";
                     }
                     elsif ($solution_file_counter_ar1wRowColOnly < $number_accessions + scalar(@seen_cols_numbers_sorted) + scalar(@seen_rows_numbers_sorted) ) {
                         my $germplasm_counter = $solution_file_counter_ar1wRowColOnly - scalar(@seen_cols_numbers_sorted) - scalar(@seen_rows_numbers_sorted) + 1;
-                        print STDERR "G $germplasm_counter\n";
                         my $stock_name = $accession_id_factor_map_reverse{$germplasm_counter};
                         $result_blup_data_ar1wRowColOnly->{$stock_name}->{$trait_name_string} = $value;
 
@@ -2039,9 +2033,11 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         close($fh_ar1wRowColOnly);
         print STDERR Dumper \%result_blup_col_spatial_data_ar1wRowColOnly;
         print STDERR Dumper \%result_blup_row_spatial_data_ar1wRowColOnly;
+        print STDERR Dumper \%plot_row_col_hash;
 
         while (my($row_level, $row_val) = each %result_blup_row_spatial_data_ar1wRowColOnly) {
             while (my($col_level, $col_val) = each %result_blup_col_spatial_data_ar1wRowColOnly) {
+                print STDERR Dumper [$row_level, $col_level];
                 my $plot_name = $plot_row_col_hash{$row_level}->{$col_level}->{obsunit_name};
 
                 my $value = $row_val + $col_val;
