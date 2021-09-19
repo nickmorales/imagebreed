@@ -1445,7 +1445,6 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     if ($tolparinv eq '0.1' || $tolparinv eq '0.2' || $tolparinv eq '0.5') {
         $tol_asr = 'c(-1,-2)';
     }
-    $tol_asr = 'c(-8,-10)';
 
     my $number_traits = scalar(@sorted_trait_names);
     my $number_accessions = scalar(@accession_ids);
