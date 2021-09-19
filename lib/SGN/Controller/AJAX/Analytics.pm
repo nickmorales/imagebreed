@@ -368,6 +368,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my %seen_accession_stock_ids;
     my %seen_days_after_plantings;
     my %stock_name_row_col;
+    my %plot_row_col_hash;
     my %stock_info;
     my %plot_id_map;
     my %plot_germplasm_map;
@@ -403,6 +404,11 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
 
         $stock_info{"S".$germplasm_stock_id} = {
             uniquename => $germplasm_name
+        };
+
+        $plot_row_col_hash{$row_number}->{$col_number} = {
+            obsunit_stock_id => $obsunit_stock_id,
+            obsunit_name => $obsunit_stock_uniquename
         };
 
         my $observations = $obs_unit->{observations};
@@ -1908,7 +1914,6 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     };
 
     my $current_gen_row_count_ar1wRowColOnly = 0;
-    my $current_env_row_count_ar1wRowColOnly = 0;
     my $genetic_effect_min_ar1wRowColOnly = 1000000000;
     my $genetic_effect_max_ar1wRowColOnly = -1000000000;
     my $env_effect_min_ar1wRowColOnly = 1000000000;
@@ -1978,11 +1983,13 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
             }
         close($fh_residual_ar1wRowColOnly);
 
+        my %result_blup_row_spatial_data_ar1wRowColOnly;
+        my %result_blup_col_spatial_data_ar1wRowColOnly;
+
         open(my $fh_ar1wRowColOnly, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
             print STDERR "Opened $stats_out_tempfile\n";
             my $header_ar1wRowColOnly = <$fh_ar1wRowColOnly>;
 
-            my $solution_file_counter_ar1wRowColOnly_skipping = 0;
             my $solution_file_counter_ar1wRowColOnly = 0;
             while (defined(my $row = <$fh_ar1wRowColOnly>)) {
                 # print STDERR $row;
@@ -1995,12 +2002,16 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                 my $std = $columns[2];
                 my $z_ratio = $columns[3];
                 if (defined $value && $value ne '') {
-                    if ($solution_file_counter_ar1wRowColOnly_skipping < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted)) {
-                        $solution_file_counter_ar1wRowColOnly_skipping++;
-                        next;
+                    if ($solution_file_counter_ar1wRowColOnly < scalar(@seen_cols_numbers_sorted)) {
+                        my @level_split = split '_', $level;
+                        $result_blup_col_spatial_data_ar1wRowColOnly{$level_split[1]} = $value;
                     }
-                    elsif ($solution_file_counter_ar1wRowColOnly < $number_accessions) {
-                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRowColOnly + 1};
+                    elsif ($solution_file_counter_ar1wRowColOnly < scalar(@seen_rows_numbers_sorted)) {
+                        my @level_split = split '_', $level;
+                        $result_blup_row_spatial_data_ar1wRowColOnly{$level_split[1]} = $value;
+                    }
+                    elsif ($solution_file_counter_ar1wRowColOnly < $number_accessions + scalar(@seen_cols_numbers_sorted) + scalar(@seen_rows_numbers_sorted) ) {
+                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRowColOnly - scalar(@seen_cols_numbers_sorted) - scalar(@seen_rows_numbers_sorted) + 1};
                         $result_blup_data_ar1wRowColOnly->{$stock_name}->{$trait_name_string} = $value;
 
                         if ($value < $genetic_effect_min_ar1wRowColOnly) {
@@ -2015,31 +2026,33 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
 
                         $current_gen_row_count_ar1wRowColOnly++;
                     }
-                    else {
-                        my $plot_name = $row_col_ordered_plots_names_ar1wRowColOnly[$current_env_row_count_ar1wRowColOnly];
-                        $result_blup_spatial_data_ar1wRowColOnly->{$plot_name}->{$trait_name_string} = $value;
-
-                        if ($value < $env_effect_min_ar1wRowColOnly) {
-                            $env_effect_min_ar1wRowColOnly = $value;
-                        }
-                        elsif ($value >= $env_effect_max_ar1wRowColOnly) {
-                            $env_effect_max_ar1wRowColOnly = $value;
-                        }
-
-                        $env_effect_sum_ar1wRowColOnly += abs($value);
-                        $env_effect_sum_square_ar1wRowColOnly = $env_effect_sum_square_ar1wRowColOnly + $value*$value;
-
-                        $current_env_row_count_ar1wRowColOnly++;
-                    }
                 }
                 $solution_file_counter_ar1wRowColOnly++;
             }
         close($fh_ar1wRowColOnly);
         # print STDERR Dumper $result_blup_spatial_data_ar1wRowColOnly;
+
+        while (my($row_level, $row_val) = each %result_blup_row_spatial_data_ar1wRowColOnly) {
+            while (my($col_level, $col_val) = each %result_blup_col_spatial_data_ar1wRowColOnly) {
+                my $plot_name = $plot_row_col_hash{$row_level}->{$col_level}->{obsunit_name};
+
+                my $value = $row_val + $col_val;
+                $result_blup_spatial_data_ar1wRowColOnly->{$plot_name}->{$trait_name_string} = $value;
+
+                if ($value < $env_effect_min_ar1wRowColOnly) {
+                    $env_effect_min_ar1wRowColOnly = $value;
+                }
+                elsif ($value >= $env_effect_max_ar1wRowColOnly) {
+                    $env_effect_max_ar1wRowColOnly = $value;
+                }
+
+                $env_effect_sum_ar1wRowColOnly += abs($value);
+                $env_effect_sum_square_ar1wRowColOnly = $env_effect_sum_square_ar1wRowColOnly + $value*$value;
+            }
+        }
     };
 
     my $current_gen_row_count_ar1wRowPlusCol = 0;
-    my $current_env_row_count_ar1wRowPlusCol = 0;
     my $genetic_effect_min_ar1wRowPlusCol = 1000000000;
     my $genetic_effect_max_ar1wRowPlusCol = -1000000000;
     my $env_effect_min_ar1wRowPlusCol = 1000000000;
@@ -2109,6 +2122,9 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
             }
         close($fh_residual_ar1wRowPlusCol);
 
+        my %result_blup_row_spatial_data_ar1wRowPlusCol;
+        my %result_blup_col_spatial_data_ar1wRowPlusCol;
+
         open(my $fh_ar1wRowPlusCol, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
             print STDERR "Opened $stats_out_tempfile\n";
             my $header_ar1wRowPlusCol = <$fh_ar1wRowPlusCol>;
@@ -2126,12 +2142,16 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                 my $std = $columns[2];
                 my $z_ratio = $columns[3];
                 if (defined $value && $value ne '') {
-                    if ($solution_file_counter_ar1wRowPlusCol_skipping < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted)) {
-                        $solution_file_counter_ar1wRowPlusCol_skipping++;
-                        next;
+                    if ($solution_file_counter_ar1wRowPlusCol < scalar(@seen_cols_numbers_sorted)) {
+                        my @level_split = split '_', $level;
+                        $result_blup_col_spatial_data_ar1wRowPlusCol{$level_split[1]} = $value;
                     }
-                    elsif ($solution_file_counter_ar1wRowPlusCol < $number_accessions) {
-                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRowPlusCol + 1};
+                    elsif ($solution_file_counter_ar1wRowPlusCol < scalar(@seen_rows_numbers_sorted)) {
+                        my @level_split = split '_', $level;
+                        $result_blup_row_spatial_data_ar1wRowPlusCol{$level_split[1]} = $value;
+                    }
+                    elsif ($solution_file_counter_ar1wRowPlusCol < $number_accessions + scalar(@seen_cols_numbers_sorted) + scalar(@seen_rows_numbers_sorted)) {
+                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRowPlusCol - scalar(@seen_cols_numbers_sorted) - scalar(@seen_rows_numbers_sorted) + 1};
                         $result_blup_data_ar1wRowPlusCol->{$stock_name}->{$trait_name_string} = $value;
 
                         if ($value < $genetic_effect_min_ar1wRowPlusCol) {
@@ -2146,31 +2166,33 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
 
                         $current_gen_row_count_ar1wRowPlusCol++;
                     }
-                    else {
-                        my $plot_name = $row_col_ordered_plots_names_ar1wRowPlusCol[$current_env_row_count_ar1wRowPlusCol];
-                        $result_blup_spatial_data_ar1wRowPlusCol->{$plot_name}->{$trait_name_string} = $value;
-
-                        if ($value < $env_effect_min_ar1wRowPlusCol) {
-                            $env_effect_min_ar1wRowPlusCol = $value;
-                        }
-                        elsif ($value >= $env_effect_max_ar1wRowPlusCol) {
-                            $env_effect_max_ar1wRowPlusCol = $value;
-                        }
-
-                        $env_effect_sum_ar1wRowPlusCol += abs($value);
-                        $env_effect_sum_square_ar1wRowPlusCol = $env_effect_sum_square_ar1wRowPlusCol + $value*$value;
-
-                        $current_env_row_count_ar1wRowPlusCol++;
-                    }
                 }
                 $solution_file_counter_ar1wRowPlusCol++;
             }
         close($fh_ar1wRowPlusCol);
         # print STDERR Dumper $result_blup_spatial_data_ar1wRowPlusCol;
+
+        while (my($row_level, $row_val) = each %result_blup_row_spatial_data_ar1wRowPlusCol) {
+            while (my($col_level, $col_val) = each %result_blup_col_spatial_data_ar1wRowPlusCol) {
+                my $plot_name = $plot_row_col_hash{$row_level}->{$col_level}->{obsunit_name};
+
+                my $value = $row_val + $col_val;
+                $result_blup_spatial_data_ar1wRowPlusCol->{$plot_name}->{$trait_name_string} = $value;
+
+                if ($value < $env_effect_min_ar1wRowPlusCol) {
+                    $env_effect_min_ar1wRowPlusCol = $value;
+                }
+                elsif ($value >= $env_effect_max_ar1wRowPlusCol) {
+                    $env_effect_max_ar1wRowPlusCol = $value;
+                }
+
+                $env_effect_sum_ar1wRowPlusCol += abs($value);
+                $env_effect_sum_square_ar1wRowPlusCol = $env_effect_sum_square_ar1wRowPlusCol + $value*$value;
+            }
+        }
     };
 
     my $current_gen_row_count_ar1wColPlusRow = 0;
-    my $current_env_row_count_ar1wColPlusRow = 0;
     my $genetic_effect_min_ar1wColPlusRow = 1000000000;
     my $genetic_effect_max_ar1wColPlusRow = -1000000000;
     my $env_effect_min_ar1wColPlusRow = 1000000000;
@@ -2240,6 +2262,9 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
             }
         close($fh_residual_ar1wColPlusRow);
 
+        my %result_blup_row_spatial_data_ar1wColPlusRow;
+        my %result_blup_col_spatial_data_ar1wColPlusRow;
+
         open(my $fh_ar1wColPlusRow, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
             print STDERR "Opened $stats_out_tempfile\n";
             my $header_ar1wColPlusRow = <$fh_ar1wColPlusRow>;
@@ -2257,12 +2282,16 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                 my $std = $columns[2];
                 my $z_ratio = $columns[3];
                 if (defined $value && $value ne '') {
-                    if ($solution_file_counter_ar1wColPlusRow_skipping < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted)) {
-                        $solution_file_counter_ar1wColPlusRow_skipping++;
-                        next;
+                    if ($solution_file_counter_ar1wColPlusRow < scalar(@seen_cols_numbers_sorted)) {
+                        my @level_split = split '_', $level;
+                        $result_blup_col_spatial_data_ar1wColPlusRow{$level_split[1]} = $value;
                     }
-                    elsif ($solution_file_counter_ar1wColPlusRow < $number_accessions) {
-                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wColPlusRow + 1};
+                    elsif ($solution_file_counter_ar1wColPlusRow < scalar(@seen_rows_numbers_sorted)) {
+                        my @level_split = split '_', $level;
+                        $result_blup_row_spatial_data_ar1wColPlusRow{$level_split[1]} = $value;
+                    }
+                    elsif ($solution_file_counter_ar1wColPlusRow < $number_accessions + scalar(@seen_cols_numbers_sorted) + scalar(@seen_rows_numbers_sorted) ) {
+                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wColPlusRow - scalar(@seen_cols_numbers_sorted) - scalar(@seen_rows_numbers_sorted) + 1};
                         $result_blup_data_ar1wColPlusRow->{$stock_name}->{$trait_name_string} = $value;
 
                         if ($value < $genetic_effect_min_ar1wColPlusRow) {
@@ -2277,27 +2306,30 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
 
                         $current_gen_row_count_ar1wColPlusRow++;
                     }
-                    else {
-                        my $plot_name = $row_col_ordered_plots_names_ar1wColPlusRow[$current_env_row_count_ar1wColPlusRow];
-                        $result_blup_spatial_data_ar1wColPlusRow->{$plot_name}->{$trait_name_string} = $value;
-
-                        if ($value < $env_effect_min_ar1wColPlusRow) {
-                            $env_effect_min_ar1wColPlusRow = $value;
-                        }
-                        elsif ($value >= $env_effect_max_ar1wColPlusRow) {
-                            $env_effect_max_ar1wColPlusRow = $value;
-                        }
-
-                        $env_effect_sum_ar1wColPlusRow += abs($value);
-                        $env_effect_sum_square_ar1wColPlusRow = $env_effect_sum_square_ar1wColPlusRow + $value*$value;
-
-                        $current_env_row_count_ar1wColPlusRow++;
-                    }
                 }
                 $solution_file_counter_ar1wColPlusRow++;
             }
         close($fh_ar1wColPlusRow);
         # print STDERR Dumper $result_blup_spatial_data_ar1wColPlusRow;
+
+        while (my($row_level, $row_val) = each %result_blup_row_spatial_data_ar1wColPlusRow) {
+            while (my($col_level, $col_val) = each %result_blup_col_spatial_data_ar1wColPlusRow) {
+                my $plot_name = $plot_row_col_hash{$row_level}->{$col_level}->{obsunit_name};
+
+                my $value = $row_val + $col_val;
+                $result_blup_spatial_data_ar1wColPlusRow->{$plot_name}->{$trait_name_string} = $value;
+
+                if ($value < $env_effect_min_ar1wColPlusRow) {
+                    $env_effect_min_ar1wColPlusRow = $value;
+                }
+                elsif ($value >= $env_effect_max_ar1wColPlusRow) {
+                    $env_effect_max_ar1wColPlusRow = $value;
+                }
+
+                $env_effect_sum_ar1wColPlusRow += abs($value);
+                $env_effect_sum_square_ar1wColPlusRow = $env_effect_sum_square_ar1wColPlusRow + $value*$value;
+            }
+        }
     };
 }
 
