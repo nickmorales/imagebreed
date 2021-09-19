@@ -2005,13 +2005,17 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     if ($solution_file_counter_ar1wRowColOnly < scalar(@seen_cols_numbers_sorted)) {
                         my @level_split = split '_', $level;
                         $result_blup_col_spatial_data_ar1wRowColOnly{$level_split[1]} = $value;
+                        print STDERR "C $solution_file_counter_ar1wRowColOnly\n";
                     }
                     elsif ($solution_file_counter_ar1wRowColOnly < scalar(@seen_rows_numbers_sorted)) {
                         my @level_split = split '_', $level;
                         $result_blup_row_spatial_data_ar1wRowColOnly{$level_split[1]} = $value;
+                        print STDERR "R $solution_file_counter_ar1wRowColOnly\n";
                     }
                     elsif ($solution_file_counter_ar1wRowColOnly < $number_accessions + scalar(@seen_cols_numbers_sorted) + scalar(@seen_rows_numbers_sorted) ) {
-                        my $stock_name = $accession_id_factor_map_reverse{$solution_file_counter_ar1wRowColOnly - scalar(@seen_cols_numbers_sorted) - scalar(@seen_rows_numbers_sorted) + 1};
+                        my $germplasm_counter = $solution_file_counter_ar1wRowColOnly - scalar(@seen_cols_numbers_sorted) - scalar(@seen_rows_numbers_sorted) + 1;
+                        print STDERR "G $germplasm_counter\n";
+                        my $stock_name = $accession_id_factor_map_reverse{$germplasm_counter};
                         $result_blup_data_ar1wRowColOnly->{$stock_name}->{$trait_name_string} = $value;
 
                         if ($value < $genetic_effect_min_ar1wRowColOnly) {
@@ -2030,7 +2034,8 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                 $solution_file_counter_ar1wRowColOnly++;
             }
         close($fh_ar1wRowColOnly);
-        # print STDERR Dumper $result_blup_spatial_data_ar1wRowColOnly;
+        print STDERR Dumper \%result_blup_col_spatial_data_ar1wRowColOnly;
+        print STDERR Dumper \%result_blup_row_spatial_data_ar1wRowColOnly;
 
         while (my($row_level, $row_val) = each %result_blup_row_spatial_data_ar1wRowColOnly) {
             while (my($col_level, $col_val) = each %result_blup_col_spatial_data_ar1wRowColOnly) {
@@ -2050,7 +2055,9 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                 $env_effect_sum_square_ar1wRowColOnly = $env_effect_sum_square_ar1wRowColOnly + $value*$value;
             }
         }
+        print STDERR Dumper $result_blup_spatial_data_ar1wRowColOnly;
     };
+    die;
 
     my $current_gen_row_count_ar1wRowPlusCol = 0;
     my $genetic_effect_min_ar1wRowPlusCol = 1000000000;
