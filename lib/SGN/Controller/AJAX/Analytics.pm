@@ -2010,7 +2010,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                         $result_blup_col_spatial_data_ar1wRowColOnly{$level_split[1]} = $value;
                         print STDERR "C $solution_file_counter_ar1wRowColOnly\n";
                     }
-                    elsif ($solution_file_counter_ar1wRowColOnly < scalar(@seen_rows_numbers_sorted)) {
+                    elsif ($solution_file_counter_ar1wRowColOnly < scalar(@seen_rows_numbers_sorted) + scalar(@seen_cols_numbers_sorted) ) {
                         my @level_split = split '_', $level;
                         $result_blup_row_spatial_data_ar1wRowColOnly{$level_split[1]} = $value;
                         print STDERR "R $solution_file_counter_ar1wRowColOnly\n";
