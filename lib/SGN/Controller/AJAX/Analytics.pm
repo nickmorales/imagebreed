@@ -403,7 +403,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         {
             bcs_schema=>$schema,
             data_level=>'plot',
-            trait_list=>[$trait_id],
+            trait_list=>$observation_variable_id_list,
             trial_list=>$field_trial_id_list,
             include_timestamp=>0,
             exclude_phenotype_outlier=>0
