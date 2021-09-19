@@ -367,10 +367,6 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my %plot_phenotypes;
     my $min_phenotype = 1000000000000000;
     my $max_phenotype = -1000000000000000;
-    my $min_col = 100000000000000;
-    my $max_col = -100000000000000;
-    my $min_row = 100000000000000;
-    my $max_row = -100000000000000;
     foreach my $obs_unit (@$data){
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
@@ -426,6 +422,10 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my %stock_info;
     my %plot_id_map;
     my %plot_germplasm_map;
+    my $min_col = 100000000000000;
+    my $max_col = -100000000000000;
+    my $min_row = 100000000000000;
+    my $max_row = -100000000000000;
     foreach my $obs_unit (@$data_htp){
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
@@ -435,6 +435,19 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         my $obsunit_stock_uniquename = $obs_unit->{observationunit_uniquename};
         my $row_number = $obs_unit->{obsunit_row_number} || '';
         my $col_number = $obs_unit->{obsunit_col_number} || '';
+
+        if ($row_number > $max_row) {
+            $max_row = $row_number;
+        }
+        if ($row_number < $min_row) {
+            $min_row = $row_number;
+        }
+        if ($col_number > $max_col) {
+            $max_col = $col_number;
+        }
+        if ($col_number < $min_col) {
+            $min_col = $col_number;
+        }
 
         $seen_accession_stock_ids{$germplasm_stock_id}++;
         $plot_id_map{$obsunit_stock_id} = $obsunit_stock_uniquename;
@@ -2093,7 +2106,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                 $env_effect_sum_square_ar1wRowColOnly = $env_effect_sum_square_ar1wRowColOnly + $value*$value;
             }
         }
-        print STDERR Dumper $result_blup_spatial_data_ar1wRowColOnly;
+        # print STDERR Dumper $result_blup_spatial_data_ar1wRowColOnly;
     };
 
     my $current_gen_row_count_ar1wRowPlusCol = 0;
@@ -2374,6 +2387,63 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
             }
         }
         # print STDERR Dumper $result_blup_spatial_data_ar1wColPlusRow;
+    };
+
+    my @plots_avg_data_heatmap_values_header = ("trait_type", "row", "col", "value");
+    my @plots_avg_data_heatmap_values = ();
+    my @type_names_plot = ('AR(1)xAR(1)', 'AR(1)xAR(1)+Col', 'AR(1)xAR(1)+Row', 'AR(1)xAR(1)+Row+Col', 'Row+Col', 'AR(1)Row+Col', 'AR(1)Col+Row');
+
+    foreach my $p (@seen_plots) {
+        my $row = $stock_name_row_col{$p}->{row_number};
+        my $col = $stock_name_row_col{$p}->{col_number};
+        push @plots_avg_data_heatmap_values, [$type_names_plot[0], $row, $col, $result_blup_spatial_data_ar1->{$p}->{$trait_name_string}];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[1], $row, $col, $result_blup_spatial_data_ar1wCol->{$p}->{$trait_name_string}];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[2], $row, $col, $result_blup_spatial_data_ar1wRow->{$p}->{$trait_name_string}];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[3], $row, $col, $result_blup_spatial_data_ar1wRowCol->{$p}->{$trait_name_string}];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[4], $row, $col, $result_blup_spatial_data_ar1wRowColOnly->{$p}->{$trait_name_string}];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[5], $row, $col, $result_blup_spatial_data_ar1wRowPlusCol->{$p}->{$trait_name_string}];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[6], $row, $col, $result_blup_spatial_data_ar1wColPlusRow->{$p}->{$trait_name_string}];
+    }
+
+    my $analytics_protocol_data_tempfile1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+
+    my $analytics_protocol_tempfile_string_1 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+    $analytics_protocol_tempfile_string_1 .= '.png';
+    my $analytics_protocol_figure_tempfile_1 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_1;
+
+    open(my $F1, ">", $analytics_protocol_data_tempfile1) || die "Can't open file ".$analytics_protocol_data_tempfile1;
+        my $header_string1 = join ',', @plots_avg_data_heatmap_values_header;
+        print $F1 "$header_string1\n";
+
+        foreach (@plots_avg_data_heatmap_values) {
+            my $string = join ',', @$_;
+            print $F1 "$string\n";
+        }
+    close($F1);
+
+    my $output_plot_row = 'row';
+    my $output_plot_col = 'col';
+    if ($max_col > $max_row) {
+        $output_plot_row = 'col';
+        $output_plot_col = 'row';
+    }
+
+    my $type_list_string = join '\',\'', @type_names_plot;
+    my $number_types = scalar(@type_names_plot);
+    my $r_cmd_i1 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
+    pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile1.'\', header=TRUE, sep=\',\'));
+    type_list <- c(\''.$type_list_string.'\');
+    pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = type_list);
+    lapply(type_list, function(cc) { gg <- ggplot(filter(pheno_mat, trait_type==cc), aes('.$output_plot_col.', '.$output_plot_row.', fill=value, frame=trait_type)) + geom_tile() + scale_fill_viridis(discrete=FALSE) + coord_equal() + labs(x=NULL, y=NULL, title=sprintf(\'%s\', cc)); }) -> cclist;
+    cclist[[\'ncol\']] <- '.$number_types.';
+    gg <- do.call(grid.arrange, cclist);
+    ggsave(\''.$analytics_protocol_figure_tempfile_1.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
+    "';
+    print STDERR Dumper $r_cmd_i1;
+    my $status_i1 = system($r_cmd_i1);
+
+    $c->stash->{rest} = {
+        heatmap_plot => $analytics_protocol_tempfile_string_1,
     };
 }
 

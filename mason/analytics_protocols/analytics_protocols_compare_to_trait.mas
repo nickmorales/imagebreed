@@ -93,6 +93,26 @@ $analytics_protocol_id
   </div>
 </div>
 
+<div class="modal fade" id="analytics_results_compare_to_trait_dialog_ar1_tests" name="analytics_results_compare_to_trait_dialog_ar1_tests" tabindex="-1" role="dialog" aria-labelledby="analyticsCompareResultstoTraitAR1TestsDialog" data-backdrop="static">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="analyticsCompareResultstoTraitAR1TestsDialog">AR(1) Model Tests</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <div id="analytics_results_compare_to_trait_dialog_ar1_tests_results">
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 jQuery(document).ready(function() {
     jQuery('#analytics_results_compare_to_trait_button').click(function(){
@@ -158,6 +178,9 @@ jQuery(document).ready(function() {
                 console.log(response);
                 jQuery("#working_modal").modal("hide");
 
+                html = '<img src="'+response.heatmap_plot+'">';
+                jQuery('#analytics_results_compare_to_trait_dialog_ar1_tests_results').html(html);
+                jQuery('#analytics_results_compare_to_trait_dialog_ar1_tests').modal('show');
             },
             error: function(response){
                 jQuery("#working_modal").modal("hide");
