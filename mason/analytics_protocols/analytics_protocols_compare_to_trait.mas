@@ -33,12 +33,14 @@ $analytics_protocol_id
                                 <div id="analytics_compare_results_to_trait_trait_select_div">Loading...</div>
                             </div>
                             <div class="col-sm-2" >
-                                <button class="btn btn-default" id="analytics_compare_results_to_trait_analysis_test_ar1_models">Test AR(1) Models</button>
+                                <button class="btn btn-default" id="analytics_compare_results_to_trait_analysis_test_ar1_models">Test Models</button>
                             </div>
                             <div class="col-sm-3" >
                                 <select class="form-control" id="analytics_compare_results_to_trait_analysis_test_ar1_models_default_tol">
-                                    <option value="No">Predefined Tolerance</option>
-                                    <option value="Yes">Default Tolerance</option>
+                                    <option value="pre_both">Predefined Tol (2Dspl and AR(1))</option>
+                                    <option value="default_both">Default Tol (2Dspl and AR(1))</option>
+                                    <option value="pre_2dspl_def_ar1">Predefined Tol 2Dspl, Default Tol AR(1)</option>
+                                    <option value="pre_ar1_def_2dspl">Predefined Tol AR(1), Default Tol 2Dspl</option>
                                 </select>
                             </div>
                         </div>

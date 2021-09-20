@@ -292,7 +292,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $protocol_id = $c->req->param('protocol_id');
     my $trait_id = $c->req->param('trait_id');
     my $trial_id = $c->req->param('trial_id');
-    my $default_tol = $c->req->param('default_tol') eq 'Yes' ? 1 : 0;
+    my $default_tol = $c->req->param('default_tol');
 
     my $csv = Text::CSV->new({ sep_char => "," });
     my $dir = $c->tempfiles_subdir('/analytics_protocol_figure');
@@ -1450,7 +1450,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         $tol_asr = 'c(-1,-2)';
     }
 
-    if ($default_tol) {
+    if ($default_tol eq 'default_both' || $default_tol eq 'pre_2dspl_def_ar1') {
         $tol_asr = 'c(-8,-10)';
     }
 
@@ -3145,6 +3145,11 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         }
     };
 
+    if ($default_tol eq 'default_both' || $default_tol eq 'pre_ar1_def_2dspl') {
+        $tolparinv = 0.000001;
+        $tolparinv_10 = $tolparinv*10;
+    }
+
     my @data_matrix_original_sp;
     foreach my $p (@seen_plots) {
         my $obsunit_stock_id = $stock_name_row_col{$p}->{obsunit_stock_id};
@@ -3349,7 +3354,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         my $val6 = $result_blup_spatial_data_ar1wRowPlusCol->{$p}->{$trait_name_string} || 0;
         my $val7 = $result_blup_spatial_data_ar1wColPlusRow->{$p}->{$trait_name_string} || 0;
         my $val8 = ($val0 + $val1 + $val2 + $val3 + $val4 + $val5 + $val6 + $val7)/8;
-        push @plots_avg_data_heatmap_values, [$type_names_plot[0], $row, $col, $val1 || 'NA'];
+        push @plots_avg_data_heatmap_values, [$type_names_plot[0], $row, $col, $val0 || 'NA'];
         push @plots_avg_data_heatmap_values, [$type_names_plot[1], $row, $col, $val1 || 'NA'];
         push @plots_avg_data_heatmap_values, [$type_names_plot[2], $row, $col, $val2 || 'NA'];
         push @plots_avg_data_heatmap_values, [$type_names_plot[3], $row, $col, $val3 || 'NA'];
