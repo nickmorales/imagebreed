@@ -292,6 +292,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $protocol_id = $c->req->param('protocol_id');
     my $trait_id = $c->req->param('trait_id');
     my $trial_id = $c->req->param('trial_id');
+    my $default_tol = $c->req->param('default_tol') eq 'Yes' ? 1 : 0;
 
     my $csv = Text::CSV->new({ sep_char => "," });
     my $dir = $c->tempfiles_subdir('/analytics_protocol_figure');
@@ -1445,7 +1446,10 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     if ($tolparinv eq '0.1' || $tolparinv eq '0.2' || $tolparinv eq '0.5') {
         $tol_asr = 'c(-1,-2)';
     }
-    $tol_asr = 'c(-8,-10)';
+
+    if ($default_tol) {
+        $tol_asr = 'c(-8,-10)';
+    }
 
     my $number_traits = scalar(@sorted_trait_names);
     my $number_accessions = scalar(@accession_ids);
@@ -2472,6 +2476,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my @traits_secondary_id = $c->req->param('traits_secondary') ? split(',', $c->req->param('traits_secondary')) : ();
     my $trial_id = $c->req->param('trial_id');
     my $analysis_run_type = $c->req->param('analysis');
+    my $default_tol = $c->req->param('default_tol');
 
     my $csv = Text::CSV->new({ sep_char => "," });
     my $dir = $c->tempfiles_subdir('/analytics_protocol_figure');
@@ -2543,6 +2548,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $fixed_effect_quantiles = $protocol_properties->{fixed_effect_quantiles};
     my $env_iterations = $protocol_properties->{env_iterations};
     my $perform_cv = $protocol_properties->{perform_cv} || 0;
+
+    if ($default_tol eq 'default_both' || $default_tol eq 'pre_ar1_def_2dspl') {
+        $tolparinv = 0.000001;
+    }
     my $tolparinv_10 = $tolparinv*10;
 
     my @legendre_coeff_exec = (
@@ -4641,6 +4650,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     }
     if ($tolparinv eq '0.1' || $tolparinv eq '0.2' || $tolparinv eq '0.5') {
         $tol_asr = 'c(-1,-2)';
+    }
+
+    if ($default_tol eq 'default_both' || $default_tol eq 'pre_2dspl_def_ar1') {
+        $tol_asr = 'c(-8,-10)';
     }
 
     my $number_traits = scalar(@sorted_trait_names);
