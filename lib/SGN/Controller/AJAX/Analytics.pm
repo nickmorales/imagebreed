@@ -3244,7 +3244,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                 @columns = $csv->fields();
             }
             my $col_counter = 0;
-            foreach my $encoded_trait (@header_cols) {
+            foreach my $encoded_trait (@header_cols_sp) {
                 if ($encoded_trait eq $trait_name_encoded_string) {
                     my $trait = $trait_name_encoder_rev_s{$encoded_trait};
                     my $stock_id = $columns[0];
