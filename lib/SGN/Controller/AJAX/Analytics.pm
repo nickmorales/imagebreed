@@ -5386,12 +5386,12 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
                 push @plots_avg_data_header, $t;
                 push @plots_avg_data_values_header, $t;
-                if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow') {
+                if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol' ) {
                     push @plots_avg_data_header, ($t."spatial2Dspl", $t."2Dsplcorrected");
                     # push @plots_avg_data_values_header, ($t."spatial2Dspl", $t."2Dsplcorrected");
                     push @plots_avg_data_values_header, $t."spatial2Dspl";
                 }
-                if ($analysis_run_type eq 'ar1' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq 'ar1_wCol' || $analysis_run_type eq 'ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow') {
+                if ($analysis_run_type eq 'ar1' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq 'ar1_wCol' || $analysis_run_type eq 'ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol') {
                     push @plots_avg_data_header, ($t."spatialAR1", $t."AR1corrected");
                     # push @plots_avg_data_values_header, ($t."spatialAR1", $t."AR1corrected");
                     push @plots_avg_data_values_header, $t."spatialAR1";
@@ -5502,7 +5502,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
                     push @line, $trait_val;
                     push @values, $trait_val;
-                    if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow') {
+                    if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol') {
                         my $env_trait_spatial_val = $result_blup_spatial_data_s->{$p}->{$t};
                         my $trait_val_2dspl_corrected = $trait_val - $env_trait_spatial_val;
                         push @line, ($env_trait_spatial_val, $trait_val_2dspl_corrected);
@@ -5516,7 +5516,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                             push @type_names_first_line_traits, "Trait2DsplCorrected";
                         }
                     }
-                    if ($analysis_run_type eq 'ar1' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq 'ar1_wCol' || $analysis_run_type eq 'ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow') {
+                    if ($analysis_run_type eq 'ar1' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq 'ar1_wCol' || $analysis_run_type eq 'ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol') {
                         my $env_trait_spatial_ar1_val = $result_blup_spatial_data_ar1->{$p}->{$t};
                         my $trait_val_ar1_corrected = $trait_val - $env_trait_spatial_ar1_val;
                         push @line, ($env_trait_spatial_ar1_val, $trait_val_ar1_corrected);
@@ -5565,7 +5565,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             $is_first_plot = 0;
         }
 
-        if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow') {
+        if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol') {
             open(my $F10, ">", $analytics_protocol_data_tempfile10) || die "Can't open file ".$analytics_protocol_data_tempfile10;
                 my $header_string10 = join ',', @germplasm_data_header;
                 print $F10 "$header_string10\n";
@@ -5669,7 +5669,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
         if ($result_type eq 'originalgenoeff') {
 
-            if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow') {
+            if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol') {
                 my $r_cmd_i1 = 'R -e "library(ggplot2); library(data.table);
                 data <- data.frame(fread(\''.$analytics_protocol_data_tempfile11.'\', header=TRUE, sep=\',\'));
                 res <- cor(data, use = \'complete.obs\')
