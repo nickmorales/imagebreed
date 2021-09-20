@@ -3371,8 +3371,6 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         push @plots_avg_data_ggcor_values, [$val0 || 'NA', $val1 || 'NA', $val2 || 'NA', $val3 || 'NA', $val4 || 'NA', $val5 || 'NA', $val6 || 'NA', $val7 || 'NA', $val8 || 'NA'];
     }
 
-    print STDERR Dumper $result_blup_data_s;
-
     my @germplasm_data_header = ('germplasmName', '2Dspline', 'AR(1)xAR(1)', 'AR(1)xAR(1)+Col', 'AR(1)xAR(1)+Row', 'AR(1)xAR(1)+Row+Col', 'Row+Col', 'AR(1)Row+Col', 'AR(1)Col+Row');
     my @germplasm_data;
     my @germplasm_data_ggcorr_header = ('2Dspline', 'AR(1)xAR(1)', 'AR(1)xAR(1)+Col', 'AR(1)xAR(1)+Row', 'AR(1)xAR(1)+Row+Col', 'Row+Col', 'AR(1)Row+Col', 'AR(1)Col+Row');
