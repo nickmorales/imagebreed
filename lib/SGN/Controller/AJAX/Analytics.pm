@@ -417,6 +417,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my %germplasm_phenotypes_htp;
     my %plot_phenotypes_htp;
     my %seen_accession_stock_ids;
+    my %seen_accession_stock_names;
     my %seen_days_after_plantings;
     my %stock_name_row_col;
     my %plot_row_col_hash;
@@ -451,6 +452,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         }
 
         $seen_accession_stock_ids{$germplasm_stock_id}++;
+        $seen_accession_stock_names{$germplasm_name}++;
         $plot_id_map{$obsunit_stock_id} = $obsunit_stock_uniquename;
         $stock_name_row_col{$obsunit_stock_uniquename} = {
             row_number => $row_number,
@@ -494,6 +496,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
 
     my @seen_plots = sort keys %plot_phenotypes_htp;
     my @accession_ids = sort keys %seen_accession_stock_ids;
+    my @accession_names = sort keys %seen_accession_stock_names;
 
     my $trait_name_encoded_s = 1;
     my %trait_name_encoder_s;
@@ -3368,8 +3371,26 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         push @plots_avg_data_ggcor_values, [$val0 || 'NA', $val1 || 'NA', $val2 || 'NA', $val3 || 'NA', $val4 || 'NA', $val5 || 'NA', $val6 || 'NA', $val7 || 'NA', $val8 || 'NA'];
     }
 
+    my @germplasm_data_header = ('germplasmName', '2Dspline', 'AR(1)xAR(1)', 'AR(1)xAR(1)+Col', 'AR(1)xAR(1)+Row', 'AR(1)xAR(1)+Row+Col', 'Row+Col', 'AR(1)Row+Col', 'AR(1)Col+Row');
+    my @germplasm_data;
+    my @germplasm_data_ggcorr_header = ('2Dspline', 'AR(1)xAR(1)', 'AR(1)xAR(1)+Col', 'AR(1)xAR(1)+Row', 'AR(1)xAR(1)+Row+Col', 'Row+Col', 'AR(1)Row+Col', 'AR(1)Col+Row');
+    my @germplasm_data_ggcorr;
+    foreach my $a (@accession_names) {
+        my $val0 = $result_blup_data_s->{$a}->{$trait_name_string} || 'NA';
+        my $val1 = $result_blup_data_ar1->{$a}->{$trait_name_string} || 'NA';
+        my $val2 = $result_blup_data_ar1wCol->{$a}->{$trait_name_string} || 'NA';
+        my $val3 = $result_blup_data_ar1wRow->{$a}->{$trait_name_string} || 'NA';
+        my $val4 = $result_blup_data_ar1wRowCol->{$a}->{$trait_name_string} || 'NA';
+        my $val5 = $result_blup_data_ar1wRowColOnly->{$a}->{$trait_name_string} || 'NA';
+        my $val6 = $result_blup_data_ar1wRowPlusCol->{$a}->{$trait_name_string} || 'NA';
+        my $val7 = $result_blup_data_ar1wColPlusRow->{$a}->{$trait_name_string} || 'NA';
+        push @germplasm_data, [$a, $val0, $val1, $val2, $val3, $val4, $val5, $val6, $val7];
+        push @germplasm_data_ggcorr, [$val0, $val1, $val2, $val3, $val4, $val5, $val6, $val7];
+    }
+
     my $analytics_protocol_data_tempfile1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $analytics_protocol_data_tempfile2 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+    my $analytics_protocol_data_tempfile3 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
     my $analytics_protocol_tempfile_string_1 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
     $analytics_protocol_tempfile_string_1 .= '.png';
@@ -3378,6 +3399,10 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $analytics_protocol_tempfile_string_2 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
     $analytics_protocol_tempfile_string_2 .= '.png';
     my $analytics_protocol_figure_tempfile_2 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_2;
+
+    my $analytics_protocol_tempfile_string_3 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+    $analytics_protocol_tempfile_string_3 .= '.png';
+    my $analytics_protocol_figure_tempfile_3 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_3;
 
     open(my $F1, ">", $analytics_protocol_data_tempfile1) || die "Can't open file ".$analytics_protocol_data_tempfile1;
         my $header_string1 = join ',', @plots_avg_data_heatmap_values_header;
@@ -3398,6 +3423,16 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
             print $F2 "$string\n";
         }
     close($F2);
+
+    open(my $F3, ">", $analytics_protocol_data_tempfile3) || die "Can't open file ".$analytics_protocol_data_tempfile3;
+        my $header_string3 = join ',', @germplasm_data_ggcorr_header;
+        print $F3 "$header_string3\n";
+
+        foreach (@germplasm_data_ggcorr) {
+            my $string = join ',', @$_;
+            print $F3 "$string\n";
+        }
+    close($F3);
 
     my $output_plot_row = 'row';
     my $output_plot_col = 'col';
@@ -3428,9 +3463,20 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     print STDERR Dumper $r_cmd_ic2;
     my $status_ic2 = system($r_cmd_ic2);
 
+    my $r_cmd_ic3 = 'R -e "library(ggplot2); library(data.table); library(GGally);
+    data <- data.frame(fread(\''.$analytics_protocol_data_tempfile3.'\', header=TRUE, sep=\',\'));
+    plot <- ggcorr(data, hjust = 1, size = 3, color = \'grey50\', label = TRUE, label_size = 3, label_round = 2, layout.exp = 1);
+    ggsave(\''.$analytics_protocol_figure_tempfile_3.'\', plot, device=\'png\', width=10, height=10, units=\'in\');
+    "';
+    print STDERR Dumper $r_cmd_ic3;
+    my $status_ic3 = system($r_cmd_ic3);
+
     $c->stash->{rest} = {
         heatmap_plot => $analytics_protocol_tempfile_string_1,
         ggcorr_plot => $analytics_protocol_tempfile_string_2,
+        germplasm_data_header => \@germplasm_data_header,
+        germplasm_data => \@germplasm_data,
+        germplasm_ggcorr_plot => $analytics_protocol_tempfile_string_3
     };
 }
 

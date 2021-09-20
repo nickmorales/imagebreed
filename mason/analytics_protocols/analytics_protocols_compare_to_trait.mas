@@ -200,8 +200,27 @@ jQuery(document).ready(function() {
 
                 var html = '<img src="'+response.heatmap_plot+'">';
                 html = html + '<img src="'+response.ggcorr_plot+'">';
+
+                html = html + '<div class="well well-sm"><table class="table table-hover table-bordered" id="analytics_compare_results_to_trait_test_models_germplasm_data_table"><thead><tr>';
+                for(var i=0; i<response.germplasm_data_header.length; i++) {
+                    html = html + '<th>'+response.germplasm_data_header[i]+'</th>';
+                }
+                html = html + '</tr></thead>';
+                for(var i=0; i<response.germplasm_data.length; i++) {
+                    html = html + '<tr>';
+                    for(var j=0; j<response.germplasm_data[i].length; j++) {
+                        html = html + '<td>'+response.germplasm_data[i][j]+'</td>';
+                    }
+                    html = html + '</tr>';
+                }
+                html = html + '</tbody></table></div>';
+
+                html = html + '<img src="'+response.germplasm_ggcorr_plot+'">';
+
                 jQuery('#analytics_results_compare_to_trait_dialog_ar1_tests_results').html(html);
                 jQuery('#analytics_results_compare_to_trait_dialog_ar1_tests').modal('show');
+
+                jQuery('#analytics_compare_results_to_trait_test_models_germplasm_data_table').DataTable({});
             },
             error: function(response){
                 jQuery("#working_modal").modal("hide");
