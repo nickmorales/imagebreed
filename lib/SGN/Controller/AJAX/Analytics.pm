@@ -3378,7 +3378,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my @germplasm_data_ggcorr_header = ('2Dspline', 'AR(1)xAR(1)', 'AR(1)xAR(1)+Col', 'AR(1)xAR(1)+Row', 'AR(1)xAR(1)+Row+Col', 'Row+Col', 'AR(1)Row+Col', 'AR(1)Col+Row');
     my @germplasm_data_ggcorr;
     foreach my $a (@accession_names) {
-        my $val0 = $result_blup_data_s->{"S".$a}->{$trait_name_string} || 'NA';
+        my $val0 = $result_blup_data_s->{$a}->{$trait_name_string} || 'NA';
         my $val1 = $result_blup_data_ar1->{$a}->{$trait_name_string} || 'NA';
         my $val2 = $result_blup_data_ar1wCol->{$a}->{$trait_name_string} || 'NA';
         my $val3 = $result_blup_data_ar1wRow->{$a}->{$trait_name_string} || 'NA';
