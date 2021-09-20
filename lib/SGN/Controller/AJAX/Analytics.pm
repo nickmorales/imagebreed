@@ -3339,6 +3339,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
 
     my @plots_avg_data_heatmap_values_header = ("trait_type", "row", "col", "value");
     my @plots_avg_data_heatmap_values = ();
+    my @plots_avg_data_ggcor_values = ();
     my @type_names_plot = ('2DSpline', 'AR(1)xAR(1)', 'AR(1)xAR(1)+Col', 'AR(1)xAR(1)+Row', 'AR(1)xAR(1)+Row+Col', 'Row+Col', 'AR(1)Row+Col', 'AR(1)Col+Row', 'AVG');
 
     foreach my $p (@seen_plots) {
@@ -3363,13 +3364,20 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         push @plots_avg_data_heatmap_values, [$type_names_plot[6], $row, $col, $val6 || 'NA'];
         push @plots_avg_data_heatmap_values, [$type_names_plot[7], $row, $col, $val7 || 'NA'];
         push @plots_avg_data_heatmap_values, [$type_names_plot[8], $row, $col, $val8 || 'NA'];
+
+        push @plots_avg_data_ggcor_values, [$val0 || 'NA', $val1 || 'NA', $val2 || 'NA', $val3 || 'NA', $val4 || 'NA', $val5 || 'NA', $val6 || 'NA', $val7 || 'NA', $val8 || 'NA'];
     }
 
     my $analytics_protocol_data_tempfile1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+    my $analytics_protocol_data_tempfile2 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
     my $analytics_protocol_tempfile_string_1 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
     $analytics_protocol_tempfile_string_1 .= '.png';
     my $analytics_protocol_figure_tempfile_1 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_1;
+
+    my $analytics_protocol_tempfile_string_2 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+    $analytics_protocol_tempfile_string_2 .= '.png';
+    my $analytics_protocol_figure_tempfile_2 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_2;
 
     open(my $F1, ">", $analytics_protocol_data_tempfile1) || die "Can't open file ".$analytics_protocol_data_tempfile1;
         my $header_string1 = join ',', @plots_avg_data_heatmap_values_header;
@@ -3380,6 +3388,16 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
             print $F1 "$string\n";
         }
     close($F1);
+
+    open(my $F2, ">", $analytics_protocol_data_tempfile2) || die "Can't open file ".$analytics_protocol_data_tempfile2;
+        my $header_string2 = join ',', @type_names_plot;
+        print $F2 "$header_string2\n";
+
+        foreach (@plots_avg_data_ggcor_values) {
+            my $string = join ',', @$_;
+            print $F2 "$string\n";
+        }
+    close($F2);
 
     my $output_plot_row = 'row';
     my $output_plot_col = 'col';
@@ -3402,8 +3420,17 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     print STDERR Dumper $r_cmd_i1;
     my $status_i1 = system($r_cmd_i1);
 
+    my $r_cmd_ic2 = 'R -e "library(ggplot2); library(data.table); library(GGally);
+    data <- data.frame(fread(\''.$analytics_protocol_data_tempfile2.'\', header=TRUE, sep=\',\'));
+    plot <- ggcorr(data, hjust = 1, size = 3, color = \'grey50\', label = TRUE, label_size = 3, label_round = 2, layout.exp = 1);
+    ggsave(\''.$analytics_protocol_figure_tempfile_2.'\', plot, device=\'png\', width=10, height=10, units=\'in\');
+    "';
+    print STDERR Dumper $r_cmd_ic2;
+    my $status_ic2 = system($r_cmd_ic2);
+
     $c->stash->{rest} = {
         heatmap_plot => $analytics_protocol_tempfile_string_1,
+        ggcorr_plot => $analytics_protocol_tempfile_string_2,
     };
 }
 

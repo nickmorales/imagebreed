@@ -29,13 +29,12 @@ $analytics_protocol_id
                     <div class="form-horizontal">
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Trait to Spatial Correct and Plot: </label>
-                            <div class="col-sm-5" >
+                            <div class="col-sm-6" >
                                 <div id="analytics_compare_results_to_trait_trait_select_div">Loading...</div>
                             </div>
-                            <div class="col-sm-2" >
+                            <div class="col-sm-4" >
                                 <button class="btn btn-default" id="analytics_compare_results_to_trait_analysis_test_ar1_models">Test Models</button>
-                            </div>
-                            <div class="col-sm-3" >
+                                <hr>
                                 <select class="form-control" id="analytics_compare_results_to_trait_analysis_test_ar1_models_default_tol">
                                     <option value="pre_both">Predefined Tol (2Dspl and AR(1))</option>
                                     <option value="default_both">Default Tol (2Dspl and AR(1))</option>
@@ -199,13 +198,14 @@ jQuery(document).ready(function() {
                 console.log(response);
                 jQuery("#working_modal").modal("hide");
 
-                html = '<img src="'+response.heatmap_plot+'">';
+                var html = '<img src="'+response.heatmap_plot+'">';
+                html = html + '<img src="'+response.ggcorr_plot+'">';
                 jQuery('#analytics_results_compare_to_trait_dialog_ar1_tests_results').html(html);
                 jQuery('#analytics_results_compare_to_trait_dialog_ar1_tests').modal('show');
             },
             error: function(response){
                 jQuery("#working_modal").modal("hide");
-                alert('Error testing AR(1) models!')
+                alert('Error testing AR(1) and 2Dspl models!')
             }
         });
     });
