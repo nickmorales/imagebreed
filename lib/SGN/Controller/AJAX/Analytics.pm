@@ -4780,6 +4780,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             genetic_effect_min => $genetic_effect_min_s,
             genetic_effect_max => $genetic_effect_max_s,
         };
+
+        #DO GRM + PRM HERE
+        
     }
 
     my $grm_file_ar1;
