@@ -4593,7 +4593,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $germplasm_stock_id = $stock_name_row_col{$p}->{germplasm_stock_id};
         my $germplasm_name = $stock_name_row_col{$p}->{germplasm_name};
 
-        my @row = ($replicate, $block, "S".$germplasm_stock_id, $obsunit_stock_id, $row_number, $col_number, $row_number, $col_number, '', '');
+        my @row = ($replicate, $block, "S".$germplasm_stock_id, $obsunit_stock_id, $row_number, $col_number, $row_number, $col_number, '', '', "S".$obsunit_stock_id);
 
         foreach my $t (@sorted_trait_names) {
             if (defined($plot_phenotypes{$p}->{$t})) {
@@ -4606,7 +4606,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         push @data_matrix_original, \@row;
     }
 
-    my @phenotype_header = ("replicate", "block", "id", "plot_id", "rowNumber", "colNumber", "rowNumberFactor", "colNumberFactor", "accession_id_factor", "plot_id_factor");
+    my @phenotype_header = ("replicate", "block", "id", "plot_id", "rowNumber", "colNumber", "rowNumberFactor", "colNumberFactor", "accession_id_factor", "plot_id_factor", "plot_id_s");
     foreach (@sorted_trait_names) {
         push @phenotype_header, $trait_name_encoder_s{$_};
     }
@@ -4639,151 +4639,146 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $residual_sum_square_s = 0;
     my $model_sum_square_residual_s = 0;
 
-    if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol' || $analysis_run_type eq '2dspl_ar1_wRowPlusCol' || $analysis_run_type eq '2dspl_ar1_wColPlusRow' ) {
-        my $spatial_correct_2dspl_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
-        mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
-        geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
-        geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
-        geno_mat[is.na(geno_mat)] <- 0;
-        mat\$rowNumber <- as.numeric(mat\$rowNumber);
-        mat\$colNumber <- as.numeric(mat\$colNumber);
-        mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-        mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-        mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-        if (!is.null(mix\$U)) {
-        #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-        write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-        write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-        X <- with(mat, spl2D(rowNumber, colNumber));
-        spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-        blups1 <- mix\$U\$\`u:rowNumber\`\$'.$trait_name_encoded_string.';
-        spatial_blup_results\$'.$trait_name_encoded_string.' <- data.matrix(X) %*% data.matrix(blups1);
-        write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-        }
-        "';
-        print STDERR Dumper $spatial_correct_2dspl_cmd;
-        my $spatial_correct_2dspl_status = system($spatial_correct_2dspl_cmd);
-
-        open(my $fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            print STDERR "Opened $stats_out_tempfile\n";
-            my $header = <$fh>;
-            my @header_cols;
-            if ($csv->parse($header)) {
-                @header_cols = $csv->fields();
-            }
-
-            while (my $row = <$fh>) {
-                my @columns;
-                if ($csv->parse($row)) {
-                    @columns = $csv->fields();
-                }
-                my $col_counter = 0;
-                foreach my $encoded_trait (@header_cols) {
-                    if ($encoded_trait eq $trait_name_encoded_string) {
-                        my $trait = $trait_name_encoder_rev_s{$encoded_trait};
-                        my $stock_id = $columns[0];
-
-                        my $stock_name = $stock_info{$stock_id}->{uniquename};
-                        my $value = $columns[$col_counter+1];
-                        if (defined $value && $value ne '') {
-                            $result_blup_data_s->{$stock_name}->{$trait} = $value;
-
-                            if ($value < $genetic_effect_min_s) {
-                                $genetic_effect_min_s = $value;
-                            }
-                            elsif ($value >= $genetic_effect_max_s) {
-                                $genetic_effect_max_s = $value;
-                            }
-
-                            $genetic_effect_sum_s += abs($value);
-                            $genetic_effect_sum_square_s = $genetic_effect_sum_square_s + $value*$value;
-                        }
-                    }
-                    $col_counter++;
-                }
-            }
-        close($fh);
-
-        open(my $fh_2dspl, '<', $stats_out_tempfile_2dspl) or die "Could not open file '$stats_out_tempfile_2dspl' $!";
-            print STDERR "Opened $stats_out_tempfile_2dspl\n";
-            my $header_2dspl = <$fh_2dspl>;
-            my @header_cols_2dspl;
-            if ($csv->parse($header_2dspl)) {
-                @header_cols_2dspl = $csv->fields();
-            }
-            shift @header_cols_2dspl;
-            while (my $row_2dspl = <$fh_2dspl>) {
-                my @columns;
-                if ($csv->parse($row_2dspl)) {
-                    @columns = $csv->fields();
-                }
-                my $col_counter = 0;
-                foreach my $encoded_trait (@header_cols_2dspl) {
-                    if ($encoded_trait eq $trait_name_encoded_string) {
-                        my $trait = $trait_name_encoder_rev_s{$encoded_trait};
-                        my $plot_id = $columns[0];
-
-                        my $plot_name = $plot_id_map{$plot_id};
-                        my $value = $columns[$col_counter+1];
-                        if (defined $value && $value ne '') {
-                            $result_blup_spatial_data_s->{$plot_name}->{$trait} = $value;
-
-                            if ($value < $env_effect_min_s) {
-                                $env_effect_min_s = $value;
-                            }
-                            elsif ($value >= $env_effect_max_s) {
-                                $env_effect_max_s = $value;
-                            }
-
-                            $env_effect_sum_s += abs($value);
-                            $env_effect_sum_square_s = $env_effect_sum_square_s + $value*$value;
-                        }
-                    }
-                    $col_counter++;
-                }
-            }
-        close($fh_2dspl);
-
-        open(my $fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
-            print STDERR "Opened $stats_out_tempfile_residual\n";
-            my $header_residual = <$fh_residual>;
-            my @header_cols_residual;
-            if ($csv->parse($header_residual)) {
-                @header_cols_residual = $csv->fields();
-            }
-            while (my $row = <$fh_residual>) {
-                my @columns;
-                if ($csv->parse($row)) {
-                    @columns = $csv->fields();
-                }
-
-                my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
-                my $stock_id = $columns[0];
-                my $residual = $columns[1];
-                my $fitted = $columns[2];
-                my $stock_name = $plot_id_map{$stock_id};
-                if (defined $residual && $residual ne '') {
-                    $result_residual_data_s->{$stock_name}->{$trait_name} = $residual;
-                    $residual_sum_s += abs($residual);
-                    $residual_sum_square_s = $residual_sum_square_s + $residual*$residual;
-                }
-                if (defined $fitted && $fitted ne '') {
-                    $result_fitted_data_s->{$stock_name}->{$trait_name} = $fitted;
-                }
-                $model_sum_square_residual_s = $model_sum_square_residual_s + $residual*$residual;
-            }
-        close($fh_residual);
-
-        print STDERR Dumper {
-            type => 'trait spatial genetic effect 2dspl',
-            genetic_effect_sum => $genetic_effect_sum_s,
-            genetic_effect_min => $genetic_effect_min_s,
-            genetic_effect_max => $genetic_effect_max_s,
-        };
-
-        #DO GRM + PRM HERE
-        
+    my $spatial_correct_2dspl_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+    mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+    geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+    geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+    geno_mat[is.na(geno_mat)] <- 0;
+    mat\$rowNumber <- as.numeric(mat\$rowNumber);
+    mat\$colNumber <- as.numeric(mat\$colNumber);
+    mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+    mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+    mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+    if (!is.null(mix\$U)) {
+    #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+    write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+    write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+    X <- with(mat, spl2D(rowNumber, colNumber));
+    spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
+    blups1 <- mix\$U\$\`u:rowNumber\`\$'.$trait_name_encoded_string.';
+    spatial_blup_results\$'.$trait_name_encoded_string.' <- data.matrix(X) %*% data.matrix(blups1);
+    write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
     }
+    "';
+    print STDERR Dumper $spatial_correct_2dspl_cmd;
+    my $spatial_correct_2dspl_status = system($spatial_correct_2dspl_cmd);
+
+    open(my $fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+        print STDERR "Opened $stats_out_tempfile\n";
+        my $header = <$fh>;
+        my @header_cols;
+        if ($csv->parse($header)) {
+            @header_cols = $csv->fields();
+        }
+
+        while (my $row = <$fh>) {
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+            my $col_counter = 0;
+            foreach my $encoded_trait (@header_cols) {
+                if ($encoded_trait eq $trait_name_encoded_string) {
+                    my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                    my $stock_id = $columns[0];
+
+                    my $stock_name = $stock_info{$stock_id}->{uniquename};
+                    my $value = $columns[$col_counter+1];
+                    if (defined $value && $value ne '') {
+                        $result_blup_data_s->{$stock_name}->{$trait} = $value;
+
+                        if ($value < $genetic_effect_min_s) {
+                            $genetic_effect_min_s = $value;
+                        }
+                        elsif ($value >= $genetic_effect_max_s) {
+                            $genetic_effect_max_s = $value;
+                        }
+
+                        $genetic_effect_sum_s += abs($value);
+                        $genetic_effect_sum_square_s = $genetic_effect_sum_square_s + $value*$value;
+                    }
+                }
+                $col_counter++;
+            }
+        }
+    close($fh);
+
+    open(my $fh_2dspl, '<', $stats_out_tempfile_2dspl) or die "Could not open file '$stats_out_tempfile_2dspl' $!";
+        print STDERR "Opened $stats_out_tempfile_2dspl\n";
+        my $header_2dspl = <$fh_2dspl>;
+        my @header_cols_2dspl;
+        if ($csv->parse($header_2dspl)) {
+            @header_cols_2dspl = $csv->fields();
+        }
+        shift @header_cols_2dspl;
+        while (my $row_2dspl = <$fh_2dspl>) {
+            my @columns;
+            if ($csv->parse($row_2dspl)) {
+                @columns = $csv->fields();
+            }
+            my $col_counter = 0;
+            foreach my $encoded_trait (@header_cols_2dspl) {
+                if ($encoded_trait eq $trait_name_encoded_string) {
+                    my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                    my $plot_id = $columns[0];
+
+                    my $plot_name = $plot_id_map{$plot_id};
+                    my $value = $columns[$col_counter+1];
+                    if (defined $value && $value ne '') {
+                        $result_blup_spatial_data_s->{$plot_name}->{$trait} = $value;
+
+                        if ($value < $env_effect_min_s) {
+                            $env_effect_min_s = $value;
+                        }
+                        elsif ($value >= $env_effect_max_s) {
+                            $env_effect_max_s = $value;
+                        }
+
+                        $env_effect_sum_s += abs($value);
+                        $env_effect_sum_square_s = $env_effect_sum_square_s + $value*$value;
+                    }
+                }
+                $col_counter++;
+            }
+        }
+    close($fh_2dspl);
+
+    open(my $fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+        print STDERR "Opened $stats_out_tempfile_residual\n";
+        my $header_residual = <$fh_residual>;
+        my @header_cols_residual;
+        if ($csv->parse($header_residual)) {
+            @header_cols_residual = $csv->fields();
+        }
+        while (my $row = <$fh_residual>) {
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+
+            my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
+            my $stock_id = $columns[0];
+            my $residual = $columns[1];
+            my $fitted = $columns[2];
+            my $stock_name = $plot_id_map{$stock_id};
+            if (defined $residual && $residual ne '') {
+                $result_residual_data_s->{$stock_name}->{$trait_name} = $residual;
+                $residual_sum_s += abs($residual);
+                $residual_sum_square_s = $residual_sum_square_s + $residual*$residual;
+            }
+            if (defined $fitted && $fitted ne '') {
+                $result_fitted_data_s->{$stock_name}->{$trait_name} = $fitted;
+            }
+            $model_sum_square_residual_s = $model_sum_square_residual_s + $residual*$residual;
+        }
+    close($fh_residual);
+
+    print STDERR Dumper {
+        type => 'trait spatial genetic effect 2dspl',
+        genetic_effect_sum => $genetic_effect_sum_s,
+        genetic_effect_min => $genetic_effect_min_s,
+        genetic_effect_max => $genetic_effect_max_s,
+    };
 
     my $grm_file_ar1;
     # Prepare GRM for AR1 Trait Spatial Correction
@@ -5535,10 +5530,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
     open(my $fh_factor, '<', $stats_out_tempfile_factors) or die "Could not open file '$stats_out_tempfile_factors' $!";
         print STDERR "Opened $stats_out_tempfile_factors\n";
-        my $header = <$fh_factor>;
-        my @header_cols;
-        if ($csv->parse($header)) {
-            @header_cols = $csv->fields();
+        my $header_factor = <$fh_factor>;
+        my @header_cols_factor;
+        if ($csv->parse($header_factor)) {
+            @header_cols_factor = $csv->fields();
         }
 
         my $line_factor_count = 0;
@@ -6579,6 +6574,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $analytics_protocol_data_tempfile24= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile25= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile26= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile27= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
         my $analytics_protocol_tempfile_string_1 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
         $analytics_protocol_tempfile_string_1 .= '.png';
@@ -6608,6 +6604,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         $analytics_protocol_tempfile_string_7 .= '.png';
         my $analytics_protocol_figure_tempfile_7 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_7;
 
+        my $analytics_protocol_tempfile_string_8 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+        $analytics_protocol_tempfile_string_8 .= '.png';
+        my $analytics_protocol_figure_tempfile_8 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_8;
+
         my @germplasm_results;
         my @germplasm_data = ();
         my @germplasm_data_header = ("germplasmName");
@@ -6632,6 +6632,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @plots_data_iteration_header = ("plotName", "tvalue", "time", "value");
         my @plots_data_iteration_data_values = ();
 
+        my @plots_data_grm_prm_data_values = ();
 
         foreach my $t (@sorted_trait_names) {
             push @germplasm_data_header, ($t."mean", $t."sd", $t."spatialcorrected2Dsplgenoeffect");
@@ -6730,6 +6731,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             my $germplasm_name = $plot_germplasm_map{$p};
             my @line = ($p, $germplasm_name); #"plotName", "germplasmName"
             my @values;
+            my @plots_grm_prm_values;
 
             my $row_number = $stock_name_row_col{$p}->{row_number};
             my $col_number = $stock_name_row_col{$p}->{col_number};
@@ -6812,6 +6814,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         push @plots_avg_data_heatmap_values, ["HTPspatial$time", $row_number, $col_number, $time_val]; #"trait_type", "row", "col", "value"
                         push @plots_avg_data_heatmap_values_traits, ["TraitHTPspatialCorrected$time", $row_number, $col_number, $val]; #"trait_type", "row", "col", "value"
 
+                        push @plots_grm_prm_values, $time_val;
+
                         if ($is_first_plot) {
                             push @type_names_first_line, "HTPspatial$time";
                             push @type_names_first_line_traits, "TraitHTPspatialCorrected$time";
@@ -6831,6 +6835,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             }
             push @plots_avg_data, \@line;
             push @plots_avg_data_values, \@values;
+            push @plots_data_grm_prm_data_values, \@plots_grm_prm_values;
             $is_first_plot = 0;
         }
 
@@ -6935,6 +6940,13 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 print $F26 "$string\n";
             }
         close($F26);
+
+        open(my $F27, ">", $analytics_protocol_data_tempfile27) || die "Can't open file ".$analytics_protocol_data_tempfile27;
+            foreach (@plots_data_grm_prm_data_values) {
+                my $string = join ',', @$_;
+                print $F27 "$string\n";
+            }
+        close($F27);
 
         if ($result_type eq 'originalgenoeff') {
 
@@ -7141,6 +7153,103 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             "';
             print STDERR Dumper $r_cmd_i8;
             my $status_i8 = system($r_cmd_i8);
+
+            my $grm_prm_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+            prm_mat_cols <- data.frame(fread(\''.$analytics_protocol_data_tempfile27.'\', header=FALSE, sep=\',\'));
+            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+            geno_mat[is.na(geno_mat)] <- 0;
+            prm_mat <- cor(t(prm_mat_cols))/ncol(prm_mat_cols);
+            cor_plot <- ggcorr(data = NULL, cor_matrix = prm_mat, hjust = 1, size = 3, color = \'grey50\', label = TRUE, label_size = 3, label_round = 2, layout.exp = 1);
+            ggsave(\''.$analytics_protocol_figure_tempfile_8.'\', cor_plot, device=\'png\', width=10, height=10, units=\'in\');
+            diag(prm_mat) <- rep(1,nrow(prm_mat_cols));
+            colnames(prm_mat) <- mat\$plot_id_s;
+            rownames(prm_mat) <- mat\$plot_id_s;
+            mat\$rowNumber <- as.numeric(mat\$rowNumber);
+            mat\$colNumber <- as.numeric(mat\$colNumber);
+            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+            mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+            if (!is.null(mix\$U)) {
+            #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+            write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            }
+            "';
+            print STDERR Dumper $grm_prm_cmd;
+            my $grm_prm_cmd_status = system($grm_prm_cmd);
+
+            open(my $fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                my $header = <$fh>;
+                my @header_cols;
+                if ($csv->parse($header)) {
+                    @header_cols = $csv->fields();
+                }
+
+                while (my $row = <$fh>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    my $col_counter = 0;
+                    foreach my $encoded_trait (@header_cols) {
+                        if ($encoded_trait eq $trait_name_encoded_string) {
+                            my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                            my $stock_id = $columns[0];
+
+                            my $stock_name = $stock_info{$stock_id}->{uniquename};
+                            my $value = $columns[$col_counter+1];
+                            if (defined $value && $value ne '') {
+                                $result_blup_data_s->{$stock_name}->{$trait} = $value;
+
+                                if ($value < $genetic_effect_min_s) {
+                                    $genetic_effect_min_s = $value;
+                                }
+                                elsif ($value >= $genetic_effect_max_s) {
+                                    $genetic_effect_max_s = $value;
+                                }
+
+                                $genetic_effect_sum_s += abs($value);
+                                $genetic_effect_sum_square_s = $genetic_effect_sum_square_s + $value*$value;
+                            }
+                        }
+                        $col_counter++;
+                    }
+                }
+            close($fh);
+
+            open(my $fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+                print STDERR "Opened $stats_out_tempfile_residual\n";
+                my $header_residual = <$fh_residual>;
+                my @header_cols_residual;
+                if ($csv->parse($header_residual)) {
+                    @header_cols_residual = $csv->fields();
+                }
+                while (my $row = <$fh_residual>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
+                    my $stock_id = $columns[0];
+                    my $residual = $columns[1];
+                    my $fitted = $columns[2];
+                    my $stock_name = $plot_id_map{$stock_id};
+                    if (defined $residual && $residual ne '') {
+                        $result_residual_data_s->{$stock_name}->{$trait_name} = $residual;
+                        $residual_sum_s += abs($residual);
+                        $residual_sum_square_s = $residual_sum_square_s + $residual*$residual;
+                    }
+                    if (defined $fitted && $fitted ne '') {
+                        $result_fitted_data_s->{$stock_name}->{$trait_name} = $fitted;
+                    }
+                    $model_sum_square_residual_s = $model_sum_square_residual_s + $residual*$residual;
+                }
+            close($fh_residual);
+
         }
 
         push @result_blups_all, {
@@ -7165,6 +7274,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             plots_spatial_ggcorr_plot => $analytics_protocol_tempfile_string_5,
             plots_spatial_heatmap_traits_secondary_plot => $analytics_protocol_tempfile_string_6,
             plots_spatial_heatmap_traits_effects_plot => $analytics_protocol_tempfile_string_7,
+            plots_spatial_effects_corr_plot => $analytics_protocol_tempfile_string_8,
         }
     }
 

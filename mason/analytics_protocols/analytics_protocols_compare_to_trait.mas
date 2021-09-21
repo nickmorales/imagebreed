@@ -66,8 +66,8 @@ $analytics_protocol_id
                             <label class="col-sm-3 control-label">Analyses: </label>
                             <div class="col-sm-9" >
                                 <select class="form-control" id="analytics_compare_results_to_trait_analysis_select">
-                                    <!--option value="2dspl">2D-Spline on Trait</option>
-                                    <option value="ar1">AR1xAR1 on Trait</option>
+                                    <option value="2dspl">2D-Spline on Trait</option>
+                                    <!--option value="ar1">AR1xAR1 on Trait</option>
                                     <option value="ar1_wCol">AR1xAR1 + Column on Trait</option>
                                     <option value="ar1_wRow">AR1xAR1 + Row on Trait</option!-->
                                     <option value="2dspl_ar1">2D-Spline and AR1xAR1 on Trait</option>
@@ -293,6 +293,7 @@ jQuery(document).ready(function() {
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_heatmap_traits_secondary_plot"]+'">';
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_ggcorr_plot"]+'">';
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_corr_plot"]+'">';
+                        html = html + '<img src="'+result_blups_all[i]["plots_spatial_effects_corr_plot"]+'">';
                     }
                     html = html + '</div></div><br/>';
                 }
