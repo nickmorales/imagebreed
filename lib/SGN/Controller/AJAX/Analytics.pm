@@ -5714,7 +5714,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
         mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.');
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-        summary(mix);
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -5820,7 +5819,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
         mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + colNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-        summary(mix);
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -5931,7 +5929,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
         mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + rowNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-        summary(mix);
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -6042,7 +6039,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
         mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor) + rowNumberFactor + colNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-        summary(mix);
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -6153,7 +6149,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
         mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor) + colNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-        summary(mix);
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -6274,7 +6269,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
         mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(colNumberFactor) + rowNumberFactor, residual=~idv(units), data=mat, tol='.$tol_asr.');
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
-        summary(mix);
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -6953,8 +6947,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol' || $analysis_run_type eq '2dspl_ar1_wRowPlusCol' || $analysis_run_type eq '2dspl_ar1_wColPlusRow') {
                 my $r_cmd_i1 = 'R -e "library(ggplot2); library(data.table);
                 data <- data.frame(fread(\''.$analytics_protocol_data_tempfile11.'\', header=TRUE, sep=\',\'));
-                res <- cor(data, use = \'complete.obs\')
-                res_rounded <- round(res, 2)
+                res <- cor(data, use = \'complete.obs\');
+                res_rounded <- round(res, 2);
                 write.table(res_rounded, file=\''.$analytics_protocol_data_tempfile16.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
                 "';
                 print STDERR Dumper $r_cmd_i1;
@@ -6997,8 +6991,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         if ($result_type eq 'fullcorr') {
             my $r_cmd_i2 = 'R -e "library(ggplot2); library(data.table);
             data <- data.frame(fread(\''.$analytics_protocol_data_tempfile13.'\', header=TRUE, sep=\',\'));
-            res <- cor(data, use = \'complete.obs\')
-            res_rounded <- round(res, 2)
+            res <- cor(data, use = \'complete.obs\');
+            res_rounded <- round(res, 2);
             write.table(res_rounded, file=\''.$analytics_protocol_data_tempfile17.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $r_cmd_i2;
@@ -7090,8 +7084,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             my $r_cmd_i4 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
             pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile22.'\', header=TRUE, sep=\',\'));
             pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_string.'\'));
-            options(device=\'png\');
-            par();
             gg <- ggplot(pheno_mat, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) +
                 geom_tile() +
                 scale_fill_viridis(discrete=FALSE) +
@@ -7107,8 +7099,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             my $r_cmd_i5 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
             pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile23.'\', header=TRUE, sep=\',\'));
             pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = c(\''.$type_list_traits_string.'\'));
-            options(device=\'png\');
-            par();
             gg <- ggplot(pheno_mat, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) +
                 geom_tile() +
                 scale_fill_viridis(discrete=FALSE) +
@@ -7175,6 +7165,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
             write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
             }
             "';
             print STDERR Dumper $grm_prm_cmd;
@@ -7250,6 +7241,22 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($fh_residual);
 
+            my @varcomp_original;
+            open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+                print STDERR "Opened $stats_out_tempfile_varcomp\n";
+                my $header_varcomp = <$fh_varcomp>;
+                my @header_cols_varcomp;
+                if ($csv->parse($header_varcomp)) {
+                    @header_cols_varcomp = $csv->fields();
+                }
+                while (my $row = <$fh_varcomp>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @varcomp_original, \@columns;
+                }
+            close($fh_varcomp);
         }
 
         push @result_blups_all, {
