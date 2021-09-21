@@ -7290,7 +7290,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
             write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_prm_cmd;
@@ -7416,7 +7416,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
             write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_htp_prm_cmd;
