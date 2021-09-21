@@ -6602,6 +6602,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         $analytics_protocol_tempfile_string_8 .= '.png';
         my $analytics_protocol_figure_tempfile_8 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_8;
 
+        my $analytics_protocol_tempfile_string_9 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+        $analytics_protocol_tempfile_string_9 .= '.png';
+        my $analytics_protocol_figure_tempfile_9 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_9;
+
         my @germplasm_results;
         my @germplasm_data = ();
         my @germplasm_data_header = ("germplasmName");
@@ -7151,7 +7155,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
             prm_mat <- cor(t(prm_mat_cols))/ncol(prm_mat_cols);
-            cor_plot <- ggcorr(data = NULL, cor_matrix = prm_mat, hjust = 1, size = 3, color = \'grey50\', label = TRUE, label_size = 3, label_round = 2, layout.exp = 1);
+            cor_plot <- ggcorr(data = NULL, cor_matrix = prm_mat, hjust = 1, size = 3, color = \'grey50\', label = FALSE, layout.exp = 1);
             ggsave(\''.$analytics_protocol_figure_tempfile_8.'\', cor_plot, device=\'png\', width=50, height=50, units=\'in\', limitsize = FALSE);
             diag(prm_mat) <- rep(1,nrow(prm_mat_cols));
             colnames(prm_mat) <- mat\$plot_id_s;
@@ -7257,6 +7261,253 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     push @varcomp_original, \@columns;
                 }
             close($fh_varcomp);
+
+            my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
+            my $tmp_grm_dir = $shared_cluster_dir_config."/tmp_genotype_download_grm";
+            mkdir $tmp_grm_dir if ! -d $tmp_grm_dir;
+            my ($stats_out_htp_rel_tempfile_input_fh, $stats_out_htp_rel_tempfile_input) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
+            my ($stats_out_htp_rel_tempfile_fh, $stats_out_htp_rel_tempfile) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
+            my ($stats_out_htp_rel_tempfile_out_fh, $stats_out_htp_rel_tempfile_out) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
+
+            my $phenotypes_search_htp_cor = CXGN::Phenotypes::SearchFactory->instantiate(
+                'MaterializedViewTable',
+                {
+                    bcs_schema=>$schema,
+                    data_level=>'plot',
+                    trial_list=>$field_trial_id_list,
+                    include_timestamp=>0,
+                    exclude_phenotype_outlier=>0
+                }
+            );
+            my ($data_htp_cor, $unique_traits_htp_cor) = $phenotypes_search_htp_cor->search();
+
+            if (scalar(@$data_htp_cor) == 0) {
+                $c->stash->{rest} = { error => "There are no phenotypes for the trial you have selected!"};
+                return;
+            }
+
+            my $q_time = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
+            my $h_time = $schema->storage->dbh()->prepare($q_time);
+
+            my %seen_plot_names_htp_rel;
+            my %phenotype_data_htp_rel;
+            my %seen_times_htp_rel;
+            foreach my $obs_unit (@$data_htp_cor){
+                my $germplasm_name = $obs_unit->{germplasm_uniquename};
+                my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
+                my $row_number = $obs_unit->{obsunit_row_number} || '';
+                my $col_number = $obs_unit->{obsunit_col_number} || '';
+                my $rep = $obs_unit->{obsunit_rep};
+                my $block = $obs_unit->{obsunit_block};
+                $seen_plot_names_htp_rel{$obs_unit->{observationunit_uniquename}} = $obs_unit;
+                my $observations = $obs_unit->{observations};
+                foreach (@$observations){
+                    if ($_->{associated_image_project_time_json}) {
+                        my $related_time_terms_json = decode_json $_->{associated_image_project_time_json};
+
+                        my $time_days_cvterm = $related_time_terms_json->{day};
+                        my $time_days_term_string = $time_days_cvterm;
+                        my $time_days = (split '\|', $time_days_cvterm)[0];
+                        my $time_days_value = (split ' ', $time_days)[1];
+
+                        my $time_gdd_value = $related_time_terms_json->{gdd_average_temp} + 0;
+                        my $gdd_term_string = "GDD $time_gdd_value";
+                        $h_time->execute($gdd_term_string, 'cxgn_time_ontology');
+                        my ($gdd_cvterm_id) = $h_time->fetchrow_array();
+                        if (!$gdd_cvterm_id) {
+                            my $new_gdd_term = $schema->resultset("Cv::Cvterm")->create_with({
+                               name => $gdd_term_string,
+                               cv => 'cxgn_time_ontology'
+                            });
+                            $gdd_cvterm_id = $new_gdd_term->cvterm_id();
+                        }
+                        my $time_gdd_term_string = SGN::Model::Cvterm::get_trait_from_cvterm_id($schema, $gdd_cvterm_id, 'extended');
+
+                        $phenotype_data_htp_rel{$obs_unit->{observationunit_uniquename}}->{$_->{trait_name}} = $_->{value};
+                        $seen_times_htp_rel{$_->{trait_name}} = [$time_days_value, $time_days_term_string, $time_gdd_value, $time_gdd_term_string];
+                    }
+                }
+            }
+
+            my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
+            my %filtered_seen_times_htp_rel;
+            while (my ($t, $time) = each %seen_times_htp_rel) {
+                my $allowed = 0;
+                foreach (@allowed_standard_htp_values) {
+                    if (index($t, $_) != -1) {
+                        $allowed = 1;
+                        last;
+                    }
+                }
+                if ($allowed) {
+                    $filtered_seen_times_htp_rel{$t} = $time;
+                }
+            }
+
+            my @filtered_seen_times_htp_rel_sorted = sort keys %filtered_seen_times_htp_rel;
+
+            my @header_htp = ('plot_id', 'plot_name', 'accession_id', 'accession_name', 'rep', 'block');
+
+            my %trait_name_encoder_htp;
+            my %trait_name_encoder_rev_htp;
+            my $trait_name_encoded_htp = 1;
+            my @header_traits_htp;
+            foreach my $trait_name (@filtered_seen_times_htp_rel_sorted) {
+                if (!exists($trait_name_encoder_htp{$trait_name})) {
+                    my $trait_name_e = 't'.$trait_name_encoded_htp;
+                    $trait_name_encoder_htp{$trait_name} = $trait_name_e;
+                    $trait_name_encoder_rev_htp{$trait_name_e} = $trait_name;
+                    push @header_traits_htp, $trait_name_e;
+                    $trait_name_encoded_htp++;
+                }
+            }
+
+            my @htp_pheno_matrix;
+            push @header_htp, @header_traits_htp;
+            push @htp_pheno_matrix, \@header_htp;
+
+            foreach my $p (@seen_plots) {
+                my $obj = $seen_plot_names_htp_rel{$p};
+                my @row = ($obj->{observationunit_stock_id}, $obj->{observationunit_uniquename}, $obj->{germplasm_stock_id}, $obj->{germplasm_uniquename}, $obj->{obsunit_rep}, $obj->{obsunit_block});
+                foreach my $t (@filtered_seen_times_htp_rel_sorted) {
+                    my $val = $phenotype_data_htp_rel{$p}->{$t} + 0;
+                    push @row, $val;
+                }
+                push @htp_pheno_matrix, \@row;
+            }
+
+            open(my $htp_pheno_f, ">", $stats_out_htp_rel_tempfile_input) || die "Can't open file ".$stats_out_htp_rel_tempfile_input;
+                foreach (@htp_pheno_matrix) {
+                    my $line = join "\t", @$_;
+                    print $htp_pheno_f $line."\n";
+                }
+            close($htp_pheno_f);
+
+            my $result_blup_data_s_htp;
+            my $result_residual_data_s_htp;
+            my $result_fitted_data_s_htp;
+            my $genetic_effect_min_s_htp = 1000000000000;
+            my $genetic_effect_max_s_htp = 1000000000000;
+            my $genetic_effect_sum_s_htp = 0;
+            my $genetic_effect_sum_square_s_htp = 0;
+            my $residual_sum_s_htp = 0;
+            my $residual_sum_square_s_htp = 0;
+            my $model_sum_square_residual_s_htp = 0;
+
+            my $grm_htp_prm_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+            prm_mat_cols <- data.frame(fread(\''.$stats_out_htp_rel_tempfile_input.'\', header=TRUE, sep=\'\t\'));
+            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+            geno_mat[is.na(geno_mat)] <- 0;
+            n_traits <- ncol(prm_mat_cols)-6;
+            prm_mat <- cor(t(prm_mat_cols[,7:ncol(prm_mat_cols)]))/n_traits;
+            cor_plot <- ggcorr(data = NULL, cor_matrix = prm_mat, hjust = 1, size = 3, color = \'grey50\', label = FALSE, layout.exp = 1);
+            ggsave(\''.$analytics_protocol_figure_tempfile_9.'\', cor_plot, device=\'png\', width=50, height=50, units=\'in\', limitsize = FALSE);
+            diag(prm_mat) <- rep(1,nrow(prm_mat_cols));
+            colnames(prm_mat) <- mat\$plot_id_s;
+            rownames(prm_mat) <- mat\$plot_id_s;
+            mat\$rowNumber <- as.numeric(mat\$rowNumber);
+            mat\$colNumber <- as.numeric(mat\$colNumber);
+            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+            mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+            if (!is.null(mix\$U)) {
+            #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+            write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+            }
+            "';
+            print STDERR Dumper $grm_htp_prm_cmd;
+            my $grm_htp_prm_cmd_status = system($grm_htp_prm_cmd);
+
+            open(my $fh_htp, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                my $header_htp = <$fh_htp>;
+                my @header_cols_htp;
+                if ($csv->parse($header_htp)) {
+                    @header_cols_htp = $csv->fields();
+                }
+
+                while (my $row = <$fh_htp>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    my $col_counter = 0;
+                    foreach my $encoded_trait (@header_cols_htp) {
+                        if ($encoded_trait eq $trait_name_encoded_string) {
+                            my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                            my $stock_id = $columns[0];
+
+                            my $stock_name = $stock_info{$stock_id}->{uniquename};
+                            my $value = $columns[$col_counter+1];
+                            if (defined $value && $value ne '') {
+                                $result_blup_data_s_htp->{$stock_name}->{$trait} = $value;
+
+                                if ($value < $genetic_effect_min_s_htp) {
+                                    $genetic_effect_min_s_htp = $value;
+                                }
+                                elsif ($value >= $genetic_effect_max_s_htp) {
+                                    $genetic_effect_max_s_htp = $value;
+                                }
+
+                                $genetic_effect_sum_s_htp += abs($value);
+                                $genetic_effect_sum_square_s_htp = $genetic_effect_sum_square_s_htp + $value*$value;
+                            }
+                        }
+                        $col_counter++;
+                    }
+                }
+            close($fh_htp);
+
+            open(my $fh_residual_htp, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+                print STDERR "Opened $stats_out_tempfile_residual\n";
+                my $header_residual_htp = <$fh_residual_htp>;
+                my @header_cols_residual_htp;
+                if ($csv->parse($header_residual_htp)) {
+                    @header_cols_residual_htp = $csv->fields();
+                }
+                while (my $row = <$fh_residual_htp>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
+                    my $stock_id = $columns[0];
+                    my $residual = $columns[1];
+                    my $fitted = $columns[2];
+                    my $stock_name = $plot_id_map{$stock_id};
+                    if (defined $residual && $residual ne '') {
+                        $result_residual_data_s_htp->{$stock_name}->{$trait_name} = $residual;
+                        $residual_sum_s_htp += abs($residual);
+                        $residual_sum_square_s_htp = $residual_sum_square_s_htp + $residual*$residual;
+                    }
+                    if (defined $fitted && $fitted ne '') {
+                        $result_fitted_data_s_htp->{$stock_name}->{$trait_name} = $fitted;
+                    }
+                    $model_sum_square_residual_s_htp = $model_sum_square_residual_s_htp + $residual*$residual;
+                }
+            close($fh_residual_htp);
+
+            my @varcomp_original_htp;
+            open(my $fh_varcomp_htp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+                print STDERR "Opened $stats_out_tempfile_varcomp\n";
+                my $header_varcomp_htp = <$fh_varcomp_htp>;
+                my @header_cols_varcomp_htp;
+                if ($csv->parse($header_varcomp_htp)) {
+                    @header_cols_varcomp_htp = $csv->fields();
+                }
+                while (my $row = <$fh_varcomp_htp>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @varcomp_original_htp, \@columns;
+                }
+            close($fh_varcomp_htp);
         }
 
         push @result_blups_all, {
@@ -7282,6 +7533,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             plots_spatial_heatmap_traits_secondary_plot => $analytics_protocol_tempfile_string_6,
             plots_spatial_heatmap_traits_effects_plot => $analytics_protocol_tempfile_string_7,
             plots_spatial_effects_corr_plot => $analytics_protocol_tempfile_string_8,
+            plots_htp_corr_plot => $analytics_protocol_tempfile_string_9,
         }
     }
 
