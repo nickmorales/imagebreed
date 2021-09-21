@@ -290,7 +290,9 @@ jQuery(document).ready(function() {
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_heatmap_plot"]+'"><hr>';
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_heatmap_traits_plot"]+'">';
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_heatmap_traits_effects_plot"]+'">';
-                        html = html + '<img src="'+result_blups_all[i]["plots_spatial_heatmap_traits_secondary_plot"]+'">';
+                        if (result_blups_all[i]["plots_spatial_heatmap_traits_secondary_plot"]) {
+                            html = html + '<img src="'+result_blups_all[i]["plots_spatial_heatmap_traits_secondary_plot"]+'">';
+                        }
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_ggcorr_plot"]+'">';
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_corr_plot"]+'">';
                         html = html + '<img src="'+result_blups_all[i]["plots_spatial_effects_corr_plot"]+'">';
