@@ -7276,10 +7276,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             prm_mat_cols <- data.frame(fread(\''.$analytics_protocol_data_tempfile27.'\', header=FALSE, sep=\',\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            prm_mat <- cor(t(prm_mat_cols))/ncol(prm_mat_cols);
+            prm_mat <- cor(t(prm_mat_cols));
             cor_plot <- ggcorr(data = NULL, cor_matrix = prm_mat, hjust = 1, size = 3, color = \'grey50\', label = FALSE, layout.exp = 1);
             ggsave(\''.$analytics_protocol_figure_tempfile_8.'\', cor_plot, device=\'png\', width=50, height=50, units=\'in\', limitsize = FALSE);
-            diag(prm_mat) <- rep(1,nrow(prm_mat_cols));
             colnames(prm_mat) <- mat\$plot_id_s;
             rownames(prm_mat) <- mat\$plot_id_s;
             mat\$rowNumber <- as.numeric(mat\$rowNumber);
@@ -7371,6 +7370,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
                 my $header_varcomp = <$fh_varcomp>;
+                print STDERR Dumper $header_varcomp;
                 my @header_cols_varcomp;
                 if ($csv->parse($header_varcomp)) {
                     @header_cols_varcomp = $csv->fields();
@@ -7383,6 +7383,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     push @varcomp_original, \@columns;
                 }
             close($fh_varcomp);
+            print STDERR Dumper \@varcomp_original;
 
             my $result_blup_data_s_htp;
             my $result_residual_data_s_htp;
@@ -7401,11 +7402,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             prm_mat_cols <- data.frame(fread(\''.$stats_out_htp_rel_tempfile_input.'\', header=TRUE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            n_traits <- ncol(prm_mat_cols)-6;
-            prm_mat <- cor(t(prm_mat_cols[,7:ncol(prm_mat_cols)]))/n_traits;
+            prm_mat <- cor(t(prm_mat_cols[,7:ncol(prm_mat_cols)]));
             cor_plot <- ggcorr(data = NULL, cor_matrix = prm_mat, hjust = 1, size = 3, color = \'grey50\', label = FALSE, layout.exp = 1);
             ggsave(\''.$analytics_protocol_figure_tempfile_9.'\', cor_plot, device=\'png\', width=50, height=50, units=\'in\', limitsize = FALSE);
-            diag(prm_mat) <- rep(1,nrow(prm_mat_cols));
             colnames(prm_mat) <- mat\$plot_id_s;
             rownames(prm_mat) <- mat\$plot_id_s;
             mat\$rowNumber <- as.numeric(mat\$rowNumber);
@@ -7497,6 +7496,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             open(my $fh_varcomp_htp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
                 my $header_varcomp_htp = <$fh_varcomp_htp>;
+                print STDERR Dumper $header_varcomp_htp;
                 my @header_cols_varcomp_htp;
                 if ($csv->parse($header_varcomp_htp)) {
                     @header_cols_varcomp_htp = $csv->fields();
@@ -7509,6 +7509,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     push @varcomp_original_htp, \@columns;
                 }
             close($fh_varcomp_htp);
+            print STDERR Dumper \@varcomp_original_htp;
         }
 
         push @result_blups_all, {
