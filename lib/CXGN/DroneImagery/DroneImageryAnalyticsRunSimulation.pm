@@ -1408,6 +1408,7 @@ sub perform_drone_imagery_analytics {
                         push @varcomp_herit, \@columns;
                     }
                 close($fh_herit);
+                print STDERR Dumper \@varcomp_herit;
 
                 if ($current_env_row_count == 0 || $current_gen_row_count == 0) {
                     $run_stats_fault = 1;
