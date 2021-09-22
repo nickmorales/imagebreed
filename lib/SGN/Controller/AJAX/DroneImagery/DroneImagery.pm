@@ -13631,6 +13631,7 @@ sub drone_imagery_export_drone_runs : Path('/api/drone_imagery/export_drone_runs
 sub drone_imagery_export_drone_runs_GET : Args(0) {
     my $self = shift;
     my $c = shift;
+    print STDERR Dumper $c->req->params();
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
