@@ -13636,7 +13636,7 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $drone_run_project_ids = decode_json $c->req->param('drone_run_project_ids');
     my $field_trial_id = $c->req->param('field_trial_id');
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'submitter');
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
 
     my $plot_polygon_template_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
     my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
