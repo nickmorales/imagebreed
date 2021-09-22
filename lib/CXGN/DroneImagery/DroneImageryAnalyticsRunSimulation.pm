@@ -1408,7 +1408,6 @@ sub perform_drone_imagery_analytics {
                         push @varcomp_herit, \@columns;
                     }
                 close($fh_herit);
-                print STDERR Dumper \@varcomp_herit;
 
                 if ($current_env_row_count == 0 || $current_gen_row_count == 0) {
                     $run_stats_fault = 1;
@@ -4192,7 +4191,7 @@ sub perform_drone_imagery_analytics {
     print STDERR "ORIGINAL $statistics_select GENETIC EFFECT SUM $genetic_effect_sum_original\n";
     print STDERR "ORIGINAL $statistics_select ENV EFFECT SUM $env_effect_sum_original\n";
     print STDERR Dumper [$genetic_effect_min_original, $genetic_effect_max_original, $env_effect_min_original, $env_effect_max_original];
-    die;
+    print STDERR Dumper \@varcomp_herit;
 
     my @model_sum_square_original_cv_values = ($model_sum_square_cv1_original, $model_sum_square_cv2_original, $model_sum_square_cv3_original, $model_sum_square_cv4_original, $model_sum_square_cv5_original);
     my @model_sum_square_original_cv_2_values = ($model_sum_square_cv1_2_original, $model_sum_square_cv2_2_original, $model_sum_square_cv3_2_original, $model_sum_square_cv4_2_original, $model_sum_square_cv5_2_original);
