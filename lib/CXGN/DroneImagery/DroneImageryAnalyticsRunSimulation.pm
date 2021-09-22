@@ -124,7 +124,7 @@ sub perform_drone_imagery_analytics {
     my $env_effect_sum_original = 0;
     my $residual_sum_square_original = 0;
     my $residual_sum_original = 0;
-    my (@param_file_rows_data, @param_file_rows_data_cv1, @param_file_rows_data_cv2, @param_file_rows_data_cv3, @param_file_rows_data_cv4, @param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5, @param_file_rows_6, @param_file_rows_7);
+    my (@param_file_rows_data, @param_file_rows_data_cv1, @param_file_rows_data_cv2, @param_file_rows_data_cv3, @param_file_rows_data_cv4, @param_file_rows_data_cv5, @param_file_rows_1, @param_file_rows_2, @param_file_rows_3, @param_file_rows_4, @param_file_rows_5, @param_file_rows_6, @param_file_rows_7, @varcomp_herit);
 
     my ($stats_out_cv1_predict_tempfile_fh, $stats_out_cv1_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_cv2_predict_tempfile_fh, $stats_out_cv2_predict_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
@@ -149,6 +149,8 @@ sub perform_drone_imagery_analytics {
     my ($parameter_tempfile_cv3_2_fh, $parameter_tempfile_cv3_2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($parameter_tempfile_cv4_2_fh, $parameter_tempfile_cv4_2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($parameter_tempfile_cv5_2_fh, $parameter_tempfile_cv5_2) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
+    my ($stats_out_heritability_fh, $stats_out_heritability) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
 
     print STDERR "RUN FIRST ENV ESTIMATION\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
@@ -923,6 +925,9 @@ sub perform_drone_imagery_analytics {
             blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
             spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
+            e2 <- vpredict(mix, e2 ~ (V2) / ( V2+V3) );
+            write.table(data.frame(h2=h2\$Estimate, hse=h2\$SE, e2=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_heritability.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             }
             "';
 
@@ -1387,6 +1392,22 @@ sub perform_drone_imagery_analytics {
                         push @varcomp_original, \@columns;
                     }
                 close($fh_varcomp);
+
+                open(my $fh_herit, '<', $stats_out_heritability) or die "Could not open file '$stats_out_heritability' $!";
+                    print STDERR "Opened $stats_out_heritability\n";
+                    my $header_herit = <$fh_herit>;
+                    my @header_cols_herit;
+                    if ($csv->parse($header_herit)) {
+                        @header_cols_herit = $csv->fields();
+                    }
+                    while (my $row = <$fh_herit>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_herit, \@columns;
+                    }
+                close($fh_herit);
 
                 if ($current_env_row_count == 0 || $current_gen_row_count == 0) {
                     $run_stats_fault = 1;
@@ -4170,6 +4191,7 @@ sub perform_drone_imagery_analytics {
     print STDERR "ORIGINAL $statistics_select GENETIC EFFECT SUM $genetic_effect_sum_original\n";
     print STDERR "ORIGINAL $statistics_select ENV EFFECT SUM $env_effect_sum_original\n";
     print STDERR Dumper [$genetic_effect_min_original, $genetic_effect_max_original, $env_effect_min_original, $env_effect_max_original];
+    die;
 
     my @model_sum_square_original_cv_values = ($model_sum_square_cv1_original, $model_sum_square_cv2_original, $model_sum_square_cv3_original, $model_sum_square_cv4_original, $model_sum_square_cv5_original);
     my @model_sum_square_original_cv_2_values = ($model_sum_square_cv1_2_original, $model_sum_square_cv2_2_original, $model_sum_square_cv3_2_original, $model_sum_square_cv4_2_original, $model_sum_square_cv5_2_original);
