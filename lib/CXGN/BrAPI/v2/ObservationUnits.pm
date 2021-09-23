@@ -365,6 +365,8 @@ sub observationunits_update {
     my $row_number_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'row_number', 'stock_property');
     my $col_number_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'col_number', 'stock_property');
     my $additional_info_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'stock_additional_info', 'stock_property');
+    my $plot_of_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot_of', 'stock_relationship')->cvterm_id();
+    my $plant_of_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plant_of', 'stock_relationship')->cvterm_id();
 
     foreach my $params (@$data) {
         my $observation_unit_db_id = $params->{observationUnitDbId} ? $params->{observationUnitDbId} : undef;
@@ -424,6 +426,14 @@ sub observationunits_update {
             return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf("Only 'plot' or 'plant' allowed for observation level and observationUnitDbId."), 400);
         }
 
+        my $obs_of_rel_cvterm_id;
+        if ($stock_type == $plot_cvterm_id) {
+            $obs_of_rel_cvterm_id = $plot_of_type_id;
+        }
+        if ($stock_type == $plant_cvterm_id) {
+            $obs_of_rel_cvterm_id = $plant_of_type_id;
+        }
+
         #Update: accession
         if (!$accession_id && !$accession_name) {
             return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Either germplasmDbId or germplasmName is required.'), 400);
@@ -453,21 +463,16 @@ sub observationunits_update {
         if ($old_accession && $accession_id && $old_accession_id ne $accession_id) {
             my $replace_plot_accession_fieldmap = CXGN::Trial::FieldMap->new({
                 bcs_schema => $schema,
-                trial_id => $study_ids_arrayref,
-                new_accession => $accession_name,
-                old_accession => $old_accession,
-                old_plot_id => $observation_unit_db_id,
-                old_plot_name => $observationUnit_name,
-                experiment_type => 'field_layout'
+                trial_id => $study_ids_arrayref
             });
 
             my $return_error = $replace_plot_accession_fieldmap->update_fieldmap_precheck();
             if ($return_error) {
                 print STDERR Dumper $return_error;
-                return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Something went wrong. Accession cannot be replaced.'));
+                return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Something went wrong in precheck. Accession cannot be replaced.'));
             }
 
-            my $replace_return_error = $replace_plot_accession_fieldmap->replace_plot_accession_fieldMap();
+            my $replace_return_error = $replace_plot_accession_fieldmap->replace_plot_accession_fieldMap($observation_unit_db_id, $accession_id, $obs_of_rel_cvterm_id);
             if ($replace_return_error) {
                 print STDERR Dumper $replace_return_error;
                 return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Something went wrong. Accession cannot be replaced.'));
