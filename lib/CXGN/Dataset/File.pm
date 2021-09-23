@@ -113,20 +113,21 @@ override('retrieve_genotypes',
 	 });
 
 override('retrieve_phenotypes',
-	 sub {
-	     my $self = shift;
-	     my $file = shift || $self->file_name()."_phenotype.txt";
-	     my $phenotypes = $self->SUPER::retrieve_phenotypes();
-	     my $phenotype_string = "";
-	     foreach my $line (@$phenotypes) {
-			 my $s = join "\t", map { $_ ? $_ : "" } @$line;
-			 $s =~ s/\n//g;
-			 $s =~ s/\r//g;
-			 $phenotype_string .= $s."\n";
-	     }
-	     write_file($file, $phenotype_string);
-	     return $phenotypes;
-	 });
+    sub {
+        my $self = shift;
+        my $file = shift || $self->file_name()."_phenotype.txt";
+        my $phenotypes = $self->SUPER::retrieve_phenotypes();
+        my $phenotype_string = "";
+        no warnings; # turn off warnings, otherwise there are a lot of undefined warnings.
+        foreach my $line (@$phenotypes) {
+            my $s = join "\t", map { $_ ? $_ : "" } @$line;
+            $s =~ s/\n//g;
+            $s =~ s/\r//g;
+            $phenotype_string .= $s."\n";
+        }
+        write_file($file, $phenotype_string);
+        return $phenotypes;
+    });
 
 override('retrieve_accessions',
 	 sub {
