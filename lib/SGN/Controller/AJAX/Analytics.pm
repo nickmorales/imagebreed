@@ -6754,6 +6754,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @plots_data_iteration_data_values = ();
 
         my @plots_data_grm_prm_data_values = ();
+        my @varcomp_original_grm;
+        my @varcomp_original_grm_prm;
         my @varcomp_h_grm;
         my @varcomp_h_grm_prm;
 
@@ -7365,7 +7367,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($fh_residual);
 
-            my @varcomp_original;
             open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
                 my $header_varcomp = <$fh_varcomp>;
@@ -7379,10 +7380,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                    push @varcomp_original, \@columns;
+                    push @varcomp_original_grm, \@columns;
                 }
             close($fh_varcomp);
-            print STDERR Dumper \@varcomp_original;
+            print STDERR Dumper \@varcomp_original_grm;
 
             open(my $fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
                 print STDERR "Opened $stats_out_tempfile_vpredict\n";
@@ -7411,6 +7412,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             prm_mat <- cor(t(prm_mat_cols));
             prm_mat[is.na(prm_mat)] <- 0;
             prm_mat <- prm_mat/ncol(prm_mat_cols);
+            diag(prm_mat) <- rep(1,nrow(prm_mat_cols));
             cor_plot <- ggcorr(data = NULL, cor_matrix = prm_mat, hjust = 1, size = 3, color = \'grey50\', label = FALSE, layout.exp = 1);
             ggsave(\''.$analytics_protocol_figure_tempfile_8.'\', cor_plot, device=\'png\', width=50, height=50, units=\'in\', limitsize = FALSE);
             colnames(prm_mat) <- mat\$plot_id_s;
@@ -7503,7 +7505,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($fh_residual);
 
-            @varcomp_original = ();
             open($fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
                 print STDERR "Opened $stats_out_tempfile_varcomp\n";
                 $header_varcomp = <$fh_varcomp>;
@@ -7517,10 +7518,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                    push @varcomp_original, \@columns;
+                    push @varcomp_original_grm_prm, \@columns;
                 }
             close($fh_varcomp);
-            print STDERR Dumper \@varcomp_original;
+            print STDERR Dumper \@varcomp_original_grm_prm;
 
             open($fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
                 print STDERR "Opened $stats_out_tempfile_vpredict\n";
@@ -7691,6 +7692,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             plots_spatial_heatmap_traits_effects_plot => $analytics_protocol_tempfile_string_7,
             plots_spatial_effects_corr_plot => $analytics_protocol_tempfile_string_8,
             plots_htp_corr_plot => $analytics_protocol_tempfile_string_9,
+            varcomp_original_grm => \@varcomp_original_grm,
+            varcomp_original_grm_prm => \@varcomp_original_grm_prm,
             varcomp_h_grm => \@varcomp_h_grm,
             varcomp_h_grm_prm => \@varcomp_h_grm_prm
         }
