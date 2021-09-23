@@ -6754,6 +6754,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @plots_data_iteration_data_values = ();
 
         my @plots_data_grm_prm_data_values = ();
+        my @varcomp_h_grm;
+        my @varcomp_h_grm_prm;
 
         foreach my $t (@sorted_trait_names) {
             push @germplasm_data_header, ($t."mean", $t."sd", $t."spatialcorrected2Dsplgenoeffect");
@@ -7382,7 +7384,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             close($fh_varcomp);
             print STDERR Dumper \@varcomp_original;
 
-            my @varcomp_h;
             open(my $fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
                 print STDERR "Opened $stats_out_tempfile_vpredict\n";
                 my $header_varcomp_h = <$fh_varcomp_h>;
@@ -7396,10 +7397,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                    push @varcomp_h, \@columns;
+                    push @varcomp_h_grm, \@columns;
                 }
             close($fh_varcomp_h);
-            print STDERR Dumper \@varcomp_h;
+            print STDERR Dumper \@varcomp_h_grm;
 
             my $grm_prm_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -7519,7 +7520,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             close($fh_varcomp);
             print STDERR Dumper \@varcomp_original;
 
-            @varcomp_h = ();
             open($fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
                 print STDERR "Opened $stats_out_tempfile_vpredict\n";
                 $header_varcomp_h = <$fh_varcomp_h>;
@@ -7533,10 +7533,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                    push @varcomp_h, \@columns;
+                    push @varcomp_h_grm_prm, \@columns;
                 }
             close($fh_varcomp_h);
-            print STDERR Dumper \@varcomp_h;
+            print STDERR Dumper \@varcomp_h_grm_prm;
 
             # my $result_blup_data_s_htp;
             # my $result_residual_data_s_htp;
@@ -7689,6 +7689,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             plots_spatial_heatmap_traits_effects_plot => $analytics_protocol_tempfile_string_7,
             plots_spatial_effects_corr_plot => $analytics_protocol_tempfile_string_8,
             plots_htp_corr_plot => $analytics_protocol_tempfile_string_9,
+            varcomp_h_grm => \@varcomp_h_grm,
+            varcomp_h_grm_prm => \@varcomp_h_grm_prm
         }
     }
 
