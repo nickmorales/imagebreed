@@ -7409,6 +7409,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
             prm_mat <- cor(t(prm_mat_cols));
+            prm_mat[is.na(prm_mat)] <- 0;
             cor_plot <- ggcorr(data = NULL, cor_matrix = prm_mat, hjust = 1, size = 3, color = \'grey50\', label = FALSE, layout.exp = 1);
             ggsave(\''.$analytics_protocol_figure_tempfile_8.'\', cor_plot, device=\'png\', width=50, height=50, units=\'in\', limitsize = FALSE);
             colnames(prm_mat) <- mat\$plot_id_s;
