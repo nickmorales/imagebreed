@@ -7295,8 +7295,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) );
             write.table(data.frame(value=h2\$Estimate, se=h2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-            SSE <- sum( (mix\$residuals^2 ) );
-            r2 <- cor(mix\$fitted, mix\$data\$'.$trait_name_encoded_string.');
+            ff <- fitted(mix);
+            r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+            SSE <- sum( (ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted)^2 );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
@@ -7434,6 +7435,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
             prm_mat <- cor(t(prm_mat_cols));
+            #prm_mat <- as.matrix(prm_mat_cols) %*% t(as.matrix(prm_mat_cols));
             prm_mat[is.na(prm_mat)] <- 0;
             prm_mat <- prm_mat/ncol(prm_mat_cols);
             cor_plot <- ggcorr(data = NULL, cor_matrix = prm_mat, hjust = 1, size = 3, color = \'grey50\', label = FALSE, layout.exp = 1);
@@ -7453,8 +7455,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
             e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
             write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-            SSE <- sum( (mix\$residuals^2 ) );
-            r2 <- cor(mix\$fitted, mix\$data\$'.$trait_name_encoded_string.');
+            ff <- fitted(mix);
+            r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+            SSE <- sum( (ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted)^2 );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
