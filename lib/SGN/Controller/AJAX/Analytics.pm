@@ -4581,6 +4581,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $stats_out_tempfile_residual = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $stats_out_tempfile_varcomp = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $stats_out_tempfile_vpredict = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+    my $stats_out_tempfile_fits = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $stats_out_tempfile_factors = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $grm_rename_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
 
@@ -6758,6 +6759,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @varcomp_original_grm_prm;
         my @varcomp_h_grm;
         my @varcomp_h_grm_prm;
+        my @fits_grm;
+        my @fits_grm_prm;
 
         foreach my $t (@sorted_trait_names) {
             push @germplasm_data_header, ($t."mean", $t."sd", $t."spatialcorrected2Dsplgenoeffect");
@@ -7292,6 +7295,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) );
             write.table(data.frame(value=h2\$Estimate, se=h2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            SSE <- sum( (mix\$residuals^2 ) );
+            r2 <- cor(mix\$fitted, mix\$data\$'.$trait_name_encoded_string.');
+            write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_cmd;
@@ -7403,6 +7409,24 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             close($fh_varcomp_h);
             print STDERR Dumper \@varcomp_h_grm;
 
+            open(my $fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
+                print STDERR "Opened $stats_out_tempfile_fits\n";
+                my $header_fits = <$fh_fits>;
+                print STDERR Dumper $header_fits;
+                my @header_cols_fits;
+                if ($csv->parse($header_fits)) {
+                    @header_cols_fits = $csv->fields();
+                }
+                while (my $row = <$fh_fits>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @fits_grm, \@columns;
+                }
+            close($fh_fits);
+            print STDERR Dumper \@fits_grm;
+
             my $grm_prm_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
@@ -7429,6 +7453,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
             e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
             write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            SSE <- sum( (mix\$residuals^2 ) );
+            r2 <- cor(mix\$fitted, mix\$data\$'.$trait_name_encoded_string.');
+            write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_prm_cmd;
@@ -7539,6 +7566,24 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($fh_varcomp_h);
             print STDERR Dumper \@varcomp_h_grm_prm;
+
+            open($fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
+                print STDERR "Opened $stats_out_tempfile_fits\n";
+                $header_fits = <$fh_fits>;
+                print STDERR Dumper $header_fits;
+                @header_cols_fits;
+                if ($csv->parse($header_fits)) {
+                    @header_cols_fits = $csv->fields();
+                }
+                while (my $row = <$fh_fits>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @fits_grm_prm, \@columns;
+                }
+            close($fh_fits);
+            print STDERR Dumper \@fits_grm_prm;
 
             # my $result_blup_data_s_htp;
             # my $result_residual_data_s_htp;
@@ -7694,7 +7739,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             varcomp_original_grm => \@varcomp_original_grm,
             varcomp_original_grm_prm => \@varcomp_original_grm_prm,
             varcomp_h_grm => \@varcomp_h_grm,
-            varcomp_h_grm_prm => \@varcomp_h_grm_prm
+            varcomp_h_grm_prm => \@varcomp_h_grm_prm,
+            fits_grm => \@fits_grm,
+            fits_grm_prm => \@fits_grm_prm,
         }
     }
 
