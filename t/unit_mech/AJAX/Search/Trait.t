@@ -16,7 +16,15 @@ my $schema = $f->bcs_schema;
 my $mech = Test::WWW::Mechanize->new;
 my $response;
 
-$mech->post_ok('http://localhost:3010/ajax/search/traits?length=5&start=1' );
+$mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
+$response = decode_json $mech->content;
+print STDERR Dumper $response;
+is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
+is($response->{'userDisplayName'}, 'Jane Doe');
+is($response->{'expires_in'}, '7200');
+my $access_token = $response->{access_token};
+
+$mech->post_ok('http://localhost:3010/ajax/search/traits?length=5&start=1&sgn_session_id='.$access_token );
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
 
