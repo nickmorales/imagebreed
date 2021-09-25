@@ -19,7 +19,10 @@
     <& /page/page_title.mas, title=>"Manage Aerial Imagery" &>
 
     <div class="well well-sm">
-        <center><h4>Please use the Brave or Chrome web-browsers to view these image tools. In the future, other browsers may be supported.</h4></center>
+        <center>
+            <h4>Please use the Brave or Chrome web-browsers to view these image tools. In the future, other browsers may be supported.</h4>
+            <h4><a href="https://www.youtube.com/channel/UC1FYqz6kz9pE72sSHhG7ocQ">Watch tutorial videos from processing aerial imaging events</a>.</h4>
+        </center>
     </div>
 
 <%perl>
