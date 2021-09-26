@@ -7574,7 +7574,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 print STDERR "Opened $stats_out_tempfile_fits\n";
                 $header_fits = <$fh_fits>;
                 print STDERR Dumper $header_fits;
-                @header_cols_fits;
+                @header_cols_fits = ();
                 if ($csv->parse($header_fits)) {
                     @header_cols_fits = $csv->fields();
                 }
