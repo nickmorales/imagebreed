@@ -230,7 +230,7 @@ sub store_ontology_identifier {
         $schema->txn_do($coderef);
     } catch {
         return {
-            error => $@
+            error => $_
         };
     };
 }
@@ -479,7 +479,7 @@ sub store_observation_variable_trait_method_scale {
         $schema->txn_do($coderef);
     } catch {
         return {
-            error => $@
+            error => $_
         };
     };
 }
