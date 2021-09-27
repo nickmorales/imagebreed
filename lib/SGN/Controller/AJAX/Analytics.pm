@@ -7290,7 +7290,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             mat\$colNumber <- as.numeric(mat\$colNumber);
             mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
             mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
+            mix <- mmer('.$trait_name_encoded_string.'~1, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
             write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -7449,7 +7449,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             mat\$colNumber <- as.numeric(mat\$colNumber);
             mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
             mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat);
+            mix <- mmer('.$trait_name_encoded_string.'~1, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
             write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -7607,7 +7607,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             mat\$colNumber <- as.numeric(mat\$colNumber);
             mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
             mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat);
+            mix <- mmer('.$trait_name_encoded_string.'~1, random=~vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
             write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
