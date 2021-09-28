@@ -84,42 +84,42 @@ sub search {
     my $counter = 0;
 
     foreach (@$result) {
-        my $mimetype = _get_mimetype($_->{'image_file_ext'});
-        if ( (%mimetypes_arrayref && !exists($mimetypes_arrayref{$mimetype}))) { next; }
-        if ( (%imagefile_names_arrayref && !exists($imagefile_names_arrayref{$_->{'image_original_filename'}}))) { next; }
-        if ( $image_timestamp_start && _to_comparable($_->{'image_modified_date'}) lt _to_comparable($image_timestamp_start) ) {  next; }
-        if ( $image_timestamp_end && _to_comparable($_->{'image_modified_date'}) gt _to_comparable($image_timestamp_end) ) { next; }
-
-        my $image = SGN::Image->new($self->bcs_schema()->storage->dbh(), $_->{'image_id'});
-        my @cvterms = $image->get_cvterms();
-        my $url = $hostname . $image->get_image_url('medium');
-        my $filename = $image->get_filename();
-        my $size = (stat($filename))[7];
-        my ($width, $height) = imgsize($filename);
-
-        if ( $imagefile_size_max && $size > $imagefile_size_max ) { next; }
-        if ( $imagefile_size_min && $size < $imagefile_size_min + 1 ) { next; }
-        if ( $image_height_max && $height > $image_height_max ) { next; }
-        if ( $image_height_min && $height < $image_height_min + 1 ) { next; }
-        if ( $image_width_max && $width > $image_width_max ) { next; }
-        if ( $image_width_min && $width < $image_width_min + 1 ) { next; }
-
-        # Process cvterms
-        my @cvterm_names;
-        foreach (@cvterms) {
-            push(@cvterm_names, $_->name);
-        }
-
-        # Get the observation db ids
-        my @observationDbIds;
-        my $observations_array = $_->{'observations_array'};
-
-        foreach (@$observations_array) {
-            my $observationDbId = $_->{'phenotype_id'};
-            push @observationDbIds, $observationDbId
-        }
-
         if ($counter >= $start_index && $counter <= $end_index) {
+            my $mimetype = _get_mimetype($_->{'image_file_ext'});
+            if ( (%mimetypes_arrayref && !exists($mimetypes_arrayref{$mimetype}))) { next; }
+            if ( (%imagefile_names_arrayref && !exists($imagefile_names_arrayref{$_->{'image_original_filename'}}))) { next; }
+            if ( $image_timestamp_start && _to_comparable($_->{'image_modified_date'}) lt _to_comparable($image_timestamp_start) ) {  next; }
+            if ( $image_timestamp_end && _to_comparable($_->{'image_modified_date'}) gt _to_comparable($image_timestamp_end) ) { next; }
+
+            my $image = SGN::Image->new($self->bcs_schema()->storage->dbh(), $_->{'image_id'});
+            my @cvterms = $image->get_cvterms();
+            my $url = $hostname . $image->get_image_url('medium');
+            my $filename = $image->get_filename();
+            my $size = (stat($filename))[7];
+            my ($width, $height) = imgsize($filename);
+
+            if ( $imagefile_size_max && $size > $imagefile_size_max ) { next; }
+            if ( $imagefile_size_min && $size < $imagefile_size_min + 1 ) { next; }
+            if ( $image_height_max && $height > $image_height_max ) { next; }
+            if ( $image_height_min && $height < $image_height_min + 1 ) { next; }
+            if ( $image_width_max && $width > $image_width_max ) { next; }
+            if ( $image_width_min && $width < $image_width_min + 1 ) { next; }
+
+            # Process cvterms
+            my @cvterm_names;
+            foreach (@cvterms) {
+                push(@cvterm_names, $_->name);
+            }
+
+            # Get the observation db ids
+            my @observationDbIds;
+            my $observations_array = $_->{'observations_array'};
+
+            foreach (@$observations_array) {
+                my $observationDbId = $_->{'phenotype_id'};
+                push @observationDbIds, $observationDbId
+            }
+
             push @data, {
                 additionalInfo => {
                     observationLevel => $_->{'stock_type_name'},
