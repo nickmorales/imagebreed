@@ -106,7 +106,7 @@ sub drone_imagery_analysis_query_POST : Args(0) {
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
     my $main_production_site = $c->config->{main_production_site_url};
 
-    my $project_image_type_id_list_all = CXGN::DroneImagery::ImageTypes::get_all_project_md_image_observation_unit_plot_polygon_types($schema);
+    my $project_image_type_id_list_all = CXGN::DroneImagery::ImageTypes::get_exported_project_md_image_observation_unit_plot_polygon_types($schema);
     my @project_image_type_id_list_array = keys %$project_image_type_id_list_all;
 
     my $trait_id_list = $c->req->param('observation_variable_id_list') ? decode_json $c->req->param('observation_variable_id_list') : [];

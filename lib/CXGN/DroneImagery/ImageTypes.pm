@@ -741,6 +741,61 @@ sub get_all_project_md_image_observation_unit_plot_polygon_types {
     };
 }
 
+sub get_exported_project_md_image_observation_unit_plot_polygon_types {
+    my $schema = shift;
+    my %project_type_lookup = (
+        black_and_white => 'Black and White Image',
+        rgb_color_image => 'RGB Color Image',
+        bgr => 'Merged 3 Bands BGR',
+        nrn => 'Merged 3 Bands NRN',
+        nren => 'Merged 3 Bands NReN',
+        blue => 'Blue (450-520nm)',
+        green => 'Green (515-600nm)',
+        red => 'Red (600-690nm)',
+        red_edge => 'Red Edge (690-750nm)',
+        nir => 'NIR (780-3000nm)',
+        mir => 'MIR (3000-50000nm)',
+        fir => 'FIR (50000-1000000nm)',
+        tir => 'Thermal IR (9000-14000nm)',
+        raster_dsm => 'Raster DSM'
+    );
+    return {
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_bw_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_bw_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Black and White Image(s)', ISOL_name=>'Black and White Denoised Original Image|ISOL:0000106', drone_run_project_types=>[$project_type_lookup{black_and_white}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_rgb_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_rgb_imagery', channels=>[0,1,2], corresponding_channel=>undef, display_name=>'RGB Color Image(s)', ISOL_name=>'RGB Denoised Original Image|ISOL:0000102', drone_run_project_types=>[$project_type_lookup{rgb_color_image}, $project_type_lookup{bgr}], standard_process=>['minimal', 'minimal_vi']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_blue_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_blue_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Blue Image(s)', ISOL_name=>'Blue Denoised Original Image|ISOL:0000107', drone_run_project_types=>[$project_type_lookup{blue}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_green_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_green_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Green Image(s)', ISOL_name=>'Green Denoised Original Image|ISOL:0000108', drone_run_project_types=>[$project_type_lookup{green}], standard_process=>['minimal', 'minimal_vi']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_red_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Red Image(s)', ISOL_name=>'Red Denoised Original Image|ISOL:0000109', drone_run_project_types=>[$project_type_lookup{red}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_red_edge_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Red Edge Image(s)', ISOL_name=>'Red Edge Denoised Original Image|ISOL:0000110', drone_run_project_types=>[$project_type_lookup{red_edge}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_nir_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_nir_imagery', channels=>[0], corresponding_channel=>0, display_name=>'NIR Image(s)', ISOL_name=>'NIR Denoised Original Image|ISOL:0000111', drone_run_project_types=>[$project_type_lookup{nir}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_mir_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_mir_imagery', channels=>[0], corresponding_channel=>0, display_name=>'MIR Image(s)', ISOL_name=>'MIR Denoised Original Image|ISOL:0000112', drone_run_project_types=>[$project_type_lookup{mir}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fir_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fir_imagery', channels=>[0], corresponding_channel=>0, display_name=>'FIR Image(s)', ISOL_name=>'FIR Denoised Original Image|ISOL:0000113', drone_run_project_types=>[$project_type_lookup{fir}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_tir_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_tir_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Thermal IR Image(s)', ISOL_name=>'Thermal IR Denoised Original Image|ISOL:0000114', drone_run_project_types=>[$project_type_lookup{tir}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_raster_dsm_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_raster_dsm_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Raster DSM Image(s)', ISOL_name=>'Raster DSM Denoised Original Image|ISOL:0000321', drone_run_project_types=>[$project_type_lookup{raster_dsm}], standard_process=>['minimal']
+        }
+    };
+}
+
 sub get_base_imagery_observation_unit_plot_polygon_term_map {
     return {
         'Blue (450-520nm)' => {
