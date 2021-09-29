@@ -326,7 +326,7 @@ $dataset_id => undef
               </td>
             </tr>
             <tr>
-              <td colspan="2">
+              <td>
                 <select class="wizard-download-phenotypes-format form-control input-sm">
                   <option value="" disabled>Format</option>
                   <option selected value="csv">CSV</option>
@@ -336,9 +336,17 @@ $dataset_id => undef
               <td>
                 <select class="wizard-download-phenotypes-level form-control input-sm">
                   <option value="" disabled>Data Level</option>
-                  <option selected value="all">All</option>
+                  <option selected value="all">All Levels</option>
                   <option value="plot">Plots</option>
                   <option value="plant">Plants</option>
+                </select>
+              </td>
+              <td>
+                <select class="wizard-download-phenotypes-repeat-measurements form-control input-sm">
+                  <option value="" disabled>Repeat Measurements</option>
+                  <option selected value="all">All Values</option>
+                  <option value="average">Average Repeated Values</option>
+                  <option value="first">First Value</option>
                 </select>
               </td>
             </tr>

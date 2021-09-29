@@ -59,9 +59,16 @@ Choose a list for each parameter and click "Download".
     <br/>
     <b>Data Level:</b><br/>
     <select class="form-control" id="phenotype_datalevel" name="phenotype_datalevel">
-        <option value="all">All</option>
+        <option value="all">All Levels</option>
         <option value="plot">Plot</option>
         <option value="plant">Plant</option>
+    </select>
+    <br/>
+    <b>Repeated Measurements:</b><br/>
+    <select class="form-control" id="phenotype_repeated_measurements" name="phenotype_repeated_measurements">
+        <option value="all">All Values</option>
+        <option value="average">Average Repeated Values</option>
+        <option value="first">First Value</option>
     </select>
     <br/>
     <b>Timestamp:</b><br/>

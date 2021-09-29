@@ -292,6 +292,7 @@ sub download_action : Path('/breeders/download_action') Args(0) {
         $dl_token = $c->req->param("metadata_download_token") || "no_token";
     }
     my $format            = $c->req->param("format");
+    my $repeated_measurements = $c->req->param("phenotype_repeated_measurements");
     if (!$format){
         $format            = $c->req->param("metadata_format");
     }
@@ -347,28 +348,39 @@ sub download_action : Path('/breeders/download_action') Args(0) {
     my $result;
     my $output = "";
 
+    my $return_first_value_only = 0;
+    my $return_average_value = 0;
+    if ($repeated_measurements eq 'average') {
+        $return_average_value = 1;
+    }
+    elsif ($repeated_measurements eq 'first') {
+        $return_first_value_only = 1;
+    }
+
     my @data;
     if ($datalevel eq 'metadata'){
         my $metadata_search = CXGN::Phenotypes::MetaDataMatrix->new(
-    		bcs_schema=>$schema,
-    		search_type=>'MetaData',
-    		data_level=>$datalevel,
-    		trial_list=>$trial_id_data->{transform},,
-    	);
-    	@data = $metadata_search->get_metadata_matrix();
+            bcs_schema=>$schema,
+            search_type=>'MetaData',
+            data_level=>$datalevel,
+            trial_list=>$trial_id_data->{transform},,
+        );
+        @data = $metadata_search->get_metadata_matrix();
     }
     else {
-    	my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
-    		bcs_schema=>$schema,
-    		search_type=>'MaterializedViewTable',
-    		trait_list=>$trait_id_data->{transform},
-    		trial_list=>$trial_id_data->{transform},
-    		accession_list=>$accession_id_data->{transform},
-    		include_timestamp=>$timestamp_included,
+        my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
+            bcs_schema=>$schema,
+            search_type=>'MaterializedViewTable',
+            trait_list=>$trait_id_data->{transform},
+            trial_list=>$trial_id_data->{transform},
+            accession_list=>$accession_id_data->{transform},
+            include_timestamp=>$timestamp_included,
             exclude_phenotype_outlier=>$exclude_phenotype_outlier,
-    		data_level=>$datalevel,
-    	);
-    	@data = $phenotypes_search->get_phenotype_matrix();
+            data_level=>$datalevel,
+            average_repeat_measurements=>$return_average_value,
+            return_only_first_measurement=>$return_first_value_only
+        );
+        @data = $phenotypes_search->get_phenotype_matrix();
     }
 
     if ($format eq "html") { #dump html in browser
