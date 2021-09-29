@@ -166,7 +166,7 @@ $(document).ready(function() {
 
     get_select_box('datasets', 'phenotype_download_dataset_list');
 
-    $('#metadata').click(function() { 
+    $('#metadata').click(function() {
       var trial_list_id = $('#trial_metadata_list_list_select').val();
       var trial_validation = 1;
       if (trial_list_id) { trial_validation = lo.validate(trial_list_id, 'trials', true); }
@@ -404,7 +404,7 @@ $(document).ready(function() {
 <form id="download_gbs" action="/breeders/download_gbs_action" method="POST">
 <table class="table"  cellpadding="10">
   <thead>
-  <tr><td colspan="2"><h4>Download GBS Genotype </h4><p>Select parameter:</p></tr>
+  <tr><td colspan="2"><h4>Download Genotype Data</h4><p>Select parameter:</p></tr>
   <tr>
     <th>
       Accessions
@@ -490,7 +490,7 @@ $(document).ready(function() {
 <form id="gbs_qc" action="/breeders/gbs_qc_action" method="POST">
 <table class="table" cellpadding="10">
   <thead>
-  <tr><td colspan="3"><h4>GBS Genotype QC</h4><p>Select parameter:</p></tr>
+  <tr><td colspan="3"><h4>Genotype Data QC</h4><p>Select parameter:</p></tr>
   <tr>
     <th>
       Trials
