@@ -100,13 +100,13 @@ jQuery(document).ready(function() {
     var traits = jQuery("#download_stock_phenotypes_traits_select").val();
     var datalevel = jQuery("#download_stock_phenotypes_level_option").val();
     var exclude_phenotype_outlier = jQuery("#download_stock_phenotypes_exclude_outliers").val();
-    window.open("/breeders/trials/phenotype/download?"+stock_type+"_list="+JSON.stringify(stock_id)+"&dataLevel="+datalevel+"&format="+format+"&timestamp="+timestamp+"&trait_list="+JSON.stringify(traits)+"&exclude_phenotype_outlier="+exclude_phenotype_outlier);
+    window.open("/breeders/trials/phenotype/download?"+stock_type+"_list="+JSON.stringify(stock_id)+"&dataLevel="+datalevel+"&format="+format+"&timestamp="+timestamp+"&trait_list="+JSON.stringify(traits)+"&exclude_phenotype_outlier="+exclude_phenotype_outlier+"&return_only_first_measurement=0&average_repeat_measurements=0");
   });
 
 });
 
 function data_level_change_traits() {
     var stock_type = "<% $stock_type %>";
-    get_select_box('traits', 'download_stock_phenotypes_traits', { 'name' : 'download_stock_phenotypes_traits_select', 'id' : 'download_stock_phenotypes_traits_select', 'stock_id':<% $stock_id %>, 'stock_type': stock_type });
+    get_select_box('traits', 'download_stock_phenotypes_traits', { 'name' : 'download_stock_phenotypes_traits_select', 'id' : 'download_stock_phenotypes_traits_select', 'stock_id':<% $stock_id %>, 'stock_type': stock_type, 'multiple':1 });
 }
 </script>

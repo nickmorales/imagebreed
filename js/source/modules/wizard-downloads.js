@@ -138,7 +138,7 @@ export function WizardDownloads(main_id,wizard){
         `&year_list=${year_ids}&dataLevel=${level}&phenotype_min_value=${min}&phenotype_max_value=${max}`+
         `&timestamp=${timestamp}&trait_contains=${names}`+
         `&include_row_and_column_numbers=1&exclude_phenotype_outlier=${outliers}`+
-        `&include_pedigree_parents=0`;
+        `&include_pedigree_parents=0&return_only_first_measurement=0&average_repeat_measurements=0`;
         window.open(url,'_blank');
       });
 });

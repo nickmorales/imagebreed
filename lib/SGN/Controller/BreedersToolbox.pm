@@ -420,26 +420,6 @@ sub manage_plot_phenotyping :Path("/breeders/plot_phenotyping") Args(0) {
 
 }
 
-sub manage_trial_phenotyping :Path("/breeders/trial_phenotyping") Args(0) {
-    my $self =shift;
-    my $c = shift;
-    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    my $trial_id = $c->req->param('trial_id');
-
-    if (!$c->user()) {
-	     $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-	      return;
-    }
-    my $project_name = $schema->resultset("Project::Project")->find( { project_id=>$trial_id })->name();
-
-    my $trial = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $trial_id });
-
-    $c->stash->{trial_stock_type} = $trial->get_trial_stock_type();
-    $c->stash->{trial_name} = $project_name;
-    $c->stash->{trial_id} = $trial_id;
-    $c->stash->{template} = '/breeders_toolbox/manage_trial_phenotyping.mas';
-}
-
 sub manage_odk_data_collection :Path("/breeders/odk") Args(0) {
     my $self =shift;
     my $c = shift;

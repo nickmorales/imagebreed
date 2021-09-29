@@ -102,6 +102,8 @@ sub download_phenotypes_action : Path('/breeders/trials/phenotype/download') Arg
     my $plot_list = $c->req->param("plot_list");
     my $plant_list = $c->req->param("plant_list");
     my $trait_contains = $c->req->param("trait_contains");
+    my $average_repeat_measurements = defined($c->req->param("average_repeat_measurements")) ? $c->req->param("average_repeat_measurements") : 0;
+    my $return_only_first_measurement = defined($c->req->param("return_only_first_measurement")) ? $c->req->param("return_only_first_measurement") : 1;
     my $phenotype_min_value = $c->req->param("phenotype_min_value") && $c->req->param("phenotype_min_value") ne 'null' ? $c->req->param("phenotype_min_value") : "";
     my $phenotype_max_value = $c->req->param("phenotype_max_value") && $c->req->param("phenotype_max_value") ne 'null' ? $c->req->param("phenotype_max_value") : "";
 
@@ -245,7 +247,9 @@ sub download_phenotypes_action : Path('/breeders/trials/phenotype/download') Arg
         trait_contains => \@trait_contains_list,
         phenotype_min_value => $phenotype_min_value,
         phenotype_max_value => $phenotype_max_value,
-        has_header=>$has_header
+        has_header=>$has_header,
+        average_repeat_measurements=>$average_repeat_measurements,
+        return_only_first_measurement=>$return_only_first_measurement
     });
 
     my $error = $download->download();

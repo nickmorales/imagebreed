@@ -107,7 +107,7 @@ window.onload = function initialize() {
     jQuery('#wizard_download_metadata_button').click( function () {
         jQuery('#download_wizard_metadata_dialog').modal("show");
     });
-    
+
     jQuery('#download_wizard_phenotypes_submit_button').on('click', function (event) {
         event.preventDefault();
         var selected_trials = get_selected_results('trials');
@@ -129,7 +129,7 @@ window.onload = function initialize() {
         console.log("plot list="+JSON.stringify(selected_plots));
 
         if (selected_trials.length !== 0 || selected_locations.length !== 0 || selected_accessions.length !== 0 || selected_traits.length !== 0 || selected_trait_components.length !== 0 || selected_plots.length !== 0 || selected_plants.length !== 0 || selected_years.length !== 0) {
-            window.open("/breeders/trials/phenotype/download?trial_list="+JSON.stringify(selected_trials)+"&format="+format+"&trait_list="+JSON.stringify(selected_traits)+"&trait_component_list="+JSON.stringify(selected_trait_components)+"&accession_list="+JSON.stringify(selected_accessions)+"&plot_list="+JSON.stringify(selected_plots)+"&plant_list="+JSON.stringify(selected_plants)+"&location_list="+JSON.stringify(selected_locations)+"&year_list="+JSON.stringify(selected_years)+"&dataLevel="+data_level+"&phenotype_min_value="+phenotype_min_value+"&phenotype_max_value="+phenotype_max_value+"&timestamp="+timestamp+"&trait_contains="+JSON.stringify(trait_contains_array)+"&include_row_and_column_numbers=1&exclude_phenotype_outlier="+exclude_phenotype_outlier);
+            window.open("/breeders/trials/phenotype/download?trial_list="+JSON.stringify(selected_trials)+"&format="+format+"&trait_list="+JSON.stringify(selected_traits)+"&trait_component_list="+JSON.stringify(selected_trait_components)+"&accession_list="+JSON.stringify(selected_accessions)+"&plot_list="+JSON.stringify(selected_plots)+"&plant_list="+JSON.stringify(selected_plants)+"&location_list="+JSON.stringify(selected_locations)+"&year_list="+JSON.stringify(selected_years)+"&dataLevel="+data_level+"&phenotype_min_value="+phenotype_min_value+"&phenotype_max_value="+phenotype_max_value+"&timestamp="+timestamp+"&trait_contains="+JSON.stringify(trait_contains_array)+"&include_row_and_column_numbers=1&exclude_phenotype_outlier="+exclude_phenotype_outlier+"&return_only_first_measurement=0&average_repeat_measurements=0");
         } else {
             alert("No filters selected for download.");
         }
