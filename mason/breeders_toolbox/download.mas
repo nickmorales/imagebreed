@@ -52,8 +52,10 @@ Choose a list for each parameter and click "Download".
     <td>
     <b>Format:</b><br/>
     <select class="form-control" id="format" name="format">
-        <option value=".csv">CSV</option>
-        <option value=".xls">XLS</option>
+        <option value="csv">CSV Wide</option>
+        <option value="csv_long">CSV Long</option>
+        <option value="xls">XLS Wide</option>
+        <option value="xls_long">XLS Long</option>
         <option value="html">HTML</option>
     </select>
     <br/>

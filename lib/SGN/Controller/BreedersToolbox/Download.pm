@@ -31,6 +31,7 @@ use CXGN::Trial::TrialLookup;
 use CXGN::Location::LocationLookup;
 use CXGN::Stock::StockLookup;
 use CXGN::Phenotypes::PhenotypeMatrix;
+use CXGN::Phenotypes::PhenotypeMatrixLong;
 use CXGN::Phenotypes::MetaDataMatrix;
 use CXGN::Genotype::Search;
 use CXGN::Login;
@@ -72,6 +73,7 @@ sub _parse_list_from_json {
 sub download_phenotypes_action : Path('/breeders/trials/phenotype/download') Args(0) {
     my $self = shift;
     my $c = shift;
+    print STDERR Dumper $c->req->params();
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $sgn_session_id = $c->req->param("sgn_session_id");
     my $user = $c->user();
@@ -208,11 +210,22 @@ sub download_phenotypes_action : Path('/breeders/trials/phenotype/download') Arg
     }
 
     my $plugin = "";
+    my $extension;
     if ($format eq "xls") {
         $plugin = "TrialPhenotypeExcel";
+        $extension = "xls";
     }
     if ($format eq "csv") {
         $plugin = "TrialPhenotypeCSV";
+        $extension = "csv";
+    }
+    if ($format eq "xls_long") {
+        $plugin = "TrialPhenotypeLongExcel";
+        $extension = "xls";
+    }
+    if ($format eq "csv_long") {
+        $plugin = "TrialPhenotypeLongCSV";
+        $extension = "csv";
     }
 
     my $temp_file_name;
@@ -254,8 +267,8 @@ sub download_phenotypes_action : Path('/breeders/trials/phenotype/download') Arg
 
     my $error = $download->download();
 
-    my $file_name = "phenotype.$format";
-    $c->res->content_type('Application/'.$format);
+    my $file_name = "phenotype.$extension";
+    $c->res->content_type('Application/'.$extension);
     $c->res->header('Content-Disposition', qq[attachment; filename="$file_name"]);
 
     my $output = read_file($tempfile);  ## works for xls format
@@ -287,13 +300,25 @@ sub download_action : Path('/breeders/download_action') Args(0) {
     my $trait_list_id     = $c->req->param("trait_list_list_select");
     my $trial_list_id     = $c->req->param("trial_list_list_select");
     my $dl_token = $c->req->param("phenotype_download_token") || "no_token";
+    my $repeated_measurements = $c->req->param("phenotype_repeated_measurements");
     if (!$trial_list_id && !$accession_list_id && !$trait_list_id){
         $trial_list_id     = $c->req->param("trial_metadata_list_list_select");
         $dl_token = $c->req->param("metadata_download_token") || "no_token";
     }
-    my $format            = $c->req->param("format");
-    my $repeated_measurements = $c->req->param("phenotype_repeated_measurements");
-    if (!$format){
+    my $format_input            = $c->req->param("format");
+
+    my $format;
+    if ($format_input eq 'csv' || $format_input eq 'csv_long') {
+        $format = '.csv';
+    }
+    if ($format_input eq 'xls' || $format_input eq 'xls_long') {
+        $format = '.xls';
+    }
+    if ($format_input eq 'html') {
+        $format = 'html';
+    }
+
+    if (!$format_input){
         $format            = $c->req->param("metadata_format");
     }
     my $datalevel         = $c->req->param("phenotype_datalevel");
@@ -368,19 +393,36 @@ sub download_action : Path('/breeders/download_action') Args(0) {
         @data = $metadata_search->get_metadata_matrix();
     }
     else {
-        my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
-            bcs_schema=>$schema,
-            search_type=>'MaterializedViewTable',
-            trait_list=>$trait_id_data->{transform},
-            trial_list=>$trial_id_data->{transform},
-            accession_list=>$accession_id_data->{transform},
-            include_timestamp=>$timestamp_included,
-            exclude_phenotype_outlier=>$exclude_phenotype_outlier,
-            data_level=>$datalevel,
-            average_repeat_measurements=>$return_average_value,
-            return_only_first_measurement=>$return_first_value_only
-        );
-        @data = $phenotypes_search->get_phenotype_matrix();
+        if ($format_input eq 'csv' || $format_input eq 'xls') {
+            my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
+                bcs_schema=>$schema,
+                search_type=>'MaterializedViewTable',
+                trait_list=>$trait_id_data->{transform},
+                trial_list=>$trial_id_data->{transform},
+                accession_list=>$accession_id_data->{transform},
+                include_timestamp=>$timestamp_included,
+                exclude_phenotype_outlier=>$exclude_phenotype_outlier,
+                data_level=>$datalevel,
+                average_repeat_measurements=>$return_average_value,
+                return_only_first_measurement=>$return_first_value_only
+            );
+            @data = $phenotypes_search->get_phenotype_matrix();
+        }
+        elsif ($format_input eq 'csv_long' || $format_input eq 'xls_long' || $format_input eq 'html') {
+            my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrixLong->new(
+                bcs_schema=>$schema,
+                search_type=>'MaterializedViewTable',
+                trait_list=>$trait_id_data->{transform},
+                trial_list=>$trial_id_data->{transform},
+                accession_list=>$accession_id_data->{transform},
+                include_timestamp=>$timestamp_included,
+                exclude_phenotype_outlier=>$exclude_phenotype_outlier,
+                data_level=>$datalevel,
+                average_repeat_measurements=>$return_average_value,
+                return_only_first_measurement=>$return_first_value_only
+            );
+            @data = $phenotypes_search->get_phenotype_matrix();
+        }
     }
 
     if ($format eq "html") { #dump html in browser

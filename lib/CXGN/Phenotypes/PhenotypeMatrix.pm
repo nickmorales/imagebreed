@@ -2,7 +2,7 @@ package CXGN::Phenotypes::PhenotypeMatrix;
 
 =head1 NAME
 
-CXGN::Phenotypes::PhenotypeMatrix - an object to handle creating the phenotype matrix. Can return average values for repeated measurements on observationunits. Uses SearchFactory to handle searching native database or materialized views.
+CXGN::Phenotypes::PhenotypeMatrix - an object to handle creating the phenotype matrix in wide format. Can return average values for repeated measurements on observationunits. Uses SearchFactory to handle searching native database or materialized views.
 
 =head1 USAGE
 
@@ -178,8 +178,7 @@ sub get_phenotype_matrix {
     }
     my %trait_repeat_counter;
 
-    print STDERR "GET PHENOMATRIX ".$self->search_type."\n";
-    print STDERR Dumper [$return_only_first_measurement, $average_repeat_measurements];
+    print STDERR Dumper [$self->search_type, $return_only_first_measurement, $average_repeat_measurements];
 
     my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
         $self->search_type,

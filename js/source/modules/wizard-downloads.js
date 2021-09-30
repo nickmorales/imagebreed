@@ -124,6 +124,7 @@ export function WizardDownloads(main_id,wizard){
         var year_ids = JSON.stringify(years.map(d=>d.id));
 
         var format = d3.select(".wizard-download-phenotypes-format").node().value;
+        var include_header = d3.selectAll('.wizard-download-phenotypes-header').property('checked')?1:0;
         var level = d3.select(".wizard-download-phenotypes-level").node().value;
         var repeated_measurements = d3.select(".wizard-download-phenotypes-repeat-measurements").node().value;
         var timestamp = d3.selectAll('.wizard-download-phenotypes-timestamp').property('checked')?1:0;
@@ -150,7 +151,8 @@ export function WizardDownloads(main_id,wizard){
         `&include_row_and_column_numbers=1&exclude_phenotype_outlier=${outliers}`+
         `&include_pedigree_parents=0`+
         `&return_only_first_measurement=${first_value_only}`+
-        `&average_repeat_measurements=${average_repeat}`;
+        `&average_repeat_measurements=${average_repeat}`+
+        `&has_header=${include_header}`;
         window.open(url,'_blank');
       });
 });

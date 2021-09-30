@@ -1,9 +1,9 @@
 
-package CXGN::Trial::Download::Plugin::TrialPhenotypeExcel;
+package CXGN::Trial::Download::Plugin::TrialPhenotypeLongExcel;
 
 =head1 NAME
 
-CXGN::Trial::Download::Plugin::TrialPhenotypeExcel
+CXGN::Trial::Download::Plugin::TrialPhenotypeLongExcel
 
 =head1 SYNOPSIS
 
@@ -70,8 +70,7 @@ use Moose::Role;
 
 use Spreadsheet::WriteExcel;
 use CXGN::Trial;
-use CXGN::Phenotypes::PhenotypeMatrix;
-use CXGN::Phenotypes::MetaDataMatrix;
+use CXGN::Phenotypes::PhenotypeMatrixLong;
 use Data::Dumper;
 
 sub verify {
@@ -104,38 +103,26 @@ sub download {
 
     $self->trial_download_log($trial_id, "trial phenotypes");
 
-    my @data;
-    if ($self->data_level() eq 'metadata'){
-        my $metadata_search = CXGN::Phenotypes::MetaDataMatrix->new(
-            bcs_schema=>$schema,
-            search_type=>'MetaData',
-            data_level=>$data_level,
-            trial_list=>$trial_list,
-        );
-        @data = $metadata_search->get_metadata_matrix();
-    }
-    else {
-        my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
-            bcs_schema=>$schema,
-            search_type=>'MaterializedViewTable',
-            data_level=>$data_level,
-            trait_list=>$trait_list,
-            trial_list=>$trial_list,
-            year_list=>$year_list,
-            location_list=>$location_list,
-            accession_list=>$accession_list,
-            plot_list=>$plot_list,
-            plant_list=>$plant_list,
-            include_timestamp=>$include_timestamp,
-            exclude_phenotype_outlier=>$exclude_phenotype_outlier,
-            trait_contains=>$trait_contains,
-            phenotype_min_value=>$phenotype_min_value,
-            phenotype_max_value=>$phenotype_max_value,
-            average_repeat_measurements=>$average_repeat_measurements,
-            return_only_first_measurement=>$return_only_first_measurement
-        );
-        @data = $phenotypes_search->get_phenotype_matrix();
-    }
+    my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrixLong->new(
+        bcs_schema=>$schema,
+        search_type=>'MaterializedViewTable',
+        data_level=>$data_level,
+        trait_list=>$trait_list,
+        trial_list=>$trial_list,
+        year_list=>$year_list,
+        location_list=>$location_list,
+        accession_list=>$accession_list,
+        plot_list=>$plot_list,
+        plant_list=>$plant_list,
+        include_timestamp=>$include_timestamp,
+        exclude_phenotype_outlier=>$exclude_phenotype_outlier,
+        trait_contains=>$trait_contains,
+        phenotype_min_value=>$phenotype_min_value,
+        phenotype_max_value=>$phenotype_max_value,
+        average_repeat_measurements=>$average_repeat_measurements,
+        return_only_first_measurement=>$return_only_first_measurement
+    );
+    my @data = $phenotypes_search->get_phenotype_matrix();
     #print STDERR Dumper \@data;
 
     print STDERR "Print Excel Start:".localtime."\n";
@@ -160,10 +147,7 @@ sub download {
         my $max_value_text = $phenotype_max_value ? $phenotype_max_value : '';
         my $location_list_text = $location_list ? join(",", @$location_list) : '';
         my $year_list_text = $year_list ? join(",", @$year_list) : '';
-        if ($data_level eq 'metadata'){ $ws->write(1, 1, "metadata"); }
-        else {
-            $ws->write(1, 1, "Data Level:$data_level  Trait List:$trait_list_text  Trial List:$trial_list_text  Accession List:$accession_list_text  Plot List:$plot_list_text  Plant List:$plant_list_text  Location List:$location_list_text  Year List:$year_list_text  Include Timestamp:$include_timestamp  Trait Contains:$trait_contains_text  Minimum Phenotype: $min_value_text  Maximum Phenotype: $max_value_text Exclude Phenotype Outliers: $exclude_phenotype_outlier Average Repeated Measurements: $average_repeat_measurements Return Only First: $return_only_first_measurement");
-        }
+        $ws->write(1, 1, "Data Level:$data_level  Trait List:$trait_list_text  Trial List:$trial_list_text  Accession List:$accession_list_text  Plot List:$plot_list_text  Plant List:$plant_list_text  Location List:$location_list_text  Year List:$year_list_text  Include Timestamp:$include_timestamp  Trait Contains:$trait_contains_text  Minimum Phenotype: $min_value_text  Maximum Phenotype: $max_value_text Exclude Phenotype Outliers: $exclude_phenotype_outlier Average Repeated Measurements: $average_repeat_measurements Return Only First: $return_only_first_measurement");
     }
 
     for (my $line=0; $line< scalar(@data); $line++) {

@@ -337,9 +337,9 @@ sub search {
                     my ($p1, $p2) = split /date: /, $phenotype_uniquename;
                     if ($p2){
                         my ($timestamp, $operator_value) = split /  operator = /, $p2;
-                        if ( $timestamp =~ m/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(\S)(\d{4})/) {
+                        # if ( $timestamp =~ m/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(\S)(\d{4})/) {
                             $timestamp_value = $timestamp;
-                        }
+                        # }
                     }
                 }
                 $o->{timestamp} = $timestamp_value;

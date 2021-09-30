@@ -21,8 +21,10 @@ $dialog_name => undef
                 <label class="col-sm-3 control-label">Format: </label>
                 <div class="col-sm-9" >
                     <select class="form-control" id="download_trial_phenotypes_format">
-                        <option value="csv">CSV</option>
-                        <option value="xls">Excel (xls)</option>
+                        <option value="csv">CSV Wide Format</option>
+                        <option value="csv_long">CSV Long Format</option>
+                        <option value="xls">Excel (xls) Wide Format</option>
+                        <option value="xls_long">Excel (xls) Long Format</option>
                     </select>
                 </div>
 	        </div>
@@ -64,25 +66,41 @@ $dialog_name => undef
                 </div>
             </div>
 
-<&| /page/info_section.mas, title=>"Additional Search Options",  collapsible => 1, collapsed=>0 &>
+<&| /page/info_section.mas, title=>"Additional Search Options",  collapsible => 1, collapsed=>1 &>
 
-            <div class="form-group">
-                <label class="col-sm-3 control-label">Include Timestamps: </label>
-                <div class="col-sm-9" >
-                    <select class="form-control" id="download_trial_phenotypes_timestamp_option">
-                        <option value="0">No</option>
-                        <option value="1">Yes</option>
-                    </select>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="col-sm-6 control-label">Include Timestamps: </label>
+                        <div class="col-sm-6" >
+                            <select class="form-control" id="download_trial_phenotypes_timestamp_option">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label class="col-sm-3 control-label">Suppress User Defined Phenotype Outliers: </label>
-                <div class="col-sm-9" >
-                    <select class="form-control" id="download_trial_phenotypes_exclude_outliers">
-                        <option value="0">No</option>
-                        <option value="1">Yes</option>
-                    </select>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="col-sm-6 control-label">Suppress User Defined Outliers: </label>
+                        <div class="col-sm-6" >
+                            <select class="form-control" id="download_trial_phenotypes_exclude_outliers">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label class="col-sm-6 control-label">Include Header: </label>
+                        <div class="col-sm-6" >
+                            <select class="form-control" id="download_trial_phenotypes_include_headers">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -151,6 +169,7 @@ jQuery(document).ready(function() {
     var phenotype_max_value = jQuery("#download_trial_phenotype_phenotype_max").val();
     var exclude_phenotype_outlier = jQuery("#download_trial_phenotypes_exclude_outliers").val();
     var repeated_measurements = jQuery('#download_trial_phenotypes_repeated_measurements').val();
+    var include_header = jQuery('#download_trial_phenotypes_include_headers').val();
 
     var first_value_only = 0;
     var average_repeat = 0;
@@ -161,7 +180,7 @@ jQuery(document).ready(function() {
         first_value_only = 1;
     }
 
-    window.open("/breeders/trials/phenotype/download?trial_list="+JSON.stringify(trial_id_array)+"&format="+format+"&timestamp="+timestamp+"&trait_contains="+JSON.stringify(trait_contains_array)+"&trait_component_list="+JSON.stringify(trait_components)+"&trait_list="+JSON.stringify(traits)+"&dataLevel="+data_level+"&phenotype_min_value="+phenotype_min_value+"&phenotype_max_value="+phenotype_max_value+"&exclude_phenotype_outlier="+exclude_phenotype_outlier+"&return_only_first_measurement="+first_value_only+"&average_repeat_measurements="+average_repeat);
+    window.open("/breeders/trials/phenotype/download?trial_list="+JSON.stringify(trial_id_array)+"&format="+format+"&timestamp="+timestamp+"&trait_contains="+JSON.stringify(trait_contains_array)+"&trait_component_list="+JSON.stringify(trait_components)+"&trait_list="+JSON.stringify(traits)+"&dataLevel="+data_level+"&phenotype_min_value="+phenotype_min_value+"&phenotype_max_value="+phenotype_max_value+"&exclude_phenotype_outlier="+exclude_phenotype_outlier+"&return_only_first_measurement="+first_value_only+"&average_repeat_measurements="+average_repeat+"&has_header="+include_header);
 
   });
 
