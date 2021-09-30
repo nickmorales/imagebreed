@@ -757,7 +757,7 @@ sub studies_table {
 		data_level=>$data_level,
 		trial_list=>\@trial_ids_array,
 		trait_list=>\@trait_ids_array,
-		include_timestamp=>1,
+		include_timestamp=>0,
         exclude_phenotype_outlier=>$exclude_phenotype_outlier
 	);
 	my @data = $phenotypes_search->get_phenotype_matrix();

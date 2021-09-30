@@ -53,20 +53,34 @@ has 'default_page_size' => (
 
 sub stock_search :Path('/search/stocks') Args(0) {
     my ($self, $c ) = @_;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+
+    my $sgn_session_id = $c->req->param("sgn_session_id");
+    my $user = $c->user();
+    if (!$user && !$sgn_session_id) {
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
+    } elsif (!$user && $sgn_session_id) {
+        my $login = CXGN::Login->new($schema->storage->dbh);
+        my $logged_in = $login->query_from_cookie($sgn_session_id);
+        if (!$logged_in){
+            $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+            return;
+        }
+    }
+
     my @editable_stock_props = split ',',$c->get_conf('editable_stock_props');
     $c->stash(
-	template => '/search/stocks.mas',
-
+        template => '/search/stocks.mas',
         stock_types => stock_types($self->schema),
-	organisms   => stock_organisms($self->schema) ,
-	sp_person_autocomplete_uri => '/ajax/people/autocomplete',
+        organisms   => stock_organisms($self->schema) ,
+        sp_person_autocomplete_uri => '/ajax/people/autocomplete',
         trait_autocomplete_uri     => '/ajax/stock/trait_autocomplete',
         onto_autocomplete_uri      => '/ajax/cvterm/autocomplete',
-	trait_db_name              => $c->get_conf('trait_ontology_db_name'),
-	breeding_programs          => breeding_programs($self->schema),
-    editable_stock_props => \@editable_stock_props
-	);
-
+        trait_db_name              => $c->get_conf('trait_ontology_db_name'),
+        breeding_programs          => breeding_programs($self->schema),
+        editable_stock_props => \@editable_stock_props
+    );
 }
 
 
@@ -81,16 +95,15 @@ Display a stock search form, or handle stock searching.
 sub search :Path('/stock/search') Args(0) {
     my ( $self, $c ) = @_;
     $c->stash(
-	template => '/search/stocks.mas',
-
+        template => '/search/stocks.mas',
         stock_types => stock_types($self->schema),
-	organisms   => stock_organisms($self->schema) ,
-	sp_person_autocomplete_uri => $c->uri_for( '/ajax/people/autocomplete' ),
+        organisms   => stock_organisms($self->schema) ,
+        sp_person_autocomplete_uri => $c->uri_for( '/ajax/people/autocomplete' ),
         trait_autocomplete_uri     => $c->uri_for('/ajax/stock/trait_autocomplete'),
         onto_autocomplete_uri      => $c->uri_for('/ajax/cvterm/autocomplete'),
-	trait_db_name              => $c->get_conf('trait_ontology_db_name'),
-	breeding_programs          => breeding_programs($self->schema),
-	);
+        trait_db_name              => $c->get_conf('trait_ontology_db_name'),
+        breeding_programs          => breeding_programs($self->schema),
+    );
     #my $form = HTML::FormFu->new(LoadFile($c->path_to(qw{forms stock stock_search.yaml})));
     #my $trait_db_name = $c->get_conf('trait_ontology_db_name');
     #$c->stash(

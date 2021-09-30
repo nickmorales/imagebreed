@@ -13,6 +13,7 @@ use SGN::Model::Cvterm;
 use DateTime;
 use Data::Dumper;
 use CXGN::Phenotypes::PhenotypeMatrix;
+use CXGN::Phenotypes::PhenotypeMatrixLong;
 use CXGN::BreederSearch;
 use Spreadsheet::Read;
 use CXGN::Trial::Download;
@@ -2716,674 +2717,7 @@ foreach my $line (@data){
 shift @plant_ids;
 
 print STDERR Dumper \@test_result;
-is_deeply(\@test_result, [
-          [
-            'studyYear',
-            'programDbId',
-            'programName',
-            'programDescription',
-            'studyDbId',
-            'studyName',
-            'studyDescription',
-            'studyDesign',
-            'plotWidth',
-            'plotLength',
-            'fieldSize',
-            'fieldTrialIsPlannedToBeGenotyped',
-            'fieldTrialIsPlannedToCross',
-            'plantingDate',
-            'harvestDate',
-            'locationDbId',
-            'locationName',
-            'germplasmDbId',
-            'germplasmName',
-            'germplasmSynonyms',
-            'observationLevel',
-            'variable',
-            'observationUnitName',
-            'replicate',
-            'blockNumber',
-            'plotNumber',
-            'rowNumber',
-            'colNumber',
-            'entryType',
-            'plantNumber',
-            'dry matter content percentage|CO_334:0000092',
-            'dry yield|CO_334:0000014',
-            'fresh root weight|CO_334:0000012',
-            'notes'
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38842,
-            'test_accession3',
-            'test_accession3_synonym1',
-            'plant',
-            'variable',
-            'test_trial210_plant_1',
-            '3',
-            '1',
-            '10',
-            undef,
-            undef,
-            'test',
-            undef,
-            '28',
-            undef,
-            '38',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38842,
-            'test_accession3',
-            'test_accession3_synonym1',
-            'plant',
-            'variable',
-            'test_trial210_plant_2',
-            '3',
-            '1',
-            '10',
-            undef,
-            undef,
-            'test',
-            undef,
-            '29',
-            undef,
-            undef,undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38840,
-            'test_accession1',
-            'test_accession1_synonym1',
-            'plant',
-            'variable',
-            'test_trial211_plant_1',
-            '3',
-            '1',
-            '11',
-            undef,
-            undef,
-            'test',
-            undef,
-            '30',
-            undef,
-            '40',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38840,
-            'test_accession1',
-            'test_accession1_synonym1',
-            'plant',
-            'variable',
-            'test_trial211_plant_2',
-            '3',
-            '1',
-            '11',
-            undef,
-            undef,
-            'test',
-            undef,
-            '31',
-            undef,
-            '41',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38843,
-            'test_accession4',
-            '',
-            'plant',
-            'variable',
-            'test_trial214_plant_1',
-            '3',
-            '1',
-            '14',
-            undef,
-            undef,
-            'test',
-            undef,
-            '36',
-            undef,
-            '46',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38843,
-            'test_accession4',
-            '',
-            'plant',
-            'variable',
-            'test_trial214_plant_2',
-            '3',
-            '1',
-            '14',
-            undef,
-            undef,
-            'test',
-            undef,
-            '37',
-            undef,
-            '47',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38843,
-            'test_accession4',
-            '',
-            'plant',
-            'variable',
-            'test_trial21_plant_1',
-            '1',
-            '1',
-            '1',
-            undef,
-            undef,
-            'test',
-            undef,
-            '42,2016-01-07 12:08:24',
-            '42,2016-01-07 12:08:24',
-            '20',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38843,
-            'test_accession4',
-            '',
-            'plant',
-            'variable',
-            'test_trial21_plant_2',
-            '1',
-            '1',
-            '1',
-            undef,
-            undef,
-            'test',
-            undef,
-            '42,2016-01-07 12:08:24',
-            undef,
-            '21',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38842,
-            'test_accession3',
-            'test_accession3_synonym1',
-            'plant',
-            'variable',
-            'test_trial23_plant_1',
-            '1',
-            '1',
-            '3',
-            undef,
-            undef,
-            'test',
-            undef,
-            '41,2016-01-07 12:08:27',
-            undef,
-            '24',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38842,
-            'test_accession3',
-            'test_accession3_synonym1',
-            'plant',
-            'variable',
-            'test_trial23_plant_2',
-            '1',
-            '1',
-            '3',
-            undef,
-            undef,
-            'test',
-            undef,
-            '41,2016-01-07 12:08:27',
-            undef,
-            '25',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38842,
-            'test_accession3',
-            'test_accession3_synonym1',
-            'plant',
-            'variable',
-            'test_trial24_plant_1',
-            '2',
-            '1',
-            '4',
-            undef,
-            undef,
-            'test',
-            undef,
-            undef,
-            undef,
-            '26',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38842,
-            'test_accession3',
-            'test_accession3_synonym1',
-            'plant',
-            'variable',
-            'test_trial24_plant_2',
-            '2',
-            '1',
-            '4',
-            undef,
-            undef,
-            'test',
-            undef,
-            undef,
-            undef,
-            '27',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38840,
-            'test_accession1',
-            'test_accession1_synonym1',
-            'plant',
-            'variable',
-            'test_trial25_plant_1',
-            '1',
-            '1',
-            '5',
-            undef,
-            undef,
-            'test',
-            undef,
-            undef,
-            undef,
-            '28',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38840,
-            'test_accession1',
-            'test_accession1_synonym1',
-            'plant',
-            'variable',
-            'test_trial25_plant_2',
-            '1',
-            '1',
-            '5',
-            undef,
-            undef,
-            'test',
-            undef,
-            undef,
-            undef,
-            '29',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38843,
-            'test_accession4',
-            '',
-            'plant',
-            'variable',
-            'test_trial26_plant_1',
-            '2',
-            '1',
-            '6',
-            undef,
-            undef,
-            'test',
-            undef,
-            '20',
-            undef,
-            '30',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38843,
-            'test_accession4',
-            '',
-            'plant',
-            'variable',
-            'test_trial26_plant_2',
-            '2',
-            '1',
-            '6',
-            undef,
-            undef,
-            'test',
-            undef,
-            '21',
-            undef,
-            undef,undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38840,
-            'test_accession1',
-            'test_accession1_synonym1',
-            'plant',
-            'variable',
-            'test_trial28_plant_1',
-            '2',
-            '1',
-            '8',
-            undef,
-            undef,
-            'test',
-            undef,
-            undef,
-            undef,
-            '34',undef
-          ],
-          [
-            '2014',
-            134,
-            'test',
-            'test',
-            137,
-            'test_trial',
-            'test trial',
-            'CRD',
-            undef,
-            undef,
-            undef,
-            undef,
-            undef,
-            '2017-July-04',
-            '2017-July-21',
-            '23',
-            'test_location',
-            38840,
-            'test_accession1',
-            'test_accession1_synonym1',
-            'plant',
-            'variable',
-            'test_trial28_plant_2',
-            '2',
-            '1',
-            '8',
-            undef,
-            undef,
-            'test',
-            undef,
-            '25',
-            undef,
-            '35',undef
-          ]
-        ], 'pheno search test2');
+is_deeply(\@test_result, [['studyYear','programDbId','programName','programDescription','studyDbId','studyName','studyDescription','studyDesign','plotWidth','plotLength','fieldSize','fieldTrialIsPlannedToBeGenotyped','fieldTrialIsPlannedToCross','plantingDate','harvestDate','locationDbId','locationName','germplasmDbId','germplasmName','germplasmSynonyms','observationLevel','variable','observationUnitName','replicate','blockNumber','plotNumber','rowNumber','colNumber','entryType','plantNumber','dry matter content percentage|CO_334:0000092','dry yield|CO_334:0000014','fresh root weight|CO_334:0000012','notes'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial210_plant_1','3','1','10',undef,undef,'test',undef,'28,NA2016-02-16_05:15:21',undef,'38,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial210_plant_2','3','1','10',undef,undef,'test',undef,'29,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial211_plant_1','3','1','11',undef,undef,'test',undef,'30,NA2016-02-16_05:15:21',undef,'40,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial211_plant_2','3','1','11',undef,undef,'test',undef,'31,NA2016-02-16_05:15:21',undef,'41,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial214_plant_1','3','1','14',undef,undef,'test',undef,'36,NA2016-02-16_05:15:21',undef,'46,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial214_plant_2','3','1','14',undef,undef,'test',undef,'37,NA2016-02-16_05:15:21',undef,'47,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial21_plant_1','1','1','1',undef,undef,'test',undef,'42,2016-01-07 12:08:24','42,2016-01-07 12:08:24','20,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial21_plant_2','1','1','1',undef,undef,'test',undef,'42,2016-01-07 12:08:24',undef,'21,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial23_plant_1','1','1','3',undef,undef,'test',undef,'41,2016-01-07 12:08:27',undef,'24,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial23_plant_2','1','1','3',undef,undef,'test',undef,'41,2016-01-07 12:08:27',undef,'25,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial24_plant_1','2','1','4',undef,undef,'test',undef,undef,undef,'26,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial24_plant_2','2','1','4',undef,undef,'test',undef,undef,undef,'27,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial25_plant_1','1','1','5',undef,undef,'test',undef,undef,undef,'28,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial25_plant_2','1','1','5',undef,undef,'test',undef,undef,undef,'29,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial26_plant_1','2','1','6',undef,undef,'test',undef,'20,NA2016-02-16_05:15:21',undef,'30,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial26_plant_2','2','1','6',undef,undef,'test',undef,'21,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial28_plant_1','2','1','8',undef,undef,'test',undef,undef,undef,'34,NA2016-02-16_05:15:21',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial28_plant_2','2','1','8',undef,undef,'test',undef,'25,NA2016-02-16_05:15:21',undef,'35,NA2016-02-16_05:15:21',undef]], 'pheno search test2');
 
 my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
 	search_type=>'Native',
@@ -3411,7 +2745,81 @@ foreach my $line (@data){
 }
 print STDERR Dumper \@test_result;
 
-is_deeply(\@test_result, [['studyYear','programDbId','programName','programDescription','studyDbId','studyName','studyDescription','studyDesign','plotWidth','plotLength','fieldSize','fieldTrialIsPlannedToBeGenotyped','fieldTrialIsPlannedToCross','plantingDate','harvestDate','locationDbId','locationName','germplasmDbId','germplasmName','germplasmSynonyms','observationLevel','variable','observationUnitName','replicate','blockNumber','plotNumber','rowNumber','colNumber','entryType','plantNumber','dry matter content percentage|CO_334:0000092','fresh root weight|CO_334:0000012','fresh shoot weight measurement in kg|CO_334:0000016','sprouting proportion|CO_334:0000008','notes'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot','variable','test_trial21','1','1','1',undef,undef,'test',undef,'35','36','20','45','test note1 (Operator: janedoe, Time: )'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plot','variable','test_trial210','3','1','10',undef,undef,'test',undef,'30','45','29','45',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial210_plant_1','3','1','10',undef,undef,'test',undef,'28','38',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial210_plant_2','3','1','10',undef,undef,'test',undef,'29',undef,undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plot','variable','test_trial211','3','1','11',undef,undef,'test',undef,'38','46','30',undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial211_plant_1','3','1','11',undef,undef,'test',undef,'30','40',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial211_plant_2','3','1','11',undef,undef,'test',undef,'31','41',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot','variable','test_trial214','3','1','14',undef,undef,'test',undef,'30','49','33',undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial214_plant_1','3','1','14',undef,undef,'test',undef,'36','46',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial214_plant_2','3','1','14',undef,undef,'test',undef,'37','47',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial21_plant_1','1','1','1',undef,undef,'test',undef,'42,2016-01-07 12:08:24','20',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial21_plant_2','1','1','1',undef,undef,'test',undef,'42,2016-01-07 12:08:24','21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plot','variable','test_trial23','1','1','3',undef,undef,'test',undef,'38','38','22','23',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial23_plant_1','1','1','3',undef,undef,'test',undef,'41,2016-01-07 12:08:27','24',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial23_plant_2','1','1','3',undef,undef,'test',undef,'41,2016-01-07 12:08:27','25',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plot','variable','test_trial24','2','1','4',undef,undef,'test',undef,'39','39','23','78',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial24_plant_1','2','1','4',undef,undef,'test',undef,undef,'26',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial24_plant_2','2','1','4',undef,undef,'test',undef,undef,'27',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plot','variable','test_trial25','1','1','5',undef,undef,'test',undef,'35','40','24','56',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial25_plant_1','1','1','5',undef,undef,'test',undef,undef,'28',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial25_plant_2','1','1','5',undef,undef,'test',undef,undef,'29',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot','variable','test_trial26','2','1','6',undef,undef,'test',undef,'30','41','25','45',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial26_plant_1','2','1','6',undef,undef,'test',undef,'20','30',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial26_plant_2','2','1','6',undef,undef,'test',undef,'21',undef,undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plot','variable','test_trial28','2','1','8',undef,undef,'test',undef,'39','43','27','23',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial28_plant_1','2','1','8',undef,undef,'test',undef,undef,'34',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial28_plant_2','2','1','8',undef,undef,'test',undef,'25','35',undef,undef,undef]], 'pheno search test3');
+is_deeply(\@test_result, [['studyYear','programDbId','programName','programDescription','studyDbId','studyName','studyDescription','studyDesign','plotWidth','plotLength','fieldSize','fieldTrialIsPlannedToBeGenotyped','fieldTrialIsPlannedToCross','plantingDate','harvestDate','locationDbId','locationName','germplasmDbId','germplasmName','germplasmSynonyms','observationLevel','variable','observationUnitName','replicate','blockNumber','plotNumber','rowNumber','colNumber','entryType','plantNumber','dry matter content percentage|CO_334:0000092','fresh root weight|CO_334:0000012','fresh shoot weight measurement in kg|CO_334:0000016','sprouting proportion|CO_334:0000008','notes'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot','variable','test_trial21','1','1','1',undef,undef,'test',undef,'35,NA2016-02-16_05:55:55','36,NA2016-02-16_07:11:48','20,NA2016-02-16_05:55:55','45,NA2016-02-16_05:55:55','test note1 (Operator: janedoe, Time: )'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plot','variable','test_trial210','3','1','10',undef,undef,'test',undef,'30,NA2016-02-16_05:55:55','45,NA2016-02-16_07:11:48','29,NA2016-02-16_05:55:55','45,NA2016-02-16_05:55:55',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial210_plant_1','3','1','10',undef,undef,'test',undef,'28,NA2016-02-16_05:15:21','38,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial210_plant_2','3','1','10',undef,undef,'test',undef,'29,NA2016-02-16_05:15:21',undef,undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plot','variable','test_trial211','3','1','11',undef,undef,'test',undef,'38,NA2016-02-16_05:55:55','46,NA2016-02-16_07:11:48','30,NA2016-02-16_05:55:55',undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial211_plant_1','3','1','11',undef,undef,'test',undef,'30,NA2016-02-16_05:15:21','40,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial211_plant_2','3','1','11',undef,undef,'test',undef,'31,NA2016-02-16_05:15:21','41,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot','variable','test_trial214','3','1','14',undef,undef,'test',undef,'30,NA2016-02-16_05:55:55','49,NA2016-02-16_07:11:48','33,NA2016-02-16_05:55:55',undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial214_plant_1','3','1','14',undef,undef,'test',undef,'36,NA2016-02-16_05:15:21','46,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial214_plant_2','3','1','14',undef,undef,'test',undef,'37,NA2016-02-16_05:15:21','47,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial21_plant_1','1','1','1',undef,undef,'test',undef,'42,2016-01-07 12:08:24','20,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial21_plant_2','1','1','1',undef,undef,'test',undef,'42,2016-01-07 12:08:24','21,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plot','variable','test_trial23','1','1','3',undef,undef,'test',undef,'38,NA2016-02-16_05:55:55','38,NA2016-02-16_07:11:48','22,NA2016-02-16_05:55:55','23,NA2016-02-16_05:55:55',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial23_plant_1','1','1','3',undef,undef,'test',undef,'41,2016-01-07 12:08:27','24,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial23_plant_2','1','1','3',undef,undef,'test',undef,'41,2016-01-07 12:08:27','25,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plot','variable','test_trial24','2','1','4',undef,undef,'test',undef,'39,NA2016-02-16_05:55:55','39,NA2016-02-16_07:11:48','23,NA2016-02-16_05:55:55','78,NA2016-02-16_05:55:55',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial24_plant_1','2','1','4',undef,undef,'test',undef,undef,'26,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial24_plant_2','2','1','4',undef,undef,'test',undef,undef,'27,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plot','variable','test_trial25','1','1','5',undef,undef,'test',undef,'35,NA2016-02-16_05:55:55','40,NA2016-02-16_07:11:48','24,NA2016-02-16_05:55:55','56,NA2016-02-16_05:55:55',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial25_plant_1','1','1','5',undef,undef,'test',undef,undef,'28,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial25_plant_2','1','1','5',undef,undef,'test',undef,undef,'29,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot','variable','test_trial26','2','1','6',undef,undef,'test',undef,'30,NA2016-02-16_05:55:55','41,NA2016-02-16_07:11:48','25,NA2016-02-16_05:55:55','45,NA2016-02-16_05:55:55',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial26_plant_1','2','1','6',undef,undef,'test',undef,'20,NA2016-02-16_05:15:21','30,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial26_plant_2','2','1','6',undef,undef,'test',undef,'21,NA2016-02-16_05:15:21',undef,undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plot','variable','test_trial28','2','1','8',undef,undef,'test',undef,'39,NA2016-02-16_05:55:55','43,NA2016-02-16_07:11:48','27,NA2016-02-16_05:55:55','23,NA2016-02-16_05:55:55',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial28_plant_1','2','1','8',undef,undef,'test',undef,undef,'34,NA2016-02-16_05:15:21',undef,undef,undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial28_plant_2','2','1','8',undef,undef,'test',undef,'25,NA2016-02-16_05:15:21','35,NA2016-02-16_05:15:21',undef,undef,undef]], 'pheno search test3');
+
+my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrixLong->new(
+	search_type=>'Native',
+	bcs_schema=>$f->bcs_schema,
+	data_level=>'plant',
+	trait_list=>[70666,70727],
+	trial_list=>[137],
+	accession_list=>\@accession_ids,
+	include_timestamp=>1,
+	trait_contains=>['r'],
+	phenotype_min_value=>20,
+	phenotype_max_value=>100,
+);
+my @data = $phenotypes_search->get_phenotype_matrix();
+#print STDERR Dumper \@data;
+
+#Retrieve and Remove variable plant stock_ids
+my @test_result;
+my @plant_ids;
+foreach my $line (@data){
+	my @line_array = @$line;
+	push @plant_ids, $line_array[21];
+	$line_array[21] = 'variable';
+	push @test_result, \@line_array;
+}
+shift @plant_ids;
+
+print STDERR Dumper \@test_result;
+is_deeply(\@test_result, [['studyYear','programDbId','programName','programDescription','studyDbId','studyName','studyDescription','studyDesign','plotWidth','plotLength','fieldSize','fieldTrialIsPlannedToBeGenotyped','fieldTrialIsPlannedToCross','plantingDate','harvestDate','locationDbId','locationName','germplasmDbId','germplasmName','germplasmSynonyms','observationLevel','variable','observationUnitName','replicate','blockNumber','plotNumber','rowNumber','colNumber','entryType','plantNumber','notes','createDate','collectDate','timestamp','observationVariableName','value'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial210_plant_1','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial210_plant_1','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','38'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial211_plant_1','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial211_plant_1','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','40'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial211_plant_2','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial211_plant_2','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','41'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial214_plant_1','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial214_plant_1','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','46'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial214_plant_2','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial214_plant_2','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','47'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial21_plant_1','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014','42'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial21_plant_1','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','20'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial21_plant_2','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial21_plant_2','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','21'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial23_plant_1','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial23_plant_1','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','24'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial23_plant_2','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial23_plant_2','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','25'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial24_plant_1','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial24_plant_1','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','26'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial24_plant_2','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','test_accession3_synonym1','plant','variable','test_trial24_plant_2','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','27'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial25_plant_1','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial25_plant_1','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','28'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial25_plant_2','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial25_plant_2','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','29'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial26_plant_1','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plant','variable','test_trial26_plant_1','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','30'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial28_plant_1','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial28_plant_1','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','34'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial28_plant_2','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,'dry yield|CO_334:0000014',undef],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','test_accession1_synonym1','plant','variable','test_trial28_plant_2','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,'fresh root weight|CO_334:0000012','35']] );
+
+my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrixLong->new(
+	search_type=>'MaterializedViewTable',
+	bcs_schema=>$f->bcs_schema,
+	data_level=>'plot',
+	trait_list=>[70666,70668,70681],
+	trial_list=>[137],
+	plot_list=>\@plot_ids,
+	include_timestamp=>0,
+	phenotype_min_value=>1,
+	phenotype_max_value=>100,
+    average_repeat_measurements=>1,
+    return_only_first_measurement=>0
+);
+my @data = $phenotypes_search->get_phenotype_matrix();
+print STDERR Dumper \@data;
+is_deeply(\@data, [['studyYear','programDbId','programName','programDescription','studyDbId','studyName','studyDescription','studyDesign','plotWidth','plotLength','fieldSize','fieldTrialIsPlannedToBeGenotyped','fieldTrialIsPlannedToCross','plantingDate','harvestDate','locationDbId','locationName','germplasmDbId','germplasmName','germplasmSynonyms','observationLevel','observationUnitDbId','observationUnitName','replicate','blockNumber','plotNumber','rowNumber','colNumber','entryType','plantNumber','plantedSeedlotStockDbId','plantedSeedlotStockUniquename','plantedSeedlotCurrentCount','plantedSeedlotCurrentWeightGram','plantedSeedlotBoxName','plantedSeedlotTransactionCount','plantedSeedlotTransactionWeight','plantedSeedlotTransactionDescription','availableGermplasmSeedlotUniquenames','notes','createDate','collectDate','timestamp','observationVariableName','value'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38857,'test_trial21','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','test note1 (Operator: janedoe, Time: )',undef,undef,undef,'fresh root weight|CO_334:0000012','20.25'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38857,'test_trial21','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','test note1 (Operator: janedoe, Time: )',undef,undef,undef,'harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38857,'test_trial21','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','test note1 (Operator: janedoe, Time: )',undef,undef,undef,'top yield|CO_334:0000017','2'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38866,'test_trial210','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','22.5'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38866,'test_trial210','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','7.55'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38866,'test_trial210','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','2'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38867,'test_trial211','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','22.75'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38867,'test_trial211','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','8.3'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38867,'test_trial211','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','4'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38868,'test_trial212','3','1','12',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','23'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38868,'test_trial212','3','1','12',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','9.05'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38868,'test_trial212','3','1','12',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','7'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38869,'test_trial213','2','1','13',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','23.25'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38869,'test_trial213','2','1','13',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','9.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38869,'test_trial213','2','1','13',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','4.4'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38870,'test_trial214','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','23.5'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38870,'test_trial214','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','10.55'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38870,'test_trial214','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','7.5'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38871,'test_trial215','3','1','15',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','23.75'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38871,'test_trial215','3','1','15',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','11.3'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38871,'test_trial215','3','1','15',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','7'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38858,'test_trial22','1','1','2',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','testnote2 (Operator: janedoe, Time: )',undef,undef,undef,'fresh root weight|CO_334:0000012','20.5'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38858,'test_trial22','1','1','2',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','testnote2 (Operator: janedoe, Time: )',undef,undef,undef,'harvest index variable|CO_334:0000015','1.55'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38858,'test_trial22','1','1','2',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','testnote2 (Operator: janedoe, Time: )',undef,undef,undef,'top yield|CO_334:0000017','3'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38859,'test_trial23','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','20.75'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38859,'test_trial23','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','2.3'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38859,'test_trial23','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','5'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38860,'test_trial24','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','21'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38860,'test_trial24','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','2.85'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38860,'test_trial24','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','7'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38861,'test_trial25','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','21.25'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38861,'test_trial25','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','3.46666666666667'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38861,'test_trial25','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','2'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38862,'test_trial26','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','21.5'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38862,'test_trial26','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','4.55'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38862,'test_trial26','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','4'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38863,'test_trial27','2','1','7',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','21.75'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38863,'test_trial27','2','1','7',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','5.1'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38863,'test_trial27','2','1','7',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','9'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38864,'test_trial28','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','22'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38864,'test_trial28','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','6.05'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38864,'test_trial28','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','6'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38865,'test_trial29','1','1','9',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38865,'test_trial29','1','1','9',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'harvest index variable|CO_334:0000015','6.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38865,'test_trial29','1','1','9',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,undef,undef,undef,'top yield|CO_334:0000017','3']]);
+
+my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrixLong->new(
+	search_type=>'MaterializedViewTable',
+	bcs_schema=>$f->bcs_schema,
+	data_level=>'plot',
+	trait_list=>[70666,70668,70681],
+	trial_list=>[137],
+	plot_list=>\@plot_ids,
+	include_timestamp=>0,
+	phenotype_min_value=>1,
+	phenotype_max_value=>100,
+    average_repeat_measurements=>0,
+    return_only_first_measurement=>0
+);
+my @data = $phenotypes_search->get_phenotype_matrix();
+print STDERR Dumper \@data;
+
+@test_result = ();
+foreach my $line (@data){
+	my @line_array = @$line;
+	$line_array[40] = 'variable';
+	$line_array[41] = 'variable';
+	$line_array[42] = 'variable';
+	push @test_result, \@line_array;
+}
+print STDERR Dumper \@test_result;
+
+is_deeply(\@test_result, [['studyYear','programDbId','programName','programDescription','studyDbId','studyName','studyDescription','studyDesign','plotWidth','plotLength','fieldSize','fieldTrialIsPlannedToBeGenotyped','fieldTrialIsPlannedToCross','plantingDate','harvestDate','locationDbId','locationName','germplasmDbId','germplasmName','germplasmSynonyms','observationLevel','observationUnitDbId','observationUnitName','replicate','blockNumber','plotNumber','rowNumber','colNumber','entryType','plantNumber','plantedSeedlotStockDbId','plantedSeedlotStockUniquename','plantedSeedlotCurrentCount','plantedSeedlotCurrentWeightGram','plantedSeedlotBoxName','plantedSeedlotTransactionCount','plantedSeedlotTransactionWeight','plantedSeedlotTransactionDescription','availableGermplasmSeedlotUniquenames','notes','variable','variable','variable','observationVariableName','value'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38857,'test_trial21','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','test note1 (Operator: janedoe, Time: )','variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38857,'test_trial21','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','test note1 (Operator: janedoe, Time: )','variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38857,'test_trial21','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','test note1 (Operator: janedoe, Time: )','variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38857,'test_trial21','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','test note1 (Operator: janedoe, Time: )','variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38857,'test_trial21','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','test note1 (Operator: janedoe, Time: )','variable','variable','variable','fresh root weight|CO_334:0000012','36'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38857,'test_trial21','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','test note1 (Operator: janedoe, Time: )','variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38857,'test_trial21','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','test note1 (Operator: janedoe, Time: )','variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38857,'test_trial21','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','test note1 (Operator: janedoe, Time: )','variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38857,'test_trial21','1','1','1',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','test note1 (Operator: janedoe, Time: )','variable','variable','variable','top yield|CO_334:0000017','2'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38866,'test_trial210','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38866,'test_trial210','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','9.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38866,'test_trial210','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38866,'test_trial210','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','9.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38866,'test_trial210','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','45'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38866,'test_trial210','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38866,'test_trial210','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38866,'test_trial210','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','9.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38866,'test_trial210','3','1','10',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','2'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38867,'test_trial211','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38867,'test_trial211','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','10.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38867,'test_trial211','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38867,'test_trial211','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','10.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38867,'test_trial211','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','46'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38867,'test_trial211','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38867,'test_trial211','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38867,'test_trial211','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','10.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38867,'test_trial211','3','1','11',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','4'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38868,'test_trial212','3','1','12',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38868,'test_trial212','3','1','12',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','11.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38868,'test_trial212','3','1','12',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38868,'test_trial212','3','1','12',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','11.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38868,'test_trial212','3','1','12',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','47'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38868,'test_trial212','3','1','12',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38868,'test_trial212','3','1','12',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38868,'test_trial212','3','1','12',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','11.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38868,'test_trial212','3','1','12',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','7'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38869,'test_trial213','2','1','13',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38869,'test_trial213','2','1','13',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','12.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38869,'test_trial213','2','1','13',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38869,'test_trial213','2','1','13',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','12.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38869,'test_trial213','2','1','13',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','48'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38869,'test_trial213','2','1','13',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38869,'test_trial213','2','1','13',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38869,'test_trial213','2','1','13',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','12.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38869,'test_trial213','2','1','13',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','4.4'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38870,'test_trial214','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38870,'test_trial214','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','13.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38870,'test_trial214','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38870,'test_trial214','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','13.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38870,'test_trial214','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','49'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38870,'test_trial214','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38870,'test_trial214','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38870,'test_trial214','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','13.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38870,'test_trial214','3','1','14',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','7.5'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38871,'test_trial215','3','1','15',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38871,'test_trial215','3','1','15',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','14.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38871,'test_trial215','3','1','15',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38871,'test_trial215','3','1','15',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','14.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38871,'test_trial215','3','1','15',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','50'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38871,'test_trial215','3','1','15',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38871,'test_trial215','3','1','15',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38871,'test_trial215','3','1','15',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','14.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38871,'test_trial215','3','1','15',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','7'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38858,'test_trial22','1','1','2',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','testnote2 (Operator: janedoe, Time: )','variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38858,'test_trial22','1','1','2',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','testnote2 (Operator: janedoe, Time: )','variable','variable','variable','harvest index variable|CO_334:0000015','1.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38858,'test_trial22','1','1','2',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','testnote2 (Operator: janedoe, Time: )','variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38858,'test_trial22','1','1','2',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','testnote2 (Operator: janedoe, Time: )','variable','variable','variable','harvest index variable|CO_334:0000015','1.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38858,'test_trial22','1','1','2',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','testnote2 (Operator: janedoe, Time: )','variable','variable','variable','fresh root weight|CO_334:0000012','37'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38858,'test_trial22','1','1','2',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','testnote2 (Operator: janedoe, Time: )','variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38858,'test_trial22','1','1','2',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','testnote2 (Operator: janedoe, Time: )','variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38858,'test_trial22','1','1','2',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','testnote2 (Operator: janedoe, Time: )','variable','variable','variable','harvest index variable|CO_334:0000015','1.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38858,'test_trial22','1','1','2',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'','testnote2 (Operator: janedoe, Time: )','variable','variable','variable','top yield|CO_334:0000017','3'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38859,'test_trial23','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38859,'test_trial23','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','2.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38859,'test_trial23','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38859,'test_trial23','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','2.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38859,'test_trial23','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','38'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38859,'test_trial23','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38859,'test_trial23','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38859,'test_trial23','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','2.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38859,'test_trial23','1','1','3',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','5'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38860,'test_trial24','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38860,'test_trial24','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','3.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38860,'test_trial24','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38860,'test_trial24','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','3.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38860,'test_trial24','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','39'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38860,'test_trial24','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38860,'test_trial24','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38860,'test_trial24','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','3.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38842,'test_accession3','','plot',38860,'test_trial24','2','1','4',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','7'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38861,'test_trial25','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38861,'test_trial25','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','4.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38861,'test_trial25','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38861,'test_trial25','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','4.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38861,'test_trial25','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','40'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38861,'test_trial25','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38861,'test_trial25','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38861,'test_trial25','1','1','5',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','2'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38862,'test_trial26','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38862,'test_trial26','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','5.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38862,'test_trial26','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38862,'test_trial26','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','5.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38862,'test_trial26','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','41'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38862,'test_trial26','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38862,'test_trial26','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38862,'test_trial26','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','5.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38843,'test_accession4','','plot',38862,'test_trial26','2','1','6',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','4'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38863,'test_trial27','2','1','7',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38863,'test_trial27','2','1','7',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','6.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38863,'test_trial27','2','1','7',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38863,'test_trial27','2','1','7',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','6.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38863,'test_trial27','2','1','7',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','42'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38863,'test_trial27','2','1','7',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38863,'test_trial27','2','1','7',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38863,'test_trial27','2','1','7',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','6.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38844,'test_accession5','','plot',38863,'test_trial27','2','1','7',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','9'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38864,'test_trial28','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38864,'test_trial28','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','7.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38864,'test_trial28','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38864,'test_trial28','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','7.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38864,'test_trial28','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','43'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38864,'test_trial28','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38864,'test_trial28','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38864,'test_trial28','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','7.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38840,'test_accession1','','plot',38864,'test_trial28','2','1','8',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','6'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38865,'test_trial29','1','1','9',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38865,'test_trial29','1','1','9',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','8.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38865,'test_trial29','1','1','9',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38865,'test_trial29','1','1','9',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','8.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38865,'test_trial29','1','1','9',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','0.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38865,'test_trial29','1','1','9',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','fresh root weight|CO_334:0000012','15'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38865,'test_trial29','1','1','9',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','harvest index variable|CO_334:0000015','8.8'],['2014',134,'test','test',137,'test_trial','test trial','CRD',undef,undef,undef,undef,undef,'2017-July-04','2017-July-21','23','test_location',38841,'test_accession2','','plot',38865,'test_trial29','1','1','9',undef,undef,'test',undef,undef,undef,undef,undef,undef,undef,undef,undef,'',undef,'variable','variable','variable','top yield|CO_334:0000017','3']]);
 
 my $tempfile = '/tmp/test_download_search_pheno1.xls';
 my $download = CXGN::Trial::Download->new({
@@ -3451,31 +2859,29 @@ if (exists($contents->[1]->{parser})){
 
 my $csv_response = ['
 ,,,,,,,,,,,,,,,,,,,,,variable','"studyYear","programDbId","programName","programDescription","studyDbId","studyName","studyDescription","studyDesign","plotWidth","plotLength","fieldSize","fieldTrialIsPlannedToBeGenotyped","fieldTrialIsPlannedToCross","plantingDate","harvestDate","locationDbId","locationName","germplasmDbId","germplasmName","germplasmSynonyms","observationLevel",variable,"observationUnitName","replicate","blockNumber","plotNumber","rowNumber","colNumber","entryType","plantNumber","plantedSeedlotStockDbId","plantedSeedlotStockUniquename","plantedSeedlotCurrentCount","plantedSeedlotCurrentWeightGram","plantedSeedlotBoxName","plantedSeedlotTransactionCount","plantedSeedlotTransactionWeight","plantedSeedlotTransactionDescription","availableGermplasmSeedlotUniquenames","dry matter content percentage|CO_334:0000092","fresh root weight|CO_334:0000012","fresh shoot weight measurement in kg|CO_334:0000016","harvest index variable|CO_334:0000015","root number counting|CO_334:0000011","sprouting proportion|CO_334:0000008","notes"
-','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plot",variable,"test_trial21","1","1","1","","","test","","","","","","","","","","","35,2016-04-27 12:12:20-0500","15,2016-01-15 12:12:20-0500","20,2016-02-11 12:12:20-0500","0.8,2016-03-16 12:12:20-0500","3","45","test note1 (Operator: janedoe, Time: )"
-','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plot",variable,"test_trial210","3","1","10","","","test","","","","","","","","","","","30,2016-04-27 15:12:20-0500","15,2016-01-15 15:12:20-0500","29,2016-02-11 15:12:20-0500","9.8,2016-03-16 15:12:20-0500","","45",""
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plot",variable,"test_trial21","1","1","1","","","test","","","","","","","","","","","35","15","20","0.8","3","45","test note1 (Operator: janedoe, Time: )"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plot",variable,"test_trial210","3","1","10","","","test","","","","","","","","","","","30","15","29","9.8","","45",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plant",variable,"test_trial210_plant_1","3","1","10","","","test","1","","","","","","","","","","28","38","","","","",""
-','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plant",variable,"test_trial210_plant_2","3","1","10","","","test","2","","","","","","","","","","29","","","","","",""
-','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plot",variable,"test_trial211","3","1","11","","","test","","","","","","","","","","","38,2016-04-27 03:12:20-0500","15,2016-01-15 03:12:20-0500","30,2016-02-11 03:12:20-0500","10.8,2016-03-16 03:12:20-0500","4","2",""
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plot",variable,"test_trial211","3","1","11","","","test","","","","","","","","","","","38","15","30","10.8","4","2",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plant",variable,"test_trial211_plant_1","3","1","11","","","test","1","","","","","","","","","","30","40","","","","",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plant",variable,"test_trial211_plant_2","3","1","11","","","test","2","","","","","","","","","","31","41","","","","",""
-','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plot",variable,"test_trial214","3","1","14","","","test","","","","","","","","","","","30,2016-04-27 23:12:20-0500","15,2016-01-15 23:12:20-0500","33,2016-02-11 23:12:20-0500","13.8,2016-03-16 23:12:20-0500","4","87",""
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plot",variable,"test_trial214","3","1","14","","","test","","","","","","","","","","","30","15","33","13.8","4","87",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plant",variable,"test_trial214_plant_1","3","1","14","","","test","1","","","","","","","","","","36","46","","","","",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plant",variable,"test_trial214_plant_2","3","1","14","","","test","2","","","","","","","","","","37","47","","","","",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plant",variable,"test_trial21_plant_1","1","1","1","","","test","1","","","","","","","","","","10","20","","","","",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plant",variable,"test_trial21_plant_2","1","1","1","","","test","2","","","","","","","","","","11","21","","","","",""
-','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plot",variable,"test_trial23","1","1","3","","","test","","","","","","","","","","","38,2016-04-27 01:12:20-0500","15,2016-01-15 01:12:20-0500","22,2016-02-11 01:12:20-0500","2.8,2016-03-16 01:12:20-0500","4","23",""
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plot",variable,"test_trial23","1","1","3","","","test","","","","","","","","","","","38","15","22","2.8","4","23",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plant",variable,"test_trial23_plant_1","1","1","3","","","test","1","","","","","","","","","","14","24","","","","",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plant",variable,"test_trial23_plant_2","1","1","3","","","test","2","","","","","","","","","","15","25","","","","",""
-','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plot",variable,"test_trial24","2","1","4","","","test","","","","","","","","","","","39,2016-04-27 11:12:20-0500","15,2016-01-15 11:12:20-0500","23,2016-02-11 11:12:20-0500","3.8,2016-03-16 11:12:20-0500","11","78",""
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plot",variable,"test_trial24","2","1","4","","","test","","","","","","","","","","","39","15","23","3.8","11","78",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plant",variable,"test_trial24_plant_1","2","1","4","","","test","1","","","","","","","","","","16","26","","","","",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plant",variable,"test_trial24_plant_2","2","1","4","","","test","2","","","","","","","","","","17","27","","","","",""
-','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plot",variable,"test_trial25","1","1","5","","","test","","","","","","","","","","","35,2016-04-27 09:12:20-0500","15,2016-01-15 09:12:20-0500","24,2016-02-11 09:12:20-0500","4.8,2016-03-16 09:12:20-0500","6","56",""
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plot",variable,"test_trial25","1","1","5","","","test","","","","","","","","","","","35","15","24","4.8","6","56",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plant",variable,"test_trial25_plant_1","1","1","5","","","test","1","","","","","","","","","","18","28","","","","",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plant",variable,"test_trial25_plant_2","1","1","5","","","test","2","","","","","","","","","","","29","","","","",""
-','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plot",variable,"test_trial26","2","1","6","","","test","","","","","","","","","","","30,2016-04-27 16:12:20-0500","15,2016-01-15 16:12:20-0500","25,2016-02-11 16:12:20-0500","5.8,2016-03-16 16:12:20-0500","4","45",""
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plot",variable,"test_trial26","2","1","6","","","test","","","","","","","","","","","30","15","25","5.8","4","45",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plant",variable,"test_trial26_plant_1","2","1","6","","","test","1","","","","","","","","","","20","30","","","","",""
-','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plant",variable,"test_trial26_plant_2","2","1","6","","","test","2","","","","","","","","","","21","0","","","","",""
-','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plot",variable,"test_trial28","2","1","8","","","test","","","","","","","","","","","39,2016-04-27 13:12:20-0500","15,2016-01-15 13:12:20-0500","27,2016-02-11 13:12:20-0500","7.8,2016-03-16 13:12:20-0500","9","23",""
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plot",variable,"test_trial28","2","1","8","","","test","","","","","","","","","","","39","15","27","7.8","9","23",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plant",variable,"test_trial28_plant_1","2","1","8","","","test","1","","","","","","","","","","0","34","","","","",""
 ','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plant",variable,"test_trial28_plant_2","2","1","8","","","test","2","","","","","","","","","","25","35","","","","",""
 '];
@@ -3491,7 +2897,7 @@ my $download = CXGN::Trial::Download->new({
 	accession_list=>\@accession_ids,
 	plot_list=>\@plot_ids,
 	plant_list=>\@plant_ids,
-	include_timestamp=>1,
+	include_timestamp=>0,
 	trait_contains=>['r','t'],
 	phenotype_min_value=>20,
 	phenotype_max_value=>80,
@@ -3516,6 +2922,78 @@ my $sec_row = shift @data;
 print STDERR Dumper \@data;
 is_deeply(\@data, $csv_response);
 
+
+my $tempfile = '/tmp/test_download_search_pheno3.csv';
+my $download = CXGN::Trial::Download->new({
+	bcs_schema=>$f->bcs_schema,
+	data_level=>'all',
+	trait_list=>[70666,70668,70681],
+	trial_list=>[137],
+	year_list => [2014],
+	location_list => [23],
+	accession_list=>\@accession_ids,
+	plot_list=>\@plot_ids,
+	plant_list=>\@plant_ids,
+	include_timestamp=>1,
+	trait_contains=>['r','t'],
+	phenotype_min_value=>20,
+	phenotype_max_value=>80,
+	search_type=>'complete',
+	filename => $tempfile,
+	format => 'TrialPhenotypeLongCSV',
+    include_row_and_column_numbers => 1,
+    exclude_phenotype_outlier => 1
+});
+my $error = $download->download();
+
+my @data;
+open my $fh, '<', $tempfile;
+while(my $line = <$fh>){
+	my @arr = split(',',$line);
+	$arr[21]= 'variable';
+	my $line = join(',',@arr);
+	push @data, $line;
+}
+my $first_row = shift @data;
+my $sec_row = shift @data;
+print STDERR Dumper \@data;
+is_deeply(\@data, ['
+,,,,,,,,,,,,,,,,,,,,,variable','"studyYear","programDbId","programName","programDescription","studyDbId","studyName","studyDescription","studyDesign","plotWidth","plotLength","fieldSize","fieldTrialIsPlannedToBeGenotyped","fieldTrialIsPlannedToCross","plantingDate","harvestDate","locationDbId","locationName","germplasmDbId","germplasmName","germplasmSynonyms","observationLevel",variable,"observationUnitName","replicate","blockNumber","plotNumber","rowNumber","colNumber","entryType","plantNumber","plantedSeedlotStockDbId","plantedSeedlotStockUniquename","plantedSeedlotCurrentCount","plantedSeedlotCurrentWeightGram","plantedSeedlotBoxName","plantedSeedlotTransactionCount","plantedSeedlotTransactionWeight","plantedSeedlotTransactionDescription","availableGermplasmSeedlotUniquenames","notes","createDate","collectDate","timestamp","observationVariableName","value"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plot",variable,"test_trial21","1","1","1","","","test","","","","","","","","","","","test note1 (Operator: janedoe, Time: )","","","","fresh root weight|CO_334:0000012","15"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plot",variable,"test_trial21","1","1","1","","","test","","","","","","","","","","","test note1 (Operator: janedoe, Time: )","","","","harvest index variable|CO_334:0000015","0.8"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plot",variable,"test_trial210","3","1","10","","","test","","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","15"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plot",variable,"test_trial210","3","1","10","","","test","","","","","","","","","","","","","","","harvest index variable|CO_334:0000015","9.8"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plant",variable,"test_trial210_plant_1","3","1","10","","","test","1","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","38"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plot",variable,"test_trial211","3","1","11","","","test","","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","15"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plot",variable,"test_trial211","3","1","11","","","test","","","","","","","","","","","","","","","harvest index variable|CO_334:0000015","10.8"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plant",variable,"test_trial211_plant_1","3","1","11","","","test","1","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","40"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plant",variable,"test_trial211_plant_2","3","1","11","","","test","2","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","41"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plot",variable,"test_trial214","3","1","14","","","test","","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","15"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plot",variable,"test_trial214","3","1","14","","","test","","","","","","","","","","","","","","","harvest index variable|CO_334:0000015","13.8"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plant",variable,"test_trial214_plant_1","3","1","14","","","test","1","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","46"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plant",variable,"test_trial214_plant_2","3","1","14","","","test","2","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","47"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plant",variable,"test_trial21_plant_1","1","1","1","","","test","1","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","20"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plant",variable,"test_trial21_plant_2","1","1","1","","","test","2","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","21"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plot",variable,"test_trial23","1","1","3","","","test","","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","15"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plot",variable,"test_trial23","1","1","3","","","test","","","","","","","","","","","","","","","harvest index variable|CO_334:0000015","2.8"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plant",variable,"test_trial23_plant_1","1","1","3","","","test","1","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","24"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plant",variable,"test_trial23_plant_2","1","1","3","","","test","2","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","25"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plot",variable,"test_trial24","2","1","4","","","test","","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","15"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plot",variable,"test_trial24","2","1","4","","","test","","","","","","","","","","","","","","","harvest index variable|CO_334:0000015","3.8"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plant",variable,"test_trial24_plant_1","2","1","4","","","test","1","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","26"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38842","test_accession3","","plant",variable,"test_trial24_plant_2","2","1","4","","","test","2","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","27"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plot",variable,"test_trial25","1","1","5","","","test","","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","15"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plot",variable,"test_trial25","1","1","5","","","test","","","","","","","","","","","","","","","harvest index variable|CO_334:0000015","4.8"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plant",variable,"test_trial25_plant_1","1","1","5","","","test","1","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","28"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plant",variable,"test_trial25_plant_2","1","1","5","","","test","2","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","29"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plot",variable,"test_trial26","2","1","6","","","test","","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","15"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plot",variable,"test_trial26","2","1","6","","","test","","","","","","","","","","","","","","","harvest index variable|CO_334:0000015","5.8"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38843","test_accession4","","plant",variable,"test_trial26_plant_1","2","1","6","","","test","1","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","30"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plot",variable,"test_trial28","2","1","8","","","test","","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","15"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plot",variable,"test_trial28","2","1","8","","","test","","","","","","","","","","","","","","","harvest index variable|CO_334:0000015","7.8"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plant",variable,"test_trial28_plant_1","2","1","8","","","test","1","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","34"
+','"2014","134","test","test","137","test_trial","test trial","CRD","","","","","","2017-July-04","2017-July-21","23","test_location","38840","test_accession1","","plant",variable,"test_trial28_plant_2","2","1","8","","","test","2","","","","","","","","","","","","","","fresh root weight|CO_334:0000012","35"
+']);
 
 my $mech = Test::WWW::Mechanize->new;
 my $response;

@@ -208,7 +208,7 @@ sub get_phenotype_matrix {
         ($data, $unique_traits) = $phenotypes_search->search();
 
         print STDERR "No of lines retrieved: ".scalar(@$data)."\n";
-        print STDERR "Construct Pheno Matrix Long Start:".localtime."\n";
+        print STDERR "Construct Pheno Matrix Long MaterializedViewTable Start:".localtime."\n";
 
         my @header_line = @metadata_headers;
         push @header_line, ('plantedSeedlotStockDbId', 'plantedSeedlotStockUniquename', 'plantedSeedlotCurrentCount', 'plantedSeedlotCurrentWeightGram', 'plantedSeedlotBoxName', 'plantedSeedlotTransactionCount', 'plantedSeedlotTransactionWeight', 'plantedSeedlotTransactionDescription', 'availableGermplasmSeedlotUniquenames');
@@ -278,7 +278,7 @@ sub get_phenotype_matrix {
         #print STDERR Dumper $data;
 
         print STDERR "No of lines retrieved: ".scalar(@$data)."\n";
-        print STDERR "Construct Pheno Matrix Long Start:".localtime."\n";
+        print STDERR "Construct Pheno Matrix Native Long Start:".localtime."\n";
 
         my @line = @metadata_headers;
         push @line, @values_headers;
@@ -297,10 +297,20 @@ sub get_phenotype_matrix {
                     $seen_traits{$cvterm}++;
                 }
             }
-            my @stock_ids_sorted = sort keys %stock_info;
             my @traits_sorted = sort keys %seen_traits;
 
-            foreach my $stock_id (@stock_ids_sorted) {
+            my @stock_objs;
+            foreach (values %stock_info) {
+                push @stock_objs, {
+                    obsunit_name => $_->{obsunit_uniquename},
+                    obsunit_stock_id => $_->{obsunit_stock_id},
+                    trial_id => $_->{trial_id}
+                };
+            }
+            @stock_objs = sort { $a->{trial_id} <=> $b->{trial_id} || $a->{obsunit_name} cmp $b->{obsunit_name} } @stock_objs;
+
+            foreach my $stock_obj (@stock_objs) {
+                my $stock_id = $stock_obj->{obsunit_stock_id};
                 my $d = $stock_info{$stock_id};
 
                 my $synonyms = $d->{synonyms};

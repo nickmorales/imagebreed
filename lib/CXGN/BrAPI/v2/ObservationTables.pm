@@ -43,7 +43,7 @@ sub search {
         search_type=>'MaterializedViewTable',
         trial_list=>$study_ids_arrayref,
         trait_list=>$trait_ids_arrayref,
-        include_timestamp=>1,
+        include_timestamp=>0,
         year_list=>$years_arrayref,
         location_list=>$location_ids_arrayref,
         accession_list=>$accession_ids_arrayref,
