@@ -2848,20 +2848,41 @@ sub create_tissue_samples : Chained('trial') PathPart('create_tissue_samples') A
 sub privileges_denied {
     my $self = shift;
     my $c = shift;
-
+    my $user_id;
+    my $user_name;
+    my $user_role;
     my $trial_id = $c->stash->{trial_id};
+    my $session_id = $c->req->param("sgn_session_id");
 
-    if (! $c->user) { return "Login required for modifying trial."; }
-    my $user_id = $c->user->get_object->get_sp_person_id();
+    if ($session_id){
+        my $dbh = $c->dbc->dbh;
+        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+        if (!$user_info[0]){
+            return 'You must be logged in to do this!';
+        }
+        $user_id = $user_info[0];
+        $user_role = $user_info[1];
+        my $p = CXGN::People::Person->new($dbh, $user_id);
+        $user_name = $p->get_username;
+
+        return 0;
+    } else {
+        if (!$c->user){
+            return 'You must be logged in to do this!';
+        }
+        $user_id = $c->user()->get_object()->get_sp_person_id();
+        $user_name = $c->user()->get_object()->get_username();
+        $user_role = $c->user->get_object->get_user_type();
+    }
 
     if ($c->user->check_roles('curator')) {
-	     return 0;
+        return 0;
     }
 
     my $breeding_programs = $c->stash->{trial}->get_breeding_programs();
 
     if ( ($c->user->check_roles('submitter')) && ( $c->user->check_roles($breeding_programs->[0]->[1]))) {
-	return 0;
+        return 0;
     }
     return "You have insufficient privileges to modify or delete this trial.";
 }

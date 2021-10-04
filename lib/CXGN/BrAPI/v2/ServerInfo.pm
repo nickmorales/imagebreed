@@ -169,10 +169,10 @@ sub search {
 
 	my %result = (
 		calls=>\@data,
-		contactEmail=>"lam87\@cornell.edu",
-		documentationURL=>"https://solgenomics.github.io/sgn/",
+		contactEmail=>"nm529\@cornell.edu",
+		documentationURL=>"https://nickmorales.github.io/imagebreed/",
 		location=>"USA",
-		organizationName=>"Boyce Thompson Institute",
+		organizationName=>"ImageBreed",
 		organizationURL=>$c->request->{"base"},
 		serverDescription=>"BrAPI v2.0 compliant server",
 		serverName=>$c->config->{project_name},

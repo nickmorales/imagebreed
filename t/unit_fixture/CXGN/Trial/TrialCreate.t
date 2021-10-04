@@ -495,6 +495,21 @@ my $trial_obj = CXGN::Trial->new({bcs_schema=>$chado_schema, trial_id=>$trial_id
 ok(my $trial_management_factors = $trial_obj->get_treatments());
 #print STDERR Dumper $trial_management_factors;
 is(scalar(@$trial_management_factors), 2);
+
+$mech->post_ok('http://localhost:3010/brapi/v2/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
+$response = decode_json $mech->content;
+print STDERR Dumper $response;
+is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
+is($response->{'userDisplayName'}, 'Jane Doe');
+is($response->{'expires_in'}, '7200');
+my $access_token = $response->{access_token};
+
+my $management_factor_1_id = $trial_management_factors->[0]->[0];
+$mech->post_ok('http://localhost:3010/ajax/breeders/trial/'.$management_factor_1_id.'/edit_management_factor_details', [ "treatment_date"=> "2020/10/01", "treatment_name"=> "management_factor_1", "treatment_description"=> "test description", "treatment_type" => "Fertilizer", "treatment_year" => "2020", "sgn_session_id" => $access_token ]);
+$response = decode_json $mech->content;
+print STDERR Dumper $response;
+is($response->{success}, 1);
+
 ok(my $trial_layout = CXGN::Trial::TrialLayout->new({
     schema => $chado_schema,
     trial_id => $trial_id,
