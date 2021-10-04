@@ -75,7 +75,7 @@ sub trial_info : Chained('trial_init') PathPart('') Args(0) {
 
     $c->stash->{trial_name} = $trial->get_name();
     $c->stash->{trial_owner} = $trial->get_owner_link();
-        
+
     my $trial_type_data = $trial->get_project_type();
     my $trial_type_name = $trial_type_data ? $trial_type_data->[1] : '';
     $c->stash->{trial_type} = $trial_type_name;
@@ -106,7 +106,7 @@ sub trial_info : Chained('trial_init') PathPart('') Args(0) {
     $c->stash->{user_can_modify} = ($user->check_roles("submitter") && $user->check_roles($c->stash->{breeding_program_name})) || $user->check_roles("curator") ;
 
 
-    
+
     $c->stash->{year} = $trial->get_year();
 
     $c->stash->{trial_id} = $c->stash->{trial_id};

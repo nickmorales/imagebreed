@@ -895,6 +895,7 @@ sub store {
                 my $management_factor_type;
                 my $management_factor_year;
                 my $management_factor_date;
+                my $management_factor_description = '';
 #                my %info_hashes = %{$treatments_hash{$treatment_name}};
                 my $info_value = $treatments_hash{$treatment_name};
                 my $info_type = ref($info_value);
@@ -904,6 +905,7 @@ sub store {
                     $management_factor_type = $info_hashes{'new_treatment_type'};
                     $management_factor_year = $info_hashes{'new_treatment_year'};
                     $management_factor_date = $info_hashes{'new_treatment_date'};
+                    $management_factor_description = $info_hashes{'new_treatment_description'};
                 } else {
                     $stock_names = $treatments_hash{$treatment_name};
                 }
@@ -968,7 +970,7 @@ sub store {
                 my $project_treatment_name = $self->get_trial_name()."_".$treatment_name;
                 my $treatment_project = $chado_schema->resultset('Project::Project')->create({
                     name => $project_treatment_name,
-                    description => '',
+                    description => $management_factor_description,
                     projectprops => \@treatment_project_props,
                     project_relationship_subject_projects => \@treatment_relationships,
                     nd_experiment_projects => \@treatment_nd_experiment_project
