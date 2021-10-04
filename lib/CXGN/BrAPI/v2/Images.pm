@@ -577,7 +577,7 @@ sub image_data_store {
 }
 
 sub _get_mimetype {
-    my $extension = shift;
+    my $extension = shift || '';
     my %mimetypes = (
         '.jpg' => 'image/jpeg',
         '.JPG' => 'image/jpeg',
