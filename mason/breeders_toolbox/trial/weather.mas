@@ -1,27 +1,121 @@
 <%args>
 $location
+$location_id
+$planting_date
+$harvest_date
 </%args>
 
-<p id="trial_weather_check">[loading...]</p>
+<div class="well well-sm">
+<p id="trial_weather_noaa_check">NOAA data not available for this location. Make sure the location <a href="/breeders/locations"><% $location %></a> has a valid NOAA Station identifier! Make sure the planting date and harvest date is defined for this field trial!</p>
+</div>
+
+<!--div class="well well-sm">
+<p id="trial_weather_check">No RTB data available</p>
+</div-->
 
 <script type="text/javascript" defer="defer">
 jQuery(document).ready(function () {
 
-  jQuery.getJSON("http://weather.rtbbase.org/rest/locations",function(data){
-    console.log("got data back, here it is: "+data);
-    var trial_location = "<% $location %>";
-    var locations = data;
-    var location_status;
-    for (var i=0; i < locations.length; i++) {
-      if (locations[i] == trial_location) {
-        location_status = 'found';
-        jQuery('#trial_weather_check').html('<a href="http://weather.rtbbase.org?location='+trial_location+'">Weather for '+trial_location+'</a>')
-      }
-    }
-    if (location_status != 'found') {
-      jQuery('#trial_weather_check').html('<p><i> No weather data available for location '+trial_location+'</i></p>')
-    }
-  });
+    jQuery('#trial_weather_data_onswitch').click(function() {
+        var planting_date_check = "<% $planting_date %>";
+        var harvest_date_check = "<% $harvest_date %>";
+        if (planting_date_check == '') {
+            alert('Please set the planting date! You can edit the planting date at any time');
+            return false;
+        }
+        if (harvest_date_check == '') {
+            alert('Please set the harvest date! You can edit the harvest date at any time.');
+            return false;
+        }
+
+        var noaa_ncdc_analysis_location_station_id = '';
+        jQuery.ajax({
+            url : '/ajax/location/get_noaa_station_id/<% $location_id %>',
+            beforeSend: function(){
+                jQuery('#working_modal').modal('show');
+            },
+            success: function(response){
+                console.log(response);
+                if (response.noaa_station_id) {
+                    noaa_ncdc_analysis_location_station_id = response.noaa_station_id;
+
+                    jQuery.ajax({
+                        url:'https://www.ncdc.noaa.gov/cdo-web/api/v2/stations/'+noaa_ncdc_analysis_location_station_id,
+                        headers:{ token: "<% $c->config->{noaa_ncdc_access_token} %>" },
+                        success: function(response) {
+                            console.log(response);
+                            if (response.name) {
+                                alert('Found a valid NOAA Station for this location: '+response.name);
+
+                                var planting_date_formatted = moment(planting_date_check).format('YYYY-MM-DD');
+                                var harvest_date_formatted = moment(harvest_date_check).format('YYYY-MM-DD');
+                                console.log(planting_date_formatted);
+                                console.log(harvest_date_formatted);
+
+                                jQuery.ajax({
+                                    url : '/ajax/location/noaa_ncdc_analysis?location_id=<% $location_id %>&station_id='+noaa_ncdc_analysis_location_station_id+'&start_date='+planting_date_formatted+'&end_date='+harvest_date_formatted+'&analysis_type=daily_temp_prec',
+                                    success: function(response){
+                                        console.log(response);
+                                        jQuery('#working_modal').modal('hide');
+
+                                        if (response.error) {
+                                            alert(response.error);
+                                        }
+                                        else if (response.noaa_station_id) {
+                                            var html = '<img src="'+response.plot+'"><hr><img src="'+response.plot2+'">';
+                                            jQuery('#trial_weather_noaa_check').html(html);
+                                        }
+                                        else {
+                                            alert('There was an error getting NOAA analysis!');
+                                        }
+                                    },
+                                    error: function(response){
+                                        alert('Error getting NOAA NCDC analysis!');
+                                        jQuery('#working_modal').modal('hide');
+                                    }
+                                });
+
+
+                            }
+                            else {
+                                alert('Could not verify the NOAA StationID you provided. Go to Manage->Locations and make sure your location has a valid NOAA station id!');
+                                jQuery('#working_modal').modal('hide');
+                            }
+                        },
+                        error: function() {
+                            alert('The NOAA NCDC authorization token may not be valid! We could not verify your NOAA StationID. Please contact us!');
+                            jQuery('#working_modal').modal('hide');
+                        }
+                    });
+                }
+                else {
+                    alert('No NOAA NCDC station id for this location. Go to Manage->Locations and edit your location to add a valid NOAA station id!');
+                    jQuery('#working_modal').modal('hide');
+                }
+            },
+            error: function(response){
+                alert('Error getting NOAA NCDC ID for location!');
+                jQuery('#working_modal').modal('hide');
+            }
+        });
+    });
+
+
+  //jQuery.getJSON("http://weather.rtbbase.org/rest/locations",function(data){
+    //console.log("got data back, here it is: "+data);
+    //var trial_location = "<% $location %>";
+    //var locations = data;
+    //var location_status;
+    //for (var i=0; i < locations.length; i++) {
+    // if (locations[i] == trial_location) {
+    //    location_status = 'found';
+    //    jQuery('#trial_weather_check').html('<a href="http://weather.rtbbase.org?location='+trial_location+'">Weather for '+trial_location+'</a>')
+    //  }
+    //}
+    //if (location_status != 'found') {
+    //  jQuery('#trial_weather_check').html('<p><i> No weather data available for location '+trial_location+'</i></p>')
+    //}
+  //});
 
 });
 </script>

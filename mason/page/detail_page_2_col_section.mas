@@ -27,6 +27,7 @@ $main_production_site_url => undef
 $trial_phenotype_files => undef
 $hidap_enabled => undef
 $location_name => undef
+$location_id => undef
 $country_name => undef
 $breeding_program_name => undef
 $breeding_program_id => undef
@@ -183,7 +184,7 @@ $analytics_protocol_charts => []
 % }
 % } #End trial_analysis_tools
 % if ($info_section_id eq 'trial_weather_data'){
-                                <& /breeders_toolbox/trial/weather.mas, location => $location_name &>
+                                <& /breeders_toolbox/trial/weather.mas, location => $location_name, location_id => $location_id, planting_date => $planting_date, harvest_date => $harvest_date &>
 % } #End trial_weather_data
 % if ($info_section_id eq 'trial_jbrowse_data'){
                                 <& /breeders_toolbox/trial/jbrowse_instance.mas, trial_id => $trial_id &>
