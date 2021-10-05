@@ -522,49 +522,57 @@ sub get_cross_tissue_culture_summary :Path('/ajax/cross/tissue_culture_summary')
     my $x_mark = qq{<img src="/img/x_mark_red.jpg"/>};
     my @sorted_embryo_ids = natsort @embryo_ids_array;
 
+    my %subculture_ids_map = map {$_ => 1} @subculture_ids_array;
+    my %rooting_ids_map = map {$_ => 1} @rooting_ids_array;
+    my %weaning1_ids_map = map {$_ => 1} @weaning1_ids_array;
+    my %weaning2_ids_map = map {$_ => 1} @weaning2_ids_array;
+    my %screenhouse_ids_map = map {$_ => 1} @screenhouse_ids_array;
+    my %hardening_ids_map = map {$_ => 1} @hardening_ids_array;
+    my %openfield_ids_map = map {$_ => 1} @openfield_ids_array;
+
     foreach my $embryo_id (@sorted_embryo_ids) {
 
         if ($embryo_id) {
             push @each_row, $embryo_id;
         }
 
-        if ($embryo_id ~~ @subculture_ids_array) {
+        if (exists($subculture_ids_map{$embryo_id})) {
             push @each_row, $checkmark;
         } else {
             push @each_row, $x_mark;
         }
 
-        if ($embryo_id ~~ @rooting_ids_array) {
+        if (exists($rooting_ids_map{$embryo_id})) {
             push @each_row, $checkmark;
         } else {
             push @each_row, $x_mark;
         }
 
-        if ($embryo_id ~~ @weaning1_ids_array) {
+        if (exists($weaning1_ids_map{$embryo_id})) {
             push @each_row, $checkmark;
         } else {
             push @each_row, $x_mark;
         }
 
-        if ($embryo_id ~~ @weaning2_ids_array) {
+        if (exists($weaning2_ids_map{$embryo_id})) {
             push @each_row, $checkmark;
         } else {
             push @each_row, $x_mark;
         }
 
-        if ($embryo_id ~~ @screenhouse_ids_array) {
+        if (exists($screenhouse_ids_map{$embryo_id})) {
             push @each_row, $checkmark;
         } else {
             push @each_row, $x_mark;
         }
 
-        if ($embryo_id ~~ @hardening_ids_array) {
+        if (exists($hardening_ids_map{$embryo_id})) {
             push @each_row, $checkmark;
         } else {
             push @each_row, $x_mark;
         }
 
-        if ($embryo_id ~~ @openfield_ids_array) {
+        if (exists($openfield_ids_map{$embryo_id})) {
             push @each_row, $checkmark;
         } else {
             push @each_row, $x_mark;

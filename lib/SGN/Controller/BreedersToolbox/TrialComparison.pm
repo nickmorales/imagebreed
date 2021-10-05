@@ -1,5 +1,5 @@
 
-package SGN::Controller::BreedersToolbox::Trial::TrialComparison;
+package SGN::Controller::BreedersToolbox::TrialComparison;
 
 use Moose;
 use URI::FromHash 'uri';

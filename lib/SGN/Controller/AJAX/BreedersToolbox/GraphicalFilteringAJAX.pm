@@ -1,6 +1,6 @@
 use strict;
 
-package SGN::Controller::AJAX::BreedersToolbox::GraphicalFiltering;
+package SGN::Controller::AJAX::BreedersToolbox::GraphicalFilteringAJAX;
 
 use Data::Dumper;
 use Moose;

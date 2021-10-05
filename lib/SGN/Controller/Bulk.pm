@@ -25,20 +25,20 @@ has gene_cache => (
 );
 
 
-sub index : Path('/tools/bulk/') :Args(0) { 
+sub index : Path('/tools/bulk/') :Args(0) {
     my $self = shift;
     my $c = shift;
 
     my $mode = $c->req->param("mode");
     my $debug = $c->req->param("debug");
-    
+
     $c->stash->{mode} = $mode;
     $c->stash->{debug} = $debug;
 
     $c->stash->{template} = '/tools/bulk/index.mas';
 }
 
-sub clone_tab : Path('/tools/bulk/tabs/clone_tab') Args(0) { 
+sub clone_tab : Path('/tools/bulk/tabs/clone_tab') Args(0) {
     my $self = shift;
     my $c = shift;
 
@@ -48,16 +48,16 @@ sub clone_tab : Path('/tools/bulk/tabs/clone_tab') Args(0) {
 
 }
 
-sub array_tab: Path('/tools/bulk/tabs/array_tab') Args(0) { 
+sub array_tab: Path('/tools/bulk/tabs/array_tab') Args(0) {
     my $self = shift;
     my $c = shift;
-    
+
     $c->stash->{ug_select} = $self->ug_build_selectbox($c);
     $c->stash->{output_list} = $self->output_list();
     $c->stash->{template} = '/tools/bulk/tabs/array_tab.mas';
 }
 
-sub unigene_tab : Path('/tools/bulk/tabs/unigene_tab') Args(0) { 
+sub unigene_tab : Path('/tools/bulk/tabs/unigene_tab') Args(0) {
     my $self = shift;
     my $c = shift;
 
@@ -65,31 +65,31 @@ sub unigene_tab : Path('/tools/bulk/tabs/unigene_tab') Args(0) {
     $c->stash->{template} = '/tools/bulk/tabs/unigene_tab.mas';
 }
 
-sub bac_tab : Path('/tools/bulk/tabs/bac_tab') Args(0) { 
+sub bac_tab : Path('/tools/bulk/tabs/bac_tab') Args(0) {
     my $self = shift;
     my $c = shift;
 
     $c->stash->{template} = '/tools/bulk/tabs/bac_tab.mas';
 }
 
-sub bac_end_tab: Path('/tools/bulk/tabs/bac_end_tab') Args(0) { 
+sub bac_end_tab: Path('/tools/bulk/tabs/bac_end_tab') Args(0) {
     my $self = shift;
     my $c = shift;
-    
+
     $c->stash->{template} = '/tools/bulk/tabs/bac_end_tab.mas';
 }
 
-sub ftp_tab : Path('/tools/bulk/tabs/ftp_tab') Args(0) { 
+sub ftp_tab : Path('/tools/bulk/tabs/ftp_tab') Args(0) {
     my $self = shift;
     my $c = shift;
-    
+
     $c->stash->{template} = '/tools/bulk/tabs/ftp_tab.mas';
 }
 
-sub converter_tab : Path('/tools/bulk/tabs/converter_tab') Args(0) { 
+sub converter_tab : Path('/tools/bulk/tabs/converter_tab') Args(0) {
     my $self = shift;
     my $c = shift;
-    
+
     $c->stash->{template} = '/tools/bulk/tabs/converter_tab.mas';
 }
 
@@ -204,10 +204,10 @@ sub bulk_gene :Path('/bulk/gene') : Args(0) {
     $c->stash( template => '/bulk_gene.mas');
 }
 
-sub gene_tab : Path('/tools/bulk/tabs/gene_tab') Args(0) { 
+sub gene_tab : Path('/tools/bulk/tabs/gene_tab') Args(0) {
     my $self = shift;
     my $c = shift;
-    
+
     $c->stash->{template} = '/tools/bulk/tabs/gene_tab.mas';
 
 }
@@ -217,7 +217,8 @@ sub bulk_gene_type_validate :Local :Args(0) {
     my $req  = $c->req;
     my $type = $req->param('gene_type');
 
-    unless ($type && $type ~~ [qw/cdna cds protein/]) {
+    my %types = {"cdna"=>1, "cds"=>1, "protein"=>1};
+    unless ($type && exists($types{$type})) {
         $c->throw_client_error(
             public_message => 'Invalid data type chosen',
             http_status    => 200,
@@ -507,7 +508,7 @@ sub ug_build_selectbox {
 
 
 sub output_list {
-    return <<OUTPUT_LIST 
+    return <<OUTPUT_LIST
 	"<b>Please select the information you would like for each identifier:</b><br />
 	<input type="checkbox" name="clone_name" checked="checked" /> clone name<br />
 	<input type="checkbox" name="SGN_C" checked="checked" /> clone id (SGN-C)<br />
