@@ -1013,7 +1013,7 @@ sub available_marker_sets : Path('/marker_sets/available') Args(0) {
 
     my $user_id = $self->get_user($c);
     if (!$user_id) {
-        $c->stash->{rest} = { error => "You must be logged in to use marker set.", };
+        $c->stash->{rest} = { error => "You must be logged in to use markerset.", };
         return;
     }
 
@@ -1039,7 +1039,7 @@ sub delete_markerset : Path('/markerset/delete') Args(0) {
 
     my $user_id = $self->get_user($c);
     if (!$user_id) {
-    	$c->stash->{rest} = { error => 'You must be logged in to delete marker set.', };
+    	$c->stash->{rest} = { error => 'You must be logged in to delete markerset.', };
     	return;
     }
 
@@ -1071,7 +1071,7 @@ sub get_markerset_items :Path('/markerset/items') Args(0) {
 
     my $user_id = $self->get_user($c);
     if (!$user_id) {
-    	$c->stash->{rest} = { error => 'You must be logged in to use marker set.', };
+    	$c->stash->{rest} = { error => 'You must be logged in to use markerset.', };
     	return;
     }
 
@@ -1099,7 +1099,7 @@ sub get_markerset_type :Path('/markerset/type') Args(0) {
 
     my $user_id = $self->get_user($c);
     if (!$user_id) {
-    	$c->stash->{rest} = { error => 'You must be logged in to use marker set.', };
+    	$c->stash->{rest} = { error => 'You must be logged in to use markerset.', };
     	return;
     }
 
