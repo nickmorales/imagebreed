@@ -280,7 +280,12 @@ sub noaa_ncdc_gdd_cp :Path("/ajax/location/noaa_ncdc_gdd_cp") Args(0) {
         $value = $noaa->get_averaged_precipitation();
     }
 
-    $c->stash->{rest} = { noaa_station_id => $station_id, value => $value };
+    my $start_time = Time::Piece->strptime($start_date, "%Y-%m-%d");
+    my $end_time = Time::Piece->strptime($end_date, "%Y-%m-%d");
+    my $date_diff = $end_time - $start_time;
+    my $time_diff_days = $date_diff->days;
+
+    $c->stash->{rest} = { noaa_station_id => $station_id, value => $value, days => $time_diff_days };
 }
 
 sub noaa_ncdc_analysis :Path("/ajax/location/noaa_ncdc_analysis") Args(0) {

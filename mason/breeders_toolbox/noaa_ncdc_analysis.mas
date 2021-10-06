@@ -174,7 +174,7 @@ jQuery(document).ready(function() {
                     jQuery('#working_modal').modal('hide');
                 }
                 else if (response.noaa_station_id) {
-                    var html = '<hr><div class="well"><center><h2>GDD='+response.value+'</h2></center></div>';;
+                    var html = '<hr><div class="well well-sm"><center><h2>DAP='+response.days+'</h2></center></div><div class="well well-sm"><center><h2>GDD='+response.value+'</h2></center></div>';;
                     jQuery('#noaa_ndcd_analysis_result').html(html);
 
                     jQuery.ajax({
@@ -186,7 +186,7 @@ jQuery(document).ready(function() {
                                 alert(response.error);
                             }
                             else if (response.noaa_station_id) {
-                                html = html + '<div class="well"><center><h2>CP='+response.value+'</h2></center></div>';
+                                html = html + '<div class="well well-sm"><center><h2>CP='+response.value+'</h2></center></div>';
                                 jQuery('#noaa_ndcd_analysis_result').html(html);
                             }
                             else {
