@@ -35,7 +35,7 @@ $locations => undef
     </div>
     <div class="form-horizontal">
         <div class="form-group">
-            <label class="col-sm-4 control-label">Results: </label>
+            <label class="col-sm-4 control-label">Result Plots: </label>
             <div class="col-sm-8" >
                 <select class="form-control" id="noaa_ncdc_analysis_type">
                     <option value="daily_temp_prec">Daily Temperature and Precipitation Chart</option>
@@ -70,9 +70,18 @@ $locations => undef
             </div>
         </div>
     </div>
+    <div class="form-horizontal">
+        <div class="form-group">
+            <label class="col-sm-4 control-label">Growing Degree Days Base Temperature (F): </label>
+            <div class="col-sm-8" >
+                <input class="form-control" id="noaa_ncdc_analysis_gdd_base_temp" name="noaa_ncdc_analysis_gdd_base_temp" type="number" value="50" placeholder="50"/>
+            </div>
+        </div>
+    </div>
     <br/><br/>
     <center>
-        <button class="btn btn-primary" type="button" id="noaa_ncdc_analysis_submit" name="noaa_ncdc_analysis_submit">Submit</button>
+        <button class="btn btn-primary" type="button" id="noaa_ncdc_analysis_submit" name="noaa_ncdc_analysis_submit">Return Weather Plots</button>
+        <button class="btn btn-default" type="button" id="noaa_ncdc_analysis_gdd_cp_submit" name="noaa_ncdc_analysis_gdd_cp_submit">Get Growing Degree Days and Cumulative Precipitation</button>
     </center>
 </div>
 
@@ -92,6 +101,7 @@ jQuery(document).ready(function() {
     var noaa_ncdc_analysis_type = '';
     var noaa_ncdc_analysis_cumulative_year = '';
     var noaa_ncdc_token = '<% $c->config->{noaa_ncdc_access_token} %>';
+    var noaa_ncdc_analysis_gdd_base_temp = '50';
 
     if (noaa_ncdc_token == 'NULL') {
         alert(`Configuration variable 'noaa_ncdc_access_token' is undefined. Data from station `+noaa_station_id+` can't be accessed without a token.\r\nPlease visit https://www.ncdc.noaa.gov/cdo-web/token to generate a valid access token, then include the token in sgn_local.conf`);
@@ -138,6 +148,70 @@ jQuery(document).ready(function() {
         });
     });
 
+    jQuery('#noaa_ncdc_analysis_gdd_cp_submit').click(function(){
+        noaa_ncdc_analysis_start_date = jQuery('#noaa_ncdc_analysis_start_date').val();
+        noaa_ncdc_analysis_end_date = jQuery('#noaa_ncdc_analysis_end_date').val();
+        noaa_ncdc_analysis_gdd_base_temp = jQuery('#noaa_ncdc_analysis_gdd_base_temp').val();
+
+        if (noaa_ncdc_analysis_start_date == '') {
+            alert('Please give a start date!');
+            return false;
+        }
+        if (noaa_ncdc_analysis_end_date == '') {
+            alert('Please give a end date!');
+            return false;
+        }
+
+        jQuery.ajax({
+            url : '/ajax/location/noaa_ncdc_gdd_cp?location_id='+noaa_ncdc_analysis_location_id+'&station_id='+noaa_ncdc_analysis_location_station_id+'&start_date='+noaa_ncdc_analysis_start_date+'&end_date='+noaa_ncdc_analysis_end_date+'&data_type=gdd&base_temp='+noaa_ncdc_analysis_gdd_base_temp,
+            beforeSend: function(){
+                jQuery('#working_modal').modal('show');
+            },
+            success: function(response){
+                console.log(response);
+                if (response.error) {
+                    alert(response.error);
+                    jQuery('#working_modal').modal('hide');
+                }
+                else if (response.noaa_station_id) {
+                    var html = '<hr><div class="well"><center><h2>GDD='+response.value+'</h2></center></div>';;
+                    jQuery('#noaa_ndcd_analysis_result').html(html);
+
+                    jQuery.ajax({
+                        url : '/ajax/location/noaa_ncdc_gdd_cp?location_id='+noaa_ncdc_analysis_location_id+'&station_id='+noaa_ncdc_analysis_location_station_id+'&start_date='+noaa_ncdc_analysis_start_date+'&end_date='+noaa_ncdc_analysis_end_date+'&data_type=cp',
+                        success: function(response){
+                            jQuery('#working_modal').modal('hide');
+                            console.log(response);
+                            if (response.error) {
+                                alert(response.error);
+                            }
+                            else if (response.noaa_station_id) {
+                                html = html + '<div class="well"><center><h2>CP='+response.value+'</h2></center></div>';
+                                jQuery('#noaa_ndcd_analysis_result').html(html);
+                            }
+                            else {
+                                alert('There was an error getting NOAA CP!');
+                            }
+                        },
+                        error: function(response){
+                            alert('Error getting NOAA NCDC CP!');
+                            jQuery('#working_modal').modal('hide');
+                        }
+                    });
+
+                }
+                else {
+                    alert('There was an error getting NOAA GDD!');
+                    jQuery('#working_modal').modal('hide');
+                }
+            },
+            error: function(response){
+                alert('Error getting NOAA NCDC GDD!');
+                jQuery('#working_modal').modal('hide');
+            }
+        });
+    });
+
     jQuery('#noaa_ncdc_analysis_submit').click(function(){
         noaa_ncdc_analysis_start_date = jQuery('#noaa_ncdc_analysis_start_date').val();
         noaa_ncdc_analysis_end_date = jQuery('#noaa_ncdc_analysis_end_date').val();
@@ -156,13 +230,17 @@ jQuery(document).ready(function() {
 
         jQuery.ajax({
             url : '/ajax/location/noaa_ncdc_analysis?location_id='+noaa_ncdc_analysis_location_id+'&station_id='+noaa_ncdc_analysis_location_station_id+'&start_date='+noaa_ncdc_analysis_start_date+'&end_date='+noaa_ncdc_analysis_end_date+'&analysis_type='+noaa_ncdc_analysis_type+'&w_start='+noaa_ncdc_analysis_window_start_date+'&w_end='+noaa_ncdc_analysis_window_end_date+'&cumul_year='+noaa_ncdc_analysis_cumulative_year,
+            beforeSend: function(){
+                jQuery('#working_modal').modal('show');
+            },
             success: function(response){
                 console.log(response);
+                jQuery('#working_modal').modal('hide');
                 if (response.error) {
                     alert(response.error);
                 }
                 else if (response.noaa_station_id) {
-                    var html = '<img src="'+response.plot+'"><hr><img src="'+response.plot2+'">';
+                    var html = '<hr><img src="'+response.plot+'"><hr><img src="'+response.plot2+'">';
                     jQuery('#noaa_ndcd_analysis_result').html(html);
                 }
                 else {
@@ -171,6 +249,7 @@ jQuery(document).ready(function() {
             },
             error: function(response){
                 alert('Error getting NOAA NCDC analysis!');
+                jQuery('#working_modal').modal('hide');
             }
         });
     });

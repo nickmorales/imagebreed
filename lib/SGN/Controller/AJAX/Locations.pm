@@ -240,6 +240,49 @@ sub get_noaa_station_id :Path("/ajax/location/get_noaa_station_id") Args(1) {
     $c->stash->{rest} = { noaa_station_id => $noaa_station_id };
 }
 
+sub noaa_ncdc_gdd_cp :Path("/ajax/location/noaa_ncdc_gdd_cp") Args(0) {
+    my $self = shift;
+    my $c = shift;
+    # print STDERR Dumper $c->req->params;
+    my $location_id = $c->req->param('location_id');
+    my $station_id = $c->req->param('station_id');
+    my $start_date = $c->req->param('start_date');
+    my $end_date = $c->req->param('end_date');
+    my $base_temp = $c->req->param('base_temp');
+    my $data_type = $c->req->param('data_type') || 'gdd';
+
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+
+    if (! $c->user()) {
+        $c->stash->{rest} = { error => 'You must be logged in to add or edit a location.' };
+        return;
+    }
+
+    my $location = CXGN::Location->new({
+        bcs_schema => $schema,
+        nd_geolocation_id => $location_id
+    });
+
+    my $noaa_ncdc_access_token = $c->config->{noaa_ncdc_access_token};
+
+    my $noaa = CXGN::NOAANCDC->new({
+        bcs_schema => $schema,
+        start_date => $start_date, #YYYY-MM-DD
+        end_date => $end_date, #YYYY-MM-DD
+        noaa_station_id => $station_id,
+        noaa_ncdc_access_token => $noaa_ncdc_access_token
+    });
+    my $value;
+    if ($data_type eq 'gdd') {
+        $value = $noaa->get_temperature_averaged_gdd($base_temp)->{gdd};
+    }
+    elsif ($data_type eq 'cp') {
+        $value = $noaa->get_averaged_precipitation();
+    }
+
+    $c->stash->{rest} = { noaa_station_id => $station_id, value => $value };
+}
+
 sub noaa_ncdc_analysis :Path("/ajax/location/noaa_ncdc_analysis") Args(0) {
     my $self = shift;
     my $c = shift;
