@@ -204,7 +204,7 @@ sub do_exact_search {
 sub verify_accessions_file : Path('/ajax/accessions/verify_accessions_file') : ActionClass('REST') { }
 sub verify_accessions_file_POST : Args(0) {
     my ($self, $c) = @_;
-    
+
     my $user_id;
     my $user_name;
     my $user_role;
@@ -323,7 +323,7 @@ sub verify_accessions_file_POST : Args(0) {
         $return{error_string} = $parsed_data->{error_string};
     }
 
-        
+
     $c->stash->{rest} = \%return;
 }
 
@@ -587,7 +587,7 @@ sub _parse_list_from_json {
       debug($c, "LIST_JSON is utf8? ".utf8::is_utf8($list_json)." valid utf8? ".utf8::valid($list_json)."\n");
       my $decoded_list = $json->decode($list_json);# _json(encode("UTF-8", $list_json));
      #my $decoded_list = decode_json($list_json);
-      
+
       my @array_of_list_items = ();
       if (ref($decoded_list) eq "ARRAY" ) {
 	  @array_of_list_items = @{$decoded_list};
@@ -608,12 +608,12 @@ sub debug {
     my $c = shift;
     my $message = shift;
 
-    my $encoding = find_encoding($message);
-    open(my $F, ">> :encoding(UTF-8)", "/tmp/error_log.txt") || die "Can't open error_log.txt";
-
-    print $F "### Request from ".$c->req->referer()."\n";
-    print $F "### ENCODING: $encoding\n$message\n==========\n";
-    close($F);
+    # my $encoding = find_encoding($message);
+    # open(my $F, ">> :encoding(UTF-8)", "/tmp/error_log.txt") || die "Can't open error_log.txt";
+    #
+    # print $F "### Request from ".$c->req->referer()."\n";
+    # print $F "### ENCODING: $encoding\n$message\n==========\n";
+    # close($F);
 }
 
 1;

@@ -7658,8 +7658,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             open($fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
                 print STDERR "Opened $stats_out_tempfile\n";
-                my $header = <$fh>;
-                my @header_cols;
+                $header = <$fh>;
+                @header_cols = ();
                 if ($csv->parse($header)) {
                     @header_cols = $csv->fields();
                 }
