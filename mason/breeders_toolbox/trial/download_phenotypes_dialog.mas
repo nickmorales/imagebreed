@@ -69,7 +69,7 @@ $dialog_name => undef
 <&| /page/info_section.mas, title=>"Additional Search Options",  collapsible => 1, collapsed=>1 &>
 
             <div class="row">
-                <div class="col-sm-4">
+                <div class="col-sm-3">
                     <div class="form-group">
                         <label class="col-sm-6 control-label">Include Timestamps: </label>
                         <div class="col-sm-6" >
@@ -80,7 +80,7 @@ $dialog_name => undef
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-4">
+                <div class="col-sm-3">
                     <div class="form-group">
                         <label class="col-sm-6 control-label">Suppress User Defined Outliers: </label>
                         <div class="col-sm-6" >
@@ -91,11 +91,22 @@ $dialog_name => undef
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-4">
+                <div class="col-sm-3">
                     <div class="form-group">
                         <label class="col-sm-6 control-label">Include Header: </label>
                         <div class="col-sm-6" >
                             <select class="form-control" id="download_trial_phenotypes_include_headers">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label class="col-sm-6 control-label">Include Entry Numbers: </label>
+                        <div class="col-sm-6" >
+                            <select class="form-control" id="download_trial_phenotypes_entry_numbers_option">
                                 <option value="0">No</option>
                                 <option value="1">Yes</option>
                             </select>
@@ -160,6 +171,7 @@ jQuery(document).ready(function() {
     var trial_id_array = trial_ids.split(",");
     var format = jQuery("#download_trial_phenotypes_format").val();
     var timestamp = jQuery("#download_trial_phenotypes_timestamp_option").val();
+    var entry_numbers = jQuery("#download_trial_phenotypes_entry_numbers_option").val();
     var trait_contains = jQuery("#download_trial_phenotype_trait_contains").val();
     var trait_contains_array = trait_contains.split(",");
     var traits = jQuery("#download_trial_phenotypes_traits_select").val();
@@ -180,8 +192,7 @@ jQuery(document).ready(function() {
         first_value_only = 1;
     }
 
-    window.open("/breeders/trials/phenotype/download?trial_list="+JSON.stringify(trial_id_array)+"&format="+format+"&timestamp="+timestamp+"&trait_contains="+JSON.stringify(trait_contains_array)+"&trait_component_list="+JSON.stringify(trait_components)+"&trait_list="+JSON.stringify(traits)+"&dataLevel="+data_level+"&phenotype_min_value="+phenotype_min_value+"&phenotype_max_value="+phenotype_max_value+"&exclude_phenotype_outlier="+exclude_phenotype_outlier+"&return_only_first_measurement="+first_value_only+"&average_repeat_measurements="+average_repeat+"&has_header="+include_header);
-
+    window.open("/breeders/trials/phenotype/download?trial_list="+JSON.stringify(trial_id_array)+"&format="+format+"&timestamp="+timestamp+"&entry_numbers="+entry_numbers+"&trait_contains="+JSON.stringify(trait_contains_array)+"&trait_component_list="+JSON.stringify(trait_components)+"&trait_list="+JSON.stringify(traits)+"&dataLevel="+data_level+"&phenotype_min_value="+phenotype_min_value+"&phenotype_max_value="+phenotype_max_value+"&exclude_phenotype_outlier="+exclude_phenotype_outlier+"&return_only_first_measurement="+first_value_only+"&average_repeat_measurements="+average_repeat+"&has_header="+include_header);
   });
 
 });
