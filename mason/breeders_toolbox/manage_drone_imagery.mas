@@ -4378,7 +4378,7 @@ jQuery(document).ready(function() {
 
         jQuery.ajax({
             type: 'GET',
-            url: '/api/drone_imagery/generate_phenotypes?drone_run_project_id='+manage_drone_imagery_standard_process_minimal_vi_drone_run_project_id+'&time_cvterm_id='+manage_drone_imagery_standard_process_minimal_vi_phenotype_time+'&standard_process_type=minimal_vi',
+            url: '/api/drone_imagery/generate_phenotypes?drone_run_project_id='+manage_drone_imagery_standard_process_minimal_vi_drone_run_project_id+'&time_cvterm_id='+manage_drone_imagery_standard_process_minimal_vi_phenotype_time+'&standard_process_type=minimal,minimal_vi',
             dataType: "json",
             success: function(response){
                 console.log(response);
