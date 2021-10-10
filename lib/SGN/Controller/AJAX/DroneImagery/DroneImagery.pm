@@ -10822,8 +10822,8 @@ sub _perform_phenotype_calculation {
         });
         my $existing_traits = $traits->{existing_traits};
         my $new_traits = $traits->{new_traits};
-        #print STDERR Dumper $new_traits;
-        #print STDERR Dumper $existing_traits;
+        print STDERR Dumper $new_traits;
+        print STDERR Dumper $existing_traits;
         my %new_trait_names;
         foreach (@$new_traits) {
             my $components = $_->[0];
