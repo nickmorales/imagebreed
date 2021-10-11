@@ -2910,7 +2910,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         mat\$colNumber <- as.numeric(mat\$colNumber);
                         mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
                         mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-                        mix <- mmer('.$cbind_string_pe.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits_pe.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits_pe.')), rcov=~vs(units, Gtc=unsm('.$number_traits_pe.')), data=mat, tolparinv='.$tolparinv.');
+                        mix <- mmer('.$cbind_string_pe.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits_pe.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits_pe.')), rcov=~vs(units, Gtc=unsm('.$number_traits_pe.')), data=mat, tolparinv='.$tolparinv.', na.method.Y=\'include\', na.method.X=\'include\');
                         if (!is.null(mix\$U)) {
                         #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
                         X <- with(mat, spl2D(rowNumber, colNumber));
@@ -3121,7 +3121,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             mat\$colNumber <- as.numeric(mat\$colNumber);
                             mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
                             mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-                            mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.')
+                            mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', na.method.Y=\'include\', na.method.X=\'include\')
                             if (!is.null(mix\$U)) {
                             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
                             X <- with(mat, spl2D(rowNumber, colNumber));
