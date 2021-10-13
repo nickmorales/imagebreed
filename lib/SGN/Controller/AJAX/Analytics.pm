@@ -14,6 +14,9 @@ use Scalar::Util qw(looks_like_number);
 use CXGN::Pedigree::ARM;
 use CXGN::Genotype::GRM;
 use File::Temp 'tempfile';
+use Math::Round qw | :all |;
+use List::Util qw/sum/;
+use Statistics::Descriptive;
 
 BEGIN { extends 'Catalyst::Controller::REST' };
 
@@ -6583,6 +6586,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             return;
         }
 
+        my @all_local_env_vals;
         my %germplasm_result_blups;
         my %germplasm_result_time_blups;
         my %plot_result_blups;
@@ -6636,6 +6640,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                             push @{$plot_result_blups{$plot_name}}, $value;
                             $plot_result_time_blups{$plot_name}->{$time_val} = $value;
                             $seen_times_p{$time_val}++;
+                            push @all_local_env_vals, $value;
                         }
                     # }
                     # else {
@@ -6674,6 +6679,14 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
         my @sorted_seen_times_g = sort { $a <=> $b } keys %seen_times_g;
         my @sorted_seen_times_p = sort { $a <=> $b } keys %seen_times_p;
+        my $number_time_points = scalar(@sorted_seen_times_p);
+        my $number_time_points_half = round($number_time_points/2);
+
+        my $stat = Statistics::Descriptive::Full->new();
+        $stat->add_data(@all_local_env_vals);
+        my $cutoff_25 = $stat->quantile(1);
+        my $cutoff_50 = $stat->quantile(2);
+        my $cutoff_75 = $stat->quantile(3);
 
         my $analytics_protocol_data_tempfile10 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile11 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
@@ -6694,6 +6707,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $analytics_protocol_data_tempfile26= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile27= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile28= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile29= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
         my $analytics_protocol_tempfile_string_1 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
         $analytics_protocol_tempfile_string_1 .= '.png';
@@ -6735,6 +6749,11 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         $analytics_protocol_tempfile_string_10 .= '.png';
         my $analytics_protocol_figure_tempfile_10 = $c->config->{basepath}."/".$analytics_protocol_tempfile_string_10;
 
+        my %plot_fixed_effects;
+        my %plot_averaged_fixed_effect_maximum;
+        my %plot_averaged_fixed_effect;
+        my %plot_averaged_fixed_effects;
+
         my @germplasm_results;
         my @germplasm_data = ();
         my @germplasm_data_header = ("germplasmName");
@@ -6762,6 +6781,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @plots_data_grm_prm_data_values = ();
         my @plots_data_grm_prm_secondary_traits_data_values = ();
         my @varcomp_original_grm;
+        my @varcomp_original_grm_fixed_effect;
+        my @varcomp_original_grm_fixed_effects;
         my @varcomp_original_grm_id;
         my @varcomp_original_grm_prm;
         my @varcomp_original_grm_prm_secondary_traits;
@@ -6769,6 +6790,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @varcomp_original_grm_id_prm_id;
         my @varcomp_original_prm;
         my @varcomp_h_grm;
+        my @varcomp_h_grm_fixed_effect;
+        my @varcomp_h_grm_fixed_effects;
         my @varcomp_h_grm_id;
         my @varcomp_h_grm_id_prm;
         my @varcomp_h_grm_id_prm_id;
@@ -6776,6 +6799,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @varcomp_h_grm_prm_secondary_traits;
         my @varcomp_h_prm;
         my @fits_grm;
+        my @fits_grm_fixed_effect;
+        my @fits_grm_fixed_effects;
         my @fits_grm_id;
         my @fits_grm_id_prm;
         my @fits_grm_id_prm_id;
@@ -6889,9 +6914,34 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             foreach my $t (@sorted_trait_names) {
                 my $val = $plot_phenotypes{$p}->{$t} || '';
 
+                my $time_point_counter = 1;
+                my $fixed_eff_counter = 1;
                 foreach my $time (@sorted_seen_times_p) {
                     my $sval = $plot_result_time_blups{$p}->{$time};
                     push @plots_data_iteration_data_values, [$p, $val, $time, $sval]; #"plotName", "tvalue", "time", "value"
+
+                    if ($time_point_counter > $number_time_points_half) {
+                        $fixed_eff_counter++;
+                        $time_point_counter = 0;
+                    }
+
+                    my $fixed_val;
+                    if ($sval <= $cutoff_25) {
+                        $fixed_val = 0;
+                    }
+                    elsif ($sval <= $cutoff_50) {
+                        $fixed_val = 1;
+                    }
+                    elsif ($sval <= $cutoff_75) {
+                        $fixed_val = 2;
+                    }
+                    else {
+                        $fixed_val = 3;
+                    }
+
+                    push @{$plot_fixed_effects{$p}->{$fixed_eff_counter}}, $fixed_val;
+
+                    $time_point_counter++;
                 }
             }
 
@@ -6991,6 +7041,41 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             push @plots_data_grm_prm_secondary_traits_data_values, \@plots_grm_prm_secondary_traits_values;
             $is_first_plot = 0;
         }
+
+        # print STDERR Dumper \%plot_fixed_effects;
+        while (my($p, $o) = each %plot_fixed_effects) {
+            my @all_vals;
+            while (my($fixed_eff, $vals) = each %$o) {
+                push @all_vals, @$vals;
+
+                my $avg_val = round(sum(@$vals)/scalar(@$vals));
+                $plot_averaged_fixed_effects{$p}->{$fixed_eff} = $avg_val;
+            }
+
+            my $avg_val_all = round(sum(@all_vals)/scalar(@all_vals));
+            $plot_averaged_fixed_effect{$p} = $avg_val_all;
+
+            my $max_val = 0;
+            foreach (@all_vals) {
+                if ($_ > $max_val) {
+                    $max_val = $_;
+                }
+            }
+            $plot_averaged_fixed_effect_maximum{$p} = $max_val;
+        }
+        # print STDERR Dumper \%plot_averaged_fixed_effect_maximum;
+        # print STDERR Dumper \%plot_averaged_fixed_effect;
+        # print STDERR Dumper \%plot_averaged_fixed_effects;
+
+        open(my $F29, ">", $analytics_protocol_data_tempfile29) || die "Can't open file ".$analytics_protocol_data_tempfile29;
+            print $F29 "plot_name,fixed_effect_all,fixed_effect_1,fixed_effect_2\n";
+            foreach my $p (@seen_plots) {
+                my $fixed_effect_all = $plot_averaged_fixed_effect{$p};
+                my $fixed_effect_1 = $plot_averaged_fixed_effects{$p}->{1};
+                my $fixed_effect_2 = $plot_averaged_fixed_effects{$p}->{2};
+                print $F29 "$p,$fixed_effect_all,$fixed_effect_1,$fixed_effect_2\n";
+            }
+        close($F29);
 
         if ($analysis_run_type eq '2dspl' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol' || $analysis_run_type eq '2dspl_ar1_wRowPlusCol' || $analysis_run_type eq '2dspl_ar1_wColPlusRow') {
             open(my $F10, ">", $analytics_protocol_data_tempfile10) || die "Can't open file ".$analytics_protocol_data_tempfile10;
@@ -7310,8 +7395,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             print STDERR Dumper $r_cmd_i8;
             my $status_i8 = system($r_cmd_i8);
 
-            my $grm_no_prm_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+            my $grm_no_prm_fixed_effect_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
@@ -7319,7 +7405,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             mat\$colNumber <- as.numeric(mat\$colNumber);
             mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
             mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
+            mat\$fixed_effect_all <- mat_fixed\$fixed_effect_all;
+            mat\$fixed_effect_1 <- mat_fixed\$fixed_effect_1;
+            mat\$fixed_effect_2 <- mat_fixed\$fixed_effect_2;
+            mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
             write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -7333,8 +7422,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
-            print STDERR Dumper $grm_no_prm_cmd;
-            my $grm_no_prm_cmd_status = system($grm_no_prm_cmd);
+            print STDERR Dumper $grm_no_prm_fixed_effect_cmd;
+            my $grm_no_prm_fixed_effect_cmd_status = system($grm_no_prm_fixed_effect_cmd);
 
             open(my $fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
                 print STDERR "Opened $stats_out_tempfile\n";
@@ -7419,10 +7508,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                    push @varcomp_original_grm, \@columns;
+                    push @varcomp_original_grm_fixed_effect, \@columns;
                 }
             close($fh_varcomp);
-            print STDERR Dumper \@varcomp_original_grm;
+            print STDERR Dumper \@varcomp_original_grm_fixed_effect;
 
             open(my $fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
                 print STDERR "Opened $stats_out_tempfile_vpredict\n";
@@ -7437,16 +7526,320 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                    push @varcomp_h_grm, \@columns;
+                    push @varcomp_h_grm_fixed_effect, \@columns;
                 }
             close($fh_varcomp_h);
-            print STDERR Dumper \@varcomp_h_grm;
+            print STDERR Dumper \@varcomp_h_grm_fixed_effect;
 
             open(my $fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
                 print STDERR "Opened $stats_out_tempfile_fits\n";
                 my $header_fits = <$fh_fits>;
                 print STDERR Dumper $header_fits;
                 my @header_cols_fits;
+                if ($csv->parse($header_fits)) {
+                    @header_cols_fits = $csv->fields();
+                }
+                while (my $row = <$fh_fits>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @fits_grm_fixed_effect, \@columns;
+                }
+            close($fh_fits);
+            print STDERR Dumper \@fits_grm_fixed_effect;
+
+            my $grm_no_prm_fixed_effects_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
+            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+            geno_mat[is.na(geno_mat)] <- 0;
+            mat\$rowNumber <- as.numeric(mat\$rowNumber);
+            mat\$colNumber <- as.numeric(mat\$colNumber);
+            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+            mat\$fixed_effect_all <- mat_fixed\$fixed_effect_all;
+            mat\$fixed_effect_1 <- mat_fixed\$fixed_effect_1;
+            mat\$fixed_effect_2 <- mat_fixed\$fixed_effect_2;
+            mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1 + fixed_effect_2, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
+            if (!is.null(mix\$U)) {
+            #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+            write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) );
+            write.table(data.frame(value=h2\$Estimate, se=h2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            ff <- fitted(mix);
+            r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+            SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+            write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            }
+            "';
+            print STDERR Dumper $grm_no_prm_fixed_effects_cmd;
+            my $grm_no_prm_fixed_effects_cmd_status = system($grm_no_prm_fixed_effects_cmd);
+
+            open($fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                $header_no_prm = <$fh>;
+                @header_cols_no_prm = ();
+                if ($csv->parse($header_no_prm)) {
+                    @header_cols_no_prm = $csv->fields();
+                }
+
+                while (my $row = <$fh>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    my $col_counter = 0;
+                    foreach my $encoded_trait (@header_cols_no_prm) {
+                        if ($encoded_trait eq $trait_name_encoded_string) {
+                            my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                            my $stock_id = $columns[0];
+
+                            my $stock_name = $stock_info{$stock_id}->{uniquename};
+                            my $value = $columns[$col_counter+1];
+                            if (defined $value && $value ne '') {
+                                $result_blup_data_s->{$stock_name}->{$trait} = $value;
+
+                                if ($value < $genetic_effect_min_s) {
+                                    $genetic_effect_min_s = $value;
+                                }
+                                elsif ($value >= $genetic_effect_max_s) {
+                                    $genetic_effect_max_s = $value;
+                                }
+
+                                $genetic_effect_sum_s += abs($value);
+                                $genetic_effect_sum_square_s = $genetic_effect_sum_square_s + $value*$value;
+                            }
+                        }
+                        $col_counter++;
+                    }
+                }
+            close($fh);
+
+            open($fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+                print STDERR "Opened $stats_out_tempfile_residual\n";
+                $header_residual = <$fh_residual>;
+                @header_cols_residual = ();
+                if ($csv->parse($header_residual)) {
+                    @header_cols_residual = $csv->fields();
+                }
+                while (my $row = <$fh_residual>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
+                    my $stock_id = $columns[0];
+                    my $residual = $columns[1];
+                    my $fitted = $columns[2];
+                    my $stock_name = $plot_id_map{$stock_id};
+                    if (defined $residual && $residual ne '') {
+                        $result_residual_data_s->{$stock_name}->{$trait_name} = $residual;
+                        $residual_sum_s += abs($residual);
+                        $residual_sum_square_s = $residual_sum_square_s + $residual*$residual;
+                    }
+                    if (defined $fitted && $fitted ne '') {
+                        $result_fitted_data_s->{$stock_name}->{$trait_name} = $fitted;
+                    }
+                    $model_sum_square_residual_s = $model_sum_square_residual_s + $residual*$residual;
+                }
+            close($fh_residual);
+
+            open($fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+                print STDERR "Opened $stats_out_tempfile_varcomp\n";
+                $header_varcomp = <$fh_varcomp>;
+                print STDERR Dumper $header_varcomp;
+                @header_cols_varcomp = ();
+                if ($csv->parse($header_varcomp)) {
+                    @header_cols_varcomp = $csv->fields();
+                }
+                while (my $row = <$fh_varcomp>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @varcomp_original_grm_fixed_effects, \@columns;
+                }
+            close($fh_varcomp);
+            print STDERR Dumper \@varcomp_original_grm_fixed_effects;
+
+            open($fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
+                print STDERR "Opened $stats_out_tempfile_vpredict\n";
+                $header_varcomp_h = <$fh_varcomp_h>;
+                print STDERR Dumper $header_varcomp_h;
+                @header_cols_varcomp_h = ();
+                if ($csv->parse($header_varcomp_h)) {
+                    @header_cols_varcomp_h = $csv->fields();
+                }
+                while (my $row = <$fh_varcomp_h>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @varcomp_h_grm_fixed_effects, \@columns;
+                }
+            close($fh_varcomp_h);
+            print STDERR Dumper \@varcomp_h_grm_fixed_effects;
+
+            open($fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
+                print STDERR "Opened $stats_out_tempfile_fits\n";
+                $header_fits = <$fh_fits>;
+                print STDERR Dumper $header_fits;
+                @header_cols_fits = ();
+                if ($csv->parse($header_fits)) {
+                    @header_cols_fits = $csv->fields();
+                }
+                while (my $row = <$fh_fits>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @fits_grm_fixed_effects, \@columns;
+                }
+            close($fh_fits);
+            print STDERR Dumper \@fits_grm_fixed_effects;
+
+            my $grm_no_prm_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+            geno_mat[is.na(geno_mat)] <- 0;
+            mat\$rowNumber <- as.numeric(mat\$rowNumber);
+            mat\$colNumber <- as.numeric(mat\$colNumber);
+            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+            mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
+            if (!is.null(mix\$U)) {
+            #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+            write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) );
+            write.table(data.frame(value=h2\$Estimate, se=h2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            ff <- fitted(mix);
+            r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+            SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+            write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            }
+            "';
+            print STDERR Dumper $grm_no_prm_cmd;
+            my $grm_no_prm_cmd_status = system($grm_no_prm_cmd);
+
+            open($fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                print STDERR "Opened $stats_out_tempfile\n";
+                $header_no_prm = <$fh>;
+                @header_cols_no_prm = ();
+                if ($csv->parse($header_no_prm)) {
+                    @header_cols_no_prm = $csv->fields();
+                }
+
+                while (my $row = <$fh>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    my $col_counter = 0;
+                    foreach my $encoded_trait (@header_cols_no_prm) {
+                        if ($encoded_trait eq $trait_name_encoded_string) {
+                            my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                            my $stock_id = $columns[0];
+
+                            my $stock_name = $stock_info{$stock_id}->{uniquename};
+                            my $value = $columns[$col_counter+1];
+                            if (defined $value && $value ne '') {
+                                $result_blup_data_s->{$stock_name}->{$trait} = $value;
+
+                                if ($value < $genetic_effect_min_s) {
+                                    $genetic_effect_min_s = $value;
+                                }
+                                elsif ($value >= $genetic_effect_max_s) {
+                                    $genetic_effect_max_s = $value;
+                                }
+
+                                $genetic_effect_sum_s += abs($value);
+                                $genetic_effect_sum_square_s = $genetic_effect_sum_square_s + $value*$value;
+                            }
+                        }
+                        $col_counter++;
+                    }
+                }
+            close($fh);
+
+            open($fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+                print STDERR "Opened $stats_out_tempfile_residual\n";
+                $header_residual = <$fh_residual>;
+                @header_cols_residual = ();
+                if ($csv->parse($header_residual)) {
+                    @header_cols_residual = $csv->fields();
+                }
+                while (my $row = <$fh_residual>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+
+                    my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
+                    my $stock_id = $columns[0];
+                    my $residual = $columns[1];
+                    my $fitted = $columns[2];
+                    my $stock_name = $plot_id_map{$stock_id};
+                    if (defined $residual && $residual ne '') {
+                        $result_residual_data_s->{$stock_name}->{$trait_name} = $residual;
+                        $residual_sum_s += abs($residual);
+                        $residual_sum_square_s = $residual_sum_square_s + $residual*$residual;
+                    }
+                    if (defined $fitted && $fitted ne '') {
+                        $result_fitted_data_s->{$stock_name}->{$trait_name} = $fitted;
+                    }
+                    $model_sum_square_residual_s = $model_sum_square_residual_s + $residual*$residual;
+                }
+            close($fh_residual);
+
+            open($fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+                print STDERR "Opened $stats_out_tempfile_varcomp\n";
+                $header_varcomp = <$fh_varcomp>;
+                print STDERR Dumper $header_varcomp;
+                @header_cols_varcomp = ();
+                if ($csv->parse($header_varcomp)) {
+                    @header_cols_varcomp = $csv->fields();
+                }
+                while (my $row = <$fh_varcomp>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @varcomp_original_grm, \@columns;
+                }
+            close($fh_varcomp);
+            print STDERR Dumper \@varcomp_original_grm;
+
+            open($fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
+                print STDERR "Opened $stats_out_tempfile_vpredict\n";
+                $header_varcomp_h = <$fh_varcomp_h>;
+                print STDERR Dumper $header_varcomp_h;
+                @header_cols_varcomp_h = ();
+                if ($csv->parse($header_varcomp_h)) {
+                    @header_cols_varcomp_h = $csv->fields();
+                }
+                while (my $row = <$fh_varcomp_h>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @varcomp_h_grm, \@columns;
+                }
+            close($fh_varcomp_h);
+            print STDERR Dumper \@varcomp_h_grm;
+
+            open($fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
+                print STDERR "Opened $stats_out_tempfile_fits\n";
+                $header_fits = <$fh_fits>;
+                print STDERR Dumper $header_fits;
+                @header_cols_fits = ();
                 if ($csv->parse($header_fits)) {
                     @header_cols_fits = $csv->fields();
                 }
@@ -8570,6 +8963,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             plots_htp_corr_plot => $analytics_protocol_tempfile_string_9,
             plots_secondary_traits_corr_plot => $analytics_protocol_tempfile_string_10,
             varcomp_original_grm => \@varcomp_original_grm,
+            varcomp_original_grm_fixed_effect => \@varcomp_original_grm_fixed_effect,
+            varcomp_original_grm_fixed_effects => \@varcomp_original_grm_fixed_effects,
             varcomp_original_grm_id => \@varcomp_original_grm_id,
             varcomp_original_grm_id_prm => \@varcomp_original_grm_id_prm,
             varcomp_original_grm_id_prm_id => \@varcomp_original_grm_id_prm_id,
@@ -8577,6 +8972,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             varcomp_original_grm_prm_secondary_traits => \@varcomp_original_grm_prm_secondary_traits,
             varcomp_original_prm => \@varcomp_original_prm,
             varcomp_h_grm => \@varcomp_h_grm,
+            varcomp_h_grm_fixed_effect => \@varcomp_h_grm_fixed_effect,
+            varcomp_h_grm_fixed_effects => \@varcomp_h_grm_fixed_effects,
             varcomp_h_grm_id => \@varcomp_h_grm_id,
             varcomp_h_grm_id_prm => \@varcomp_h_grm_id_prm,
             varcomp_h_grm_id_prm_id => \@varcomp_h_grm_id_prm_id,
@@ -8584,6 +8981,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             varcomp_h_grm_prm_secondary_traits => \@varcomp_h_grm_prm_secondary_traits,
             varcomp_h_prm => \@varcomp_h_prm,
             fits_grm => \@fits_grm,
+            fits_grm_fixed_effect => \@fits_grm_fixed_effect,
+            fits_grm_fixed_effects => \@fits_grm_fixed_effects,
             fits_grm_id => \@fits_grm_id,
             fits_grm_id_prm => \@fits_grm_id_prm,
             fits_grm_id_prm_id => \@fits_grm_id_prm_id,
