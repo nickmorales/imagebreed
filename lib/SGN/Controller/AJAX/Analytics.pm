@@ -6500,24 +6500,26 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     # };
 
     my @result_blups_all;
-    my $q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.description, basename, dirname, md.file_id, md.filetype, nd_protocol.type_id, nd_experiment.type_id
+    my $q = 'SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.description, basename, dirname, md.file_id, md.filetype, nd_protocol.type_id, nd_experiment.type_id
         FROM metadata.md_files AS md
         JOIN metadata.md_metadata AS meta ON (md.metadata_id=meta.metadata_id)
         JOIN phenome.nd_experiment_md_files using(file_id)
         JOIN nd_experiment using(nd_experiment_id)
         JOIN nd_experiment_protocol using(nd_experiment_id)
         JOIN nd_protocol using(nd_protocol_id)
-        WHERE nd_protocol.nd_protocol_id=$protocol_id AND nd_experiment.type_id=$analytics_experiment_type_cvterm_id
-        ORDER BY md.file_id ASC;";
+        WHERE nd_protocol.nd_protocol_id=? AND nd_experiment.type_id=?
+        AND md.filetype like \'%nicksmixedmodelsanalytics_v1%\' AND md.filetype like \'%datafile%\' AND (md.filetype like \'%originalgenoeff%\' OR md.filetype like \'%fullcorr%\')
+        ORDER BY md.file_id ASC
+        LIMIT 2;';
     print STDERR $q."\n";
     my $h = $schema->storage->dbh()->prepare($q);
-    $h->execute();
+    $h->execute($protocol_id, $analytics_experiment_type_cvterm_id);
     while (my ($model_id, $model_name, $model_description, $basename, $filename, $file_id, $filetype, $model_type_id, $experiment_type_id, $property_type_id, $property_value) = $h->fetchrow_array()) {
         my $result_type;
-        if (index($filetype, 'originalgenoeff') != -1 && index($filetype, 'nicksmixedmodelsanalytics_v1') != -1 && index($filetype, 'datafile') != -1) {
+        if (index($filetype, 'originalgenoeff') != -1) {
             $result_type = 'originalgenoeff';
         }
-        elsif (index($filetype, 'fullcorr') != -1 && index($filetype, 'nicksmixedmodelsanalytics_v1') != -1 && index($filetype, 'datafile') != -1) {
+        elsif (index($filetype, 'fullcorr') != -1) {
             $result_type = 'fullcorr';
         }
         else {
