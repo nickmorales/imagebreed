@@ -364,24 +364,14 @@ $dataset_id => undef
               <td>
                 <div class="checkbox">
                   <label>
-                    <input class="wizard-download-phenotypes-entry-numbers" type="checkbox">
+                    <input class="wizard-download-phenotypes-entry-numbers" type="checkbox" checked>
                     Include accession entry numbers
                   </label>
                 </div>
               </td>
             </tr>
             <tr>
-              <td colspan="3" style="border-top: none; padding-top: 0">
-                <div class="checkbox">
-                  <label>
-                    <input class="wizard-download-phenotypes-entry-numbers" type="checkbox">
-                    Include accession entry numbers
-                  </label>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="3" style="border-top: none; padding-top: 0">
+              <td>
                 <div class="checkbox">
                   <label>
                     <input class="wizard-download-phenotypes-outliers" type="checkbox">

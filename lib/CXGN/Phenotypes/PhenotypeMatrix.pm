@@ -26,7 +26,8 @@ my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
     limit=>$limit,
     offset=>$offset,
     average_repeat_measurements=>0,
-    return_only_first_measurement=>1
+    return_only_first_measurement=>1,
+    include_accession_entry_numbers=>0
 );
 my @data = $phenotypes_search->get_phenotype_matrix();
 
@@ -136,6 +137,12 @@ has 'return_only_first_measurement' => (
     default => 1
 );
 
+has 'include_accession_entry_numbers' => (
+    isa => 'Bool|Undef',
+    is => 'ro',
+    default => 0
+);
+
 has 'trait_contains' => (
     isa => 'ArrayRef[Str]|Undef',
     is => 'rw'
@@ -163,11 +170,12 @@ has 'offset' => (
 
 sub get_phenotype_matrix {
     my $self = shift;
+    my $schema = $self->bcs_schema;
     my $include_pedigree_parents = $self->include_pedigree_parents();
     my $include_timestamp = $self->include_timestamp;
     my $average_repeat_measurements = $self->average_repeat_measurements;
     my $return_only_first_measurement = $self->return_only_first_measurement;
-
+    my $include_accession_entry_numbers = $self->include_accession_entry_numbers;
 
     if ($return_only_first_measurement) {
         $average_repeat_measurements = 0;
@@ -183,7 +191,7 @@ sub get_phenotype_matrix {
     my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
         $self->search_type,
         {
-            bcs_schema=>$self->bcs_schema,
+            bcs_schema=>$schema,
             data_level=>$self->data_level,
             trait_list=>$self->trait_list,
             trial_list=>$self->trial_list,
@@ -206,6 +214,9 @@ sub get_phenotype_matrix {
     my ($data, $unique_traits);
     my @info;
     my @metadata_headers = ( 'studyYear', 'programDbId', 'programName', 'programDescription', 'studyDbId', 'studyName', 'studyDescription', 'studyDesign', 'plotWidth', 'plotLength', 'fieldSize', 'fieldTrialIsPlannedToBeGenotyped', 'fieldTrialIsPlannedToCross', 'plantingDate', 'harvestDate', 'locationDbId', 'locationName', 'germplasmDbId', 'germplasmName', 'germplasmSynonyms', 'observationLevel', 'observationUnitDbId', 'observationUnitName', 'replicate', 'blockNumber', 'plotNumber', 'rowNumber', 'colNumber', 'entryType', 'plantNumber');
+    if ($include_accession_entry_numbers) {
+        @metadata_headers = ( 'studyYear', 'programDbId', 'programName', 'programDescription', 'studyDbId', 'studyName', 'studyDescription', 'studyDesign', 'plotWidth', 'plotLength', 'fieldSize', 'fieldTrialIsPlannedToBeGenotyped', 'fieldTrialIsPlannedToCross', 'plantingDate', 'harvestDate', 'locationDbId', 'locationName', 'germplasmDbId', 'germplasmName', 'germplasmSynonyms', 'germplasmEntryNumber', 'observationLevel', 'observationUnitDbId', 'observationUnitName', 'replicate', 'blockNumber', 'plotNumber', 'rowNumber', 'colNumber', 'entryType', 'plantNumber');
+    }
 
     if ($self->search_type eq 'MaterializedViewTable'){
         ($data, $unique_traits) = $phenotypes_search->search();
@@ -221,7 +232,9 @@ sub get_phenotype_matrix {
         }
 
         my %trait_plot_counter;
+        my %seen_trial_ids;
         foreach my $obs_unit (@$data){
+            $seen_trial_ids{$obs_unit->{trial_id}}++;
             my $observations = $obs_unit->{observations};
             foreach (@$observations){
                 $trait_plot_counter{$obs_unit->{observationunit_stock_id}}->{$_->{trait_name}}++;
@@ -239,7 +252,15 @@ sub get_phenotype_matrix {
                 }
             }
         }
-        print STDERR Dumper \%trait_repeat_counter;
+        # print STDERR Dumper \%trait_repeat_counter;
+
+        my %trial_entry_numbers;
+        if ($include_accession_entry_numbers) {
+            foreach my $trial_id (sort keys %seen_trial_ids) {
+                my $trial = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $trial_id });
+                $trial_entry_numbers{$trial_id} = $trial->get_entry_numbers();
+            }
+        }
 
         my @sorted_traits = sort keys(%$unique_traits);
         foreach my $trait (@sorted_traits) {
@@ -271,13 +292,22 @@ sub get_phenotype_matrix {
             }
             my $available_germplasm_seedlots_uniquenames = join ' AND ', (keys %available_germplasm_seedlots_uniquenames);
 
+            my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
+            my $trial_id = $obs_unit->{trial_id};
             my $trial_name = $obs_unit->{trial_name};
             my $trial_desc = $obs_unit->{trial_description};
 
             $trial_name =~ s/\s+$//g;
             $trial_desc =~ s/\s+$//g;
 
-            my @line = ($obs_unit->{year}, $obs_unit->{breeding_program_id}, $obs_unit->{breeding_program_name}, $obs_unit->{breeding_program_description}, $obs_unit->{trial_id}, $trial_name, $trial_desc, $obs_unit->{design}, $obs_unit->{plot_width}, $obs_unit->{plot_length}, $obs_unit->{field_size}, $obs_unit->{field_trial_is_planned_to_be_genotyped}, $obs_unit->{field_trial_is_planned_to_cross}, $obs_unit->{planting_date}, $obs_unit->{harvest_date}, $obs_unit->{trial_location_id}, $obs_unit->{trial_location_name}, $obs_unit->{germplasm_stock_id}, $obs_unit->{germplasm_uniquename}, $synonym_string, $obs_unit->{observationunit_type_name}, $obs_unit->{observationunit_stock_id}, $obs_unit->{observationunit_uniquename}, $obs_unit->{obsunit_rep}, $obs_unit->{obsunit_block}, $obs_unit->{obsunit_plot_number}, $obs_unit->{obsunit_row_number}, $obs_unit->{obsunit_col_number}, $entry_type, $obs_unit->{obsunit_plant_number}, $obs_unit->{seedlot_stock_id}, $obs_unit->{seedlot_uniquename}, $obs_unit->{seedlot_current_count}, $obs_unit->{seedlot_current_weight_gram}, $obs_unit->{seedlot_box_name}, $obs_unit->{seedlot_transaction_amount}, $obs_unit->{seedlot_transaction_weight_gram}, $obs_unit->{seedlot_transaction_description}, $available_germplasm_seedlots_uniquenames);
+            my @line = ($obs_unit->{year}, $obs_unit->{breeding_program_id}, $obs_unit->{breeding_program_name}, $obs_unit->{breeding_program_description}, $trial_id, $trial_name, $trial_desc, $obs_unit->{design}, $obs_unit->{plot_width}, $obs_unit->{plot_length}, $obs_unit->{field_size}, $obs_unit->{field_trial_is_planned_to_be_genotyped}, $obs_unit->{field_trial_is_planned_to_cross}, $obs_unit->{planting_date}, $obs_unit->{harvest_date}, $obs_unit->{trial_location_id}, $obs_unit->{trial_location_name}, $germplasm_stock_id, $obs_unit->{germplasm_uniquename}, $synonym_string);
+
+            if ($include_accession_entry_numbers) {
+                my $entry_number = $trial_entry_numbers{$trial_id}{$germplasm_stock_id} || '';
+                push @line, $entry_number;
+            }
+
+            push @line, ($obs_unit->{observationunit_type_name}, $obs_unit->{observationunit_stock_id}, $obs_unit->{observationunit_uniquename}, $obs_unit->{obsunit_rep}, $obs_unit->{obsunit_block}, $obs_unit->{obsunit_plot_number}, $obs_unit->{obsunit_row_number}, $obs_unit->{obsunit_col_number}, $entry_type, $obs_unit->{obsunit_plant_number}, $obs_unit->{seedlot_stock_id}, $obs_unit->{seedlot_uniquename}, $obs_unit->{seedlot_current_count}, $obs_unit->{seedlot_current_weight_gram}, $obs_unit->{seedlot_box_name}, $obs_unit->{seedlot_transaction_amount}, $obs_unit->{seedlot_transaction_weight_gram}, $obs_unit->{seedlot_transaction_description}, $available_germplasm_seedlots_uniquenames);
 
             if ($include_pedigree_parents) {
                 my $germplasm = CXGN::Stock->new({schema => $self->bcs_schema, stock_id=>$obs_unit->{germplasm_stock_id}});
@@ -335,7 +365,9 @@ sub get_phenotype_matrix {
         my %seen_obsunits;
 
         my %trait_plot_counter;
+        my %seen_trial_ids;
         foreach my $d (@$data){
+            $seen_trial_ids{$d->{trial_id}}++;
             $trait_plot_counter{$d->{obsunit_stock_id}}->{$d->{trait_name}}++;
         }
         while(my($stock_id, $o) = each %trait_plot_counter) {
@@ -350,7 +382,15 @@ sub get_phenotype_matrix {
                 }
             }
         }
-        print STDERR Dumper \%trait_repeat_counter;
+        # print STDERR Dumper \%trait_repeat_counter;
+
+        my %trial_entry_numbers;
+        if ($include_accession_entry_numbers) {
+            foreach my $trial_id (sort keys %seen_trial_ids) {
+                my $trial = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $trial_id });
+                $trial_entry_numbers{$trial_id} = $trial->get_entry_numbers();
+            }
+        }
 
         foreach my $d (@$data) {
             my $cvterm = $d->{trait_name};
@@ -376,18 +416,20 @@ sub get_phenotype_matrix {
                 my $synonym_string = $synonyms ? join ("," , @$synonyms) : '';
                 my $entry_type = $d->{is_a_control} ? 'check' : 'test';
 
+                my $germplasm_stock_id = $d->{accession_stock_id};
+                my $trial_id = $d->{trial_id};
                 my $trial_name = $d->{trial_name};
                 my $trial_desc = $d->{trial_description};
 
                 $trial_name =~ s/\s+$//g;
                 $trial_desc =~ s/\s+$//g;
 
-                $obsunit_data{$obsunit_id}->{metadata} = [
+                my @metadata_line = (
                     $d->{year},
                     $d->{breeding_program_id},
                     $d->{breeding_program_name},
                     $d->{breeding_program_description},
-                    $d->{trial_id},
+                    $trial_id,
                     $trial_name,
                     $trial_desc,
                     $d->{design},
@@ -400,9 +442,17 @@ sub get_phenotype_matrix {
                     $d->{harvest_date},
                     $d->{location_id},
                     $d->{location_name},
-                    $d->{accession_stock_id},
+                    $germplasm_stock_id,
                     $d->{accession_uniquename},
-                    $synonym_string,
+                    $synonym_string
+                );
+
+                if ($include_accession_entry_numbers) {
+                    my $entry_number = $trial_entry_numbers{$trial_id}{$germplasm_stock_id} || '';
+                    push @metadata_line, $entry_number;
+                }
+
+                push @metadata_line, (
                     $d->{obsunit_type_name},
                     $d->{obsunit_stock_id},
                     $d->{obsunit_uniquename},
@@ -413,7 +463,9 @@ sub get_phenotype_matrix {
                     $d->{col_number},
                     $entry_type,
                     $d->{plant_number}
-                ];
+                );
+
+                $obsunit_data{$obsunit_id}->{metadata} = \@metadata_line;
                 $traits{$cvterm}++;
             }
         }

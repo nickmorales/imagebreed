@@ -102,6 +102,7 @@ sub download {
     my $include_pedigree_parents = $self->include_pedigree_parents();
     my $average_repeat_measurements = $self->average_repeat_measurements();
     my $return_only_first_measurement = $self->return_only_first_measurement();
+    my $include_accession_entry_numbers = $self->include_accession_entry_numbers();
 
     $self->trial_download_log($trial_id, "trial phenotypes");
 
@@ -136,7 +137,8 @@ sub download {
             phenotype_max_value=>$phenotype_max_value,
             include_pedigree_parents=>$include_pedigree_parents,
             average_repeat_measurements=>$average_repeat_measurements,
-            return_only_first_measurement=>$return_only_first_measurement
+            return_only_first_measurement=>$return_only_first_measurement,
+            include_accession_entry_numbers=>$include_accession_entry_numbers
         );
         @data = $phenotypes_search->get_phenotype_matrix();
     }

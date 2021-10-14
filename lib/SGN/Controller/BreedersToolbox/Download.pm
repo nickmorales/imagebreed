@@ -213,11 +213,11 @@ sub download_phenotypes_action : Path('/breeders/trials/phenotype/download') Arg
     my $plugin = "";
     my $extension;
     if ($format eq "xls") {
-        $plugin = $entry_numbers_option ? "TrialPhenotypeExcelEntryNumbers" : "TrialPhenotypeExcel";
+        $plugin = "TrialPhenotypeExcel";
         $extension = "xls";
     }
     if ($format eq "csv") {
-        $plugin = $entry_numbers_option ? "TrialPhenotypeCSVEntryNumbers" : "TrialPhenotypeCSV";
+        $plugin = "TrialPhenotypeCSV";
         $extension = "csv";
     }
     if ($format eq "xls_long") {
@@ -263,7 +263,8 @@ sub download_phenotypes_action : Path('/breeders/trials/phenotype/download') Arg
         phenotype_max_value => $phenotype_max_value,
         has_header=>$has_header,
         average_repeat_measurements=>$average_repeat_measurements,
-        return_only_first_measurement=>$return_only_first_measurement
+        return_only_first_measurement=>$return_only_first_measurement,
+        include_accession_entry_numbers=>$entry_numbers_option
     });
 
     my $error = $download->download();

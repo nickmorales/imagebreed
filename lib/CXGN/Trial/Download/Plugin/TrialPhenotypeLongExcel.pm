@@ -52,7 +52,8 @@ my $download = CXGN::Trial::Download->new({
     phenotype_max_value => $phenotype_max_value,
     has_header=>$has_header,
     average_repeat_measurements=>0,
-    return_only_first_measurement=>1
+    return_only_first_measurement=>1,
+    include_accession_entry_numbers=>0
 });
 my $error = $download->download();
 my $file_name = "phenotype.$format";
@@ -100,6 +101,7 @@ sub download {
     my $exclude_phenotype_outlier = $self->exclude_phenotype_outlier;
     my $average_repeat_measurements = $self->average_repeat_measurements;
     my $return_only_first_measurement = $self->return_only_first_measurement;
+    my $include_accession_entry_numbers = $self->include_accession_entry_numbers;
 
     $self->trial_download_log($trial_id, "trial phenotypes");
 
@@ -120,7 +122,8 @@ sub download {
         phenotype_min_value=>$phenotype_min_value,
         phenotype_max_value=>$phenotype_max_value,
         average_repeat_measurements=>$average_repeat_measurements,
-        return_only_first_measurement=>$return_only_first_measurement
+        return_only_first_measurement=>$return_only_first_measurement,
+        include_accession_entry_numbers=>$include_accession_entry_numbers
     );
     my @data = $phenotypes_search->get_phenotype_matrix();
     #print STDERR Dumper \@data;
