@@ -1567,6 +1567,7 @@ sub upload_intercross_file_POST : Args(0) {
     my $parsed_file;
     my $parse_errors;
     my %parsed_data;
+    my @error_messages;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
 

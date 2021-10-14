@@ -86,7 +86,7 @@ is($transaction_rows, 2);
 
 my $cross_identifier_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'cross_identifier', 'stock_property')->cvterm_id();
 my $cross_identifier_rows = $schema->resultset("Stock::Stockprop")->search({type_id => $cross_identifier_type_id})->count();
-is($cross_identifier_rows, 2);
+is($cross_identifier_rows, 3);
 
 #deleting crosses and crossing experiment after testing
 $mech->post_ok('http://localhost:3010/ajax/cross/delete', [ 'cross_id' => $intercross_upload_1_id]);

@@ -89,7 +89,7 @@ my $after_adding_cross_in_experiment_stock = $schema->resultset("NaturalDiversit
 is($after_adding_cross, $before_adding_cross + 1);
 is($after_adding_stocks, $before_adding_stocks + 1);
 is($after_adding_stockprop, $before_adding_stockprop + 1);
-is($after_adding_stockprop_all, $before_adding_stockprop_all + 1);
+is($after_adding_stockprop_all, $before_adding_stockprop_all + 2);
 is($after_adding_relationship, $before_adding_relationship + 4);
 is($after_adding_cross_in_experiment, $before_adding_cross_in_experiment + 1);
 is($after_adding_cross_in_experiment_stock, $before_adding_cross_in_experiment_stock + 1);
