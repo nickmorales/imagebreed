@@ -4643,6 +4643,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $residual_sum_s = 0;
     my $residual_sum_square_s = 0;
     my $model_sum_square_residual_s = 0;
+    my @varcomp_original_grm_trait_2dspl;
+    my @varcomp_h_grm_trait_2dspl;
+    my @fits_grm_trait_2dspl;
 
     my $spatial_correct_2dspl_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
     mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -4663,6 +4666,14 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     blups1 <- mix\$U\$\`u:rowNumber\`\$'.$trait_name_encoded_string.';
     spatial_blup_results\$'.$trait_name_encoded_string.' <- data.matrix(X) %*% data.matrix(blups1);
     write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+    write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+    h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
+    e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
+    write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+    ff <- fitted(mix);
+    r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+    SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+    write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
     }
     "';
     print STDERR Dumper $spatial_correct_2dspl_cmd;
@@ -4777,6 +4788,60 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             $model_sum_square_residual_s = $model_sum_square_residual_s + $residual*$residual;
         }
     close($fh_residual);
+
+    open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+        print STDERR "Opened $stats_out_tempfile_varcomp\n";
+        my $header_varcomp = <$fh_varcomp>;
+        print STDERR Dumper $header_varcomp;
+        my @header_cols_varcomp;
+        if ($csv->parse($header_varcomp)) {
+            @header_cols_varcomp = $csv->fields();
+        }
+        while (my $row = <$fh_varcomp>) {
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+            push @varcomp_original_grm_trait_2dspl, \@columns;
+        }
+    close($fh_varcomp);
+    print STDERR Dumper \@varcomp_original_grm_trait_2dspl;
+
+    open(my $fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
+        print STDERR "Opened $stats_out_tempfile_vpredict\n";
+        my $header_varcomp_h = <$fh_varcomp_h>;
+        print STDERR Dumper $header_varcomp_h;
+        my @header_cols_varcomp_h;
+        if ($csv->parse($header_varcomp_h)) {
+            @header_cols_varcomp_h = $csv->fields();
+        }
+        while (my $row = <$fh_varcomp_h>) {
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+            push @varcomp_h_grm_trait_2dspl, \@columns;
+        }
+    close($fh_varcomp_h);
+    print STDERR Dumper \@varcomp_h_grm_trait_2dspl;
+
+    open(my $fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
+        print STDERR "Opened $stats_out_tempfile_fits\n";
+        my $header_fits = <$fh_fits>;
+        print STDERR Dumper $header_fits;
+        my @header_cols_fits;
+        if ($csv->parse($header_fits)) {
+            @header_cols_fits = $csv->fields();
+        }
+        while (my $row = <$fh_fits>) {
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+            push @fits_grm_trait_2dspl, \@columns;
+        }
+    close($fh_fits);
+    print STDERR Dumper \@fits_grm_trait_2dspl;
 
     print STDERR Dumper {
         type => 'trait spatial genetic effect 2dspl',
@@ -9653,6 +9718,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             plots_htp_corr_plot => $analytics_protocol_tempfile_string_9,
             plots_secondary_traits_corr_plot => $analytics_protocol_tempfile_string_10,
             varcomp_original_grm => \@varcomp_original_grm,
+            varcomp_original_grm_trait_2dspl => \@varcomp_original_grm_trait_2dspl,
             varcomp_original_grm_fixed_effect => \@varcomp_original_grm_fixed_effect,
             varcomp_original_grm_fixed_effects => \@varcomp_original_grm_fixed_effects,
             varcomp_original_grm_fixed_effects_3 => \@varcomp_original_grm_fixed_effects_3,
@@ -9666,6 +9732,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             varcomp_original_grm_prm_secondary_traits => \@varcomp_original_grm_prm_secondary_traits,
             varcomp_original_prm => \@varcomp_original_prm,
             varcomp_h_grm => \@varcomp_h_grm,
+            varcomp_h_grm_trait_2dspl => \@varcomp_h_grm_trait_2dspl,
             varcomp_h_grm_fixed_effect => \@varcomp_h_grm_fixed_effect,
             varcomp_h_grm_fixed_effects => \@varcomp_h_grm_fixed_effects,
             varcomp_h_grm_fixed_effects_3 => \@varcomp_h_grm_fixed_effects_3,
@@ -9679,6 +9746,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             varcomp_h_grm_prm_secondary_traits => \@varcomp_h_grm_prm_secondary_traits,
             varcomp_h_prm => \@varcomp_h_prm,
             fits_grm => \@fits_grm,
+            fits_grm_trait_2dspl => \@fits_grm_trait_2dspl,
             fits_grm_fixed_effect => \@fits_grm_fixed_effect,
             fits_grm_fixed_effects => \@fits_grm_fixed_effects,
             fits_grm_fixed_effects_3 => \@fits_grm_fixed_effects_3,
