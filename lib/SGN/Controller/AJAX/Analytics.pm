@@ -5795,7 +5795,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         ff <- fitted(mix);
         r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
-        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.') );
+        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         }
         "';
@@ -5961,7 +5961,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         ff <- fitted(mix);
         r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
-        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.') );
+        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         }
         "';
@@ -6132,7 +6132,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         ff <- fitted(mix);
         r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
-        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.') );
+        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         }
         "';
@@ -6303,7 +6303,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         ff <- fitted(mix);
         r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
-        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.') );
+        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         }
         "';
@@ -6474,7 +6474,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         ff <- fitted(mix);
         r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
-        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.') );
+        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         }
         "';
@@ -6655,7 +6655,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         ff <- fitted(mix);
         r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
-        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.') );
+        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         }
         "';
