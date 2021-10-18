@@ -267,7 +267,6 @@ sub trial_download : Chained('trial_init') PathPart('download') Args(1) {
     my $what = shift;
     print STDERR Dumper $c->req->params();
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-
     my $user = $c->user();
     if (!$user) {
         $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
@@ -351,6 +350,9 @@ sub trial_download : Chained('trial_init') PathPart('download') Args(1) {
     }
     if ( ($format eq "dartseqcsv") && ($what eq "layout")) {
         $plugin = "GenotypingTrialLayoutDartSeqCSV";
+    }
+    if ( ($format eq "crossing_experiment_xls") && ($what eq "layout")) {
+        $plugin = "CrossingExperimentXLS";
     }
 
     my $trial_name = $trial->get_name();
