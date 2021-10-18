@@ -87,6 +87,27 @@ $analytics_protocol_id
                                 </select>
                             </div>
                         </div>
+                        <div class="form-group form-group-sm">
+                            <label class="col-sm-3 control-label">Correlation Plot Label Size: </label>
+                            <div class="col-sm-9" >
+                                <select class="form-control" id="analytics_compare_results_to_trait_analysis_correlation_plot_label_size">
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group form-group-sm">
+                            <label class="col-sm-3 control-label">Correlation Plot Label Decimal Digits: </label>
+                            <div class="col-sm-9" >
+                                <select class="form-control" id="analytics_compare_results_to_trait_analysis_correlation_plot_label_digits">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     <hr>
@@ -232,7 +253,7 @@ jQuery(document).ready(function() {
         manage_drone_imagery_analytics_compare_results_analysis = jQuery('#analytics_compare_results_to_trait_analysis_select').val();
 
         jQuery.ajax({
-            url : '/ajax/analytics_protocols_compare_to_trait?protocol_id='+<% $analytics_protocol_id %>+'&trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id+'&analysis='+manage_drone_imagery_analytics_compare_results_analysis+'&traits_secondary='+manage_drone_imagery_analytics_compare_results_trait_secondary_id_string+'&default_tol='+jQuery('#analytics_compare_results_to_trait_analysis_select_default_tol').val(),
+            url : '/ajax/analytics_protocols_compare_to_trait?protocol_id='+<% $analytics_protocol_id %>+'&trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id+'&analysis='+manage_drone_imagery_analytics_compare_results_analysis+'&traits_secondary='+manage_drone_imagery_analytics_compare_results_trait_secondary_id_string+'&default_tol='+jQuery('#analytics_compare_results_to_trait_analysis_select_default_tol').val()+'&cor_label_size='+jQuery('#analytics_compare_results_to_trait_analysis_correlation_plot_label_size').val()+'&cor_label_digits='+jQuery('#analytics_compare_results_to_trait_analysis_correlation_plot_label_digits').val(),
             beforeSend: function() {
                 jQuery("#working_modal").modal("show");
             },

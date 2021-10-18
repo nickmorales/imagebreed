@@ -3498,6 +3498,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $trial_id = $c->req->param('trial_id');
     my $analysis_run_type = $c->req->param('analysis');
     my $default_tol = $c->req->param('default_tol');
+    my $cor_label_size = $c->req->param('cor_label_size');
+    my $cor_label_digits = $c->req->param('cor_label_digits');
 
     my $csv = Text::CSV->new({ sep_char => "," });
     my $dir = $c->tempfiles_subdir('/analytics_protocol_figure');
@@ -7825,7 +7827,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $r_cmd_ic6 = 'R -e "library(ggplot2); library(data.table); library(GGally);
             data <- data.frame(fread(\''.$analytics_protocol_data_tempfile13.'\', header=TRUE, sep=\',\'));
-            plot <- ggcorr(data, hjust = 1, size = 3, color = \'grey50\', label = TRUE, label_size = 3, label_round = 1, layout.exp = 1);
+            plot <- ggcorr(data, hjust = 1, size = 3, color = \'grey50\', label = TRUE, label_size = '.$cor_label_size.', label_round = '.$cor_label_digits.', layout.exp = 1);
             ggsave(\''.$analytics_protocol_figure_tempfile_5.'\', plot, device=\'png\', width=10, height=10, units=\'in\');
             "';
             print STDERR Dumper $r_cmd_ic6;
