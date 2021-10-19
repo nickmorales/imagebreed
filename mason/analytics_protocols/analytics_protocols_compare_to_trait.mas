@@ -253,9 +253,20 @@ jQuery(document).ready(function() {
         manage_drone_imagery_analytics_compare_results_analysis = jQuery('#analytics_compare_results_to_trait_analysis_select').val();
 
         jQuery.ajax({
-            url : '/ajax/analytics_protocols_compare_to_trait?protocol_id='+<% $analytics_protocol_id %>+'&trial_id='+manage_drone_imagery_analytics_compare_results_trial_id+'&trait_id='+manage_drone_imagery_analytics_compare_results_trait_id+'&analysis='+manage_drone_imagery_analytics_compare_results_analysis+'&traits_secondary='+manage_drone_imagery_analytics_compare_results_trait_secondary_id_string+'&default_tol='+jQuery('#analytics_compare_results_to_trait_analysis_select_default_tol').val()+'&cor_label_size='+jQuery('#analytics_compare_results_to_trait_analysis_correlation_plot_label_size').val()+'&cor_label_digits='+jQuery('#analytics_compare_results_to_trait_analysis_correlation_plot_label_digits').val(),
+            url : '/ajax/analytics_protocols_compare_to_trait,
             beforeSend: function() {
                 jQuery("#working_modal").modal("show");
+            },
+            type: 'POST',
+            data:{
+                'protocol_id':<% $analytics_protocol_id %>,
+                'trial_id':manage_drone_imagery_analytics_compare_results_trial_id,
+                'trait_id':manage_drone_imagery_analytics_compare_results_trait_id,
+                'analysis':manage_drone_imagery_analytics_compare_results_analysis,
+                'traits_secondary':manage_drone_imagery_analytics_compare_results_trait_secondary_id_string,
+                'default_tol':jQuery('#analytics_compare_results_to_trait_analysis_select_default_tol').val(),
+                'cor_label_size':jQuery('#analytics_compare_results_to_trait_analysis_correlation_plot_label_size').val(),
+                'cor_label_digits':jQuery('#analytics_compare_results_to_trait_analysis_correlation_plot_label_digits').val()
             },
             timeout: 7200000,
             success: function(response){
