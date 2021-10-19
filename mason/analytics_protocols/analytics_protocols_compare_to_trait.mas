@@ -253,7 +253,7 @@ jQuery(document).ready(function() {
         manage_drone_imagery_analytics_compare_results_analysis = jQuery('#analytics_compare_results_to_trait_analysis_select').val();
 
         jQuery.ajax({
-            url : '/ajax/analytics_protocols_compare_to_trait,
+            url : '/ajax/analytics_protocols_compare_to_trait',
             beforeSend: function() {
                 jQuery("#working_modal").modal("show");
             },
