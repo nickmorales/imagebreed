@@ -41,17 +41,18 @@
 
                             <!--option value="sommer_grm_genetic_blups">Sommer GBLUPs Y~replicate+GRM. Multivariate genetic effects using GRM</option-->
 
-                            <option value="sommer_grm_spatial_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+Row+Col+2Dspline. Multivariate genetic + 2Dspl spatial effects</option>
-                            <option value="sommer_grm_spatial_pure_2dspl_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+2Dspline. Multivariate genetic + 2Dspl spatial effects</option>
-                            <option value="sommer_grm_univariate_spatial_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+Row+Col+2Dspline. Univariate genetic + 2Dspl spatial effects</option>
+                            <!--option value="sommer_grm_univariate_spatial_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+Row+Col+2Dspline. Univariate genetic + 2Dspl spatial effects</option-->
                             <option value="sommer_grm_univariate_spatial_pure_2dspl_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+2Dspline. Univariate genetic + 2Dspl spatial effects</option>
+
+                            <!-- option value="sommer_grm_spatial_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+Row+Col+2Dspline. Multivariate genetic + 2Dspl spatial effects</option-->
+                            <option value="sommer_grm_spatial_pure_2dspl_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+2Dspline. Multivariate genetic + 2Dspl spatial effects</option>
 
                             <!--option value="blupf90_grm_random_regression_dap_blups">BLUPf90 GBLUPs Y~replicate+GRM+temporal random regression using days after planting. Multivariate genetic + permanent environment effects</option>
                             <option value="blupf90_grm_random_regression_gdd_blups">BLUPf90 GBLUPs Y~replicate+GRM+temporal random regression using growing degree days. Multivariate genetic + permanent environment effects</option-->
 
                             <option value="airemlf90_grm_random_regression_dap_blups">AIREMLf90 GBLUPs Y~replicate+GRM+temporal random regression using days after planting. Multivariate genetic + permanent environment effects</option>
 
-                            <option value="asreml_grm_univariate_spatial_genetic_blups">ASREML Spatial GBLUPs Y~replicate+GRM+Row+Col+spatial. Univariate genetic + AR1xAR1 spatial effects</option>
+                            <!--option value="asreml_grm_univariate_spatial_genetic_blups">ASREML Spatial GBLUPs Y~replicate+GRM+Row+Col+spatial. Univariate genetic + AR1xAR1 spatial effects</option-->
                             <option value="asreml_grm_univariate_pure_spatial_genetic_blups">ASREML Spatial GBLUPs Y~replicate+GRM+spatial. Univariate genetic + AR1xAR1 spatial effects</option>
                             <option value="asreml_grm_multivariate_spatial_genetic_blups">ASREML Spatial GBLUPs Y~replicate+GRM+spatial. Multivariate genetic + AR1xAR1 spatial effects</option>
 
@@ -121,8 +122,8 @@
                                     <label class="col-sm-3 control-label">Number Interations: </label>
                                     <div class="col-sm-9" >
                                         <select class="form-control" id="drone_imagery_analytics_number_iterations">
-                                            <option value="10">10</option>
                                             <option value="2">2</option>
+                                            <option value="10">10</option>
                                             <option value="25">25</option>
                                             <option value="1">1</option>
                                         </select>
@@ -365,6 +366,7 @@
                                     <div class="col-sm-7" >
                                         <select class="form-control" id="drone_imagery_analytics_simulated_environment_processes_select_div">
                                             <option value="6sims">Linear, 1D Normal, 2D Normal, AR1xAR1, Random, Real Data</option>
+                                            <option value="none">No Simulation Process</option>
                                         </select>
                                     </div>
                                     <div class="col-sm-2" >
@@ -530,7 +532,7 @@ jQuery(document).ready(function() {
     jQuery('#drone_imagery_analytics_simulated_environment_processes_select_example_button').click(function(){
         var drone_imagery_analytics_simulated_environment_processes_select_example_button_sims = jQuery('#drone_imagery_analytics_simulated_environment_processes_select_div').val();
         if (drone_imagery_analytics_simulated_environment_processes_select_example_button_sims == '') {
-            alert('Please select sims to show exmaple of!');
+            alert('Please select sims to show example of!');
             return false;
         }
         var drone_imagery_analytics_simulated_environment_processes_select_example_button_trait = jQuery('#drone_imagery_analytics_simulated_environment_real_data_trait_select').val();
@@ -875,7 +877,8 @@ jQuery(document).ready(function() {
                 'sim_env_change_over_time_correlation':jQuery('#drone_imagery_analytics_sim_env_change_over_time_correlation').val(),
                 'fixed_effect_type':jQuery('#drone_imagery_analytics_fixed_effect_select_div').val(),
                 'fixed_effect_trait_id':jQuery('#drone_imagery_analytics_fixed_effect_trait_select').val(),
-                'fixed_effect_quantiles':jQuery('#drone_imagery_analytics_fixed_effect_select_quantile').val()
+                'fixed_effect_quantiles':jQuery('#drone_imagery_analytics_fixed_effect_select_quantile').val(),
+                'simulations_to_run':jQuery('#drone_imagery_analytics_simulated_environment_processes_select_div').val()
             },
             beforeSend: function() {
                 jQuery("#working_modal").modal("show");

@@ -4212,6 +4212,15 @@ sub perform_drone_imagery_analytics {
         mean => $model_sum_square_original_cv_2_stat->mean()
     };
 
+    if ($run_only_first_env_estimation) {
+        return [$statistical_ontology_term, $analysis_model_training_data_file_type, $analysis_model_language, \@sorted_residual_trait_names, \%rr_unique_traits, \%rr_residual_unique_traits, $statistics_cmd, $cmd_f90, $number_traits, \%trait_to_time_map,
+
+        $result_blup_data_original, $result_blup_data_delta_original, $result_blup_spatial_data_original, $result_blup_pe_data_original, $result_blup_pe_data_delta_original, $result_residual_data_original, $result_fitted_data_original, \%fixed_effects_original, \%rr_genetic_coefficients_original, \%rr_temporal_coefficients_original, \@rr_coeff_genetic_covariance_original, \@rr_coeff_env_covariance_original, \@rr_coeff_genetic_correlation_original, \@rr_coeff_env_correlation_original, $rr_residual_variance_original, \@varcomp_original,
+
+        $model_sum_square_residual_original, $genetic_effect_min_original, $genetic_effect_max_original, $env_effect_min_original, $env_effect_max_original, $genetic_effect_sum_square_original, $genetic_effect_sum_original, $env_effect_sum_square_original, $env_effect_sum_original, $residual_sum_square_original, $residual_sum_original, $model_sum_square_original_cv_result, $model_sum_square_original_cv_2_result
+        ];
+    }
+
     my (%phenotype_data_altered, @data_matrix_altered, @data_matrix_phenotypes_altered, @phenotype_data_altered_values);
     my $phenotype_min_altered = 1000000000;
     my $phenotype_max_altered = -1000000000;
