@@ -148,7 +148,7 @@ sub metadata_query {
     $full_query = join (" INTERSECT ", @queries);
   }
   $full_query .= " ORDER BY 2";
-  print STDERR "QUERY: $full_query\n";
+  # print STDERR "QUERY: $full_query\n";
   $h = $self->dbh->prepare($full_query);
   $h->execute();
 
@@ -191,7 +191,7 @@ sub avg_phenotypes_query {
   my $query = $select . $from . " ORDER BY 2";
   if ($allow_missing eq 'true') { $query =~ s/JOIN/FULL OUTER JOIN/g; }
 
-  print STDERR "QUERY: $query\n";
+  # print STDERR "QUERY: $query\n";
 
   my $h = $self->dbh->prepare($query);
   $h->execute(@$trait_ids);

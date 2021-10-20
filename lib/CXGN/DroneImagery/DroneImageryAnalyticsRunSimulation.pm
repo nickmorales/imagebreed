@@ -1904,7 +1904,7 @@ sub perform_drone_imagery_analytics {
         close($fh_sol);
 
         # print STDERR Dumper \%rr_genetic_coefficients_original;
-        print STDERR Dumper \%rr_temporal_coefficients_original;
+        # print STDERR Dumper \%rr_temporal_coefficients_original;
 
         open(my $Fgc, ">", $coeff_genetic_tempfile) || die "Can't open file ".$coeff_genetic_tempfile;
         print STDERR "OPENED $coeff_genetic_tempfile\n";
@@ -2052,7 +2052,7 @@ sub perform_drone_imagery_analytics {
                 $env_effect_sum_square_original = $env_effect_sum_square_original + $value*$value;
             }
         }
-        print STDERR Dumper $result_blup_pe_data_delta_original;
+        # print STDERR Dumper $result_blup_pe_data_delta_original;
 
         if ($perform_cv) {
             my $cmd_f90_cv1 = 'cd '.$tmp_stats_dir.'; echo '.$parameter_tempfile_cv1_basename.' | '.$command_name.' > '.$stats_out_tempfile;
