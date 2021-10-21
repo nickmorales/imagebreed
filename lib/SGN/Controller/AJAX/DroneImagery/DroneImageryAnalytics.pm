@@ -69,7 +69,7 @@ __PACKAGE__->config(
 );
 
 sub drone_imagery_show_example_simulations : Path('/api/drone_imagery/show_example_simulations') : ActionClass('REST') { }
-sub drone_imagery_show_example_simulations_GET : Args(0) {
+sub drone_imagery_show_example_simulations_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     print STDERR Dumper $c->req->params();
