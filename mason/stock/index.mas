@@ -250,7 +250,7 @@ function jqueryStuff() {
 
 % my $subtitle = '';
 % if ($type_name eq 'accession') {
-%   my $subtitle = $edit_privs ? "<button class=\"btn btn-sm btn-primary\" style=\"margin:3px\" id=\"stock_add_synonym\" >Add Synonym</button>" : "<button disabled class=\"btn btn-sm btn-primary\" style=\"margin:3px\" title=\"Login to add info\">Add Synonym</button>";
+%   $subtitle = $edit_privs ? "<button class=\"btn btn-sm btn-primary\" style=\"margin:3px\" id=\"stock_add_synonym\" >Add Synonym</button>" : "<button disabled class=\"btn btn-sm btn-primary\" style=\"margin:3px\" title=\"Login to add info\">Add Synonym</button>";
 % }
 % my $props_subtitle = $edit_privs ? "<button class=\"btn btn-sm btn-primary\" style=\"margin:3px\" id=\"stock_add_props\" >Add Additional Info</button>" : "<button disabled class=\"btn btn-sm btn-primary\" style=\"margin:3px\" title=\"Login to add info\">Add Additional Info</button>";
 
