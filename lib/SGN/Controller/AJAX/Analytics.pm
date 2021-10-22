@@ -8392,7 +8392,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $grm_no_prm_fixed_effect_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_favg_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $grm_no_prm_fixed_effect_gcor_cmd;
             my $grm_no_prm_fixed_effect_gcor_cmd_status = system($grm_no_prm_fixed_effect_gcor_cmd);
@@ -8917,7 +8917,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $grm_no_prm_fixed_effects_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_f2_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_gcor_cmd;
             my $grm_no_prm_fixed_effects_gcor_cmd_status = system($grm_no_prm_fixed_effects_gcor_cmd);
@@ -9445,7 +9445,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $grm_no_prm_fixed_effects_3_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_f3_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_3_gcor_cmd;
             my $grm_no_prm_fixed_effects_3_gcor_cmd_status = system($grm_no_prm_fixed_effects_3_gcor_cmd);
@@ -9967,7 +9967,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $grm_no_prm_fixed_effects_havg_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_havg_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_havg_gcor_cmd;
             my $grm_no_prm_fixed_effects_havg_gcor_cmd_status = system($grm_no_prm_fixed_effects_havg_gcor_cmd);
@@ -10489,7 +10489,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $grm_no_prm_fixed_effects_fmax_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fmax_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_fmax_gcor_cmd;
             my $grm_no_prm_fixed_effects_fmax_gcor_cmd_status = system($grm_no_prm_fixed_effects_fmax_gcor_cmd);
@@ -11011,7 +11011,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $grm_no_prm_fixed_effects_fmin_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fmin_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_fmin_gcor_cmd;
             my $grm_no_prm_fixed_effects_fmin_gcor_cmd_status = system($grm_no_prm_fixed_effects_fmin_gcor_cmd);
@@ -11527,7 +11527,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $grm_no_prm_fixed_effects_grm_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_grm_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_grm_gcor_cmd;
             my $grm_no_prm_fixed_effects_grm_gcor_cmd_status = system($grm_no_prm_fixed_effects_grm_gcor_cmd);
@@ -12073,7 +12073,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $prm_fixed_effects_prm_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $prm_fixed_effects_prm_gcor_cmd;
             my $prm_fixed_effects_prm_gcor_cmd_status = system($prm_fixed_effects_prm_gcor_cmd);
@@ -12619,7 +12619,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $prm_fixed_effects_grm_prm_sec_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_grm_prm_secondary_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $prm_fixed_effects_grm_prm_sec_gcor_cmd;
             my $prm_fixed_effects_grm_prm_sec_gcor_cmd_status = system($prm_fixed_effects_grm_prm_sec_gcor_cmd);
@@ -13156,7 +13156,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $prm_fixed_effects_grm_prm_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_grm_prm_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $prm_fixed_effects_grm_prm_gcor_cmd;
             my $prm_fixed_effects_grm_prm_gcor_cmd_status = system($prm_fixed_effects_grm_prm_gcor_cmd);
@@ -13702,7 +13702,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $prm_fixed_effects_grm_id_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_grm_id_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $prm_fixed_effects_grm_id_gcor_cmd;
             my $prm_fixed_effects_grm_id_gcor_cmd_status = system($prm_fixed_effects_grm_id_gcor_cmd);
@@ -14251,7 +14251,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $prm_fixed_effects_grm_id_prm_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_grm_id_prm_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $prm_fixed_effects_grm_id_prm_gcor_cmd;
             my $prm_fixed_effects_grm_id_prm_gcor_cmd_status = system($prm_fixed_effects_grm_id_prm_gcor_cmd);
@@ -14798,7 +14798,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
             my $prm_fixed_effects_grm_id_prm_id_gcor_cmd = 'R -e "library(data.table);
             mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_grm_id_prm_id_gcorr.'\', header=TRUE, sep=\',\'));
-            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(gcorr = c(cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             "';
             print STDERR Dumper $prm_fixed_effects_grm_id_prm_id_gcor_cmd;
             my $prm_fixed_effects_grm_id_prm_id_gcor_cmd_status = system($prm_fixed_effects_grm_id_prm_id_gcor_cmd);
