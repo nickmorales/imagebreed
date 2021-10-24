@@ -3659,6 +3659,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
     my %germplasm_phenotypes_secondary;
     my %plot_phenotypes_secondary;
+    my %plot_phenotypes_secondary_cutoff_data;
     my $min_phenotype_secondary = 1000000000000000;
     my $max_phenotype_secondary = -1000000000000000;
     my @sorted_trait_names_secondary;
@@ -3707,8 +3708,18 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
                 push @{$germplasm_phenotypes_secondary{$germplasm_name}->{$trait_name}}, $value;
                 $plot_phenotypes_secondary{$obsunit_stock_uniquename}->{$trait_name} = $value;
+                push @{$plot_phenotypes_secondary_cutoff_data{$trait_name}->{data}}, $value;
             }
         }
+    }
+
+    while (my($t,$vals) = each %plot_phenotypes_secondary_cutoff_data) {
+        my $stat = Statistics::Descriptive::Full->new();
+        $stat->add_data(@{$vals->{data}});
+        my $cutoff_25 = $stat->quantile(1);
+        my $cutoff_50 = $stat->quantile(2);
+        my $cutoff_75 = $stat->quantile(3);
+        $plot_phenotypes_secondary_cutoff_data{$t}->{cutoffs} = [$cutoff_25, $cutoff_50, $cutoff_75];
     }
 
     my $phenotypes_search_htp = CXGN::Phenotypes::SearchFactory->instantiate(
@@ -7094,6 +7105,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $analytics_protocol_data_tempfile27= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile28= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile29= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile30= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile_favg_gcorr= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile_f2_gcorr= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile_f3_gcorr= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
@@ -7184,6 +7196,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
         my @plots_data_grm_prm_data_values = ();
         my @plots_data_grm_prm_secondary_traits_data_values = ();
+        my @plots_data_grm_prm_secondary_traits_fixed_data_values = ();
         my @varcomp_original_grm;
         my @varcomp_original_grm_fixed_effect;
         my @varcomp_original_grm_fixed_effects;
@@ -7197,6 +7210,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @varcomp_original_grm_id_prm;
         my @varcomp_original_grm_id_prm_id;
         my @varcomp_original_prm;
+        my @varcomp_original_grm_prm_secondary_traits_favg;
+        my @varcomp_original_grm_prm_secondary_traits_havg;
         my @varcomp_h_grm;
         my @varcomp_h_grm_fixed_effect;
         my @varcomp_h_grm_fixed_effects;
@@ -7210,6 +7225,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @varcomp_h_grm_prm;
         my @varcomp_h_grm_prm_secondary_traits;
         my @varcomp_h_prm;
+        my @varcomp_h_grm_prm_secondary_traits_favg;
+        my @varcomp_h_grm_prm_secondary_traits_havg;
         my @fits_grm;
         my @fits_grm_fixed_effect;
         my @fits_grm_fixed_effects;
@@ -7223,6 +7240,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @fits_grm_prm;
         my @fits_grm_prm_secondary_traits;
         my @fits_prm;
+        my @fits_grm_prm_secondary_traits_favg;
+        my @fits_grm_prm_secondary_traits_havg;
         my $gcorr_favg;
         my $gcorr_f2;
         my $gcorr_f3;
@@ -7236,6 +7255,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $gcorr_grm_id_prm;
         my $gcorr_grm_id_prm_id;
         my $gcorr_grm_prm_secondary_traits;
+        my @gcorr_grm_prm_secondary_traits_favg;
+        my @gcorr_grm_prm_secondary_traits_havg;
 
         foreach my $t (@sorted_trait_names) {
             push @germplasm_data_header, ($t."mean", $t."sd", $t."spatialcorrected2Dsplgenoeffect");
@@ -7336,6 +7357,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             my @values;
             my @plots_grm_prm_values;
             my @plots_grm_prm_secondary_traits_values;
+            my @plots_grm_prm_secondary_traits_fixed_values;
 
             my $row_number = $stock_name_row_col{$p}->{row_number};
             my $col_number = $stock_name_row_col{$p}->{col_number};
@@ -7491,15 +7513,32 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
                     push @plots_grm_prm_secondary_traits_values, $trait_secondary_val;
 
+                    my ($cutoff_25, $cutoff_50, $cutoff_75) = @{$plot_phenotypes_secondary_cutoff_data{$t}->{cutoffs}};
+                    my $fixed_val;
+                    if ($trait_secondary_val <= $cutoff_25) {
+                        $fixed_val = 0;
+                    }
+                    elsif ($trait_secondary_val <= $cutoff_50) {
+                        $fixed_val = 1;
+                    }
+                    elsif ($trait_secondary_val <= $cutoff_75) {
+                        $fixed_val = 2;
+                    }
+                    else {
+                        $fixed_val = 3;
+                    }
+
                     if ($is_first_plot) {
                         push @type_names_first_line_secondary, $t;
                     }
+                    push @plots_grm_prm_secondary_traits_fixed_values, $fixed_val;
                 }
             }
             push @plots_avg_data, \@line;
             push @plots_avg_data_values, \@values;
             push @plots_data_grm_prm_data_values, \@plots_grm_prm_values;
             push @plots_data_grm_prm_secondary_traits_data_values, \@plots_grm_prm_secondary_traits_values;
+            push @plots_data_grm_prm_secondary_traits_fixed_data_values, \@plots_grm_prm_secondary_traits_fixed_values;
             $is_first_plot = 0;
         }
 
@@ -7618,6 +7657,13 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 print $F28 "$string\n";
             }
         close($F28);
+
+        open(my $F30, ">", $analytics_protocol_data_tempfile30) || die "Can't open file ".$analytics_protocol_data_tempfile30;
+            foreach (@plots_data_grm_prm_secondary_traits_fixed_data_values) {
+                my $string = join ',', @$_;
+                print $F30 "$string\n";
+            }
+        close($F30);
 
         if ($result_type eq 'originalgenoeff') {
 
@@ -7860,18 +7906,20 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             print STDERR Dumper $r_cmd_ic6;
             my $status_ic6 = system($r_cmd_ic6);
 
-            my $secondary_type_list_string = join '\',\'', @type_names_first_line_secondary;
-            my $r_cmd_i7 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
-            pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile25.'\', header=TRUE, sep=\',\'));
-            type_list <- c(\''.$secondary_type_list_string.'\');
-            pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = type_list);
-            lapply(type_list, function(cc) { gg <- ggplot(filter(pheno_mat, trait_type==cc), aes('.$output_plot_col.', '.$output_plot_row.', fill=value, frame=trait_type)) + geom_tile() + scale_fill_viridis(discrete=FALSE) + coord_equal() + labs(x=NULL, y=NULL, title=sprintf(\'%s\', cc)); }) -> cclist;
-            cclist[[\'ncol\']] <- '.$number_secondary_traits.';
-            gg <- do.call(grid.arrange, cclist);
-            ggsave(\''.$analytics_protocol_figure_tempfile_6.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
-            "';
-            print STDERR Dumper $r_cmd_i7;
-            my $status_i7 = system($r_cmd_i7);
+            if (scalar(@type_names_first_line_secondary)>0) {
+                my $secondary_type_list_string = join '\',\'', @type_names_first_line_secondary;
+                my $r_cmd_i7 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
+                pheno_mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile25.'\', header=TRUE, sep=\',\'));
+                type_list <- c(\''.$secondary_type_list_string.'\');
+                pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels = type_list);
+                lapply(type_list, function(cc) { gg <- ggplot(filter(pheno_mat, trait_type==cc), aes('.$output_plot_col.', '.$output_plot_row.', fill=value, frame=trait_type)) + geom_tile() + scale_fill_viridis(discrete=FALSE) + coord_equal() + labs(x=NULL, y=NULL, title=sprintf(\'%s\', cc)); }) -> cclist;
+                cclist[[\'ncol\']] <- '.$number_secondary_traits.';
+                gg <- do.call(grid.arrange, cclist);
+                ggsave(\''.$analytics_protocol_figure_tempfile_6.'\', gg, device=\'png\', width=30, height=30, units=\'in\');
+                "';
+                print STDERR Dumper $r_cmd_i7;
+                my $status_i7 = system($r_cmd_i7);
+            }
 
             my $type_list_traits_corrected_string = join '\',\'', @type_names_first_line_traits_corrected;
             my $type_list_traits_corrected_string_number = scalar(@type_names_first_line_traits_corrected);
@@ -14837,131 +14885,1078 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($F_avg_gcorr_f);
 
-            # my $result_blup_data_s_htp;
-            # my $result_residual_data_s_htp;
-            # my $result_fitted_data_s_htp;
-            # my $genetic_effect_min_s_htp = 1000000000000;
-            # my $genetic_effect_max_s_htp = 1000000000000;
-            # my $genetic_effect_sum_s_htp = 0;
-            # my $genetic_effect_sum_square_s_htp = 0;
-            # my $residual_sum_s_htp = 0;
-            # my $residual_sum_square_s_htp = 0;
-            # my $model_sum_square_residual_s_htp = 0;
-            #
-            # my $grm_htp_prm_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
-            # mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
-            # geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
-            # prm_mat_cols <- data.frame(fread(\''.$stats_out_htp_rel_tempfile_input.'\', header=TRUE, sep=\'\t\'));
-            # geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
-            # geno_mat[is.na(geno_mat)] <- 0;
-            # prm_mat <- cor(t(prm_mat_cols[,7:ncol(prm_mat_cols)]));
-            # cor_plot <- ggcorr(data = NULL, cor_matrix = prm_mat, hjust = 1, size = 3, color = \'grey50\', label = FALSE, layout.exp = 1);
-            # ggsave(\''.$analytics_protocol_figure_tempfile_9.'\', cor_plot, device=\'png\', width=50, height=50, units=\'in\', limitsize = FALSE);
-            # colnames(prm_mat) <- mat\$plot_id_s;
-            # rownames(prm_mat) <- mat\$plot_id_s;
-            # mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            # mat\$colNumber <- as.numeric(mat\$colNumber);
-            # mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            # mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            # mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
-            # if (!is.null(mix\$U)) {
-            # #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-            # write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-            # write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-            # write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-            # }
-            # "';
-            # print STDERR Dumper $grm_htp_prm_cmd;
-            # my $grm_htp_prm_cmd_status = system($grm_htp_prm_cmd);
-            #
-            # open(my $fh_htp, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-            #     print STDERR "Opened $stats_out_tempfile\n";
-            #     my $header_htp = <$fh_htp>;
-            #     my @header_cols_htp;
-            #     if ($csv->parse($header_htp)) {
-            #         @header_cols_htp = $csv->fields();
-            #     }
-            #
-            #     while (my $row = <$fh_htp>) {
-            #         my @columns;
-            #         if ($csv->parse($row)) {
-            #             @columns = $csv->fields();
-            #         }
-            #         my $col_counter = 0;
-            #         foreach my $encoded_trait (@header_cols_htp) {
-            #             if ($encoded_trait eq $trait_name_encoded_string) {
-            #                 my $trait = $trait_name_encoder_rev_s{$encoded_trait};
-            #                 my $stock_id = $columns[0];
-            #
-            #                 my $stock_name = $stock_info{$stock_id}->{uniquename};
-            #                 my $value = $columns[$col_counter+1];
-            #                 if (defined $value && $value ne '') {
-            #                     $result_blup_data_s_htp->{$stock_name}->{$trait} = $value;
-            #
-            #                     if ($value < $genetic_effect_min_s_htp) {
-            #                         $genetic_effect_min_s_htp = $value;
-            #                     }
-            #                     elsif ($value >= $genetic_effect_max_s_htp) {
-            #                         $genetic_effect_max_s_htp = $value;
-            #                     }
-            #
-            #                     $genetic_effect_sum_s_htp += abs($value);
-            #                     $genetic_effect_sum_square_s_htp = $genetic_effect_sum_square_s_htp + $value*$value;
-            #                 }
-            #             }
-            #             $col_counter++;
-            #         }
-            #     }
-            # close($fh_htp);
-            #
-            # open(my $fh_residual_htp, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
-            #     print STDERR "Opened $stats_out_tempfile_residual\n";
-            #     my $header_residual_htp = <$fh_residual_htp>;
-            #     my @header_cols_residual_htp;
-            #     if ($csv->parse($header_residual_htp)) {
-            #         @header_cols_residual_htp = $csv->fields();
-            #     }
-            #     while (my $row = <$fh_residual_htp>) {
-            #         my @columns;
-            #         if ($csv->parse($row)) {
-            #             @columns = $csv->fields();
-            #         }
-            #
-            #         my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
-            #         my $stock_id = $columns[0];
-            #         my $residual = $columns[1];
-            #         my $fitted = $columns[2];
-            #         my $stock_name = $plot_id_map{$stock_id};
-            #         if (defined $residual && $residual ne '') {
-            #             $result_residual_data_s_htp->{$stock_name}->{$trait_name} = $residual;
-            #             $residual_sum_s_htp += abs($residual);
-            #             $residual_sum_square_s_htp = $residual_sum_square_s_htp + $residual*$residual;
-            #         }
-            #         if (defined $fitted && $fitted ne '') {
-            #             $result_fitted_data_s_htp->{$stock_name}->{$trait_name} = $fitted;
-            #         }
-            #         $model_sum_square_residual_s_htp = $model_sum_square_residual_s_htp + $residual*$residual;
-            #     }
-            # close($fh_residual_htp);
-            #
-            # my @varcomp_original_htp;
-            # open(my $fh_varcomp_htp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
-            #     print STDERR "Opened $stats_out_tempfile_varcomp\n";
-            #     my $header_varcomp_htp = <$fh_varcomp_htp>;
-            #     print STDERR Dumper $header_varcomp_htp;
-            #     my @header_cols_varcomp_htp;
-            #     if ($csv->parse($header_varcomp_htp)) {
-            #         @header_cols_varcomp_htp = $csv->fields();
-            #     }
-            #     while (my $row = <$fh_varcomp_htp>) {
-            #         my @columns;
-            #         if ($csv->parse($row)) {
-            #             @columns = $csv->fields();
-            #         }
-            #         push @varcomp_original_htp, \@columns;
-            #     }
-            # close($fh_varcomp_htp);
-            # print STDERR Dumper \@varcomp_original_htp;
+            my $trait_name_secondary_counter = 1;
+            foreach my $t_sec (@sorted_trait_names_secondary) {
+                my $grm_prm_secondary_traits_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+                mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+                sec_cont <- data.frame(fread(\''.$analytics_protocol_data_tempfile28.'\', header=FALSE, sep=\',\'));
+                sec_binned <- data.frame(fread(\''.$analytics_protocol_data_tempfile30.'\', header=FALSE, sep=\',\'));
+                geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+                geno_mat[is.na(geno_mat)] <- 0;
+                mat\$rowNumber <- as.numeric(mat\$rowNumber);
+                mat\$colNumber <- as.numeric(mat\$colNumber);
+                mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+                mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+                mat\$fixed_eff <- sec_cont[ ,'.$trait_name_secondary_counter.'];
+                mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
+                if (!is.null(mix\$U)) {
+                #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+                write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
+                e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
+                write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                ff <- fitted(mix);
+                r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+                SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+                write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                }
+                "';
+                print STDERR Dumper $grm_prm_secondary_traits_cmd;
+                my $grm_prm_secondary_traits_cmd_status = system($grm_prm_secondary_traits_cmd);
+
+                open($fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                    print STDERR "Opened $stats_out_tempfile\n";
+                    $header = <$fh>;
+                    @header_cols = ();
+                    if ($csv->parse($header)) {
+                        @header_cols = $csv->fields();
+                    }
+
+                    while (my $row = <$fh>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        my $col_counter = 0;
+                        foreach my $encoded_trait (@header_cols) {
+                            if ($encoded_trait eq $trait_name_encoded_string) {
+                                my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                                my $stock_id = $columns[0];
+
+                                my $stock_name = $stock_info{$stock_id}->{uniquename};
+                                my $value = $columns[$col_counter+1];
+                                if (defined $value && $value ne '') {
+                                    $result_blup_data_s->{$stock_name}->{$trait} = $value;
+
+                                    if ($value < $genetic_effect_min_s) {
+                                        $genetic_effect_min_s = $value;
+                                    }
+                                    elsif ($value >= $genetic_effect_max_s) {
+                                        $genetic_effect_max_s = $value;
+                                    }
+
+                                    $genetic_effect_sum_s += abs($value);
+                                    $genetic_effect_sum_square_s = $genetic_effect_sum_square_s + $value*$value;
+                                }
+                            }
+                            $col_counter++;
+                        }
+                    }
+                close($fh);
+
+                open($fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+                    print STDERR "Opened $stats_out_tempfile_residual\n";
+                    $header_residual = <$fh_residual>;
+                    @header_cols_residual = ();
+                    if ($csv->parse($header_residual)) {
+                        @header_cols_residual = $csv->fields();
+                    }
+                    while (my $row = <$fh_residual>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
+                        my $stock_id = $columns[0];
+                        my $residual = $columns[1];
+                        my $fitted = $columns[2];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        if (defined $residual && $residual ne '') {
+                            $result_residual_data_s->{$stock_name}->{$trait_name} = $residual;
+                            $residual_sum_s += abs($residual);
+                            $residual_sum_square_s = $residual_sum_square_s + $residual*$residual;
+                        }
+                        if (defined $fitted && $fitted ne '') {
+                            $result_fitted_data_s->{$stock_name}->{$trait_name} = $fitted;
+                        }
+                        $model_sum_square_residual_s = $model_sum_square_residual_s + $residual*$residual;
+                    }
+                close($fh_residual);
+
+                my @varcomp_original_grm_prm_secondary_traits_havg_vals;
+                open($fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+                    print STDERR "Opened $stats_out_tempfile_varcomp\n";
+                    $header_varcomp = <$fh_varcomp>;
+                    print STDERR Dumper $header_varcomp;
+                    @header_cols_varcomp = ();
+                    if ($csv->parse($header_varcomp)) {
+                        @header_cols_varcomp = $csv->fields();
+                    }
+                    while (my $row = <$fh_varcomp>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_original_grm_prm_secondary_traits_havg_vals, \@columns;
+                    }
+                close($fh_varcomp);
+                push @varcomp_original_grm_prm_secondary_traits_havg, \@varcomp_original_grm_prm_secondary_traits_havg_vals;
+
+                my @varcomp_h_grm_prm_secondary_traits_vals;
+                open($fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
+                    print STDERR "Opened $stats_out_tempfile_vpredict\n";
+                    $header_varcomp_h = <$fh_varcomp_h>;
+                    print STDERR Dumper $header_varcomp_h;
+                    @header_cols_varcomp_h = ();
+                    if ($csv->parse($header_varcomp_h)) {
+                        @header_cols_varcomp_h = $csv->fields();
+                    }
+                    while (my $row = <$fh_varcomp_h>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_h_grm_prm_secondary_traits_vals, \@columns;
+                    }
+                close($fh_varcomp_h);
+                push @varcomp_h_grm_prm_secondary_traits_havg, \@varcomp_h_grm_prm_secondary_traits_vals;
+
+                my @fits_grm_prm_secondary_traits_vals;
+                open($fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
+                    print STDERR "Opened $stats_out_tempfile_fits\n";
+                    $header_fits = <$fh_fits>;
+                    print STDERR Dumper $header_fits;
+                    @header_cols_fits = ();
+                    if ($csv->parse($header_fits)) {
+                        @header_cols_fits = $csv->fields();
+                    }
+                    while (my $row = <$fh_fits>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @fits_grm_prm_secondary_traits_vals, \@columns;
+                    }
+                close($fh_fits);
+                push @fits_grm_prm_secondary_traits_havg, \@fits_grm_prm_secondary_traits_vals;
+
+                my $result_blup_data_s_grm_prm_sec_rep1;
+                my $genetic_effect_min_s_grm_prm_sec_rep1 = 10000000000;
+                my $genetic_effect_max_s_grm_prm_sec_rep1 = -10000000000;
+                my $genetic_effect_sum_s_grm_prm_sec_rep1 = 0;
+                my $genetic_effect_sum_square_s_grm_prm_sec_rep1 = 0;
+                my $result_residual_data_s_grm_prm_sec_rep1;
+                my $residual_sum_s_grm_prm_sec_rep1 = 0;
+                my $residual_sum_square_s_grm_prm_sec_rep1 = 0;
+                my $result_fitted_data_s_grm_prm_sec_rep1;
+                my $model_sum_square_residual_s_grm_prm_sec_rep1 = 0;
+                my @varcomp_original_grm_fixed_effect_grm_prm_sec_rep1;
+                my @varcomp_h_grm_fixed_effect_grm_prm_sec_rep1;
+                my @fits_grm_fixed_effect_grm_prm_sec_rep1;
+                my %seen_accession_names_grm_prm_sec_rep1;
+
+                my $prm_fixed_effects_grm_prm_sec_rep1_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+                mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+                sec_cont <- data.frame(fread(\''.$analytics_protocol_data_tempfile28.'\', header=FALSE, sep=\',\'));
+                sec_binned <- data.frame(fread(\''.$analytics_protocol_data_tempfile30.'\', header=FALSE, sep=\',\'));
+                geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+                geno_mat[is.na(geno_mat)] <- 0;
+                mat\$rowNumber <- as.numeric(mat\$rowNumber);
+                mat\$colNumber <- as.numeric(mat\$colNumber);
+                mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+                mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+                mat\$fixed_eff <- sec_cont[ ,'.$trait_name_secondary_counter.'];
+                mat <- mat[mat\$replicate == \'1\', ];
+                mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
+                if (!is.null(mix\$U)) {
+                #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+                write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
+                e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
+                write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                ff <- fitted(mix);
+                r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+                SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+                write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                }
+                "';
+                print STDERR Dumper $prm_fixed_effects_grm_prm_sec_rep1_cmd;
+                my $prm_fixed_effects_grm_prm_sec_rep1_cmd_status = system($prm_fixed_effects_grm_prm_sec_rep1_cmd);
+
+                open($fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                    print STDERR "Opened $stats_out_tempfile\n";
+                    $header_no_prm = <$fh>;
+                    @header_cols_no_prm = ();
+                    if ($csv->parse($header_no_prm)) {
+                        @header_cols_no_prm = $csv->fields();
+                    }
+
+                    while (my $row = <$fh>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        my $col_counter = 0;
+                        foreach my $encoded_trait (@header_cols_no_prm) {
+                            if ($encoded_trait eq $trait_name_encoded_string) {
+                                my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                                my $stock_id = $columns[0];
+
+                                my $stock_name = $stock_info{$stock_id}->{uniquename};
+                                my $value = $columns[$col_counter+1];
+                                if (defined $value && $value ne '') {
+                                    $result_blup_data_s_grm_prm_sec_rep1->{$stock_name}->{$trait} = $value;
+                                    $seen_accession_names_grm_prm_sec_rep1{$stock_name}++;
+
+                                    if ($value < $genetic_effect_min_s_grm_prm_sec_rep1) {
+                                        $genetic_effect_min_s_grm_prm_sec_rep1 = $value;
+                                    }
+                                    elsif ($value >= $genetic_effect_max_s_grm_prm_sec_rep1) {
+                                        $genetic_effect_max_s_grm_prm_sec_rep1 = $value;
+                                    }
+
+                                    $genetic_effect_sum_s_grm_prm_sec_rep1 += abs($value);
+                                    $genetic_effect_sum_square_s_grm_prm_sec_rep1 = $genetic_effect_sum_square_s_grm_prm_sec_rep1 + $value*$value;
+                                }
+                            }
+                            $col_counter++;
+                        }
+                    }
+                close($fh);
+
+                open($fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+                    print STDERR "Opened $stats_out_tempfile_residual\n";
+                    $header_residual = <$fh_residual>;
+                    @header_cols_residual = ();
+                    if ($csv->parse($header_residual)) {
+                        @header_cols_residual = $csv->fields();
+                    }
+                    while (my $row = <$fh_residual>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
+                        my $stock_id = $columns[0];
+                        my $residual = $columns[1];
+                        my $fitted = $columns[2];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        if (defined $residual && $residual ne '') {
+                            $result_residual_data_s_grm_prm_sec_rep1->{$stock_name}->{$trait_name} = $residual;
+                            $residual_sum_s_grm_prm_sec_rep1 += abs($residual);
+                            $residual_sum_square_s_grm_prm_sec_rep1 = $residual_sum_square_s_grm_prm_sec_rep1 + $residual*$residual;
+                        }
+                        if (defined $fitted && $fitted ne '') {
+                            $result_fitted_data_s_grm_prm_sec_rep1->{$stock_name}->{$trait_name} = $fitted;
+                        }
+                        $model_sum_square_residual_s_grm_prm_sec_rep1 = $model_sum_square_residual_s_grm_prm_sec_rep1 + $residual*$residual;
+                    }
+                close($fh_residual);
+
+                open($fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+                    print STDERR "Opened $stats_out_tempfile_varcomp\n";
+                    $header_varcomp = <$fh_varcomp>;
+                    print STDERR Dumper $header_varcomp;
+                    @header_cols_varcomp = ();
+                    if ($csv->parse($header_varcomp)) {
+                        @header_cols_varcomp = $csv->fields();
+                    }
+                    while (my $row = <$fh_varcomp>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_original_grm_fixed_effect_grm_prm_sec_rep1, \@columns;
+                    }
+                close($fh_varcomp);
+
+                open($fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
+                    print STDERR "Opened $stats_out_tempfile_vpredict\n";
+                    $header_varcomp_h = <$fh_varcomp_h>;
+                    print STDERR Dumper $header_varcomp_h;
+                    @header_cols_varcomp_h = ();
+                    if ($csv->parse($header_varcomp_h)) {
+                        @header_cols_varcomp_h = $csv->fields();
+                    }
+                    while (my $row = <$fh_varcomp_h>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_h_grm_fixed_effect_grm_prm_sec_rep1, \@columns;
+                    }
+                close($fh_varcomp_h);
+
+                open($fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
+                    print STDERR "Opened $stats_out_tempfile_fits\n";
+                    $header_fits = <$fh_fits>;
+                    print STDERR Dumper $header_fits;
+                    @header_cols_fits = ();
+                    if ($csv->parse($header_fits)) {
+                        @header_cols_fits = $csv->fields();
+                    }
+                    while (my $row = <$fh_fits>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @fits_grm_fixed_effect_grm_prm_sec_rep1, \@columns;
+                    }
+                close($fh_fits);
+
+                my $result_blup_data_s_grm_prm_sec_rep2;
+                my $genetic_effect_min_s_grm_prm_sec_rep2 = 10000000000;
+                my $genetic_effect_max_s_grm_prm_sec_rep2 = -10000000000;
+                my $genetic_effect_sum_s_grm_prm_sec_rep2 = 0;
+                my $genetic_effect_sum_square_s_grm_prm_sec_rep2 = 0;
+                my $result_residual_data_s_grm_prm_sec_rep2;
+                my $residual_sum_s_grm_prm_sec_rep2 = 0;
+                my $residual_sum_square_s_grm_prm_sec_rep2 = 0;
+                my $result_fitted_data_s_grm_prm_sec_rep2;
+                my $model_sum_square_residual_s_grm_prm_sec_rep2 = 0;
+                my @varcomp_original_grm_fixed_effect_grm_prm_sec_rep2;
+                my @varcomp_h_grm_fixed_effect_grm_prm_sec_rep2;
+                my @fits_grm_fixed_effect_grm_prm_sec_rep2;
+                my %seen_accession_names_grm_prm_sec_rep2;
+
+                my $prm_fixed_effects_grm_prm_sec_rep2_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+                mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+                sec_cont <- data.frame(fread(\''.$analytics_protocol_data_tempfile28.'\', header=FALSE, sep=\',\'));
+                sec_binned <- data.frame(fread(\''.$analytics_protocol_data_tempfile30.'\', header=FALSE, sep=\',\'));
+                geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+                geno_mat[is.na(geno_mat)] <- 0;
+                mat\$rowNumber <- as.numeric(mat\$rowNumber);
+                mat\$colNumber <- as.numeric(mat\$colNumber);
+                mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+                mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+                mat\$fixed_eff <- sec_cont[ ,'.$trait_name_secondary_counter.'];
+                mat <- mat[mat\$replicate == \'2\', ];
+                mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
+                if (!is.null(mix\$U)) {
+                #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+                write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
+                e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
+                write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                ff <- fitted(mix);
+                r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+                SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+                write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                }
+                "';
+                print STDERR Dumper $prm_fixed_effects_grm_prm_sec_rep2_cmd;
+                my $prm_fixed_effects_grm_prm_sec_rep2_cmd_status = system($prm_fixed_effects_grm_prm_sec_rep2_cmd);
+
+                open($fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                    print STDERR "Opened $stats_out_tempfile\n";
+                    $header_no_prm = <$fh>;
+                    @header_cols_no_prm = ();
+                    if ($csv->parse($header_no_prm)) {
+                        @header_cols_no_prm = $csv->fields();
+                    }
+
+                    while (my $row = <$fh>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        my $col_counter = 0;
+                        foreach my $encoded_trait (@header_cols_no_prm) {
+                            if ($encoded_trait eq $trait_name_encoded_string) {
+                                my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                                my $stock_id = $columns[0];
+
+                                my $stock_name = $stock_info{$stock_id}->{uniquename};
+                                my $value = $columns[$col_counter+1];
+                                if (defined $value && $value ne '') {
+                                    $result_blup_data_s_grm_prm_sec_rep2->{$stock_name}->{$trait} = $value;
+                                    $seen_accession_names_grm_prm_sec_rep2{$stock_name}++;
+
+                                    if ($value < $genetic_effect_min_s_grm_prm_sec_rep2) {
+                                        $genetic_effect_min_s_grm_prm_sec_rep2 = $value;
+                                    }
+                                    elsif ($value >= $genetic_effect_max_s_grm_prm_sec_rep2) {
+                                        $genetic_effect_max_s_grm_prm_sec_rep2 = $value;
+                                    }
+
+                                    $genetic_effect_sum_s_grm_prm_sec_rep2 += abs($value);
+                                    $genetic_effect_sum_square_s_grm_prm_sec_rep2 = $genetic_effect_sum_square_s_grm_prm_sec_rep2 + $value*$value;
+                                }
+                            }
+                            $col_counter++;
+                        }
+                    }
+                close($fh);
+
+                open($fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+                    print STDERR "Opened $stats_out_tempfile_residual\n";
+                    $header_residual = <$fh_residual>;
+                    @header_cols_residual = ();
+                    if ($csv->parse($header_residual)) {
+                        @header_cols_residual = $csv->fields();
+                    }
+                    while (my $row = <$fh_residual>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
+                        my $stock_id = $columns[0];
+                        my $residual = $columns[1];
+                        my $fitted = $columns[2];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        if (defined $residual && $residual ne '') {
+                            $result_residual_data_s_grm_prm_sec_rep2->{$stock_name}->{$trait_name} = $residual;
+                            $residual_sum_s_grm_prm_sec_rep2 += abs($residual);
+                            $residual_sum_square_s_grm_prm_sec_rep2 = $residual_sum_square_s_grm_prm_sec_rep2 + $residual*$residual;
+                        }
+                        if (defined $fitted && $fitted ne '') {
+                            $result_fitted_data_s_grm_prm_sec_rep2->{$stock_name}->{$trait_name} = $fitted;
+                        }
+                        $model_sum_square_residual_s_grm_prm_sec_rep2 = $model_sum_square_residual_s_grm_prm_sec_rep2 + $residual*$residual;
+                    }
+                close($fh_residual);
+
+                open($fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+                    print STDERR "Opened $stats_out_tempfile_varcomp\n";
+                    $header_varcomp = <$fh_varcomp>;
+                    print STDERR Dumper $header_varcomp;
+                    @header_cols_varcomp = ();
+                    if ($csv->parse($header_varcomp)) {
+                        @header_cols_varcomp = $csv->fields();
+                    }
+                    while (my $row = <$fh_varcomp>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_original_grm_fixed_effect_grm_prm_sec_rep2, \@columns;
+                    }
+                close($fh_varcomp);
+
+                open($fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
+                    print STDERR "Opened $stats_out_tempfile_vpredict\n";
+                    $header_varcomp_h = <$fh_varcomp_h>;
+                    print STDERR Dumper $header_varcomp_h;
+                    @header_cols_varcomp_h = ();
+                    if ($csv->parse($header_varcomp_h)) {
+                        @header_cols_varcomp_h = $csv->fields();
+                    }
+                    while (my $row = <$fh_varcomp_h>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_h_grm_fixed_effect_grm_prm_sec_rep2, \@columns;
+                    }
+                close($fh_varcomp_h);
+
+                open($fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
+                    print STDERR "Opened $stats_out_tempfile_fits\n";
+                    $header_fits = <$fh_fits>;
+                    print STDERR Dumper $header_fits;
+                    @header_cols_fits = ();
+                    if ($csv->parse($header_fits)) {
+                        @header_cols_fits = $csv->fields();
+                    }
+                    while (my $row = <$fh_fits>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @fits_grm_fixed_effect_grm_prm_sec_rep2, \@columns;
+                    }
+                close($fh_fits);
+
+                my @seen_accession_names_grm_prm_sec_rep1_rep2;
+                foreach my $a (sort keys %seen_accession_names_grm_prm_sec_rep1) {
+                    if (exists($seen_accession_names_grm_prm_sec_rep2{$a})) {
+                        push @seen_accession_names_grm_prm_sec_rep1_rep2, $a;
+                    }
+                }
+
+                open(my $F_grm_prm_sec_gcorr, ">", $analytics_protocol_data_tempfile_grm_prm_secondary_gcorr) || die "Can't open file ".$analytics_protocol_data_tempfile_grm_prm_secondary_gcorr;
+                    print $F_grm_prm_sec_gcorr "accession_name,g_rep1,g_rep2\n";
+
+                    foreach my $stock_name (@seen_accession_names_grm_prm_sec_rep1_rep2) {
+                        foreach my $trait_name (@sorted_trait_names) {
+                            my $val1 = $result_blup_data_s_grm_prm_sec_rep1->{$stock_name}->{$trait_name} || 'NA';
+                            my $val2 = $result_blup_data_s_grm_prm_sec_rep2->{$stock_name}->{$trait_name} || 'NA';
+                            print $F_grm_prm_sec_gcorr "$stock_name,$val1,$val2\n";
+                        }
+                    }
+                close($F_grm_prm_sec_gcorr);
+
+                my $prm_fixed_effects_grm_prm_sec_gcor_cmd = 'R -e "library(data.table);
+                mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_grm_prm_secondary_gcorr.'\', header=TRUE, sep=\',\'));
+                g_corr <- 0;
+                try (g_corr <- cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\'));
+                write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                "';
+                print STDERR Dumper $prm_fixed_effects_grm_prm_sec_gcor_cmd;
+                my $prm_fixed_effects_grm_prm_sec_gcor_cmd_status = system($prm_fixed_effects_grm_prm_sec_gcor_cmd);
+
+                open($F_avg_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_avg_gcorr_f>;
+                    while (my $row = <$F_avg_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_grm_prm_secondary_traits = $columns[0];
+                    }
+                close($F_avg_gcorr_f);
+                push @gcorr_grm_prm_secondary_traits_havg, $gcorr_grm_prm_secondary_traits;
+
+                my $grm_prm_secondary_favg_traits_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+                mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+                sec_cont <- data.frame(fread(\''.$analytics_protocol_data_tempfile28.'\', header=FALSE, sep=\',\'));
+                sec_binned <- data.frame(fread(\''.$analytics_protocol_data_tempfile30.'\', header=FALSE, sep=\',\'));
+                geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+                geno_mat[is.na(geno_mat)] <- 0;
+                mat\$rowNumber <- as.numeric(mat\$rowNumber);
+                mat\$colNumber <- as.numeric(mat\$colNumber);
+                mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+                mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+                mat\$fixed_eff <- sec_binned[ ,'.$trait_name_secondary_counter.'];
+                mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
+                if (!is.null(mix\$U)) {
+                #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+                write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
+                e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
+                write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                ff <- fitted(mix);
+                r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+                SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+                write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                }
+                "';
+                print STDERR Dumper $grm_prm_secondary_favg_traits_cmd;
+                my $grm_prm_secondary_favg_traits_cmd_status = system($grm_prm_secondary_favg_traits_cmd);
+
+                open($fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                    print STDERR "Opened $stats_out_tempfile\n";
+                    $header = <$fh>;
+                    @header_cols = ();
+                    if ($csv->parse($header)) {
+                        @header_cols = $csv->fields();
+                    }
+
+                    while (my $row = <$fh>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        my $col_counter = 0;
+                        foreach my $encoded_trait (@header_cols) {
+                            if ($encoded_trait eq $trait_name_encoded_string) {
+                                my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                                my $stock_id = $columns[0];
+
+                                my $stock_name = $stock_info{$stock_id}->{uniquename};
+                                my $value = $columns[$col_counter+1];
+                                if (defined $value && $value ne '') {
+                                    $result_blup_data_s->{$stock_name}->{$trait} = $value;
+
+                                    if ($value < $genetic_effect_min_s) {
+                                        $genetic_effect_min_s = $value;
+                                    }
+                                    elsif ($value >= $genetic_effect_max_s) {
+                                        $genetic_effect_max_s = $value;
+                                    }
+
+                                    $genetic_effect_sum_s += abs($value);
+                                    $genetic_effect_sum_square_s = $genetic_effect_sum_square_s + $value*$value;
+                                }
+                            }
+                            $col_counter++;
+                        }
+                    }
+                close($fh);
+
+                open($fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+                    print STDERR "Opened $stats_out_tempfile_residual\n";
+                    $header_residual = <$fh_residual>;
+                    @header_cols_residual = ();
+                    if ($csv->parse($header_residual)) {
+                        @header_cols_residual = $csv->fields();
+                    }
+                    while (my $row = <$fh_residual>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
+                        my $stock_id = $columns[0];
+                        my $residual = $columns[1];
+                        my $fitted = $columns[2];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        if (defined $residual && $residual ne '') {
+                            $result_residual_data_s->{$stock_name}->{$trait_name} = $residual;
+                            $residual_sum_s += abs($residual);
+                            $residual_sum_square_s = $residual_sum_square_s + $residual*$residual;
+                        }
+                        if (defined $fitted && $fitted ne '') {
+                            $result_fitted_data_s->{$stock_name}->{$trait_name} = $fitted;
+                        }
+                        $model_sum_square_residual_s = $model_sum_square_residual_s + $residual*$residual;
+                    }
+                close($fh_residual);
+
+                my @varcomp_original_grm_prm_secondary_favg_traits_havg_vals;
+                open($fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+                    print STDERR "Opened $stats_out_tempfile_varcomp\n";
+                    $header_varcomp = <$fh_varcomp>;
+                    print STDERR Dumper $header_varcomp;
+                    @header_cols_varcomp = ();
+                    if ($csv->parse($header_varcomp)) {
+                        @header_cols_varcomp = $csv->fields();
+                    }
+                    while (my $row = <$fh_varcomp>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_original_grm_prm_secondary_favg_traits_havg_vals, \@columns;
+                    }
+                close($fh_varcomp);
+                push @varcomp_original_grm_prm_secondary_traits_favg, \@varcomp_original_grm_prm_secondary_favg_traits_havg_vals;
+
+                my @varcomp_h_grm_prm_secondary_favg_traits_vals;
+                open($fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
+                    print STDERR "Opened $stats_out_tempfile_vpredict\n";
+                    $header_varcomp_h = <$fh_varcomp_h>;
+                    print STDERR Dumper $header_varcomp_h;
+                    @header_cols_varcomp_h = ();
+                    if ($csv->parse($header_varcomp_h)) {
+                        @header_cols_varcomp_h = $csv->fields();
+                    }
+                    while (my $row = <$fh_varcomp_h>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_h_grm_prm_secondary_favg_traits_vals, \@columns;
+                    }
+                close($fh_varcomp_h);
+                push @varcomp_h_grm_prm_secondary_traits_favg, \@varcomp_h_grm_prm_secondary_favg_traits_vals;
+
+                my @fits_grm_prm_secondary_favg_traits_vals;
+                open($fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
+                    print STDERR "Opened $stats_out_tempfile_fits\n";
+                    $header_fits = <$fh_fits>;
+                    print STDERR Dumper $header_fits;
+                    @header_cols_fits = ();
+                    if ($csv->parse($header_fits)) {
+                        @header_cols_fits = $csv->fields();
+                    }
+                    while (my $row = <$fh_fits>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @fits_grm_prm_secondary_favg_traits_vals, \@columns;
+                    }
+                close($fh_fits);
+                push @fits_grm_prm_secondary_traits_favg, \@fits_grm_prm_secondary_favg_traits_vals;
+
+                my $result_blup_data_s_grm_prm_sec_favg_rep1;
+                my $genetic_effect_min_s_grm_prm_sec_favg_rep1 = 10000000000;
+                my $genetic_effect_max_s_grm_prm_sec_favg_rep1 = -10000000000;
+                my $genetic_effect_sum_s_grm_prm_sec_favg_rep1 = 0;
+                my $genetic_effect_sum_square_s_grm_prm_sec_favg_rep1 = 0;
+                my $result_residual_data_s_grm_prm_sec_favg_rep1;
+                my $residual_sum_s_grm_prm_sec_favg_rep1 = 0;
+                my $residual_sum_square_s_grm_prm_sec_favg_rep1 = 0;
+                my $result_fitted_data_s_grm_prm_sec_favg_rep1;
+                my $model_sum_square_residual_s_grm_prm_sec_favg_rep1 = 0;
+                my @varcomp_original_grm_fixed_effect_grm_prm_sec_favg_rep1;
+                my @varcomp_h_grm_fixed_effect_grm_prm_sec_favg_rep1;
+                my @fits_grm_fixed_effect_grm_prm_sec_favg_rep1;
+                my %seen_accession_names_grm_prm_sec_favg_rep1;
+
+                my $prm_fixed_effects_grm_prm_sec_favg_rep1_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+                mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+                sec_cont <- data.frame(fread(\''.$analytics_protocol_data_tempfile28.'\', header=FALSE, sep=\',\'));
+                sec_binned <- data.frame(fread(\''.$analytics_protocol_data_tempfile30.'\', header=FALSE, sep=\',\'));
+                geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+                geno_mat[is.na(geno_mat)] <- 0;
+                mat\$rowNumber <- as.numeric(mat\$rowNumber);
+                mat\$colNumber <- as.numeric(mat\$colNumber);
+                mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+                mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+                mat\$fixed_eff <- sec_binned[ ,'.$trait_name_secondary_counter.'];
+                mat <- mat[mat\$replicate == \'1\', ];
+                mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
+                if (!is.null(mix\$U)) {
+                #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+                write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
+                e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
+                write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                ff <- fitted(mix);
+                r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+                SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+                write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                }
+                "';
+                print STDERR Dumper $prm_fixed_effects_grm_prm_sec_favg_rep1_cmd;
+                my $prm_fixed_effects_grm_prm_sec_favg_rep1_cmd_status = system($prm_fixed_effects_grm_prm_sec_favg_rep1_cmd);
+
+                open($fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                    print STDERR "Opened $stats_out_tempfile\n";
+                    $header_no_prm = <$fh>;
+                    @header_cols_no_prm = ();
+                    if ($csv->parse($header_no_prm)) {
+                        @header_cols_no_prm = $csv->fields();
+                    }
+
+                    while (my $row = <$fh>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        my $col_counter = 0;
+                        foreach my $encoded_trait (@header_cols_no_prm) {
+                            if ($encoded_trait eq $trait_name_encoded_string) {
+                                my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                                my $stock_id = $columns[0];
+
+                                my $stock_name = $stock_info{$stock_id}->{uniquename};
+                                my $value = $columns[$col_counter+1];
+                                if (defined $value && $value ne '') {
+                                    $result_blup_data_s_grm_prm_sec_favg_rep1->{$stock_name}->{$trait} = $value;
+                                    $seen_accession_names_grm_prm_sec_favg_rep1{$stock_name}++;
+
+                                    if ($value < $genetic_effect_min_s_grm_prm_sec_favg_rep1) {
+                                        $genetic_effect_min_s_grm_prm_sec_favg_rep1 = $value;
+                                    }
+                                    elsif ($value >= $genetic_effect_max_s_grm_prm_sec_favg_rep1) {
+                                        $genetic_effect_max_s_grm_prm_sec_favg_rep1 = $value;
+                                    }
+
+                                    $genetic_effect_sum_s_grm_prm_sec_favg_rep1 += abs($value);
+                                    $genetic_effect_sum_square_s_grm_prm_sec_favg_rep1 = $genetic_effect_sum_square_s_grm_prm_sec_favg_rep1 + $value*$value;
+                                }
+                            }
+                            $col_counter++;
+                        }
+                    }
+                close($fh);
+
+                open($fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+                    print STDERR "Opened $stats_out_tempfile_residual\n";
+                    $header_residual = <$fh_residual>;
+                    @header_cols_residual = ();
+                    if ($csv->parse($header_residual)) {
+                        @header_cols_residual = $csv->fields();
+                    }
+                    while (my $row = <$fh_residual>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
+                        my $stock_id = $columns[0];
+                        my $residual = $columns[1];
+                        my $fitted = $columns[2];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        if (defined $residual && $residual ne '') {
+                            $result_residual_data_s_grm_prm_sec_favg_rep1->{$stock_name}->{$trait_name} = $residual;
+                            $residual_sum_s_grm_prm_sec_favg_rep1 += abs($residual);
+                            $residual_sum_square_s_grm_prm_sec_favg_rep1 = $residual_sum_square_s_grm_prm_sec_favg_rep1 + $residual*$residual;
+                        }
+                        if (defined $fitted && $fitted ne '') {
+                            $result_fitted_data_s_grm_prm_sec_favg_rep1->{$stock_name}->{$trait_name} = $fitted;
+                        }
+                        $model_sum_square_residual_s_grm_prm_sec_favg_rep1 = $model_sum_square_residual_s_grm_prm_sec_favg_rep1 + $residual*$residual;
+                    }
+                close($fh_residual);
+
+                open($fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+                    print STDERR "Opened $stats_out_tempfile_varcomp\n";
+                    $header_varcomp = <$fh_varcomp>;
+                    print STDERR Dumper $header_varcomp;
+                    @header_cols_varcomp = ();
+                    if ($csv->parse($header_varcomp)) {
+                        @header_cols_varcomp = $csv->fields();
+                    }
+                    while (my $row = <$fh_varcomp>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_original_grm_fixed_effect_grm_prm_sec_favg_rep1, \@columns;
+                    }
+                close($fh_varcomp);
+
+                open($fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
+                    print STDERR "Opened $stats_out_tempfile_vpredict\n";
+                    $header_varcomp_h = <$fh_varcomp_h>;
+                    print STDERR Dumper $header_varcomp_h;
+                    @header_cols_varcomp_h = ();
+                    if ($csv->parse($header_varcomp_h)) {
+                        @header_cols_varcomp_h = $csv->fields();
+                    }
+                    while (my $row = <$fh_varcomp_h>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_h_grm_fixed_effect_grm_prm_sec_favg_rep1, \@columns;
+                    }
+                close($fh_varcomp_h);
+
+                open($fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
+                    print STDERR "Opened $stats_out_tempfile_fits\n";
+                    $header_fits = <$fh_fits>;
+                    print STDERR Dumper $header_fits;
+                    @header_cols_fits = ();
+                    if ($csv->parse($header_fits)) {
+                        @header_cols_fits = $csv->fields();
+                    }
+                    while (my $row = <$fh_fits>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @fits_grm_fixed_effect_grm_prm_sec_favg_rep1, \@columns;
+                    }
+                close($fh_fits);
+
+                my $result_blup_data_s_grm_prm_sec_favg_rep2;
+                my $genetic_effect_min_s_grm_prm_sec_favg_rep2 = 10000000000;
+                my $genetic_effect_max_s_grm_prm_sec_favg_rep2 = -10000000000;
+                my $genetic_effect_sum_s_grm_prm_sec_favg_rep2 = 0;
+                my $genetic_effect_sum_square_s_grm_prm_sec_favg_rep2 = 0;
+                my $result_residual_data_s_grm_prm_sec_favg_rep2;
+                my $residual_sum_s_grm_prm_sec_favg_rep2 = 0;
+                my $residual_sum_square_s_grm_prm_sec_favg_rep2 = 0;
+                my $result_fitted_data_s_grm_prm_sec_favg_rep2;
+                my $model_sum_square_residual_s_grm_prm_sec_favg_rep2 = 0;
+                my @varcomp_original_grm_fixed_effect_grm_prm_sec_favg_rep2;
+                my @varcomp_h_grm_fixed_effect_grm_prm_sec_favg_rep2;
+                my @fits_grm_fixed_effect_grm_prm_sec_favg_rep2;
+                my %seen_accession_names_grm_prm_sec_favg_rep2;
+
+                my $prm_fixed_effects_grm_prm_sec_favg_rep2_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+                mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+                sec_cont <- data.frame(fread(\''.$analytics_protocol_data_tempfile28.'\', header=FALSE, sep=\',\'));
+                sec_binned <- data.frame(fread(\''.$analytics_protocol_data_tempfile30.'\', header=FALSE, sep=\',\'));
+                geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+                geno_mat[is.na(geno_mat)] <- 0;
+                mat\$rowNumber <- as.numeric(mat\$rowNumber);
+                mat\$colNumber <- as.numeric(mat\$colNumber);
+                mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+                mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+                mat\$fixed_eff <- sec_binned[ ,'.$trait_name_secondary_counter.'];
+                mat <- mat[mat\$replicate == \'2\', ];
+                mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
+                if (!is.null(mix\$U)) {
+                #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+                write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
+                e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
+                write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                ff <- fitted(mix);
+                r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+                SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+                write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                }
+                "';
+                print STDERR Dumper $prm_fixed_effects_grm_prm_sec_favg_rep2_cmd;
+                my $prm_fixed_effects_grm_prm_sec_favg_rep2_cmd_status = system($prm_fixed_effects_grm_prm_sec_favg_rep2_cmd);
+
+                open($fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+                    print STDERR "Opened $stats_out_tempfile\n";
+                    $header_no_prm = <$fh>;
+                    @header_cols_no_prm = ();
+                    if ($csv->parse($header_no_prm)) {
+                        @header_cols_no_prm = $csv->fields();
+                    }
+
+                    while (my $row = <$fh>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        my $col_counter = 0;
+                        foreach my $encoded_trait (@header_cols_no_prm) {
+                            if ($encoded_trait eq $trait_name_encoded_string) {
+                                my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                                my $stock_id = $columns[0];
+
+                                my $stock_name = $stock_info{$stock_id}->{uniquename};
+                                my $value = $columns[$col_counter+1];
+                                if (defined $value && $value ne '') {
+                                    $result_blup_data_s_grm_prm_sec_favg_rep2->{$stock_name}->{$trait} = $value;
+                                    $seen_accession_names_grm_prm_sec_favg_rep2{$stock_name}++;
+
+                                    if ($value < $genetic_effect_min_s_grm_prm_sec_favg_rep2) {
+                                        $genetic_effect_min_s_grm_prm_sec_favg_rep2 = $value;
+                                    }
+                                    elsif ($value >= $genetic_effect_max_s_grm_prm_sec_favg_rep2) {
+                                        $genetic_effect_max_s_grm_prm_sec_favg_rep2 = $value;
+                                    }
+
+                                    $genetic_effect_sum_s_grm_prm_sec_favg_rep2 += abs($value);
+                                    $genetic_effect_sum_square_s_grm_prm_sec_favg_rep2 = $genetic_effect_sum_square_s_grm_prm_sec_favg_rep2 + $value*$value;
+                                }
+                            }
+                            $col_counter++;
+                        }
+                    }
+                close($fh);
+
+                open($fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+                    print STDERR "Opened $stats_out_tempfile_residual\n";
+                    $header_residual = <$fh_residual>;
+                    @header_cols_residual = ();
+                    if ($csv->parse($header_residual)) {
+                        @header_cols_residual = $csv->fields();
+                    }
+                    while (my $row = <$fh_residual>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+
+                        my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
+                        my $stock_id = $columns[0];
+                        my $residual = $columns[1];
+                        my $fitted = $columns[2];
+                        my $stock_name = $plot_id_map{$stock_id};
+                        if (defined $residual && $residual ne '') {
+                            $result_residual_data_s_grm_prm_sec_favg_rep2->{$stock_name}->{$trait_name} = $residual;
+                            $residual_sum_s_grm_prm_sec_favg_rep2 += abs($residual);
+                            $residual_sum_square_s_grm_prm_sec_favg_rep2 = $residual_sum_square_s_grm_prm_sec_favg_rep2 + $residual*$residual;
+                        }
+                        if (defined $fitted && $fitted ne '') {
+                            $result_fitted_data_s_grm_prm_sec_favg_rep2->{$stock_name}->{$trait_name} = $fitted;
+                        }
+                        $model_sum_square_residual_s_grm_prm_sec_favg_rep2 = $model_sum_square_residual_s_grm_prm_sec_favg_rep2 + $residual*$residual;
+                    }
+                close($fh_residual);
+
+                open($fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+                    print STDERR "Opened $stats_out_tempfile_varcomp\n";
+                    $header_varcomp = <$fh_varcomp>;
+                    print STDERR Dumper $header_varcomp;
+                    @header_cols_varcomp = ();
+                    if ($csv->parse($header_varcomp)) {
+                        @header_cols_varcomp = $csv->fields();
+                    }
+                    while (my $row = <$fh_varcomp>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_original_grm_fixed_effect_grm_prm_sec_favg_rep2, \@columns;
+                    }
+                close($fh_varcomp);
+
+                open($fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
+                    print STDERR "Opened $stats_out_tempfile_vpredict\n";
+                    $header_varcomp_h = <$fh_varcomp_h>;
+                    print STDERR Dumper $header_varcomp_h;
+                    @header_cols_varcomp_h = ();
+                    if ($csv->parse($header_varcomp_h)) {
+                        @header_cols_varcomp_h = $csv->fields();
+                    }
+                    while (my $row = <$fh_varcomp_h>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @varcomp_h_grm_fixed_effect_grm_prm_sec_favg_rep2, \@columns;
+                    }
+                close($fh_varcomp_h);
+
+                open($fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
+                    print STDERR "Opened $stats_out_tempfile_fits\n";
+                    $header_fits = <$fh_fits>;
+                    print STDERR Dumper $header_fits;
+                    @header_cols_fits = ();
+                    if ($csv->parse($header_fits)) {
+                        @header_cols_fits = $csv->fields();
+                    }
+                    while (my $row = <$fh_fits>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @fits_grm_fixed_effect_grm_prm_sec_favg_rep2, \@columns;
+                    }
+                close($fh_fits);
+
+                my @seen_accession_names_grm_prm_sec_favg_rep1_rep2;
+                foreach my $a (sort keys %seen_accession_names_grm_prm_sec_favg_rep1) {
+                    if (exists($seen_accession_names_grm_prm_sec_favg_rep2{$a})) {
+                        push @seen_accession_names_grm_prm_sec_favg_rep1_rep2, $a;
+                    }
+                }
+
+                open(my $F_grm_prm_sec_favg_gcorr, ">", $analytics_protocol_data_tempfile_grm_prm_secondary_gcorr) || die "Can't open file ".$analytics_protocol_data_tempfile_grm_prm_secondary_gcorr;
+                    print $F_grm_prm_sec_favg_gcorr "accession_name,g_rep1,g_rep2\n";
+
+                    foreach my $stock_name (@seen_accession_names_grm_prm_sec_favg_rep1_rep2) {
+                        foreach my $trait_name (@sorted_trait_names) {
+                            my $val1 = $result_blup_data_s_grm_prm_sec_favg_rep1->{$stock_name}->{$trait_name} || 'NA';
+                            my $val2 = $result_blup_data_s_grm_prm_sec_favg_rep2->{$stock_name}->{$trait_name} || 'NA';
+                            print $F_grm_prm_sec_favg_gcorr "$stock_name,$val1,$val2\n";
+                        }
+                    }
+                close($F_grm_prm_sec_favg_gcorr);
+
+                my $prm_fixed_effects_grm_prm_sec_favg_gcor_cmd = 'R -e "library(data.table);
+                mat <- data.frame(fread(\''.$analytics_protocol_data_tempfile_grm_prm_secondary_gcorr.'\', header=TRUE, sep=\',\'));
+                g_corr <- 0;
+                try (g_corr <- cor(mat\$g_rep1, mat\$g_rep2, use = \'complete.obs\'));
+                write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                "';
+                print STDERR Dumper $prm_fixed_effects_grm_prm_sec_favg_gcor_cmd;
+                my $prm_fixed_effects_grm_prm_sec_favg_gcor_cmd_status = system($prm_fixed_effects_grm_prm_sec_favg_gcor_cmd);
+
+                open($F_avg_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_avg_gcorr_f>;
+                    while (my $row = <$F_avg_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_grm_prm_secondary_traits = $columns[0];
+                    }
+                close($F_avg_gcorr_f);
+                push @gcorr_grm_prm_secondary_traits_favg, $gcorr_grm_prm_secondary_traits;
+
+                $trait_name_secondary_counter++;
+            }
         }
 
         push @result_blups_all, {
@@ -14972,6 +15967,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             sim_var => $sim_var,
             time_change => $time_change,
             model_name => $model_name,
+            sorted_trait_names_secondary => \@sorted_trait_names_secondary,
             germplasm_data_header => \@germplasm_data_header,
             germplasm_data => \@germplasm_data,
             germplasm_results => \@germplasm_results,
@@ -15003,6 +15999,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             varcomp_original_grm_id_prm_id => \@varcomp_original_grm_id_prm_id,
             varcomp_original_grm_prm => \@varcomp_original_grm_prm,
             varcomp_original_grm_prm_secondary_traits => \@varcomp_original_grm_prm_secondary_traits,
+            varcomp_original_grm_prm_secondary_traits_favg => \@varcomp_original_grm_prm_secondary_traits_favg,
+            varcomp_original_grm_prm_secondary_traits_havg => \@varcomp_original_grm_prm_secondary_traits_havg,
             varcomp_original_prm => \@varcomp_original_prm,
             varcomp_h_grm => \@varcomp_h_grm,
             varcomp_h_grm_trait_2dspl => \@varcomp_h_grm_trait_2dspl,
@@ -15018,6 +16016,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             varcomp_h_grm_id_prm_id => \@varcomp_h_grm_id_prm_id,
             varcomp_h_grm_prm => \@varcomp_h_grm_prm,
             varcomp_h_grm_prm_secondary_traits => \@varcomp_h_grm_prm_secondary_traits,
+            varcomp_h_grm_prm_secondary_traits_favg => \@varcomp_h_grm_prm_secondary_traits_favg,
+            varcomp_h_grm_prm_secondary_traits_havg => \@varcomp_h_grm_prm_secondary_traits_havg,
             varcomp_h_prm => \@varcomp_h_prm,
             fits_grm => \@fits_grm,
             fits_grm_trait_2dspl => \@fits_grm_trait_2dspl,
@@ -15033,6 +16033,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             fits_grm_id_prm_id => \@fits_grm_id_prm_id,
             fits_grm_prm => \@fits_grm_prm,
             fits_grm_prm_secondary_traits => \@fits_grm_prm_secondary_traits,
+            fits_grm_prm_secondary_traits_favg => \@fits_grm_prm_secondary_traits_favg,
+            fits_grm_prm_secondary_traits_havg => \@fits_grm_prm_secondary_traits_havg,
             fits_prm => \@fits_prm,
             gcorr_favg => $gcorr_favg,
             gcorr_f2 => $gcorr_f2,
@@ -15047,6 +16049,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             gcorr_grm_id_prm => $gcorr_grm_id_prm,
             gcorr_grm_id_prm_id => $gcorr_grm_id_prm_id,
             gcorr_grm_prm_secondary_traits => $gcorr_grm_prm_secondary_traits,
+            gcorr_grm_prm_secondary_traits_favg => \@gcorr_grm_prm_secondary_traits_favg,
+            gcorr_grm_prm_secondary_traits_havg => \@gcorr_grm_prm_secondary_traits_havg,
         }
     }
 
