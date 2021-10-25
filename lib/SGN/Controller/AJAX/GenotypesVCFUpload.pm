@@ -389,6 +389,8 @@ sub upload_genotype_verify_POST : Args(0) {
     my $return;
     #For VCF files, memory was an issue so we parse them with an iterator
     if ($parser_plugin eq 'VCF' || $parser_plugin eq 'transposedVCF') {
+        $store_args->{genotyping_data_type} = 'SNP';
+
         my $parser_return = $parser->parse_with_iterator();
 
         if ($parser->get_parse_errors()) {
@@ -510,6 +512,7 @@ sub upload_genotype_verify_POST : Args(0) {
         $protocol_info->{'reference_genome_name'} = $reference_genome_name;
         $protocol_info->{'species_name'} = $organism_species;
 
+        $store_args->{genotyping_data_type} = 'SNP';
         $store_args->{protocol_info} = $protocol_info;
         $store_args->{genotype_info} = $genotype_info;
         $store_args->{observation_unit_uniquenames} = $observation_unit_uniquenames;
