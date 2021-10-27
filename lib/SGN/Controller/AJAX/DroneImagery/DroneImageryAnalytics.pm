@@ -4079,16 +4079,14 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                         my @header_full_plot_corr = ('plot_name, plot_id, row_number, col_number, rep, block, germplasm_name, germplasm_id');
                         my @types_full_plot_corr = ('pheno_orig_', 'pheno_postm1_', 'eff_origm1_');
-                        if (!$run_only_first_env_estimation) {
-                            push @types_full_plot_corr, ('eff_postm1_',
-                                'sim_env1_', 'simm1_pheno1_', 'effm1_sim1_',
-                                'sim_env2_', 'simm1_pheno2_', 'effm1_sim2_',
-                                'sim_env3_', 'simm1_pheno3_', 'effm1_sim3_',
-                                'sim_env4_', 'simm1_pheno4_', 'effm1_sim4_',
-                                'sim_env5_', 'simm1_pheno5_', 'effm1_sim5_',
-                                'sim_env6_', 'simm1_pheno6_', 'effm1_sim6_'
-                            );
-                        }
+                        push @types_full_plot_corr, ('eff_postm1_',
+                            'sim_env1_', 'simm1_pheno1_', 'effm1_sim1_',
+                            'sim_env2_', 'simm1_pheno2_', 'effm1_sim2_',
+                            'sim_env3_', 'simm1_pheno3_', 'effm1_sim3_',
+                            'sim_env4_', 'simm1_pheno4_', 'effm1_sim4_',
+                            'sim_env5_', 'simm1_pheno5_', 'effm1_sim5_',
+                            'sim_env6_', 'simm1_pheno6_', 'effm1_sim6_'
+                        );
                         foreach my $t (@sorted_trait_names) {
                             foreach my $type (@types_full_plot_corr) {
                                 push @header_full_plot_corr, $type.$trait_name_encoder{$t};
@@ -4104,40 +4102,38 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 my $effect_original_1 = $result_blup_pe_data_delta_original_1->{$p}->{$t}->[0];
                                 push @row, ($phenotype_original, $phenotype_post_1, $effect_original_1);
 
-                                if (!$run_only_first_env_estimation) {
-                                    my $effect_post_1 = $result_blup_pe_data_delta_altered_1->{$p}->{$t}->[0] || 'NA';
-                                    push @row, $effect_post_1;
+                                my $effect_post_1 = $result_blup_pe_data_delta_altered_1->{$p}->{$t}->[0] || 'NA';
+                                push @row, $effect_post_1;
 
-                                    my $sim_env = $sim_data_hash_1_1->{$p}->{$t};
-                                    my $pheno_sim_1 = $phenotype_data_altered_env_hash_1_1->{$p}->{$t};
-                                    my $effect_sim_1 = $result_blup_pe_data_delta_altered_env_1_1->{$p}->{$t}->[0];
-                                    push @row, ($sim_env, $pheno_sim_1, $effect_sim_1);
+                                my $sim_env = $sim_data_hash_1_1->{$p}->{$t} || 'NA';
+                                my $pheno_sim_1 = $phenotype_data_altered_env_hash_1_1->{$p}->{$t} || 'NA';
+                                my $effect_sim_1 = $result_blup_pe_data_delta_altered_env_1_1->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env, $pheno_sim_1, $effect_sim_1);
 
-                                    my $sim_env2 = $sim_data_hash_2_1->{$p}->{$t};
-                                    my $pheno_sim2_1 = $phenotype_data_altered_env_hash_2_1->{$p}->{$t};
-                                    my $effect_sim2_1 = $result_blup_pe_data_delta_altered_env_2_1->{$p}->{$t}->[0];
-                                    push @row, ($sim_env2, $pheno_sim2_1, $effect_sim2_1);
+                                my $sim_env2 = $sim_data_hash_2_1->{$p}->{$t} || 'NA';
+                                my $pheno_sim2_1 = $phenotype_data_altered_env_hash_2_1->{$p}->{$t} || 'NA';
+                                my $effect_sim2_1 = $result_blup_pe_data_delta_altered_env_2_1->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env2, $pheno_sim2_1, $effect_sim2_1);
 
-                                    my $sim_env3 = $sim_data_hash_3_1->{$p}->{$t};
-                                    my $pheno_sim3_1 = $phenotype_data_altered_env_hash_3_1->{$p}->{$t};
-                                    my $effect_sim3_1 = $result_blup_pe_data_delta_altered_env_3_1->{$p}->{$t}->[0];
-                                    push @row, ($sim_env3, $pheno_sim3_1, $effect_sim3_1);
+                                my $sim_env3 = $sim_data_hash_3_1->{$p}->{$t} || 'NA';
+                                my $pheno_sim3_1 = $phenotype_data_altered_env_hash_3_1->{$p}->{$t} || 'NA';
+                                my $effect_sim3_1 = $result_blup_pe_data_delta_altered_env_3_1->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env3, $pheno_sim3_1, $effect_sim3_1);
 
-                                    my $sim_env4 = $sim_data_hash_4_1->{$p}->{$t};
-                                    my $pheno_sim4_1 = $phenotype_data_altered_env_hash_4_1->{$p}->{$t};
-                                    my $effect_sim4_1 = $result_blup_pe_data_delta_altered_env_4_1->{$p}->{$t}->[0];
-                                    push @row, ($sim_env4, $pheno_sim4_1, $effect_sim4_1);
+                                my $sim_env4 = $sim_data_hash_4_1->{$p}->{$t} || 'NA';
+                                my $pheno_sim4_1 = $phenotype_data_altered_env_hash_4_1->{$p}->{$t} || 'NA';
+                                my $effect_sim4_1 = $result_blup_pe_data_delta_altered_env_4_1->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env4, $pheno_sim4_1, $effect_sim4_1);
 
-                                    my $sim_env5 = $sim_data_hash_5_1->{$p}->{$t};
-                                    my $pheno_sim5_1 = $phenotype_data_altered_env_hash_5_1->{$p}->{$t};
-                                    my $effect_sim5_1 = $result_blup_pe_data_delta_altered_env_5_1->{$p}->{$t}->[0];
-                                    push @row, ($sim_env5, $pheno_sim5_1, $effect_sim5_1);
+                                my $sim_env5 = $sim_data_hash_5_1->{$p}->{$t} || 'NA';
+                                my $pheno_sim5_1 = $phenotype_data_altered_env_hash_5_1->{$p}->{$t} || 'NA';
+                                my $effect_sim5_1 = $result_blup_pe_data_delta_altered_env_5_1->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env5, $pheno_sim5_1, $effect_sim5_1);
 
-                                    my $sim_env6 = $sim_data_hash_6_1->{$p}->{$t};
-                                    my $pheno_sim6_1 = $phenotype_data_altered_env_hash_6_1->{$p}->{$t};
-                                    my $effect_sim6_1 = $result_blup_pe_data_delta_altered_env_6_1->{$p}->{$t}->[0];
-                                    push @row, ($sim_env6, $pheno_sim6_1, $effect_sim6_1);
-                                }
+                                my $sim_env6 = $sim_data_hash_6_1->{$p}->{$t} || 'NA';
+                                my $pheno_sim6_1 = $phenotype_data_altered_env_hash_6_1->{$p}->{$t} || 'NA';
+                                my $effect_sim6_1 = $result_blup_pe_data_delta_altered_env_6_1->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env6, $pheno_sim6_1, $effect_sim6_1);
                             }
                             my $line = join ',', @row;
                             print $F_fullplot "$line\n";
@@ -6453,16 +6449,14 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                         my @header_full_plot_corr = ('plot_name, plot_id, row_number, col_number, rep, block, germplasm_name, germplasm_id');
                         my @types_full_plot_corr = ('pheno_orig_', 'pheno_postm2_', 'eff_origm2_');
-                        if (!$run_only_first_env_estimation) {
-                            push @types_full_plot_corr, ('eff_postm2_',
-                                'sim_env1_', 'simm2_pheno1_', 'effm2_sim1_',
-                                'sim_env2_', 'simm2_pheno2_', 'effm2_sim2_',
-                                'sim_env3_', 'simm2_pheno3_', 'effm2_sim3_',
-                                'sim_env4_', 'simm2_pheno4_', 'effm2_sim4_',
-                                'sim_env5_', 'simm2_pheno5_', 'effm2_sim5_',
-                                'sim_env6_', 'simm2_pheno6_', 'effm2_sim6_'
-                            );
-                        }
+                        push @types_full_plot_corr, ('eff_postm2_',
+                            'sim_env1_', 'simm2_pheno1_', 'effm2_sim1_',
+                            'sim_env2_', 'simm2_pheno2_', 'effm2_sim2_',
+                            'sim_env3_', 'simm2_pheno3_', 'effm2_sim3_',
+                            'sim_env4_', 'simm2_pheno4_', 'effm2_sim4_',
+                            'sim_env5_', 'simm2_pheno5_', 'effm2_sim5_',
+                            'sim_env6_', 'simm2_pheno6_', 'effm2_sim6_'
+                        );
                         foreach my $t (@sorted_trait_names_2) {
                             foreach my $type (@types_full_plot_corr) {
                                 push @header_full_plot_corr, $type.$trait_name_encoder_2{$t};
@@ -6480,40 +6474,38 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 my $effect_original_2 = $result_blup_spatial_data_original_2->{$p}->{$t_conv}->[0];
                                 push @row, ($phenotype_original, $phenotype_post_2, $effect_original_2);
 
-                                if (!$run_only_first_env_estimation) {
-                                    my $effect_post_2 = $result_blup_spatial_data_altered_2->{$p}->{$t_conv}->[0] || 'NA';
-                                    push @row, $effect_post_2;
+                                my $effect_post_2 = $result_blup_spatial_data_altered_2->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, $effect_post_2;
 
-                                    my $sim_env = $sim_data_hash_1_2->{$p}->{$t};
-                                    my $pheno_sim_2 = $phenotype_data_altered_env_hash_1_2->{$p}->{$t_conv};
-                                    my $effect_sim_2 = $result_blup_spatial_data_altered_env_1_2->{$p}->{$t_conv}->[0];
-                                    push @row, ($sim_env, $pheno_sim_2, $effect_sim_2);
+                                my $sim_env = $sim_data_hash_1_2->{$p}->{$t} || 'NA';
+                                my $pheno_sim_2 = $phenotype_data_altered_env_hash_1_2->{$p}->{$t_conv} || 'NA';
+                                my $effect_sim_2 = $result_blup_spatial_data_altered_env_1_2->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, ($sim_env, $pheno_sim_2, $effect_sim_2);
 
-                                    my $sim_env2 = $sim_data_hash_2_2->{$p}->{$t};
-                                    my $pheno_sim2_2 = $phenotype_data_altered_env_hash_2_2->{$p}->{$t_conv};
-                                    my $effect_sim2_2 = $result_blup_spatial_data_altered_env_2_2->{$p}->{$t_conv}->[0];
-                                    push @row, ($sim_env2, $pheno_sim2_2, $effect_sim2_2);
+                                my $sim_env2 = $sim_data_hash_2_2->{$p}->{$t} || 'NA';
+                                my $pheno_sim2_2 = $phenotype_data_altered_env_hash_2_2->{$p}->{$t_conv} || 'NA';
+                                my $effect_sim2_2 = $result_blup_spatial_data_altered_env_2_2->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, ($sim_env2, $pheno_sim2_2, $effect_sim2_2);
 
-                                    my $sim_env3 = $sim_data_hash_3_2->{$p}->{$t};
-                                    my $pheno_sim3_2 = $phenotype_data_altered_env_hash_3_2->{$p}->{$t_conv};
-                                    my $effect_sim3_2 = $result_blup_spatial_data_altered_env_3_2->{$p}->{$t_conv}->[0];
-                                    push @row, ($sim_env3, $pheno_sim3_2, $effect_sim3_2);
+                                my $sim_env3 = $sim_data_hash_3_2->{$p}->{$t} || 'NA';
+                                my $pheno_sim3_2 = $phenotype_data_altered_env_hash_3_2->{$p}->{$t_conv} || 'NA';
+                                my $effect_sim3_2 = $result_blup_spatial_data_altered_env_3_2->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, ($sim_env3, $pheno_sim3_2, $effect_sim3_2);
 
-                                    my $sim_env4 = $sim_data_hash_4_2->{$p}->{$t};
-                                    my $pheno_sim4_2 = $phenotype_data_altered_env_hash_4_2->{$p}->{$t_conv};
-                                    my $effect_sim4_2 = $result_blup_spatial_data_altered_env_4_2->{$p}->{$t_conv}->[0];
-                                    push @row, ($sim_env4, $pheno_sim4_2, $effect_sim4_2);
+                                my $sim_env4 = $sim_data_hash_4_2->{$p}->{$t} || 'NA';
+                                my $pheno_sim4_2 = $phenotype_data_altered_env_hash_4_2->{$p}->{$t_conv} || 'NA';
+                                my $effect_sim4_2 = $result_blup_spatial_data_altered_env_4_2->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, ($sim_env4, $pheno_sim4_2, $effect_sim4_2);
 
-                                    my $sim_env5 = $sim_data_hash_5_2->{$p}->{$t};
-                                    my $pheno_sim5_2 = $phenotype_data_altered_env_hash_5_2->{$p}->{$t_conv};
-                                    my $effect_sim5_2 = $result_blup_spatial_data_altered_env_5_2->{$p}->{$t_conv}->[0];
-                                    push @row, ($sim_env5, $pheno_sim5_2, $effect_sim5_2);
+                                my $sim_env5 = $sim_data_hash_5_2->{$p}->{$t} || 'NA';
+                                my $pheno_sim5_2 = $phenotype_data_altered_env_hash_5_2->{$p}->{$t_conv} || 'NA';
+                                my $effect_sim5_2 = $result_blup_spatial_data_altered_env_5_2->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, ($sim_env5, $pheno_sim5_2, $effect_sim5_2);
 
-                                    my $sim_env6 = $sim_data_hash_6_2->{$p}->{$t};
-                                    my $pheno_sim6_2 = $phenotype_data_altered_env_hash_6_2->{$p}->{$t_conv};
-                                    my $effect_sim6_2 = $result_blup_spatial_data_altered_env_6_2->{$p}->{$t_conv}->[0];
-                                    push @row, ($sim_env6, $pheno_sim6_2, $effect_sim6_2);
-                                }
+                                my $sim_env6 = $sim_data_hash_6_2->{$p}->{$t} || 'NA';
+                                my $pheno_sim6_2 = $phenotype_data_altered_env_hash_6_2->{$p}->{$t_conv} || 'NA';
+                                my $effect_sim6_2 = $result_blup_spatial_data_altered_env_6_2->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, ($sim_env6, $pheno_sim6_2, $effect_sim6_2);
                             }
                             my $line = join ',', @row;
                             print $F_fullplot "$line\n";
@@ -8794,16 +8786,14 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                         my @header_full_plot_corr = ('plot_name, plot_id, row_number, col_number, rep, block, germplasm_name, germplasm_id');
                         my @types_full_plot_corr = ('pheno_orig_', 'pheno_postm3_', 'eff_origm3_');
-                        if (!$run_only_first_env_estimation) {
-                            push @types_full_plot_corr, ('eff_postm3_',
-                                'sim_env1_', 'simm3_pheno1_', 'effm3_sim1_',
-                                'sim_env2_', 'simm3_pheno2_', 'effm3_sim2_',
-                                'sim_env3_', 'simm3_pheno3_', 'effm3_sim3_',
-                                'sim_env4_', 'simm3_pheno4_', 'effm3_sim4_',
-                                'sim_env5_', 'simm3_pheno5_', 'effm3_sim5_',
-                                'sim_env6_', 'simm3_pheno6_', 'effm3_sim6_'
-                            );
-                        }
+                        push @types_full_plot_corr, ('eff_postm3_',
+                            'sim_env1_', 'simm3_pheno1_', 'effm3_sim1_',
+                            'sim_env2_', 'simm3_pheno2_', 'effm3_sim2_',
+                            'sim_env3_', 'simm3_pheno3_', 'effm3_sim3_',
+                            'sim_env4_', 'simm3_pheno4_', 'effm3_sim4_',
+                            'sim_env5_', 'simm3_pheno5_', 'effm3_sim5_',
+                            'sim_env6_', 'simm3_pheno6_', 'effm3_sim6_'
+                        );
                         foreach my $t (@sorted_trait_names_2) {
                             foreach my $type (@types_full_plot_corr) {
                                 push @header_full_plot_corr, $type.$trait_name_encoder_2{$t};
@@ -8821,40 +8811,38 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 my $effect_original_3 = $result_blup_spatial_data_original_3->{$p}->{$t_conv}->[0];
                                 push @row, ($phenotype_original, $phenotype_post_3, $effect_original_3);
 
-                                if (!$run_only_first_env_estimation) {
-                                    my $effect_post_3 = $result_blup_spatial_data_altered_3->{$p}->{$t_conv}->[0] || 'NA';
-                                    push @row, $effect_post_3;
+                                my $effect_post_3 = $result_blup_spatial_data_altered_3->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, $effect_post_3;
 
-                                    my $sim_env = $sim_data_hash_1_3->{$p}->{$t};
-                                    my $pheno_sim_3 = $phenotype_data_altered_env_hash_1_3->{$p}->{$t_conv};
-                                    my $effect_sim_3 = $result_blup_spatial_data_altered_env_1_3->{$p}->{$t_conv}->[0];
-                                    push @row, ($sim_env, $pheno_sim_3, $effect_sim_3);
+                                my $sim_env = $sim_data_hash_1_3->{$p}->{$t} || 'NA';
+                                my $pheno_sim_3 = $phenotype_data_altered_env_hash_1_3->{$p}->{$t_conv} || 'NA';
+                                my $effect_sim_3 = $result_blup_spatial_data_altered_env_1_3->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, ($sim_env, $pheno_sim_3, $effect_sim_3);
 
-                                    my $sim_env2 = $sim_data_hash_2_3->{$p}->{$t};
-                                    my $pheno_sim2_3 = $phenotype_data_altered_env_hash_2_3->{$p}->{$t_conv};
-                                    my $effect_sim2_3 = $result_blup_spatial_data_altered_env_2_3->{$p}->{$t_conv}->[0];
-                                    push @row, ($sim_env2, $pheno_sim2_3, $effect_sim2_3);
+                                my $sim_env2 = $sim_data_hash_2_3->{$p}->{$t} || 'NA';
+                                my $pheno_sim2_3 = $phenotype_data_altered_env_hash_2_3->{$p}->{$t_conv} || 'NA';
+                                my $effect_sim2_3 = $result_blup_spatial_data_altered_env_2_3->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, ($sim_env2, $pheno_sim2_3, $effect_sim2_3);
 
-                                    my $sim_env3 = $sim_data_hash_3_3->{$p}->{$t};
-                                    my $pheno_sim3_3 = $phenotype_data_altered_env_hash_3_3->{$p}->{$t_conv};
-                                    my $effect_sim3_3 = $result_blup_spatial_data_altered_env_3_3->{$p}->{$t_conv}->[0];
-                                    push @row, ($sim_env3, $pheno_sim3_3, $effect_sim3_3);
+                                my $sim_env3 = $sim_data_hash_3_3->{$p}->{$t} || 'NA';
+                                my $pheno_sim3_3 = $phenotype_data_altered_env_hash_3_3->{$p}->{$t_conv} || 'NA';
+                                my $effect_sim3_3 = $result_blup_spatial_data_altered_env_3_3->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, ($sim_env3, $pheno_sim3_3, $effect_sim3_3);
 
-                                    my $sim_env4 = $sim_data_hash_4_3->{$p}->{$t};
-                                    my $pheno_sim4_3 = $phenotype_data_altered_env_hash_4_3->{$p}->{$t_conv};
-                                    my $effect_sim4_3 = $result_blup_spatial_data_altered_env_4_3->{$p}->{$t_conv}->[0];
-                                    push @row, ($sim_env4, $pheno_sim4_3, $effect_sim4_3);
+                                my $sim_env4 = $sim_data_hash_4_3->{$p}->{$t} || 'NA';
+                                my $pheno_sim4_3 = $phenotype_data_altered_env_hash_4_3->{$p}->{$t_conv} || 'NA';
+                                my $effect_sim4_3 = $result_blup_spatial_data_altered_env_4_3->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, ($sim_env4, $pheno_sim4_3, $effect_sim4_3);
 
-                                    my $sim_env5 = $sim_data_hash_5_3->{$p}->{$t};
-                                    my $pheno_sim5_3 = $phenotype_data_altered_env_hash_5_3->{$p}->{$t_conv};
-                                    my $effect_sim5_3 = $result_blup_spatial_data_altered_env_5_3->{$p}->{$t_conv}->[0];
-                                    push @row, ($sim_env5, $pheno_sim5_3, $effect_sim5_3);
+                                my $sim_env5 = $sim_data_hash_5_3->{$p}->{$t} || 'NA';
+                                my $pheno_sim5_3 = $phenotype_data_altered_env_hash_5_3->{$p}->{$t_conv} || 'NA';
+                                my $effect_sim5_3 = $result_blup_spatial_data_altered_env_5_3->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, ($sim_env5, $pheno_sim5_3, $effect_sim5_3);
 
-                                    my $sim_env6 = $sim_data_hash_6_3->{$p}->{$t};
-                                    my $pheno_sim6_3 = $phenotype_data_altered_env_hash_6_3->{$p}->{$t_conv};
-                                    my $effect_sim6_3 = $result_blup_spatial_data_altered_env_6_3->{$p}->{$t_conv}->[0];
-                                    push @row, ($sim_env6, $pheno_sim6_3, $effect_sim6_3);
-                                }
+                                my $sim_env6 = $sim_data_hash_6_3->{$p}->{$t} || 'NA';
+                                my $pheno_sim6_3 = $phenotype_data_altered_env_hash_6_3->{$p}->{$t_conv} || 'NA';
+                                my $effect_sim6_3 = $result_blup_spatial_data_altered_env_6_3->{$p}->{$t_conv}->[0] || 'NA';
+                                push @row, ($sim_env6, $pheno_sim6_3, $effect_sim6_3);
                             }
                             my $line = join ',', @row;
                             print $F_fullplot "$line\n";
@@ -11241,16 +11229,14 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                         my @header_full_plot_corr = ('plot_name, plot_id, row_number, col_number, rep, block, germplasm_name, germplasm_id');
                         my @types_full_plot_corr = ('pheno_orig_', 'pheno_postm5_', 'eff_origm5_');
-                        if (!$run_only_first_env_estimation) {
-                            push @types_full_plot_corr, ('eff_postm5_',
-                                'sim_env1_', 'simm5_pheno1_', 'effm5_sim1_',
-                                'sim_env2_', 'simm5_pheno2_', 'effm5_sim2_',
-                                'sim_env3_', 'simm5_pheno3_', 'effm5_sim3_',
-                                'sim_env4_', 'simm5_pheno4_', 'effm5_sim4_',
-                                'sim_env5_', 'simm5_pheno5_', 'effm5_sim5_',
-                                'sim_env6_', 'simm5_pheno6_', 'effm5_sim6_'
-                            );
-                        }
+                        push @types_full_plot_corr, ('eff_postm5_',
+                            'sim_env1_', 'simm5_pheno1_', 'effm5_sim1_',
+                            'sim_env2_', 'simm5_pheno2_', 'effm5_sim2_',
+                            'sim_env3_', 'simm5_pheno3_', 'effm5_sim3_',
+                            'sim_env4_', 'simm5_pheno4_', 'effm5_sim4_',
+                            'sim_env5_', 'simm5_pheno5_', 'effm5_sim5_',
+                            'sim_env6_', 'simm5_pheno6_', 'effm5_sim6_'
+                        );
                         foreach my $t (@sorted_trait_names_5) {
                             foreach my $type (@types_full_plot_corr) {
                                 push @header_full_plot_corr, $type.$trait_name_encoder_5{$t};
@@ -11266,40 +11252,38 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 my $effect_original_5 = $result_blup_spatial_data_original_5->{$p}->{$t}->[0];
                                 push @row, ($phenotype_original, $phenotype_post_5, $effect_original_5);
 
-                                if (!$run_only_first_env_estimation) {
-                                    my $effect_post_5 = $result_blup_spatial_data_altered_5->{$p}->{$t}->[0] || 'NA';
-                                    push @row, $effect_post_5;
+                                my $effect_post_5 = $result_blup_spatial_data_altered_5->{$p}->{$t}->[0] || 'NA';
+                                push @row, $effect_post_5;
 
-                                    my $sim_env = $sim_data_hash_1_5->{$p}->{$t};
-                                    my $pheno_sim_5 = $phenotype_data_altered_env_hash_1_5->{$p}->{$t};
-                                    my $effect_sim_5 = $result_blup_spatial_data_altered_env_1_5->{$p}->{$t}->[0];
-                                    push @row, ($sim_env, $pheno_sim_5, $effect_sim_5);
+                                my $sim_env = $sim_data_hash_1_5->{$p}->{$t} || 'NA';
+                                my $pheno_sim_5 = $phenotype_data_altered_env_hash_1_5->{$p}->{$t} || 'NA';
+                                my $effect_sim_5 = $result_blup_spatial_data_altered_env_1_5->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env, $pheno_sim_5, $effect_sim_5);
 
-                                    my $sim_env2 = $sim_data_hash_2_5->{$p}->{$t};
-                                    my $pheno_sim2_5 = $phenotype_data_altered_env_hash_2_5->{$p}->{$t};
-                                    my $effect_sim2_5 = $result_blup_spatial_data_altered_env_2_5->{$p}->{$t}->[0];
-                                    push @row, ($sim_env2, $pheno_sim2_5, $effect_sim2_5);
+                                my $sim_env2 = $sim_data_hash_2_5->{$p}->{$t} || 'NA';
+                                my $pheno_sim2_5 = $phenotype_data_altered_env_hash_2_5->{$p}->{$t} || 'NA';
+                                my $effect_sim2_5 = $result_blup_spatial_data_altered_env_2_5->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env2, $pheno_sim2_5, $effect_sim2_5);
 
-                                    my $sim_env3 = $sim_data_hash_3_5->{$p}->{$t};
-                                    my $pheno_sim3_5 = $phenotype_data_altered_env_hash_3_5->{$p}->{$t};
-                                    my $effect_sim3_5 = $result_blup_spatial_data_altered_env_3_5->{$p}->{$t}->[0];
-                                    push @row, ($sim_env3, $pheno_sim3_5, $effect_sim3_5);
+                                my $sim_env3 = $sim_data_hash_3_5->{$p}->{$t} || 'NA';
+                                my $pheno_sim3_5 = $phenotype_data_altered_env_hash_3_5->{$p}->{$t} || 'NA';
+                                my $effect_sim3_5 = $result_blup_spatial_data_altered_env_3_5->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env3, $pheno_sim3_5, $effect_sim3_5);
 
-                                    my $sim_env4 = $sim_data_hash_4_5->{$p}->{$t};
-                                    my $pheno_sim4_5 = $phenotype_data_altered_env_hash_4_5->{$p}->{$t};
-                                    my $effect_sim4_5 = $result_blup_spatial_data_altered_env_4_5->{$p}->{$t}->[0];
-                                    push @row, ($sim_env4, $pheno_sim4_5, $effect_sim4_5);
+                                my $sim_env4 = $sim_data_hash_4_5->{$p}->{$t} || 'NA';
+                                my $pheno_sim4_5 = $phenotype_data_altered_env_hash_4_5->{$p}->{$t} || 'NA';
+                                my $effect_sim4_5 = $result_blup_spatial_data_altered_env_4_5->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env4, $pheno_sim4_5, $effect_sim4_5);
 
-                                    my $sim_env5 = $sim_data_hash_5_5->{$p}->{$t};
-                                    my $pheno_sim5_5 = $phenotype_data_altered_env_hash_5_5->{$p}->{$t};
-                                    my $effect_sim5_5 = $result_blup_spatial_data_altered_env_5_5->{$p}->{$t}->[0];
-                                    push @row, ($sim_env5, $pheno_sim5_5, $effect_sim5_5);
+                                my $sim_env5 = $sim_data_hash_5_5->{$p}->{$t} || 'NA';
+                                my $pheno_sim5_5 = $phenotype_data_altered_env_hash_5_5->{$p}->{$t} || 'NA';
+                                my $effect_sim5_5 = $result_blup_spatial_data_altered_env_5_5->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env5, $pheno_sim5_5, $effect_sim5_5);
 
-                                    my $sim_env6 = $sim_data_hash_6_5->{$p}->{$t};
-                                    my $pheno_sim6_5 = $phenotype_data_altered_env_hash_6_5->{$p}->{$t};
-                                    my $effect_sim6_5 = $result_blup_spatial_data_altered_env_6_5->{$p}->{$t}->[0];
-                                    push @row, ($sim_env6, $pheno_sim6_5, $effect_sim6_5);
-                                }
+                                my $sim_env6 = $sim_data_hash_6_5->{$p}->{$t} || 'NA';
+                                my $pheno_sim6_5 = $phenotype_data_altered_env_hash_6_5->{$p}->{$t} || 'NA';
+                                my $effect_sim6_5 = $result_blup_spatial_data_altered_env_6_5->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env6, $pheno_sim6_5, $effect_sim6_5);
                             }
                             my $line = join ',', @row;
                             print $F_fullplot "$line\n";
@@ -13685,16 +13669,14 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                         my @header_full_plot_corr = ('plot_name, plot_id, row_number, col_number, rep, block, germplasm_name, germplasm_id');
                         my @types_full_plot_corr = ('pheno_orig_', 'pheno_postm6_', 'eff_origm6_');
-                        if (!$run_only_first_env_estimation) {
-                            push @types_full_plot_corr, ('eff_postm6_',
-                                'sim_env1_', 'simm6_pheno1_', 'effm6_sim1_',
-                                'sim_env2_', 'simm6_pheno2_', 'effm6_sim2_',
-                                'sim_env3_', 'simm6_pheno3_', 'effm6_sim3_',
-                                'sim_env4_', 'simm6_pheno4_', 'effm6_sim4_',
-                                'sim_env5_', 'simm6_pheno5_', 'effm6_sim5_',
-                                'sim_env6_', 'simm6_pheno6_', 'effm6_sim6_'
-                            );
-                        }
+                        push @types_full_plot_corr, ('eff_postm6_',
+                            'sim_env1_', 'simm6_pheno1_', 'effm6_sim1_',
+                            'sim_env2_', 'simm6_pheno2_', 'effm6_sim2_',
+                            'sim_env3_', 'simm6_pheno3_', 'effm6_sim3_',
+                            'sim_env4_', 'simm6_pheno4_', 'effm6_sim4_',
+                            'sim_env5_', 'simm6_pheno5_', 'effm6_sim5_',
+                            'sim_env6_', 'simm6_pheno6_', 'effm6_sim6_'
+                        );
                         foreach my $t (@sorted_trait_names_6) {
                             foreach my $type (@types_full_plot_corr) {
                                 push @header_full_plot_corr, $type.$trait_name_encoder_6{$t};
@@ -13710,40 +13692,38 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 my $effect_original_6 = $result_blup_spatial_data_original_6->{$p}->{$t}->[0];
                                 push @row, ($phenotype_original, $phenotype_post_6, $effect_original_6);
 
-                                if (!$run_only_first_env_estimation) {
-                                    my $effect_post_6 = $result_blup_spatial_data_altered_6->{$p}->{$t}->[0] || 'NA';
-                                    push @row, $effect_post_6;
+                                my $effect_post_6 = $result_blup_spatial_data_altered_6->{$p}->{$t}->[0] || 'NA';
+                                push @row, $effect_post_6;
 
-                                    my $sim_env = $sim_data_hash_1_6->{$p}->{$t};
-                                    my $pheno_sim_6 = $phenotype_data_altered_env_hash_1_6->{$p}->{$t};
-                                    my $effect_sim_6 = $result_blup_spatial_data_altered_env_1_6->{$p}->{$t}->[0];
-                                    push @row, ($sim_env, $pheno_sim_6, $effect_sim_6);
+                                my $sim_env = $sim_data_hash_1_6->{$p}->{$t} || 'NA';
+                                my $pheno_sim_6 = $phenotype_data_altered_env_hash_1_6->{$p}->{$t} || 'NA';
+                                my $effect_sim_6 = $result_blup_spatial_data_altered_env_1_6->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env, $pheno_sim_6, $effect_sim_6);
 
-                                    my $sim_env2 = $sim_data_hash_2_6->{$p}->{$t};
-                                    my $pheno_sim2_6 = $phenotype_data_altered_env_hash_2_6->{$p}->{$t};
-                                    my $effect_sim2_6 = $result_blup_spatial_data_altered_env_2_6->{$p}->{$t}->[0];
-                                    push @row, ($sim_env2, $pheno_sim2_6, $effect_sim2_6);
+                                my $sim_env2 = $sim_data_hash_2_6->{$p}->{$t} || 'NA';
+                                my $pheno_sim2_6 = $phenotype_data_altered_env_hash_2_6->{$p}->{$t} || 'NA';
+                                my $effect_sim2_6 = $result_blup_spatial_data_altered_env_2_6->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env2, $pheno_sim2_6, $effect_sim2_6);
 
-                                    my $sim_env3 = $sim_data_hash_3_6->{$p}->{$t};
-                                    my $pheno_sim3_6 = $phenotype_data_altered_env_hash_3_6->{$p}->{$t};
-                                    my $effect_sim3_6 = $result_blup_spatial_data_altered_env_3_6->{$p}->{$t}->[0];
-                                    push @row, ($sim_env3, $pheno_sim3_6, $effect_sim3_6);
+                                my $sim_env3 = $sim_data_hash_3_6->{$p}->{$t} || 'NA';
+                                my $pheno_sim3_6 = $phenotype_data_altered_env_hash_3_6->{$p}->{$t} || 'NA';
+                                my $effect_sim3_6 = $result_blup_spatial_data_altered_env_3_6->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env3, $pheno_sim3_6, $effect_sim3_6);
 
-                                    my $sim_env4 = $sim_data_hash_4_6->{$p}->{$t};
-                                    my $pheno_sim4_6 = $phenotype_data_altered_env_hash_4_6->{$p}->{$t};
-                                    my $effect_sim4_6 = $result_blup_spatial_data_altered_env_4_6->{$p}->{$t}->[0];
-                                    push @row, ($sim_env4, $pheno_sim4_6, $effect_sim4_6);
+                                my $sim_env4 = $sim_data_hash_4_6->{$p}->{$t} || 'NA';
+                                my $pheno_sim4_6 = $phenotype_data_altered_env_hash_4_6->{$p}->{$t} || 'NA';
+                                my $effect_sim4_6 = $result_blup_spatial_data_altered_env_4_6->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env4, $pheno_sim4_6, $effect_sim4_6);
 
-                                    my $sim_env5 = $sim_data_hash_5_6->{$p}->{$t};
-                                    my $pheno_sim5_6 = $phenotype_data_altered_env_hash_5_6->{$p}->{$t};
-                                    my $effect_sim5_6 = $result_blup_spatial_data_altered_env_5_6->{$p}->{$t}->[0];
-                                    push @row, ($sim_env5, $pheno_sim5_6, $effect_sim5_6);
+                                my $sim_env5 = $sim_data_hash_5_6->{$p}->{$t} || 'NA';
+                                my $pheno_sim5_6 = $phenotype_data_altered_env_hash_5_6->{$p}->{$t} || 'NA';
+                                my $effect_sim5_6 = $result_blup_spatial_data_altered_env_5_6->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env5, $pheno_sim5_6, $effect_sim5_6);
 
-                                    my $sim_env6 = $sim_data_hash_6_6->{$p}->{$t};
-                                    my $pheno_sim6_6 = $phenotype_data_altered_env_hash_6_6->{$p}->{$t};
-                                    my $effect_sim6_6 = $result_blup_spatial_data_altered_env_6_6->{$p}->{$t}->[0];
-                                    push @row, ($sim_env6, $pheno_sim6_6, $effect_sim6_6);
-                                }
+                                my $sim_env6 = $sim_data_hash_6_6->{$p}->{$t} || 'NA';
+                                my $pheno_sim6_6 = $phenotype_data_altered_env_hash_6_6->{$p}->{$t} || 'NA';
+                                my $effect_sim6_6 = $result_blup_spatial_data_altered_env_6_6->{$p}->{$t}->[0] || 'NA';
+                                push @row, ($sim_env6, $pheno_sim6_6, $effect_sim6_6);
                             }
                             my $line = join ',', @row;
                             print $F_fullplot "$line\n";
