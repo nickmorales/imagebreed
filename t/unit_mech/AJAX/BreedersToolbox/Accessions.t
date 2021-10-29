@@ -88,8 +88,7 @@ my $stock = CXGN::Chado::Stock->new($schema,$stock_id);
 $stock->remove_synonym('test_accessiony');
 
 #Remove added stocks so tests downstream do not fail
-my $accession_name = encode('utf8', 'test_accessionД');
-$stock_id = $schema->resultset('Stock::Stock')->find({uniquename=>$accession_name})->stock_id();
+$stock_id = $schema->resultset('Stock::Stock')->find({uniquename=>'test_accessionД'})->stock_id();
 $stock = CXGN::Chado::Stock->new($schema,$stock_id);
 $stock->set_is_obsolete(1) ;
 $stock->store();

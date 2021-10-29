@@ -105,7 +105,7 @@ print STDERR "Done.\n";
 
 my $database_fixture_dump = $ENV{DATABASE_FIXTURE_PATH} || $fixture_path;
 print STDERR "# Loading database fixture... $database_fixture_dump ... ";
-system("createdb -h $config->{dbhost} -U postgres -T template0 -E SQL_ASCII --no-password $dbname");
+system("createdb -h $config->{dbhost} -U postgres -T template0 -E UTF8 --no-password $dbname");
 system("cat $database_fixture_dump | psql -h $config->{dbhost} -U postgres $dbname > /dev/null");
 
 print STDERR "Done.\n";

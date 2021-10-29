@@ -518,7 +518,6 @@ sub upload_seedlots_POST : Args(0) {
                 $sl = CXGN::Stock::Seedlot->new(schema => $schema);
             }
 
-	    $sl->quality($val->{quality});
             $sl->uniquename($key);
             $sl->location_code($location);
             $sl->box_name($val->{box_name});
@@ -527,7 +526,7 @@ sub upload_seedlots_POST : Args(0) {
             $sl->organization_name($organization);
             $sl->population_name($population);
             $sl->breeding_program_id($breeding_program_id);
-	    $sl->quality($val->{quality});
+            $sl->quality($val->{quality});
             $sl->check_name_exists(0); #already validated
             my $return = $sl->store();
             if ( defined $return->{error} ) {
@@ -647,7 +646,7 @@ sub upload_seedlots_POST : Args(0) {
     my $bs = CXGN::BreederSearch->new( { dbh=>$dbh, dbname=>$c->config->{dbname}, } );
     my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'stockprop', 'concurrent', $c->config->{basepath});
 
-    $c->stash->{rest} = { success => 1 };
+    $c->stash->{rest} = { success => 1, added_seedlot => \@added_stocks };
 }
 
 sub upload_seedlots_inventory : Path('/ajax/breeders/seedlot-inventory-upload/') : ActionClass('REST') { }

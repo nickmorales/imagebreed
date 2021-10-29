@@ -47,7 +47,8 @@ my $message = $response->decoded_content;
 print STDERR "MESSAGE: $message\n";
 my $message_hash = JSON::XS->new->decode($message);
 print STDERR Dumper $message_hash;
-is_deeply($message_hash, {'success' => 1});
+ok($message_hash->{success});
+is(scalar(@{$message_hash->{added_seedlot}}),2);
 
 $file = $f->config->{basepath}."/t/data/stock/seedlot_upload_harvested";
 $ua = LWP::UserAgent->new;
@@ -68,7 +69,8 @@ ok($response->is_success);
 my $message = $response->decoded_content;
 my $message_hash = JSON::XS->new()->decode($message);
 print STDERR Dumper $message_hash;
-is_deeply($message_hash, {'success' => 1});
+ok($message_hash->{success});
+is(scalar(@{$message_hash->{added_seedlot}}),2);
 
 $file = $f->config->{basepath}."/t/data/stock/seedlot_inventory_android_app";
 $ua = LWP::UserAgent->new;
