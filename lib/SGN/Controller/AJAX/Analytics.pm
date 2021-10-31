@@ -8036,7 +8036,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             fixed_r <- anova(mix);
-            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(i=rownames(fixed_r), model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effect_cmd;
@@ -8244,7 +8244,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             fixed_r <- anova(mix);
-            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(i=rownames(fixed_r), model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_cmd;
@@ -8454,7 +8454,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             fixed_r <- anova(mix);
-            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(i=rownames(fixed_r), model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_3_cmd;
@@ -8661,7 +8661,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             fixed_r <- anova(mix);
-            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(i=rownames(fixed_r), model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_cont_cmd;
@@ -8866,7 +8866,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             fixed_r <- anova(mix);
-            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(i=rownames(fixed_r), model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_max_cmd;
@@ -9071,7 +9071,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             fixed_r <- anova(mix);
-            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(i=rownames(fixed_r), model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_min_cmd;
@@ -9278,7 +9278,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             fixed_r <- anova(mix);
-            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            write.table(data.frame(i=rownames(fixed_r), model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_3_cont_cmd;
@@ -10892,7 +10892,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
                 write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
                 fixed_r <- anova(mix);
-                write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                write.table(data.frame(i=rownames(fixed_r), model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
                 }
                 "';
                 print STDERR Dumper $grm_prm_secondary_traits_cmd;
@@ -11105,7 +11105,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
                 write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
                 fixed_r <- anova(mix);
-                write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                write.table(data.frame(i=rownames(fixed_r), model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
                 }
                 "';
                 print STDERR Dumper $grm_prm_secondary_favg_traits_cmd;
