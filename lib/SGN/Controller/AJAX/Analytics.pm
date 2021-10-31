@@ -4903,8 +4903,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             }
         close($F_gcorr_f);
     };
-    print STDERR Dumper $gcorr_grm_trait_2dspl;
-    die;
 
     print STDERR Dumper {
         type => 'trait spatial genetic effect 2dspl',
@@ -8169,7 +8167,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -8360,7 +8358,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1 + fixed_effect_2, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -8553,7 +8551,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_3_1 + fixed_effect_3_2 + fixed_effect_3_3, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -8742,7 +8740,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -8931,7 +8929,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_max, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -9120,7 +9118,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_min, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -9305,7 +9303,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -9509,7 +9507,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -9713,7 +9711,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -9912,7 +9910,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -10117,7 +10115,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -10323,7 +10321,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -10525,7 +10523,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=diag_prm), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
-            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+            mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
             try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
             write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -10722,7 +10720,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 if (!is.null(mix1\$U)) {
                 mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
                 if (!is.null(mix2\$U)) {
-                mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
                 g_corr <- 0;
                 try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
                 write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
@@ -10918,7 +10916,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 if (!is.null(mix1\$U)) {
                 mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
                 if (!is.null(mix2\$U)) {
-                mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
                 g_corr <- 0;
                 try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
                 write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
