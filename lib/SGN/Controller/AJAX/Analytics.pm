@@ -4881,7 +4881,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         if (!is.null(mix1\$U)) {
         mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ], tolparinv='.$tolparinv_10.');
         if (!is.null(mix2\$U)) {
-        mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+        mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
         g_corr <- 0;
         try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
         write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
