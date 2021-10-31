@@ -4610,6 +4610,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $stats_out_tempfile_factors = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $grm_rename_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
     my $ggcorr_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+    my $fixed_eff_anova_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
     my @data_matrix_original;
     foreach my $p (@seen_plots) {
@@ -7310,6 +7311,15 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $gcorr_grm_prm_secondary_traits;
         my @gcorr_grm_prm_secondary_traits_favg;
         my @gcorr_grm_prm_secondary_traits_havg;
+        my @f_anova_grm_fixed_effect;
+        my @f_anova_grm_fixed_effects;
+        my @f_anova_grm_fixed_effects_3;
+        my @f_anova_grm_fixed_effects_cont;
+        my @f_anova_grm_fixed_effects_max;
+        my @f_anova_grm_fixed_effects_min;
+        my @f_anova_grm_fixed_effects_f3_cont;
+        my @f_anova_grm_prm_secondary_traits_havg;
+        my @f_anova_grm_prm_secondary_traits_favg;
 
         foreach my $t (@sorted_trait_names) {
             push @germplasm_data_header, ($t."mean", $t."sd", $t."spatialcorrected2Dsplgenoeffect");
@@ -8012,8 +8022,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat[is.na(geno_mat)] <- 0;
             mat\$rowNumber <- as.numeric(mat\$rowNumber);
             mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mat\$fixed_effect_all <- mat_fixed\$fixed_effect_all;
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
@@ -8027,6 +8035,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            fixed_r <- anova(mix);
+            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effect_cmd;
@@ -8156,6 +8166,24 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             close($fh_fits);
             print STDERR Dumper \@fits_grm_fixed_effect;
 
+            open(my $fh_f_anova, '<', $fixed_eff_anova_tempfile) or die "Could not open file '$fixed_eff_anova_tempfile' $!";
+                print STDERR "Opened $fixed_eff_anova_tempfile\n";
+                my $header_f_anova = <$fh_f_anova>;
+                print STDERR Dumper $header_f_anova;
+                my @header_cols_f_anova;
+                if ($csv->parse($header_f_anova)) {
+                    @header_cols_f_anova = $csv->fields();
+                }
+                while (my $row = <$fh_f_anova>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @f_anova_grm_fixed_effect, \@columns;
+                }
+            close($fh_f_anova);
+            print STDERR Dumper \@f_anova_grm_fixed_effect;
+
             my $grm_no_prm_fixed_effect_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
@@ -8201,8 +8229,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat[is.na(geno_mat)] <- 0;
             mat\$rowNumber <- as.numeric(mat\$rowNumber);
             mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mat\$fixed_effect_1 <- mat_fixed\$fixed_effect_1;
             mat\$fixed_effect_2 <- mat_fixed\$fixed_effect_2;
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1 + fixed_effect_2, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
@@ -8217,6 +8243,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            fixed_r <- anova(mix);
+            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_cmd;
@@ -8346,6 +8374,24 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             close($fh_fits);
             print STDERR Dumper \@fits_grm_fixed_effects;
 
+            open($fh_f_anova, '<', $fixed_eff_anova_tempfile) or die "Could not open file '$fixed_eff_anova_tempfile' $!";
+                print STDERR "Opened $fixed_eff_anova_tempfile\n";
+                $header_f_anova = <$fh_f_anova>;
+                print STDERR Dumper $header_f_anova;
+                @header_cols_f_anova = ();
+                if ($csv->parse($header_f_anova)) {
+                    @header_cols_f_anova = $csv->fields();
+                }
+                while (my $row = <$fh_f_anova>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @f_anova_grm_fixed_effects, \@columns;
+                }
+            close($fh_f_anova);
+            print STDERR Dumper \@f_anova_grm_fixed_effects;
+
             my $grm_no_prm_fixed_effects_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
@@ -8392,8 +8438,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat[is.na(geno_mat)] <- 0;
             mat\$rowNumber <- as.numeric(mat\$rowNumber);
             mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mat\$fixed_effect_3_1 <- mat_fixed\$fixed_effect_3_1;
             mat\$fixed_effect_3_2 <- mat_fixed\$fixed_effect_3_2;
             mat\$fixed_effect_3_3 <- mat_fixed\$fixed_effect_3_3;
@@ -8409,6 +8453,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            fixed_r <- anova(mix);
+            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_3_cmd;
@@ -8538,6 +8584,24 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             close($fh_fits);
             print STDERR Dumper \@fits_grm_fixed_effects_3;
 
+            open($fh_f_anova, '<', $fixed_eff_anova_tempfile) or die "Could not open file '$fixed_eff_anova_tempfile' $!";
+                print STDERR "Opened $fixed_eff_anova_tempfile\n";
+                $header_f_anova = <$fh_f_anova>;
+                print STDERR Dumper $header_f_anova;
+                @header_cols_f_anova = ();
+                if ($csv->parse($header_f_anova)) {
+                    @header_cols_f_anova = $csv->fields();
+                }
+                while (my $row = <$fh_f_anova>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @f_anova_grm_fixed_effects_3, \@columns;
+                }
+            close($fh_f_anova);
+            print STDERR Dumper \@f_anova_grm_fixed_effects_3;
+
             my $grm_no_prm_fixed_effects_3_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
@@ -8583,10 +8647,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mat\$fixed_effect_all_cont <- mat_fixed\$fixed_effect_all_cont;
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
@@ -8600,6 +8660,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            fixed_r <- anova(mix);
+            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_cont_cmd;
@@ -8729,6 +8791,24 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             close($fh_fits);
             print STDERR Dumper \@fits_grm_fixed_effects_cont;
 
+            open($fh_f_anova, '<', $fixed_eff_anova_tempfile) or die "Could not open file '$fixed_eff_anova_tempfile' $!";
+                print STDERR "Opened $fixed_eff_anova_tempfile\n";
+                $header_f_anova = <$fh_f_anova>;
+                print STDERR Dumper $header_f_anova;
+                @header_cols_f_anova = ();
+                if ($csv->parse($header_f_anova)) {
+                    @header_cols_f_anova = $csv->fields();
+                }
+                while (my $row = <$fh_f_anova>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @f_anova_grm_fixed_effects_cont, \@columns;
+                }
+            close($fh_f_anova);
+            print STDERR Dumper \@f_anova_grm_fixed_effects_cont;
+
             my $grm_no_prm_fixed_effects_havg_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
@@ -8772,10 +8852,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mat\$fixed_effect_max <- mat_fixed\$fixed_effect_max;
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_max, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
@@ -8789,6 +8865,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            fixed_r <- anova(mix);
+            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_max_cmd;
@@ -8918,6 +8996,24 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             close($fh_fits);
             print STDERR Dumper \@fits_grm_fixed_effects_max;
 
+            open($fh_f_anova, '<', $fixed_eff_anova_tempfile) or die "Could not open file '$fixed_eff_anova_tempfile' $!";
+                print STDERR "Opened $fixed_eff_anova_tempfile\n";
+                $header_f_anova = <$fh_f_anova>;
+                print STDERR Dumper $header_f_anova;
+                @header_cols_f_anova = ();
+                if ($csv->parse($header_f_anova)) {
+                    @header_cols_f_anova = $csv->fields();
+                }
+                while (my $row = <$fh_f_anova>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @f_anova_grm_fixed_effects_max, \@columns;
+                }
+            close($fh_f_anova);
+            print STDERR Dumper \@f_anova_grm_fixed_effects_max;
+
             my $grm_no_prm_fixed_effects_fmax_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
@@ -8961,10 +9057,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mat\$fixed_effect_min <- mat_fixed\$fixed_effect_min;
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_min, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
@@ -8978,6 +9070,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            fixed_r <- anova(mix);
+            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_min_cmd;
@@ -9107,6 +9201,24 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             close($fh_fits);
             print STDERR Dumper \@fits_grm_fixed_effects_min;
 
+            open($fh_f_anova, '<', $fixed_eff_anova_tempfile) or die "Could not open file '$fixed_eff_anova_tempfile' $!";
+                print STDERR "Opened $fixed_eff_anova_tempfile\n";
+                $header_f_anova = <$fh_f_anova>;
+                print STDERR Dumper $header_f_anova;
+                @header_cols_f_anova = ();
+                if ($csv->parse($header_f_anova)) {
+                    @header_cols_f_anova = $csv->fields();
+                }
+                while (my $row = <$fh_f_anova>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @f_anova_grm_fixed_effects_min, \@columns;
+                }
+            close($fh_f_anova);
+            print STDERR Dumper \@f_anova_grm_fixed_effects_min;
+
             my $grm_no_prm_fixed_effects_fmin_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
@@ -9150,8 +9262,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
             mat\fixed_effect_1_cont <- mat_fixed\fixed_effect_1_cont;
             mat\fixed_effect_2_cont <- mat_fixed\fixed_effect_2_cont;
             mat\fixed_effect_3_cont <- mat_fixed\fixed_effect_3_cont;
@@ -9167,6 +9277,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
             write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            fixed_r <- anova(mix);
+            write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             }
             "';
             print STDERR Dumper $grm_no_prm_fixed_effects_3_cont_cmd;
@@ -9295,6 +9407,24 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($fh_fits);
             print STDERR Dumper \@fits_grm_fixed_effects_f3_cont;
+
+            open($fh_f_anova, '<', $fixed_eff_anova_tempfile) or die "Could not open file '$fixed_eff_anova_tempfile' $!";
+                print STDERR "Opened $fixed_eff_anova_tempfile\n";
+                $header_f_anova = <$fh_f_anova>;
+                print STDERR Dumper $header_f_anova;
+                @header_cols_f_anova = ();
+                if ($csv->parse($header_f_anova)) {
+                    @header_cols_f_anova = $csv->fields();
+                }
+                while (my $row = <$fh_f_anova>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @f_anova_grm_fixed_effects_f3_cont, \@columns;
+                }
+            close($fh_f_anova);
+            print STDERR Dumper \@f_anova_grm_fixed_effects_f3_cont;
 
             my $grm_no_prm_fixed_effects_f3_cont_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -10747,10 +10877,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 sec_binned <- data.frame(fread(\''.$analytics_protocol_data_tempfile30.'\', header=FALSE, sep=\',\'));
                 geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
                 geno_mat[is.na(geno_mat)] <- 0;
-                mat\$rowNumber <- as.numeric(mat\$rowNumber);
-                mat\$colNumber <- as.numeric(mat\$colNumber);
-                mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-                mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
                 mat\$fixed_eff <- sec_cont[ ,'.$trait_name_secondary_counter.'];
                 mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
                 if (!is.null(mix\$U)) {
@@ -10765,6 +10891,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
                 SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
                 write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                fixed_r <- anova(mix);
+                write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
                 }
                 "';
                 print STDERR Dumper $grm_prm_secondary_traits_cmd;
@@ -10897,6 +11025,25 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 close($fh_fits);
                 push @fits_grm_prm_secondary_traits_havg, \@fits_grm_prm_secondary_traits_vals;
 
+                my @f_anova_grm_fixed_effects_secondary_traits_havg_vals;
+                open($fh_f_anova, '<', $fixed_eff_anova_tempfile) or die "Could not open file '$fixed_eff_anova_tempfile' $!";
+                    print STDERR "Opened $fixed_eff_anova_tempfile\n";
+                    my $header_f_anova = <$fh_f_anova>;
+                    print STDERR Dumper $header_f_anova;
+                    my @header_cols_f_anova;
+                    if ($csv->parse($header_f_anova)) {
+                        @header_cols_f_anova = $csv->fields();
+                    }
+                    while (my $row = <$fh_f_anova>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @f_anova_grm_fixed_effects_secondary_traits_havg_vals, \@columns;
+                    }
+                close($fh_f_anova);
+                push @f_anova_grm_prm_secondary_traits_havg, \@f_anova_grm_fixed_effects_secondary_traits_havg_vals;
+
                 my $prm_fixed_effects_grm_prm_sec_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
                 mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
                 geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
@@ -10943,10 +11090,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 sec_binned <- data.frame(fread(\''.$analytics_protocol_data_tempfile30.'\', header=FALSE, sep=\',\'));
                 geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
                 geno_mat[is.na(geno_mat)] <- 0;
-                mat\$rowNumber <- as.numeric(mat\$rowNumber);
-                mat\$colNumber <- as.numeric(mat\$colNumber);
-                mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-                mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
                 mat\$fixed_eff <- sec_binned[ ,'.$trait_name_secondary_counter.'];
                 mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
                 if (!is.null(mix\$U)) {
@@ -10961,6 +11104,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
                 SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
                 write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+                fixed_r <- anova(mix);
+                write.table(data.frame(model=c(fixed_r\$Models), f=c(fixed_r\$F.value), p=c(fixed_r\$\`Pr(>F)\`) ), file=\''.$fixed_eff_anova_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
                 }
                 "';
                 print STDERR Dumper $grm_prm_secondary_favg_traits_cmd;
@@ -11092,6 +11237,25 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     }
                 close($fh_fits);
                 push @fits_grm_prm_secondary_traits_favg, \@fits_grm_prm_secondary_favg_traits_vals;
+
+                my @f_anova_grm_fixed_effects_secondary_traits_favg_vals;
+                open($fh_f_anova, '<', $fixed_eff_anova_tempfile) or die "Could not open file '$fixed_eff_anova_tempfile' $!";
+                    print STDERR "Opened $fixed_eff_anova_tempfile\n";
+                    $header_f_anova = <$fh_f_anova>;
+                    print STDERR Dumper $header_f_anova;
+                    @header_cols_f_anova = ();
+                    if ($csv->parse($header_f_anova)) {
+                        @header_cols_f_anova = $csv->fields();
+                    }
+                    while (my $row = <$fh_f_anova>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @f_anova_grm_fixed_effects_secondary_traits_favg_vals, \@columns;
+                    }
+                close($fh_f_anova);
+                push @f_anova_grm_prm_secondary_traits_favg, \@f_anova_grm_fixed_effects_secondary_traits_favg_vals;
 
                 my $prm_fixed_effects_grm_prm_sec_favg_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
                 mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -11233,6 +11397,15 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             gcorr_grm_prm_secondary_traits => $gcorr_grm_prm_secondary_traits,
             gcorr_grm_prm_secondary_traits_favg => \@gcorr_grm_prm_secondary_traits_favg,
             gcorr_grm_prm_secondary_traits_havg => \@gcorr_grm_prm_secondary_traits_havg,
+            f_anova_grm_fixed_effect => \@f_anova_grm_fixed_effect,
+            f_anova_grm_fixed_effects => \@f_anova_grm_fixed_effects,
+            f_anova_grm_fixed_effects_3 => \@f_anova_grm_fixed_effects_3,
+            f_anova_grm_fixed_effects_cont => \@f_anova_grm_fixed_effects_cont,
+            f_anova_grm_fixed_effects_max => \@f_anova_grm_fixed_effects_max,
+            f_anova_grm_fixed_effects_min => \@f_anova_grm_fixed_effects_min,
+            f_anova_grm_fixed_effects_f3_cont => \@f_anova_grm_fixed_effects_f3_cont,
+            f_anova_grm_prm_secondary_traits_havg => \@f_anova_grm_prm_secondary_traits_havg,
+            f_anova_grm_prm_secondary_traits_favg => \@f_anova_grm_prm_secondary_traits_favg
         }
     }
 
