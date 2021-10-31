@@ -9262,9 +9262,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\fixed_effect_1_cont <- mat_fixed\fixed_effect_1_cont;
-            mat\fixed_effect_2_cont <- mat_fixed\fixed_effect_2_cont;
-            mat\fixed_effect_3_cont <- mat_fixed\fixed_effect_3_cont;
+            mat\$fixed_effect_1_cont <- mat_fixed\$fixed_effect_1_cont;
+            mat\$fixed_effect_2_cont <- mat_fixed\$fixed_effect_2_cont;
+            mat\$fixed_effect_3_cont <- mat_fixed\$fixed_effect_3_cont;
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1_cont + fixed_effect_2_cont + fixed_effect_3_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
