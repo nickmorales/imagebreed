@@ -187,6 +187,12 @@ has 'stock_name_list' => (
     is => 'rw',
 );
 
+has 'must_be_linked_to_stock' => (
+    isa => 'Bool|Undef',
+    is => 'rw',
+    default => 0
+);
+
 has 'project_id_list' => (
     isa => 'ArrayRef[Int]|Undef',
     is => 'rw',
@@ -415,6 +421,11 @@ sub search {
         $offset_clause = " OFFSET ".$self->offset;
     }
 
+    my $stock_join_term = 'LEFT';
+    if ($self->must_be_linked_to_stock) {
+        $stock_join_term = '';
+    }
+
     my $q = "SELECT image.image_id, image.name, image.description, image.original_filename, image.file_ext, image.sp_person_id, submitter.username,
         to_char (image.create_date::timestamp at time zone current_setting('TIMEZONE'), 'YYYY-MM-DD\"T\"HH24:MI:SSOF00') as create_date,
         to_char (image.modified_date::timestamp at time zone current_setting('TIMEZONE'), 'YYYY-MM-DD\"T\"HH24:MI:SSOF00') as modified_date,
@@ -433,7 +444,7 @@ sub search {
         LEFT JOIN metadata.md_tag_image AS image_tag ON (image.image_id=image_tag.image_id)
         LEFT JOIN metadata.md_tag AS tags ON (image_tag.tag_id=tags.tag_id)
         LEFT JOIN phenome.stock_image AS stock_image ON (image.image_id=stock_image.image_id)
-        LEFT JOIN stock ON (stock_image.stock_id=stock.stock_id)
+        $stock_join_term JOIN stock ON (stock_image.stock_id=stock.stock_id)
         LEFT JOIN cvterm AS stock_type ON (stock.type_id=stock_type.cvterm_id)
         LEFT JOIN phenome.project_md_image AS project_image ON(project_image.image_id=image.image_id)
         LEFT JOIN cvterm AS project_image_type ON(project_image.type_id=project_image_type.cvterm_id)

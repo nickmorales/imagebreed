@@ -27,6 +27,7 @@ sub image_search :Path('/ajax/search/images') Args(0) {
     my $params = $c->req->params() || {};
     #print STDERR Dumper $params;
     my $show_observations = $c->req->param('show_observations');
+    my $must_be_linked_to_stock = $c->req->param('must_be_linked_to_stock') || 0;
 
     my @descriptors;
     if (exists($params->{image_description_filename_composite}) && $params->{image_description_filename_composite}) {
@@ -80,7 +81,8 @@ sub image_search :Path('/ajax/search/images') Args(0) {
         project_name_list=>\@project_name_list,
         tag_list=>\@tags,
         limit=>$limit,
-        offset=>$offset
+        offset=>$offset,
+        must_be_linked_to_stock=>$must_be_linked_to_stock
     });
     my ($result, $records_total) = $image_search->search();
 

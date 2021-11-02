@@ -79,6 +79,7 @@ sub image_analysis_submit_POST : Args(0) {
         people_schema=>$people_schema,
         phenome_schema=>$phenome_schema,
         image_id_list=>$image_ids,
+        must_be_linked_to_stock=>1
     });
 
     my ($result, $records_total) = $image_search->search();
@@ -194,7 +195,7 @@ sub image_analysis_submit_POST : Args(0) {
                 '/DroneImageScripts/' . $script . ' --' . $input_image . ' \'' . $_ .
                 '\' --' . $outfile_image . ' \'' . $archive_temp_image . '\' --' .
                 $results_outfile . ' \'' . $archive_temp_results . '\' ';
-            # print STDERR Dumper $cmd;
+            print STDERR Dumper $cmd;
             my $status = system($cmd);
 
             my $csv = Text::CSV->new({ sep_char => ',' });
