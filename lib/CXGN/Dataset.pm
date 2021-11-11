@@ -585,12 +585,22 @@ sub retrieve_genotypes {
         push @trial_ids, $_->[0];
     }
 
+    my @protocols;
+    if (!$protocol_id) {
+        my $genotyping_protocol_ref = $self->retrieve_genotyping_protocols();
+        foreach my $p (@$genotyping_protocol_ref) {
+            push @protocols, $p->[0];
+        }
+    } else {
+        @protocols = ($protocol_id);
+    }
+
     my $genotypes_search = CXGN::Genotype::Search->new(
         bcs_schema => $self->schema(),
         people_schema=>$self->people_schema,
         accession_list => \@accession_ids,
         trial_list => \@trial_ids,
-        protocol_id_list => [$protocol_id],
+        protocol_id_list => \@protocols,
         chromosome_list => $chromosome_list,
         start_position => $start_position,
         end_position => $end_position,
