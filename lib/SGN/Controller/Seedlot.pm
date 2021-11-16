@@ -9,13 +9,18 @@ use CXGN::Stock::Seedlot;
 use Data::Dumper;
 use JSON::XS;
 
-sub seedlots :Path('/breeders/seedlots') :Args(0) { 
+sub seedlots :Path('/breeders/seedlots') :Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     $c->stash->{preferred_species} = $c->config->{preferred_species};
     $c->stash->{timestamp} = localtime;
+
+    my $user_role;
+    if ($c->user() && $c->user()->check_roles("curator")) {
+        $user_role = "curator";
+    }
 
     my @editable_stock_props = split ',', $c->config->{editable_stock_props};
     my %editable_stock_props = map { $_=>1 } @editable_stock_props;
@@ -35,10 +40,11 @@ sub seedlots :Path('/breeders/seedlots') :Args(0) {
     $c->stash->{crossing_trials} = $projects->get_crossing_trials();
     $c->stash->{locations} = JSON::XS->new->decode($projects->get_location_geojson());
     $c->stash->{programs} = $breeding_programs;
+    $c->stash->{user_role} = $user_role;
     $c->stash->{template} = '/breeders_toolbox/seedlots.mas';
 }
 
-sub seedlot_detail :Path('/breeders/seedlot') Args(1) { 
+sub seedlot_detail :Path('/breeders/seedlot') Args(1) {
     my $self = shift;
     my $c = shift;
     my $seedlot_id = shift;

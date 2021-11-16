@@ -1220,6 +1220,15 @@ sub delete {
     return $error;
 }
 
+### CLASS FUNCTION DELETE_SEEDLOTS_USING_LIST
+
+sub delete_seedlots_using_list {
+    my $self = shift;
+    my $schema = shift;
+    my $list_id = shift;
+
+}
+
 1;
 
 no Moose;
