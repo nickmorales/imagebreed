@@ -777,6 +777,12 @@ CXGN.List.prototype = {
     validate: function(list_id, type, non_interactive) {
         var missing = new Array();
         var error = 0;
+
+        if (type == null || type == undefined || type == 'null') {
+            alert("Cannot validate a list of type null! Please set a type first!");
+            return 1;
+        }
+
         jQuery.ajax( {
             url: '/list/validate/'+list_id+'/'+type,
             async: false,
