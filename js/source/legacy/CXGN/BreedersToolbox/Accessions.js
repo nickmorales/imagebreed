@@ -441,7 +441,7 @@ function openWindowWithPost(fuzzyResponse) {
 function verify_accession_list(accession_list_id) {
     accession_list = JSON.stringify(list.getList(accession_list_id));
     doFuzzySearch = jQuery('#fuzzy_check').attr('checked');
-    
+
     jQuery.ajax({
         type: 'POST',
         url: '/ajax/accession_list/verify',
@@ -537,7 +537,7 @@ function review_verification_results(doFuzzySearch, verifyResponse, accession_li
     }
 
     jQuery('#review_found_matches_hide').click(function(){
-	
+
         if (verifyResponse.fuzzy.length > 0 && doFuzzySearch){
             jQuery('#review_fuzzy_matches_dialog').modal('show');
         } else {
