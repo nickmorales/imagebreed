@@ -87,7 +87,7 @@ foreach my $ds (@datasets) {
     my $traits = $ds->retrieve_traits();
 
     print STDERR Dumper($traits);
-    
+
     is_deeply($traits, [
 		  [
 		   70741,
@@ -118,8 +118,17 @@ foreach my $ds (@datasets) {
     }
 
     my $years = $ds->retrieve_years();
-
-    is_deeply($years, [], "Year retrieve test");
+    print STDERR Dumper $years;
+    is_deeply($years, [
+          [
+            '2014',
+            '2014'
+          ],
+          [
+            '2016',
+            '2016'
+          ]
+        ], "Year retrieve test");
 
     my $plots = $ds->retrieve_plots();
 
