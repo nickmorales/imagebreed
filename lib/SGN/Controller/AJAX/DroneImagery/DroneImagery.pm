@@ -6924,6 +6924,23 @@ sub _perform_get_weeks_drone_run_after_planting {
     return { planting_date => $planting_date, planting_date_calendar => $planting_date_full_calendar_datetime, drone_run_date => $drone_date, drone_run_date_calendar => $drone_date_full_calendar_datetime, time_difference_weeks => $time_diff_weeks, time_difference_days => $time_diff_days, rounded_time_difference_weeks => $rounded_time_diff_weeks, time_ontology_week_cvterm_id => $week_cvterm_id, time_ontology_week_term => $week_term, time_ontology_day_cvterm_id => $day_cvterm_id, time_ontology_day_term => $day_term};
 }
 
+sub check_maximum_standard_processes : Path('/api/drone_imagery/check_maximum_standard_processes') : ActionClass('REST') { }
+sub check_maximum_standard_processes_POST : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+
+    my $process_indicator_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_standard_process_in_progress', 'project_property')->cvterm_id();
+
+    my $drone_run_process_in_progress_count = $bcs_schema->resultset('Project::Projectprop')->search({type_id=>$process_indicator_cvterm_id, value=>1})->count;
+    print STDERR Dumper $drone_run_process_in_progress_count;
+    if ($drone_run_process_in_progress_count >= $c->config->{drone_imagery_max_standard_processes}) {
+        $c->stash->{rest} = { error => "The maximum number of standard processes has been reached on this server! Please wait until one of those processes finishes and try again." };
+        $c->detach();
+    }
+    $c->stash->{rest} = { success => 1 };
+}
+
 sub standard_process_apply : Path('/api/drone_imagery/standard_process_apply') : ActionClass('REST') { }
 sub standard_process_apply_POST : Args(0) {
     my $self = shift;
@@ -6959,6 +6976,13 @@ sub standard_process_apply_POST : Args(0) {
     my $project_image_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'stitched_drone_imagery', 'project_md_image')->cvterm_id();
     my $drone_run_band_type_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
     my $drone_run_band_plot_polygons_phenotype_margins_json_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_plot_polygons_phenotype_margins_json', 'project_property')->cvterm_id();
+
+    my $drone_run_process_in_progress_count = $bcs_schema->resultset('Project::Projectprop')->search({type_id=>$process_indicator_cvterm_id, value=>1})->count;
+    print STDERR Dumper $drone_run_process_in_progress_count;
+    if ($drone_run_process_in_progress_count >= $c->config->{drone_imagery_max_standard_processes}) {
+        $c->stash->{rest} = { error => "The maximum number of standard processes has been reached on this server! Please wait until one of those processes finishes and try again." };
+        $c->detach();
+    }
 
     my @apply_projects;
     if ($camera_rig_apply) {

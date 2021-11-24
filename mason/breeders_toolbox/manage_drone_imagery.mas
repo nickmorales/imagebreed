@@ -3267,36 +3267,51 @@ jQuery(document).ready(function() {
         } else {
             jQuery.ajax({
                 type: 'POST',
-                url: '/api/drone_imagery/standard_process_apply',
+                url: '/api/drone_imagery/check_maximum_standard_processes',
                 dataType: "json",
-                data: {
-                    'drone_run_project_id': manage_drone_imagery_standard_process_drone_run_project_id,
-                    'drone_run_band_project_id': manage_drone_imagery_standard_process_drone_run_band_project_id,
-                    'apply_drone_run_band_project_ids': JSON.stringify(manage_drone_imagery_standard_process_apply_drone_run_band_project_ids),
-                    'vegetative_indices': JSON.stringify(manage_drone_imagery_standard_process_apply_drone_run_band_vegetative_indices),
-                    'phenotype_types': JSON.stringify(selected),
-                    'time_cvterm_id': manage_drone_imagery_standard_process_phenotype_time,
-                    'standard_process_type': 'minimal',
-                    'field_trial_id':manage_drone_imagery_standard_process_field_trial_id,
-                    'apply_to_all_drone_runs_from_same_camera_rig':jQuery('#drone_imagery_standard_process_camera_rig_apply_select').val(),
-                    'phenotypes_plot_margin_top_bottom':jQuery('#drone_imagery_standard_process_phenotypes_margin_top_bottom').val(),
-                    'phenotypes_plot_margin_right_left':jQuery('#drone_imagery_standard_process_phenotypes_margin_left_right').val(),
-                    'drone_imagery_remove_background_lower_percentage':drone_imagery_remove_background_lower_percentage,
-                    'drone_imagery_remove_background_upper_percentage':drone_imagery_remove_background_upper_percentage
-                },
                 success: function(response){
-                    console.log(response);
-                    if(response.error) {
+                    if (response.error) {
                         alert(response.error);
+                    }
+                    else if (response.success) {
+                        jQuery.ajax({
+                            type: 'POST',
+                            url: '/api/drone_imagery/standard_process_apply',
+                            dataType: "json",
+                            data: {
+                                'drone_run_project_id': manage_drone_imagery_standard_process_drone_run_project_id,
+                                'drone_run_band_project_id': manage_drone_imagery_standard_process_drone_run_band_project_id,
+                                'apply_drone_run_band_project_ids': JSON.stringify(manage_drone_imagery_standard_process_apply_drone_run_band_project_ids),
+                                'vegetative_indices': JSON.stringify(manage_drone_imagery_standard_process_apply_drone_run_band_vegetative_indices),
+                                'phenotype_types': JSON.stringify(selected),
+                                'time_cvterm_id': manage_drone_imagery_standard_process_phenotype_time,
+                                'standard_process_type': 'minimal',
+                                'field_trial_id':manage_drone_imagery_standard_process_field_trial_id,
+                                'apply_to_all_drone_runs_from_same_camera_rig':jQuery('#drone_imagery_standard_process_camera_rig_apply_select').val(),
+                                'phenotypes_plot_margin_top_bottom':jQuery('#drone_imagery_standard_process_phenotypes_margin_top_bottom').val(),
+                                'phenotypes_plot_margin_right_left':jQuery('#drone_imagery_standard_process_phenotypes_margin_left_right').val(),
+                                'drone_imagery_remove_background_lower_percentage':drone_imagery_remove_background_lower_percentage,
+                                'drone_imagery_remove_background_upper_percentage':drone_imagery_remove_background_upper_percentage
+                            },
+                            success: function(response){
+                                console.log(response);
+                                if (response.error) {
+                                    alert(response.error);
+                                }
+                            },
+                            error: function(response){
+                                alert('Error saving standard process assigned plot polygons!')
+                            }
+                        });
+
+                        Workflow.complete("#manage_drone_imagery_standard_process_phenotypes_step");
+                        jQuery('#drone_imagery_standard_process_complete_dialog').modal('show');
                     }
                 },
                 error: function(response){
-                    alert('Error saving standard process assigned plot polygons!')
+                    alert('Error checking maximum number of standard processes!')
                 }
             });
-
-            Workflow.complete("#manage_drone_imagery_standard_process_phenotypes_step");
-            jQuery('#drone_imagery_standard_process_complete_dialog').modal('show');
         }
     });
 
