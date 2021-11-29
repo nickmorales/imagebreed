@@ -262,7 +262,7 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
     my $editable_stockprops = $c->get_conf('editable_stock_props');
     $editable_stockprops .= ",PUI,organization";
     if ($c->stash->{stock_row} && $c->stash->{stock_row}->type && $c->stash->{stock_row}->type->name() ne 'accession') {
-        $editable_stockprops .= ",row_number,col_number,plot number,block,replicate,range,is a control,plant_index_number,subplot_index_number,tissue_sample_index_number";
+        $editable_stockprops .= ",row_number,col_number,plot number,block,replicate,range,is a control,plant_index_number,subplot_index_number,tissue_sample_index_number,tissue_type";
     }
 
     print STDERR "Checkpoint 4: Elapsed ".(time() - $time)."\n";
