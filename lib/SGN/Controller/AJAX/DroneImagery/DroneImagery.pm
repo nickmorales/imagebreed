@@ -7246,7 +7246,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $phenotype_methods = ['zonal'];
     my $standard_process_type = 'minimal';
 
-    my $vegetative_indices = ['TGI', 'VARI', 'NDVI', 'NDRE'];
+    my $vegetative_indices = ['TGI', 'VARI', 'NDVI', 'NDRE', 'CCC'];
     my %vegetative_indices_hash;
     foreach (@$vegetative_indices) {
         $vegetative_indices_hash{$_}++;
@@ -7940,7 +7940,7 @@ sub standard_process_apply_previous_imaging_event_POST : Args(0) {
     my $phenotype_methods = ['zonal'];
     my $standard_process_type = 'minimal';
 
-    my $vegetative_indices = ['TGI', 'VARI', 'NDVI', 'NDRE'];
+    my $vegetative_indices = ['TGI', 'VARI', 'NDVI', 'NDRE', 'CCC'];
     my %vegetative_indices_hash;
     foreach (@$vegetative_indices) {
         $vegetative_indices_hash{$_}++;
@@ -8853,7 +8853,8 @@ sub standard_process_minimal_vi_apply_POST : Args(0) {
         'TGI' => 1,
         'VARI' => 1,
         'NDVI' => 1,
-        'NDRE' => 1
+        'NDRE' => 1,
+        'CCC' => 1
     );
 
     my $rotate_angle_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_rotate_angle', 'project_property')->cvterm_id();
@@ -9004,7 +9005,8 @@ sub standard_process_extended_apply_GET : Args(0) {
         'TGI' => 1,
         'VARI' => 1,
         'NDVI' => 1,
-        'NDRE' => 1
+        'NDRE' => 1,
+        'CCC' => 1
     );
 
     my $rotate_angle_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_rotate_angle', 'project_property')->cvterm_id();
@@ -10424,11 +10426,16 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $drone_run_project_id = $c->req->param('drone_run_project_id');
     my $field_trial_id = $c->req->param('field_trial_id');
+    my $atleast_one_image = $c->req->param('atleast_one_image');
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $field_layout = CXGN::Trial->new({bcs_schema => $schema, trial_id => $field_trial_id})->get_layout->get_design;
     my $total_plots = scalar(keys %$field_layout);
     print STDERR "TOTAL PLOTS: $total_plots \n";
+
+    if ($atleast_one_image) {
+        $total_plots = 1;
+    }
 
     my $image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'denoised_stitched_drone_imagery', 'project_md_image')->cvterm_id();
     my $images_search = CXGN::DroneImagery::ImagesSearch->new({
@@ -10457,7 +10464,7 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
         print STDERR "TGI: $tgi_total_count \n";
         # print STDERR Dumper $tgi_result;
 
-        if ($tgi_total_count >= $total_count) {
+        if ($tgi_total_count >= $total_plots) {
             $vi_hash{'TGI'} = 1;
         }
         else {
@@ -10474,7 +10481,7 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
         print STDERR "VARI: $vari_total_count \n";
         # print STDERR Dumper $vari_result;
 
-        if ($vari_total_count >= $total_count) {
+        if ($vari_total_count >= $total_plots) {
             $vi_hash{'VARI'} = 1;
         }
         else {
@@ -10491,7 +10498,7 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
         print STDERR "CCC: $ccc_total_count \n";
         # print STDERR Dumper $ccc_result;
 
-        if ($ccc_total_count >= $total_count) {
+        if ($ccc_total_count >= $total_plots) {
             $vi_hash{'CCC'} = 1;
         }
         else {
@@ -10509,7 +10516,7 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
         print STDERR "NDVI: $ndvi_total_count \n";
         # print STDERR Dumper $ndvi_result;
 
-        if ($ndvi_total_count >= $total_count) {
+        if ($ndvi_total_count >= $total_plots) {
             $vi_hash{'NDVI'} = 1;
         }
         else {
@@ -10527,7 +10534,7 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
         print STDERR "NDRE: $ndre_total_count \n";
         # print STDERR Dumper $ndre_result;
 
-        if ($ndre_total_count >= $total_count) {
+        if ($ndre_total_count >= $total_plots) {
             $vi_hash{'NDRE'} = 1;
         }
         else {
@@ -10535,6 +10542,7 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
         }
     }
 
+    print STDERR Dumper \%vi_hash;
     $c->stash->{rest} = {success => 1, vi => \%vi_hash};
 }
 

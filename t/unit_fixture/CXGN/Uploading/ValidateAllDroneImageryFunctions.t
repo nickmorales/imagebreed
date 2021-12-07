@@ -325,13 +325,28 @@ is($message_hash_weeks_after_planting->{rounded_time_difference_weeks}, 78);
 $ua = LWP::UserAgent->new;
 $ua->timeout(1200);
 my $apply_drone_run_band_project_ids = encode_json $message_hash_raster->{drone_run_band_project_ids};
-my $vegetative_indices = encode_json ['TGI','VARI','NDVI','NDRE'];
+my $vegetative_indices = encode_json ['TGI','VARI','NDVI','NDRE','CCC'];
 my $response_standard_process = $ua->post('http://localhost:3010/api/drone_imagery/standard_process_apply?sgn_session_id='.$sgn_session_id.'&apply_drone_run_band_project_ids='.$apply_drone_run_band_project_ids.'&drone_run_band_project_id='.$message_hash_raster->{drone_run_band_project_ids}->[0].'&drone_run_project_id='.$message_hash_raster->{drone_run_project_id}.'&vegetative_indices='.$vegetative_indices.'&field_trial_id='.$field_trial_id);
 ok($response_standard_process->is_success);
 my $message_standard_process = $response_standard_process->decoded_content;
 my $message_hash_standard_process = decode_json $message_standard_process;
 print STDERR Dumper $message_hash_standard_process;
 ok($message_hash_standard_process->{success});
+
+$ua = LWP::UserAgent->new;
+my $response_check_vi = $ua->get('http://localhost:3010/api/drone_imagery/check_available_applicable_vi?sgn_session_id='.$sgn_session_id.'&drone_run_project_id='.$message_hash_raster->{drone_run_project_id}.'&field_trial_id='.$field_trial_id.'&atleast_one_image=1');
+ok($response_check_vi->is_success);
+my $message_check_vi = $response_check_vi->decoded_content;
+my $message_hash_check_vi = decode_json $message_check_vi;
+print STDERR Dumper $message_hash_check_vi;
+ok($message_hash_check_vi->{success});
+is($message_hash_check_vi->{vi}->{NDVI}, 1);
+is($message_hash_check_vi->{vi}->{NDRE}, 1);
+is($message_hash_check_vi->{vi}->{TGI}, 1);
+is($message_hash_check_vi->{vi}->{VARI}, 1);
+is($message_hash_check_vi->{vi}->{CCC}, 1);
+
+
 
 # my $response_extended = $ua->get('http://localhost:3010/api/drone_imagery/standard_process_extended_apply?sgn_session_id='.$sgn_session_id.'&drone_run_project_id='.$message_hash_raster->{drone_run_project_id});
 # ok($response_extended->is_success);
@@ -525,6 +540,19 @@ my $message_hash_raster_gcp_apply = decode_json $message_raster_gcp_apply;
 print STDERR Dumper $message_hash_raster_gcp_apply;
 is($message_hash_raster_gcp_apply->{success}, 1);
 
+$ua = LWP::UserAgent->new;
+my $response_check_vi = $ua->get('http://localhost:3010/api/drone_imagery/check_available_applicable_vi?sgn_session_id='.$sgn_session_id.'&drone_run_project_id='.$gcp_apply_drone_run_project_id.'&field_trial_id='.$field_trial_id.'&atleast_one_image=1');
+ok($response_check_vi->is_success);
+my $message_check_vi = $response_check_vi->decoded_content;
+my $message_hash_check_vi = decode_json $message_check_vi;
+print STDERR Dumper $message_hash_check_vi;
+ok($message_hash_check_vi->{success});
+is($message_hash_check_vi->{vi}->{NDVI}, 1);
+is($message_hash_check_vi->{vi}->{NDRE}, 1);
+is($message_hash_check_vi->{vi}->{TGI}, 1);
+is($message_hash_check_vi->{vi}->{VARI}, 1);
+is($message_hash_check_vi->{vi}->{CCC}, 1);
+
 
 
 my $response_project_md_image = $ua->get('http://localhost:3010/api/drone_imagery/get_project_md_image?sgn_session_id='.$sgn_session_id.'&drone_run_band_project_id='.$message_hash_raster->{drone_run_band_project_ids}->[0].'&project_image_type_name=observation_unit_polygon_blue_imagery');
@@ -582,6 +610,19 @@ ok($response_raster->is_success);
 my $message_raster = $response_raster->decoded_content;
 print STDERR Dumper $message_raster;
 ok($message_raster =~ /Successfully uploaded!/);
+
+my $drone_run_project_id = $schema->resultset("Project::Project")->search({name=>'geotif_rgb_and_dsm_1'})->first->project_id;
+
+$ua = LWP::UserAgent->new;
+my $response_check_vi = $ua->get('http://localhost:3010/api/drone_imagery/check_available_applicable_vi?sgn_session_id='.$sgn_session_id.'&drone_run_project_id='.$drone_run_project_id.'&field_trial_id='.$field_trial_id.'&atleast_one_image=1');
+ok($response_check_vi->is_success);
+my $message_check_vi = $response_check_vi->decoded_content;
+my $message_hash_check_vi = decode_json $message_check_vi;
+print STDERR Dumper $message_hash_check_vi;
+ok($message_hash_check_vi->{success});
+is($message_hash_check_vi->{vi}->{TGI}, 1);
+is($message_hash_check_vi->{vi}->{VARI}, 1);
+is($message_hash_check_vi->{vi}->{CCC}, 1);
 
 my $rasterblue = $f->config->{basepath}."/t/data/imagebreed/RasterBlue.png";
 my $rastergreen = $f->config->{basepath}."/t/data/imagebreed/RasterGreen.png";
