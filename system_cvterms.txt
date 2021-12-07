@@ -364,15 +364,18 @@ project_md_image	threshold_background_removed_tgi_stitched_drone_imagery	Vegetat
 project_md_image	threshold_background_removed_vari_stitched_drone_imagery	Vegetative index VARI stitched image without background via threshold (soil, etc)	10/5/2018	nm529	00103
 project_md_image	threshold_background_removed_ndvi_stitched_drone_imagery	Vegetative index NDVI stitched image without background via threshold (soil, etc)	10/5/2018	nm529	00103
 project_md_image	threshold_background_removed_ndre_stitched_drone_imagery	Vegetative index NDRE stitched image without background via threshold (soil, etc)	10/5/2018	nm529	00103
+project_md_image	threshold_background_removed_ccc_stitched_drone_imagery	Vegetative index CCC stitched image without background via threshold (soil, etc)	12/6/2021	nm529	00154
 project_md_image	threshold_background_removed_temporary_stitched_drone_imagery	Stitched image without background via threshold (soil, etc) that is temporarily saved	10/5/2018	nm529	00103
 project_md_image	denoised_background_removed_tgi_mask_original	Stitched image without background via tgi mask	10/5/2018	nm529	00103
 project_md_image	denoised_background_removed_vari_mask_original	Stitched image without background via vari mask	10/5/2018	nm529	00103
 project_md_image	denoised_background_removed_ndvi_mask_original	Stitched image without background via ndvi mask	10/5/2018	nm529	00103
 project_md_image	denoised_background_removed_ndre_mask_original	Stitched image without background via ndre mask	10/5/2018	nm529	00103
+project_md_image	denoised_background_removed_ccc_mask_original	Stitched image without background via ccc mask	12/6/2021	nm529	00154
 project_md_image	denoised_background_removed_thresholded_tgi_mask_original	Stitched image without background via thresholded tgi mask	10/5/2018	nm529	00103
 project_md_image	denoised_background_removed_thresholded_vari_mask_original	Stitched image without background via thresholded vari mask	10/5/2018	nm529	00103
 project_md_image	denoised_background_removed_thresholded_ndvi_mask_original	Stitched image without background via thresholded ndvi mask via threshold (soil, etc)	10/5/2018	nm529	00103
 project_md_image	denoised_background_removed_thresholded_ndre_mask_original	Stitched image without background via thresholded ndre mask	10/5/2018	nm529	00103
+project_md_image	denoised_background_removed_thresholded_ccc_mask_original	Stitched image without background via thresholded ccc mask	12/6/2021	nm529	00154
 project_md_image	observation_unit_polygon_bw_imagery	Cropped image for an observation unit polygon from original black and white image	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_rgb_imagery	Cropped image for an observation unit polygon from original or merged rgb image	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_rgb_imagery_channel_1	Cropped image for an observation unit polygon from original or merged rgb image channel 1	10/5/2018	nm529	00103
@@ -406,14 +409,20 @@ project_md_image	observation_unit_polygon_tgi_imagery	Cropped image for an obser
 project_md_image	observation_unit_polygon_vari_imagery	Cropped image for an observation unit polygon from VARI vegetative index	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_ndvi_imagery	Cropped image for an observation unit polygon from NDVI vegetative index	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_ndre_imagery	Cropped image for an observation unit polygon from NDRE vegetative index	10/5/2018	nm529	00103
+project_md_image	observation_unit_polygon_ccc_imagery	Cropped image for an observation unit polygon from CCC vegetative index	12/6/2021	nm529	00154
 project_md_image	observation_unit_polygon_background_removed_tgi_imagery	Cropped image for an observation unit polygon from threshold background removed TGI vegetative index	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_background_removed_vari_imagery	Cropped image for an observation unit polygon from threshold background removed VARI vegetative index	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_background_removed_ndvi_imagery	Cropped image for an observation unit polygon from threshold background removed NDVI vegetative index	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_background_removed_ndre_imagery	Cropped image for an observation unit polygon from threshold background removed NDRE vegetative index	10/5/2018	nm529	00103
+project_md_image	observation_unit_polygon_background_removed_ccc_imagery	Cropped image for an observation unit polygon from threshold background removed CCC vegetative index	12/6/2021	nm529	00154
 project_md_image	observation_unit_polygon_original_background_removed_tgi_mask_imagery	Cropped image for an observation unit polygon from original background removed via TGI vegetative index mask	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_original_background_removed_tgi_mask_imagery_channel_1	Cropped image for an observation unit polygon from original background removed via TGI vegetative index mask channel 1	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_original_background_removed_tgi_mask_imagery_channel_2	Cropped image for an observation unit polygon from original background removed via TGI vegetative index mask channel 2	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_original_background_removed_tgi_mask_imagery_channel_3	Cropped image for an observation unit polygon from original background removed via TGI vegetative index mask channel 3	10/5/2018	nm529	00103
+project_md_image	observation_unit_polygon_original_background_removed_ccc_mask_imagery	Cropped image for an observation unit polygon from original background removed via CCC vegetative index mask	12/6/2021	nm529	00154
+project_md_image	observation_unit_polygon_original_background_removed_ccc_mask_imagery_channel_1	Cropped image for an observation unit polygon from original background removed via CCC vegetative index mask channel 1	12/6/2021	nm529	00154
+project_md_image	observation_unit_polygon_original_background_removed_ccc_mask_imagery_channel_2	Cropped image for an observation unit polygon from original background removed via CCC vegetative index mask channel 2	12/6/2021	nm529	00154
+project_md_image	observation_unit_polygon_original_background_removed_ccc_mask_imagery_channel_3	Cropped image for an observation unit polygon from original background removed via CCC vegetative index mask channel 3	12/6/2021	nm529	00154
 project_md_image	observation_unit_polygon_original_background_removed_vari_mask_imagery	Cropped image for an observation unit polygon from original background removed via VARI vegetative index mask	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_original_background_removed_vari_mask_imagery_channel_1	Cropped image for an observation unit polygon from original background removed via VARI vegetative index mask channel 1	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_original_background_removed_vari_mask_imagery_channel_2	Cropped image for an observation unit polygon from original background removed via VARI vegetative index mask channel 2	10/5/2018	nm529	00103
@@ -428,6 +437,10 @@ project_md_image	observation_unit_polygon_original_background_removed_thresholde
 project_md_image	observation_unit_polygon_original_background_removed_thresholded_tgi_mask_imagery_channel_1	Cropped image for an observation unit polygon from original background removed via thresholded_TGI vegetative index mask channel 1	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_original_background_removed_thresholded_tgi_mask_imagery_channel_2	Cropped image for an observation unit polygon from original background removed via thresholded_TGI vegetative index mask channel 2	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_original_background_removed_thresholded_tgi_mask_imagery_channel_3	Cropped image for an observation unit polygon from original background removed via thresholded_TGI vegetative index mask channel 3	10/5/2018	nm529	00103
+project_md_image	observation_unit_polygon_original_background_removed_thresholded_ccc_mask_imagery	Cropped image for an observation unit polygon from original background removed via thresholded_CCC vegetative index mask	12/6/2021	nm529	00154
+project_md_image	observation_unit_polygon_original_background_removed_thresholded_ccc_mask_imagery_channel_1	Cropped image for an observation unit polygon from original background removed via thresholded_CCC vegetative index mask channel 1	12/6/2021	nm529	00154
+project_md_image	observation_unit_polygon_original_background_removed_thresholded_ccc_mask_imagery_channel_2	Cropped image for an observation unit polygon from original background removed via thresholded_CCC vegetative index mask channel 2	12/6/2021	nm529	00154
+project_md_image	observation_unit_polygon_original_background_removed_thresholded_ccc_mask_imagery_channel_3	Cropped image for an observation unit polygon from original background removed via thresholded_CCC vegetative index mask channel 3	12/6/2021	nm529	00154
 project_md_image	observation_unit_polygon_original_background_removed_thresholded_vari_mask_imagery	Cropped image for an observation unit polygon from original background removed via thresholded_VARI vegetative index mask	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_original_background_removed_thresholded_vari_mask_imagery_channel_1	Cropped image for an observation unit polygon from original background removed via thresholded_VARI vegetative index mask channel 1	10/5/2018	nm529	00103
 project_md_image	observation_unit_polygon_original_background_removed_thresholded_vari_mask_imagery_channel_2	Cropped image for an observation unit polygon from original background removed via thresholded_VARI vegetative index mask channel 2	10/5/2018	nm529	00103
@@ -617,6 +630,8 @@ project_md_image	calculate_tgi_drone_imagery	Calculate TGI vegetative index	10/5
 project_md_image	calculate_tgi_temporary_drone_imagery	Calculate TGI vegetative index to view temporarily	10/5/2018	nm529	00103
 project_md_image	calculate_vari_drone_imagery	Calculate VARI vegetative index	10/5/2018	nm529	00103
 project_md_image	calculate_vari_temporary_drone_imagery	Calculate VARI vegetative index to view temporarily	10/5/2018	nm529	00103
+project_md_image	calculate_ccc_drone_imagery	Calculate CCC vegetative index	12/6/2021	nm529	00103
+project_md_image	calculate_ccc_temporary_drone_imagery	Calculate CCC vegetative index to view temporarily	12/6/2021	nm529	00103
 project_md_image	calculate_ndvi_drone_imagery	Calculate NDVI vegetative index	10/5/2018	nm529	00103
 project_md_image	calculate_ndvi_temporary_drone_imagery	Calculate NDVI vegetative index to view temporarily	10/5/2018	nm529	00103
 project_md_image	calculate_ndre_drone_imagery	Calculate NDRE vegetative index	10/5/2018	nm529	00103

@@ -2375,7 +2375,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         };
     }
 
-    my $vegetative_indices = ['VARI', 'TGI', 'NDRE', 'NDVI'];
+    my $vegetative_indices = ['VARI', 'TGI', 'NDRE', 'NDVI', 'CCC'];
     my $phenotype_methods = ['zonal'];
     my $standard_process_type = 'minimal';
 
@@ -2635,7 +2635,10 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             key=>'projectprop_c1'
         });
 
-        my $return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id_in, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $user_id, $user_name, $user_role);
+        my $plot_margin_top_bottom = 5;
+        my $plot_margin_left_right = 5;
+
+        my $return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id_in, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
     }
 
     $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";
@@ -3100,7 +3103,7 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
         close($fh_geoparam_proj);
     }
 
-    my $vegetative_indices = ['VARI', 'TGI', 'NDRE', 'NDVI'];
+    my $vegetative_indices = ['VARI', 'TGI', 'NDRE', 'NDVI', 'CCC'];
     my $phenotype_methods = ['zonal'];
     my $standard_process_type = 'minimal';
 
@@ -3339,7 +3342,10 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
         key=>'projectprop_c1'
     });
 
-    my $return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id_in, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $user_id, $user_name, $user_role);
+    my $plot_margin_top_bottom = 5;
+    my $plot_margin_left_right = 5;
+
+    my $return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id_in, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
 
     $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";
     $c->stash->{template} = 'generic_message.mas';

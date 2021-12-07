@@ -446,6 +446,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                         <input name="drone_imagery_standard_process_apply_indices_select" value="VARI" type="checkbox" checked> Visible Atmospheric Resistant Index (VARI) <br/>
                         <input name="drone_imagery_standard_process_apply_indices_select" value="NDVI" type="checkbox" checked> Normalized Difference Vegetative Index (NDVI) <br/>
                         <input name="drone_imagery_standard_process_apply_indices_select" value="NDRE" type="checkbox" checked> Normalized Difference Red Edge Vegetative Index (NDRE) <br/>
+                        <input name="drone_imagery_standard_process_apply_indices_select" value="CCC" type="checkbox" checked> Canopy Cover Canopeo Algorithm (CC) <br/>
                     </div>
                 </div>
             </form>
@@ -1303,6 +1304,27 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" id="drone_imagery_extended_standard_process_select">Run Extended Standard Process</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="drone_imagery_apply_other_vi_dialog" name="drone_imagery_apply_other_vi_dialog" tabindex="-1" role="dialog" aria-labelledby="droneImageryApplyOtherVIDialog" data-backdrop="static">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="droneImageryApplyOtherVIDialog">Apply Other Available Vegetation Indices</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <div id="drone_imagery_apply_other_vi_div"></div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="drone_imagery_apply_other_vi_select">Run Selected Vegetation Indices</button>
       </div>
     </div>
   </div>
@@ -3612,6 +3634,104 @@ jQuery(document).ready(function() {
     jQuery(document).on('click', 'button[name="project_drone_imagery_ground_control_points_draw_points"]', function(){
         for(var i=0; i<project_drone_imagery_ground_control_points_saved_array.length; i++) {
             drawWaypoints([{'x':project_drone_imagery_ground_control_points_saved_array[i]['x_pos'], 'y':project_drone_imagery_ground_control_points_saved_array[i]['y_pos']}], project_drone_imagery_ground_control_points_saved_array[i]['name'], 0);
+        }
+    });
+
+    //
+    // Apply other Vegetation Indices
+    //
+
+    var project_drone_imagery_apply_other_vi_drone_run_project_id;
+    var project_drone_imagery_apply_other_vi_drone_run_project_name;
+    var project_drone_imagery_apply_other_vi_field_trial_id;
+    var project_drone_imagery_apply_other_vi_selected_indices;
+
+    jQuery(document).on('click', 'button[name="project_drone_imagery_apply_other_vi"]', function(){
+        project_drone_imagery_apply_other_vi_drone_run_project_id = jQuery(this).data('drone_run_project_id');
+        project_drone_imagery_apply_other_vi_drone_run_project_name = jQuery(this).data('drone_run_project_name');
+        project_drone_imagery_apply_other_vi_field_trial_id = jQuery(this).data('field_trial_id');
+
+
+        jQuery.ajax({
+            url: '/api/drone_imagery/check_available_applicable_vi?drone_run_project_id='+project_drone_imagery_apply_other_vi_drone_run_project_id+'&field_trial_id='+project_drone_imagery_apply_other_vi_field_trial_id,
+            beforeSend: function(){
+                jQuery('#working_modal').modal('show');
+            },
+            success: function(response){
+                console.log(response);
+                jQuery('#working_modal').modal('hide');
+
+                var html = '<div class="form-horizontal"><div class="form-group"><label class="col-sm-3 control-label">Vegetative Indices Available: </label><div class="col-sm-9">';
+
+                if(response.error) {
+                    alert(response.error);
+                }
+                else {
+                    jQuery('#drone_imagery_apply_other_vi_dialog').modal('show');
+
+                    var name_defs = {
+                        'TGI':'TGI (Triangular Greenness Index)',
+                        'VARI':'VARI (Visible Atmospheric Resistant Index)',
+                        'NDVI':'Normalized Difference Vegetation Index)',
+                        'NDRE':'Normalized Difference RedEdge Vegetation Index)',
+                        'CCC':'CCC (Canopy Cover Canopea Algorithm Index)'
+                    };
+
+                    var p = response.vi;
+                    for (var key in p) {
+                        if (p.hasOwnProperty(key)) {
+                            var val = p[key];
+                            if (val == 0) {
+                                html = html + '<input name="drone_imagery_apply_other_vi_indices_select" value="'+key+'" type="checkbox"> '+name_defs[key]+'<br/>'
+                            }
+                            else if (val == 1) {
+                                html = html + '<input name="drone_imagery_apply_other_vi_indices_completed_select" value="'+key+'" type="checkbox" checked disabled> '+name_defs[key]+' <span class="text-success">(Completed)</span><br/>'
+                            }
+                        }
+                    }
+                }
+                html = html + '</div></div></div>';
+                jQuery('#drone_imagery_apply_other_vi_div').html(html);
+            },
+            error: function(response){
+                jQuery('#working_modal').modal('hide');
+                alert('Error getting available applicable vegetation indices!');
+            }
+        });
+
+    });
+
+    jQuery('#drone_imagery_apply_other_vi_select').click(function(){
+        project_drone_imagery_apply_other_vi_selected_indices = [];
+        jQuery('input[name="drone_imagery_apply_other_vi_indices_select"]:checked').each(function() {
+            project_drone_imagery_apply_other_vi_selected_indices.push(jQuery(this).val());
+        });
+        if (project_drone_imagery_apply_other_vi_selected_indices.length < 1){
+            alert('Please select at least one vegetative index!');
+            return false;
+        }
+        else {
+            jQuery.ajax({
+                url: '/api/drone_imagery/apply_other_selected_vi?drone_run_project_id='+project_drone_imagery_apply_other_vi_drone_run_project_id+'&selected_vi='+JSON.stringify(project_drone_imagery_apply_other_vi_selected_indices),
+                beforeSend: function(){
+                    jQuery('#working_modal').modal('show');
+                },
+                success: function(response){
+                    console.log(response);
+                    jQuery('#working_modal').modal('hide');
+
+                    if(response.error) {
+                        alert(response.error);
+                    }
+                },
+                error: function(response){
+                    jQuery('#working_modal').modal('hide');
+                    alert('Error applying other vegetation indices!');
+                }
+            });
+
+            alert('It will take some time to process the selected vegetation indices and extract phenotypes for them.');
+            location.reload();
         }
     });
 

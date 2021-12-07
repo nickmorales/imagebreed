@@ -9377,7 +9377,7 @@ sub _perform_minimal_vi_standard_process {
     my $user_role = shift;
     my $cropping_polygon_type = shift || 'rectangular_square';
 
-    if (exists($vegetative_indices->{'TGI'}) || exists($vegetative_indices->{'VARI'})) {
+    if (exists($vegetative_indices->{'TGI'}) || exists($vegetative_indices->{'VARI'}) || exists($vegetative_indices->{'CCC'}) ) {
         if(exists($selected_drone_run_band_types->{'Blue (450-520nm)'}) && exists($selected_drone_run_band_types->{'Green (515-600nm)'}) && exists($selected_drone_run_band_types->{'Red (600-690nm)'}) ) {
             my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{drone_run_project_name}, $selected_drone_run_band_types->{'Blue (450-520nm)'}, $selected_drone_run_band_types->{'Green (515-600nm)'}, $selected_drone_run_band_types->{'Red (600-690nm)'}, 'BGR', $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{threshold_values}, $user_id, $user_name, $user_role);
             my $merged_image_id = $merged_return->{merged_image_id};
@@ -9412,6 +9412,9 @@ sub _perform_minimal_vi_standard_process {
             if (exists($vegetative_indices->{'VARI'})) {
                 _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{plot_polygons_value}, 'VARI', 'BGR', $cropping_polygon_type);
             }
+            if (exists($vegetative_indices->{'CCC'})) {
+                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{plot_polygons_value}, 'CCC', 'BGR', $cropping_polygon_type);
+            }
         }
         if (exists($selected_drone_run_band_types->{'RGB Color Image'})) {
             if (exists($vegetative_indices->{'TGI'})) {
@@ -9419,6 +9422,9 @@ sub _perform_minimal_vi_standard_process {
             }
             if (exists($vegetative_indices->{'VARI'})) {
                 _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{denoised_image_id}, $selected_drone_run_band_types->{'RGB Color Image'}, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{plot_polygons_value}, 'VARI', 'BGR', $cropping_polygon_type);
+            }
+            if (exists($vegetative_indices->{'CCC'})) {
+                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{denoised_image_id}, $selected_drone_run_band_types->{'RGB Color Image'}, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{plot_polygons_value}, 'CCC', 'BGR', $cropping_polygon_type);
             }
         }
     }
@@ -9843,6 +9849,14 @@ sub _perform_vegetative_index_calculation {
                 $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_vari_temporary_drone_imagery', 'project_md_image')->cvterm_id();
             } else {
                 $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_vari_drone_imagery', 'project_md_image')->cvterm_id();
+            }
+        }
+        if ($vegetative_index eq 'CCC') {
+            $index_script = 'CCC';
+            if ($view_only == 1){
+                $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_ccc_temporary_drone_imagery', 'project_md_image')->cvterm_id();
+            } else {
+                $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_ccc_drone_imagery', 'project_md_image')->cvterm_id();
             }
         }
     }
@@ -10399,6 +10413,250 @@ sub drone_imagery_quality_control_get_images_GET : Args(0) {
     }
 
     $c->stash->{rest} = {success => 1, result => \@result};
+}
+
+sub drone_imagery_check_available_applicable_vi : Path('/api/drone_imagery/check_available_applicable_vi') : ActionClass('REST') { }
+sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
+    my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+    my $drone_run_project_id = $c->req->param('drone_run_project_id');
+    my $field_trial_id = $c->req->param('field_trial_id');
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+
+    my $field_layout = CXGN::Trial->new({bcs_schema => $schema, trial_id => $field_trial_id})->get_layout->get_design;
+    my $total_plots = scalar(keys %$field_layout);
+    print STDERR "TOTAL PLOTS: $total_plots \n";
+
+    my $image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'denoised_stitched_drone_imagery', 'project_md_image')->cvterm_id();
+    my $images_search = CXGN::DroneImagery::ImagesSearch->new({
+        bcs_schema=>$schema,
+        drone_run_project_id_list=>[$drone_run_project_id],
+        project_image_type_id_list => [$image_type_id]
+    });
+    my ($result, $total_count) = $images_search->search();
+    # print STDERR Dumper $result;
+
+    my %image_types;
+    foreach (@$result) {
+        $image_types{$_->{drone_run_band_project_type}}++;
+    }
+    print STDERR Dumper \%image_types;
+
+    my %vi_hash;
+    if (exists($image_types{'RGB Color Image'}) || ( exists($image_types{'Blue (450-520nm)'}) && exists($image_types{'Green (515-600nm)'}) && exists($image_types{'Red (600-690nm)'}) ) ) {
+        my $tgi_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_tgi_imagery', 'project_md_image')->cvterm_id();
+        my $tgi_images_search = CXGN::DroneImagery::ImagesSearch->new({
+            bcs_schema=>$schema,
+            drone_run_project_id_list=>[$drone_run_project_id],
+            project_image_type_id_list => [$tgi_image_type_id]
+        });
+        my ($tgi_result, $tgi_total_count) = $tgi_images_search->search();
+        print STDERR "TGI: $tgi_total_count \n";
+        # print STDERR Dumper $tgi_result;
+
+        if ($tgi_total_count >= $total_count) {
+            $vi_hash{'TGI'} = 1;
+        }
+        else {
+            $vi_hash{'TGI'} = 0;
+        }
+
+        my $vari_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_vari_imagery', 'project_md_image')->cvterm_id();
+        my $vari_images_search = CXGN::DroneImagery::ImagesSearch->new({
+            bcs_schema=>$schema,
+            drone_run_project_id_list=>[$drone_run_project_id],
+            project_image_type_id_list => [$vari_image_type_id]
+        });
+        my ($vari_result, $vari_total_count) = $vari_images_search->search();
+        print STDERR "VARI: $vari_total_count \n";
+        # print STDERR Dumper $vari_result;
+
+        if ($vari_total_count >= $total_count) {
+            $vi_hash{'VARI'} = 1;
+        }
+        else {
+            $vi_hash{'VARI'} = 0;
+        }
+
+        my $ccc_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_ccc_imagery', 'project_md_image')->cvterm_id();
+        my $ccc_images_search = CXGN::DroneImagery::ImagesSearch->new({
+            bcs_schema=>$schema,
+            drone_run_project_id_list=>[$drone_run_project_id],
+            project_image_type_id_list => [$ccc_image_type_id]
+        });
+        my ($ccc_result, $ccc_total_count) = $ccc_images_search->search();
+        print STDERR "CCC: $ccc_total_count \n";
+        # print STDERR Dumper $ccc_result;
+
+        if ($ccc_total_count >= $total_count) {
+            $vi_hash{'CCC'} = 1;
+        }
+        else {
+            $vi_hash{'CCC'} = 0;
+        }
+    }
+    if (exists($image_types{'NIR (780-3000nm)'}) && exists($image_types{'Red (600-690nm)'}) ) {
+        my $ndvi_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_ndvi_imagery', 'project_md_image')->cvterm_id();
+        my $ndvi_images_search = CXGN::DroneImagery::ImagesSearch->new({
+            bcs_schema=>$schema,
+            drone_run_project_id_list=>[$drone_run_project_id],
+            project_image_type_id_list => [$ndvi_image_type_id]
+        });
+        my ($ndvi_result, $ndvi_total_count) = $ndvi_images_search->search();
+        print STDERR "NDVI: $ndvi_total_count \n";
+        # print STDERR Dumper $ndvi_result;
+
+        if ($ndvi_total_count >= $total_count) {
+            $vi_hash{'NDVI'} = 1;
+        }
+        else {
+            $vi_hash{'NDVI'} = 0;
+        }
+    }
+    if (exists($image_types{'NIR (780-3000nm)'}) && exists($image_types{'Red Edge (690-750nm)'}) ) {
+        my $ndre_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_ndre_imagery', 'project_md_image')->cvterm_id();
+        my $ndre_images_search = CXGN::DroneImagery::ImagesSearch->new({
+            bcs_schema=>$schema,
+            drone_run_project_id_list=>[$drone_run_project_id],
+            project_image_type_id_list => [$ndre_image_type_id]
+        });
+        my ($ndre_result, $ndre_total_count) = $ndre_images_search->search();
+        print STDERR "NDRE: $ndre_total_count \n";
+        # print STDERR Dumper $ndre_result;
+
+        if ($ndre_total_count >= $total_count) {
+            $vi_hash{'NDRE'} = 1;
+        }
+        else {
+            $vi_hash{'NDRE'} = 0;
+        }
+    }
+
+    $c->stash->{rest} = {success => 1, vi => \%vi_hash};
+}
+
+sub drone_imagery_apply_other_selected_vi : Path('/api/drone_imagery/apply_other_selected_vi') : ActionClass('REST') { }
+sub drone_imagery_apply_other_selected_vi_GET : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $bcs_schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
+    my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+    my $drone_run_project_id_input = $c->req->param('drone_run_project_id');
+    my $selected_vi = decode_json $c->req->param('selected_vi');
+    my $phenotype_methods = $c->req->param('phenotype_types') ? decode_json $c->req->param('phenotype_types') : ['zonal'];
+    my $standard_process_type = $c->req->param('standard_process_type') || 'minimal_vi';
+    my $plot_margin_top_bottom = defined ($c->req->param('phenotypes_plot_margin_top_bottom')) ? $c->req->param('phenotypes_plot_margin_top_bottom') : 5;
+    my $plot_margin_left_right = defined ($c->req->param('phenotypes_plot_margin_right_left')) ? $c->req->param('phenotypes_plot_margin_right_left') : 5;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    print STDERR Dumper $selected_vi;
+
+    my $drone_run_time = _perform_get_weeks_drone_run_after_planting($bcs_schema, $drone_run_project_id_input);
+    my $time_cvterm_id = $drone_run_time->{time_ontology_day_cvterm_id};
+    print STDERR Dumper $time_cvterm_id;
+
+    my $process_indicator_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_standard_process_in_progress', 'project_property')->cvterm_id();
+    my $processed_minimal_vi_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_standard_process_vi_completed', 'project_property')->cvterm_id();
+    my $drone_run_process_in_progress = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$process_indicator_cvterm_id,
+        project_id=>$drone_run_project_id_input,
+        rank=>0,
+        value=>1
+    },
+    {
+        key=>'projectprop_c1'
+    });
+
+    my $drone_run_process_minimal_vi_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$processed_minimal_vi_cvterm_id,
+        project_id=>$drone_run_project_id_input,
+        rank=>0,
+        value=>0
+    },
+    {
+        key=>'projectprop_c1'
+    });
+
+    my %vegetative_indices_hash;
+    foreach (@$selected_vi) {
+        $vegetative_indices_hash{$_}++;
+    }
+
+    my $rotate_angle_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_rotate_angle', 'project_property')->cvterm_id();
+    my $cropping_polygon_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_cropped_polygon', 'project_property')->cvterm_id();
+    my $plot_polygon_template_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
+    my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
+    my $project_image_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'denoised_stitched_drone_imagery', 'project_md_image')->cvterm_id();
+    my $drone_run_band_type_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
+
+    my %selected_drone_run_band_types;
+    my %drone_run_band_info;
+    my $q = "SELECT rotate.value, plot_polygons.value, cropping.value, drone_run.project_id, drone_run.name, drone_run_band.project_id, drone_run_band.name, drone_run_band_type.value, project_md_image.image_id
+        FROM project AS drone_run_band
+        JOIN project_relationship ON(project_relationship.subject_project_id = drone_run_band.project_id AND project_relationship.type_id = $drone_run_drone_run_band_type_id)
+        JOIN project AS drone_run ON(project_relationship.object_project_id = drone_run.project_id)
+        JOIN projectprop AS rotate ON(drone_run_band.project_id = rotate.project_id AND rotate.type_id=$rotate_angle_type_id)
+        JOIN projectprop AS plot_polygons ON(drone_run_band.project_id = plot_polygons.project_id AND plot_polygons.type_id=$plot_polygon_template_type_id)
+        JOIN projectprop AS cropping ON(drone_run_band.project_id = cropping.project_id AND cropping.type_id=$cropping_polygon_type_id)
+        JOIN projectprop AS drone_run_band_type ON(drone_run_band_type.project_id = drone_run_band.project_id AND drone_run_band_type.type_id = $drone_run_band_type_type_id)
+        JOIN phenome.project_md_image AS project_md_image ON(project_md_image.project_id=drone_run_band.project_id AND project_md_image.type_id = $project_image_type_id)
+        JOIN metadata.md_image ON(project_md_image.image_id = metadata.md_image.image_id)
+        WHERE drone_run.project_id = $drone_run_project_id_input
+        AND metadata.md_image.obsolete = 'f';";
+
+    my $h = $bcs_schema->storage->dbh()->prepare($q);
+    $h->execute();
+    while (my ($rotate_value, $plot_polygons_value, $cropping_value, $drone_run_project_id, $drone_run_project_name, $drone_run_band_project_id, $drone_run_band_project_name, $drone_run_band_type, $denoised_image_id) = $h->fetchrow_array()) {
+        $selected_drone_run_band_types{$drone_run_band_type} = $drone_run_band_project_id;
+        $drone_run_band_info{$drone_run_band_project_id} = {
+            drone_run_project_id => $drone_run_project_id,
+            drone_run_project_name => $drone_run_project_name,
+            drone_run_band_project_id => $drone_run_band_project_id,
+            drone_run_band_project_name => $drone_run_band_project_name,
+            drone_run_band_type => $drone_run_band_type,
+            rotate_value => $rotate_value,
+            plot_polygons_value => $plot_polygons_value,
+            cropping_value => $cropping_value,
+            denoised_image_id => $denoised_image_id,
+            check_resize => 1,
+            keep_original_size_rotate => 0
+        };
+
+        my $threshold_values = _get_image_background_remove_threshold_percentage($bcs_schema, $drone_run_band_project_id);
+        $drone_run_band_info{$drone_run_band_project_id}->{threshold_values} = $threshold_values->[2];
+    }
+
+    print STDERR Dumper \%selected_drone_run_band_types;
+    print STDERR Dumper \%vegetative_indices_hash;
+
+    _perform_minimal_vi_standard_process($c, $bcs_schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_square');
+
+    $drone_run_process_in_progress = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$process_indicator_cvterm_id,
+        project_id=>$drone_run_project_id_input,
+        rank=>0,
+        value=>0
+    },
+    {
+        key=>'projectprop_c1'
+    });
+
+    $drone_run_process_minimal_vi_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$processed_minimal_vi_cvterm_id,
+        project_id=>$drone_run_project_id_input,
+        rank=>0,
+        value=>1
+    },
+    {
+        key=>'projectprop_c1'
+    });
+
+    my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
+
+    $c->stash->{rest} = {success => 1};
 }
 
 sub drone_imagery_get_image_for_saving_gcp : Path('/api/drone_imagery/get_image_for_saving_gcp') : ActionClass('REST') { }

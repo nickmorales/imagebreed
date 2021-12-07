@@ -174,6 +174,9 @@ sub get_all_project_md_image_observation_unit_plot_polygon_types {
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_ndre_imagery', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_ndre_imagery', channels=>[0], corresponding_channel=>0, display_name=>'NDRE Vegetative Index Image(s)', ISOL_name=>'NDRE Vegetative Index Image|ISOL:0000132', drone_run_project_types=>[$project_type_lookup{nren}], standard_process=>['minimal', 'minimal_vi']
         },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_ccc_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_ccc_imagery', channels=>[0], corresponding_channel=>0, display_name=>'CCC Vegetative Index Image(s)', ISOL_name=>'CCC Vegetative Index Image|ISOL:0000337', drone_run_project_types=>[$project_type_lookup{rgb_color_image}, $project_type_lookup{bgr}], standard_process=>['minimal', 'minimal_vi']
+        },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_background_removed_tgi_imagery', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_background_removed_tgi_imagery', channels=>[0], corresponding_channel=>0, display_name=>'TGI Vegetative Index Image(s) with Threshold Applied', ISOL_name=>'Thresholded TGI Vegetative Index Image|ISOL:0000133', drone_run_project_types=>[$project_type_lookup{rgb_color_image}, $project_type_lookup{bgr}], standard_process=>['extended']
         },
@@ -185,6 +188,9 @@ sub get_all_project_md_image_observation_unit_plot_polygon_types {
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_background_removed_ndre_imagery', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_background_removed_ndre_imagery', channels=>[0], corresponding_channel=>0, display_name=>'NDRE Vegetative Index Image(s) with Threshold Applied', ISOL_name=>'Thresholded NDRE Vegetative Index Image|ISOL:0000136', drone_run_project_types=>[$project_type_lookup{nren}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_background_removed_ccc_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_background_removed_ccc_imagery', channels=>[0], corresponding_channel=>0, display_name=>'CCC Vegetative Index Image(s) with Threshold Applied', ISOL_name=>'Thresholded CCC Vegetative Index Image|ISOL:0000338', drone_run_project_types=>[$project_type_lookup{rgb_color_image}, $project_type_lookup{bgr}], standard_process=>['extended']
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_original_background_removed_tgi_mask_imagery', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_original_background_removed_tgi_mask_imagery', channels=>[0,1,2], corresponding_channel=>undef, display_name=>'RGB Image(s) with Background Removed via a TGI mask', ISOL_name=>'RGB Color Image Masked with TGI Vegetative Index Image|ISOL:0000137', drone_run_project_types=>[$project_type_lookup{rgb_color_image}, $project_type_lookup{bgr}], standard_process=>['extended']
@@ -1616,6 +1622,34 @@ sub get_vegetative_index_image_type_term_map {
                     'observation_unit_polygon_fourier_transform_hpf40_nren_denoised_background_removed_ndre_mask_channel_2'
                 ]
             }
+        },
+        'CCC' => {
+            index => {
+                'calculate_ccc_drone_imagery' => [
+                    'observation_unit_polygon_ccc_imagery'
+                ]
+            },
+            index_threshold_background => {
+                'threshold_background_removed_ccc_stitched_drone_imagery' => [
+                    'observation_unit_polygon_background_removed_ccc_imagery'
+                ]
+            },
+            original_thresholded_index_mask_background => {
+                'denoised_background_removed_thresholded_ccc_mask_original' => [
+                    'observation_unit_polygon_original_background_removed_thresholded_ccc_mask_imagery',
+                    'observation_unit_polygon_original_background_removed_thresholded_ccc_mask_imagery_channel_1',
+                    'observation_unit_polygon_original_background_removed_thresholded_ccc_mask_imagery_channel_2',
+                    'observation_unit_polygon_original_background_removed_thresholded_ccc_mask_imagery_channel_3',
+                ]
+            },
+            original_index_mask_background => {
+                'denoised_background_removed_ccc_mask_original' => [
+                    'observation_unit_polygon_original_background_removed_ccc_mask_imagery',
+                    'observation_unit_polygon_original_background_removed_ccc_mask_imagery_channel_1',
+                    'observation_unit_polygon_original_background_removed_ccc_mask_imagery_channel_2',
+                    'observation_unit_polygon_original_background_removed_ccc_mask_imagery_channel_3',
+                ]
+            }
         }
     );
     return \%vi_map;
@@ -1650,6 +1684,9 @@ sub get_all_project_md_image_types_whole_images {
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_ndre_drone_imagery', 'project_md_image')->cvterm_id() => {
             name=>'calculate_ndre_drone_imagery', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_ccc_drone_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_ccc_drone_imagery', channels=>[0], corresponding_channel=>0
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'threshold_background_removed_stitched_drone_imagery_blue', 'project_md_image')->cvterm_id() => {
             name=>'threshold_background_removed_stitched_drone_imagery_blue', channels=>[0], corresponding_channel=>0

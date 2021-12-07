@@ -1490,3 +1490,15 @@ id: ISOL:0000336
 name: Keras Autoencoder 64_32_Conv_16_Latent
 def: "Keras Autoencoder 64_32_Conv_16_Latent model" []
 relationship: is_a ISOL:0000325
+
+[Term]
+id: ISOL:0000337
+name: CCC Vegetative Index Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000338
+name: Thresholded CCC Vegetative Index Image
+def: "" []
+relationship: is_a ISOL:0000101
