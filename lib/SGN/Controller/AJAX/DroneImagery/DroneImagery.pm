@@ -13335,27 +13335,33 @@ sub drone_imagery_delete_drone_run_GET : Args(0) {
     print STDERR $q1."\n";
     print STDERR $q2."\n";
     print STDERR $q3."\n";
-    my $h4 = $schema->storage->dbh()->prepare($q4);
-    $h4->execute();
-    my $h1 = $schema->storage->dbh()->prepare($q1);
-    $h1->execute();
-    my $h2 = $schema->storage->dbh()->prepare($q2);
-    $h2->execute();
+
+    if (scalar(@drone_run_band_ids)>0) {
+        my $h4 = $schema->storage->dbh()->prepare($q4);
+        $h4->execute();
+        my $h1 = $schema->storage->dbh()->prepare($q1);
+        $h1->execute();
+        my $h2 = $schema->storage->dbh()->prepare($q2);
+        $h2->execute();
+    }
+
     my $h3 = $schema->storage->dbh()->prepare($q3);
     $h3->execute();
 
-    my $q5 = "
-        DROP TABLE IF EXISTS temp_drone_image_pheno_deletion;
-        CREATE TEMP TABLE temp_drone_image_pheno_deletion AS
-        (SELECT nd_experiment_phenotype_bridge.phenotype_id, nd_experiment_phenotype_bridge.image_id
-        FROM phenotype
-        JOIN nd_experiment_phenotype_bridge using(phenotype_id)
-        WHERE nd_experiment_phenotype_bridge.image_id IN ($drone_run_band_image_ids_sql) );
-        DELETE FROM phenotype WHERE phenotype_id IN (SELECT phenotype_id FROM temp_drone_image_pheno_deletion);
-        DROP TABLE IF EXISTS temp_drone_image_pheno_deletion;
-        ";
-    my $h5 = $schema->storage->dbh()->prepare($q5);
-    $h5->execute();
+    if (scalar(@drone_run_image_ids)>0) {
+        my $q5 = "
+            DROP TABLE IF EXISTS temp_drone_image_pheno_deletion;
+            CREATE TEMP TABLE temp_drone_image_pheno_deletion AS
+            (SELECT nd_experiment_phenotype_bridge.phenotype_id, nd_experiment_phenotype_bridge.image_id
+            FROM phenotype
+            JOIN nd_experiment_phenotype_bridge using(phenotype_id)
+            WHERE nd_experiment_phenotype_bridge.image_id IN ($drone_run_band_image_ids_sql) );
+            DELETE FROM phenotype WHERE phenotype_id IN (SELECT phenotype_id FROM temp_drone_image_pheno_deletion);
+            DROP TABLE IF EXISTS temp_drone_image_pheno_deletion;
+            ";
+        my $h5 = $schema->storage->dbh()->prepare($q5);
+        $h5->execute();
+    }
 
     $c->stash->{rest} = {success => 1};
 }

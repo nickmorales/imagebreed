@@ -21,6 +21,7 @@ my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
         plot_list=>$plot_list,
         plant_list=>$plant_list,
         subplot_list=>$subplot_list,
+        phenotype_id_list=>$phenotype_id_list,
         exclude_phenotype_outlier=>0,
         include_timestamp=>$include_timestamp,
         trait_contains=>$trait_contains,
@@ -108,6 +109,11 @@ has 'location_list' => (
 );
 
 has 'year_list' => (
+    isa => 'ArrayRef[Int]|Undef',
+    is => 'rw',
+);
+
+has 'phenotype_id_list' => (
     isa => 'ArrayRef[Int]|Undef',
     is => 'rw',
 );
@@ -238,6 +244,17 @@ sub search {
             }
         }
     }
+    my %phenotype_id_check;
+    my $filter_phenotype_ids;
+    if ($self->phenotype_id_list && scalar(@{$self->phenotype_id_list})>0) {
+        foreach (@{$self->phenotype_id_list}){
+            if ($_){
+                push @or_clause, "observations @> '[{\"phenotype_id\" : $_}]'";
+                $phenotype_id_check{$_}++;
+                $filter_phenotype_ids = 1;
+            }
+        }
+    }
     my $filter_trait_names;
     if ($self->trait_contains && scalar(@{$self->trait_contains})>0) {
         foreach (@{$self->trait_contains}) {
@@ -277,8 +294,7 @@ sub search {
     }
 
     my  $q = $select_clause . $where_clause . $or_clause . $order_clause . $limit_clause . $offset_clause;
-
-    # print STDERR "QUERY: $q\n\n";
+    print STDERR "QUERY: $q\n\n";
 
     my $location_rs = $schema->resultset('NaturalDiversity::NdGeolocation')->search();
     my %location_id_lookup;
@@ -305,10 +321,18 @@ sub search {
 
         my %ordered_observations;
         foreach (@$observations){
-            $ordered_observations{$_->{phenotype_id}} = $_;
+            my $phenotype_id = $_->{phenotype_id};
+            if ($filter_phenotype_ids) {
+                if (exists($phenotype_id_check{$phenotype_id})) {
+                    $ordered_observations{$phenotype_id} = $_;
+                }
+            }
+            else {
+                $ordered_observations{$phenotype_id} = $_;
+            }
         }
 
-        my @return_observations;;
+        my @return_observations;
         foreach my $pheno_id (sort keys %ordered_observations){
             my $o = $ordered_observations{$pheno_id};
             my $trait_name = $o->{trait_name};
