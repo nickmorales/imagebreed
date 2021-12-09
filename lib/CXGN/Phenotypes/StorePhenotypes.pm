@@ -661,6 +661,7 @@ sub store {
 
                         if ($timestamp) { $details{'observationTimeStamp'} = $timestamp};
                         if ($operator) { $details{'collector'} = $operator};
+                        if ($additional_info) { $details{'additionalInfo'} = $additional_info};
 
                         push @stored_details, \%details;
                     }

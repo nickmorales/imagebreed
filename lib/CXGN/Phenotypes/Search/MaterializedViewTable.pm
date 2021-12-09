@@ -377,6 +377,7 @@ sub search {
                     }
                 }
             }
+            $o->{additional_info} = $o->{additional_info} ? decode_json($o->{additional_info}) : undef;
             push @return_observations, $o;
         }
 
