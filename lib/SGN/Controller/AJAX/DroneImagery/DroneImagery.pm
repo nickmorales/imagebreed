@@ -10728,10 +10728,11 @@ sub drone_imagery_get_image_for_time_series_GET : Args(0) {
     my $vari_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_vari_drone_imagery', 'project_md_image')->cvterm_id();
     my $ndvi_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_ndvi_drone_imagery', 'project_md_image')->cvterm_id();
     my $ndre_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_ndre_drone_imagery', 'project_md_image')->cvterm_id();
+    my $ccc_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_ccc_drone_imagery', 'project_md_image')->cvterm_id();
     my $images_search = CXGN::DroneImagery::ImagesSearch->new({
         bcs_schema=>$schema,
         trial_id_list=>[$field_trial_id],
-        project_image_type_id_list => [$image_type_id, $tgi_image_type_id, $vari_image_type_id, $ndvi_image_type_id, $ndre_image_type_id]
+        project_image_type_id_list => [$image_type_id, $tgi_image_type_id, $vari_image_type_id, $ndvi_image_type_id, $ndre_image_type_id, $ccc_image_type_id]
     });
     my ($result, $total_count) = $images_search->search();
     # print STDERR Dumper $result;
@@ -10743,7 +10744,8 @@ sub drone_imagery_get_image_for_time_series_GET : Args(0) {
         "calculate_tgi_drone_imagery" => " (TGI)",
         "calculate_vari_drone_imagery" => " (VARI)",
         "calculate_ndvi_drone_imagery" => " (NDVI)",
-        "calculate_ndre_drone_imagery" => " (NDRE)"
+        "calculate_ndre_drone_imagery" => " (NDRE)",
+        "calculate_ccc_drone_imagery" => " (CCC)",
     );
 
     my %image_ids;
