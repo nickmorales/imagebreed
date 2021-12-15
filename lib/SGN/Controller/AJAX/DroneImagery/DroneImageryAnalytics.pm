@@ -4156,6 +4156,49 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 };
 
                 eval {
+                    my ($plot_level_original_values_tempfile_fh, $plot_level_original_values_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+                    open(my $F_plot_level_original_values, ">", $plot_level_original_values_tempfile) || die "Can't open file ".$plot_level_original_values_tempfile;
+                        print STDERR "OPENED PLOTLEVELVALUES FILE $plot_level_original_values_tempfile\n";
+
+                        my @header_full_plot_corr = ('plot_name', 'plot_id', 'row_number', 'col_number', 'rep', 'block', 'germplasm_name', 'germplasm_id', 'time', 'pheno', 'spatial_effect', 'genotypic_effect', 'residual');
+                        my $header_string_full_plot_corr = join ',', @header_full_plot_corr;
+                        print $F_plot_level_original_values "$header_string_full_plot_corr\n";
+                        foreach my $p (@unique_plot_names) {
+                            foreach my $t (@sorted_trait_names) {
+                                my @row = ($p, $stock_name_row_col{$p}->{obsunit_stock_id}, $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $stock_name_row_col{$p}->{rep}, $stock_name_row_col{$p}->{block}, $stock_name_row_col{$p}->{germplasm_name}, $stock_name_row_col{$p}->{germplasm_stock_id});
+
+                                my $time = $t;
+                                my $t_geno; #'day 10.30|null:autocreated:day 10.30';
+                                my $t_residual; #'Mean Pixel Value|Merged 3 Bands NRN|NDVI Vegetative Index Image|day 11|COMP:0000318'
+                                while (my($evaluated_time_term,$evaluated_time) = each %$trait_to_time_map_hash_1) {
+                                    if (exists($rr_unique_traits_hash_1->{$evaluated_time_term})) {
+                                        if ($time + 0 == $evaluated_time + 0) {
+                                            $t_geno = $evaluated_time_term;
+                                        }
+                                    }
+                                    else {
+                                        if ($time + 0 == $evaluated_time + 0) {
+                                            $t_residual = $evaluated_time_term;
+                                        }
+                                    }
+                                }
+                                my $geno_effect = $result_blup_data_original_1->{$stock_name_row_col{$p}->{germplasm_name}}->{$t_geno}->[0];
+
+                                my $phenotype_original = $phenotype_data_original{$p}->{$time};
+                                my $effect_original_1 = $result_blup_pe_data_delta_original_1->{$p}->{$time}->[0];
+                                my $residual = $result_residual_data_original_1->{$p}->{$t_residual}->[0];
+                                push @row, ($time, $phenotype_original, $effect_original_1, $geno_effect, $residual);
+
+                                my $line = join ',', @row;
+                                print $F_plot_level_original_values "$line\n";
+                            }
+                        }
+                    close($F_plot_level_original_values);
+
+                    push @$spatial_effects_files_store, [$plot_level_original_values_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_plotlevelresidualspatialgenotypicvalues_"."envvar_".$env_variance_percent."_".$iterations];
+                };
+
+                eval {
                     my @plot_corr_full_vals;
 
                     my @original_pheno_vals;
@@ -6528,6 +6571,35 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 };
 
                 eval {
+                    my ($plot_level_original_values_tempfile_fh, $plot_level_original_values_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+                    open(my $F_plot_level_original_values, ">", $plot_level_original_values_tempfile) || die "Can't open file ".$plot_level_original_values_tempfile;
+                        print STDERR "OPENED PLOTLEVELVALUES FILE $plot_level_original_values_tempfile\n";
+
+                        my @header_full_plot_corr = ('plot_name', 'plot_id', 'row_number', 'col_number', 'rep', 'block', 'germplasm_name', 'germplasm_id', 'time', 'pheno', 'spatial_effect', 'genotypic_effect', 'residual');
+                        my $header_string_full_plot_corr = join ',', @header_full_plot_corr;
+                        print $F_plot_level_original_values "$header_string_full_plot_corr\n";
+                        foreach my $p (@unique_plot_names) {
+                            foreach my $t (@sorted_trait_names_2) {
+                                my @row = ($p, $stock_name_row_col{$p}->{obsunit_stock_id}, $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $stock_name_row_col{$p}->{rep}, $stock_name_row_col{$p}->{block}, $stock_name_row_col{$p}->{germplasm_name}, $stock_name_row_col{$p}->{germplasm_stock_id});
+
+                                my $time = $trait_to_time_map_2{$t};
+                                my $geno_effect = $result_blup_data_original_2->{$stock_name_row_col{$p}->{germplasm_name}}->{$t}->[0];
+
+                                my $phenotype_original = $phenotype_data_original_2{$p}->{$t};
+                                my $effect_original_2 = $result_blup_spatial_data_original_2->{$p}->{$t}->[0];
+                                my $residual = $result_residual_data_original_2->{$p}->{$t}->[0];
+                                push @row, ($time, $phenotype_original, $effect_original_2, $geno_effect, $residual);
+
+                                my $line = join ',', @row;
+                                print $F_plot_level_original_values "$line\n";
+                            }
+                        }
+                    close($F_plot_level_original_values);
+
+                    push @$spatial_effects_files_store, [$plot_level_original_values_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_plotlevelresidualspatialgenotypicvalues_"."envvar_".$env_variance_percent."_".$iterations];
+                };
+
+                eval {
                     my @plot_corr_full_vals;
 
                     my @original_pheno_vals;
@@ -8862,6 +8934,35 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     my $status_plotcorr_plot = system($cmd_plotcorr_plot);
                     push @$spatial_effects_plots, [$plot_corr_figure_tempfile_string, $statistics_select.$sim_env_change_over_time.$correlation_between_times."_fullcorr_"."envvar_".$env_variance_percent."_".$iterations];
                     push @$spatial_effects_files_store, [$full_plot_level_correlation_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_fullcorr_"."envvar_".$env_variance_percent."_".$iterations];
+                };
+
+                eval {
+                    my ($plot_level_original_values_tempfile_fh, $plot_level_original_values_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+                    open(my $F_plot_level_original_values, ">", $plot_level_original_values_tempfile) || die "Can't open file ".$plot_level_original_values_tempfile;
+                        print STDERR "OPENED PLOTLEVELVALUES FILE $plot_level_original_values_tempfile\n";
+
+                        my @header_full_plot_corr = ('plot_name', 'plot_id', 'row_number', 'col_number', 'rep', 'block', 'germplasm_name', 'germplasm_id', 'time', 'pheno', 'spatial_effect', 'genotypic_effect', 'residual');
+                        my $header_string_full_plot_corr = join ',', @header_full_plot_corr;
+                        print $F_plot_level_original_values "$header_string_full_plot_corr\n";
+                        foreach my $p (@unique_plot_names) {
+                            foreach my $t (@sorted_trait_names_2) {
+                                my @row = ($p, $stock_name_row_col{$p}->{obsunit_stock_id}, $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $stock_name_row_col{$p}->{rep}, $stock_name_row_col{$p}->{block}, $stock_name_row_col{$p}->{germplasm_name}, $stock_name_row_col{$p}->{germplasm_stock_id});
+
+                                my $time = $trait_to_time_map_2{$t};
+                                my $geno_effect = $result_blup_data_original_3->{$stock_name_row_col{$p}->{germplasm_name}}->{$t}->[0];
+
+                                my $phenotype_original = $phenotype_data_original_2{$p}->{$t};
+                                my $effect_original_3 = $result_blup_spatial_data_original_3->{$p}->{$t}->[0];
+                                my $residual = $result_residual_data_original_3->{$p}->{$t}->[0];
+                                push @row, ($time, $phenotype_original, $effect_original_3, $geno_effect, $residual);
+
+                                my $line = join ',', @row;
+                                print $F_plot_level_original_values "$line\n";
+                            }
+                        }
+                    close($F_plot_level_original_values);
+
+                    push @$spatial_effects_files_store, [$plot_level_original_values_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_plotlevelresidualspatialgenotypicvalues_"."envvar_".$env_variance_percent."_".$iterations];
                 };
 
                 eval {
@@ -11306,6 +11407,35 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 };
 
                 eval {
+                    my ($plot_level_original_values_tempfile_fh, $plot_level_original_values_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+                    open(my $F_plot_level_original_values, ">", $plot_level_original_values_tempfile) || die "Can't open file ".$plot_level_original_values_tempfile;
+                        print STDERR "OPENED PLOTLEVELVALUES FILE $plot_level_original_values_tempfile\n";
+
+                        my @header_full_plot_corr = ('plot_name', 'plot_id', 'row_number', 'col_number', 'rep', 'block', 'germplasm_name', 'germplasm_id', 'time', 'pheno', 'spatial_effect', 'genotypic_effect', 'residual');
+                        my $header_string_full_plot_corr = join ',', @header_full_plot_corr;
+                        print $F_plot_level_original_values "$header_string_full_plot_corr\n";
+                        foreach my $p (@unique_plot_names) {
+                            foreach my $t (@sorted_trait_names_5) {
+                                my @row = ($p, $stock_name_row_col{$p}->{obsunit_stock_id}, $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $stock_name_row_col{$p}->{rep}, $stock_name_row_col{$p}->{block}, $stock_name_row_col{$p}->{germplasm_name}, $stock_name_row_col{$p}->{germplasm_stock_id});
+
+                                my $time = $trait_to_time_map_5{$t};
+                                my $geno_effect = $result_blup_data_original_5->{$stock_name_row_col{$p}->{germplasm_name}}->{$t}->[0];
+
+                                my $phenotype_original = $phenotype_data_original_5{$p}->{$t};
+                                my $effect_original_5 = $result_blup_spatial_data_original_5->{$p}->{$t}->[0];
+                                my $residual = $result_residual_data_original_5->{$p}->{$t}->[0];
+                                push @row, ($time, $phenotype_original, $effect_original_5, $geno_effect, $residual);
+
+                                my $line = join ',', @row;
+                                print $F_plot_level_original_values "$line\n";
+                            }
+                        }
+                    close($F_plot_level_original_values);
+
+                    push @$spatial_effects_files_store, [$plot_level_original_values_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_plotlevelresidualspatialgenotypicvalues_"."envvar_".$env_variance_percent."_".$iterations];
+                };
+
+                eval {
                     my @plot_corr_full_vals;
 
                     my @original_pheno_vals;
@@ -13743,6 +13873,35 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     my $status_plotcorr_plot = system($cmd_plotcorr_plot);
                     push @$spatial_effects_plots, [$plot_corr_figure_tempfile_string, $statistics_select.$sim_env_change_over_time.$correlation_between_times."_fullcorr_"."envvar_".$env_variance_percent."_".$iterations];
                     push @$spatial_effects_files_store, [$full_plot_level_correlation_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_fullcorr_"."envvar_".$env_variance_percent."_".$iterations];
+                };
+
+                eval {
+                    my ($plot_level_original_values_tempfile_fh, $plot_level_original_values_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+                    open(my $F_plot_level_original_values, ">", $plot_level_original_values_tempfile) || die "Can't open file ".$plot_level_original_values_tempfile;
+                        print STDERR "OPENED PLOTLEVELVALUES FILE $plot_level_original_values_tempfile\n";
+
+                        my @header_full_plot_corr = ('plot_name', 'plot_id', 'row_number', 'col_number', 'rep', 'block', 'germplasm_name', 'germplasm_id', 'time', 'pheno', 'spatial_effect', 'genotypic_effect', 'residual');
+                        my $header_string_full_plot_corr = join ',', @header_full_plot_corr;
+                        print $F_plot_level_original_values "$header_string_full_plot_corr\n";
+                        foreach my $p (@unique_plot_names) {
+                            foreach my $t (@sorted_trait_names_6) {
+                                my @row = ($p, $stock_name_row_col{$p}->{obsunit_stock_id}, $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $stock_name_row_col{$p}->{rep}, $stock_name_row_col{$p}->{block}, $stock_name_row_col{$p}->{germplasm_name}, $stock_name_row_col{$p}->{germplasm_stock_id});
+
+                                my $time = $trait_to_time_map_6{$t};
+                                my $geno_effect = $result_blup_data_original_6->{$stock_name_row_col{$p}->{germplasm_name}}->{$t}->[0];
+
+                                my $phenotype_original = $phenotype_data_original_6{$p}->{$t};
+                                my $effect_original_6 = $result_blup_spatial_data_original_6->{$p}->{$t}->[0];
+                                my $residual = $result_residual_data_original_6->{$p}->{$t}->[0];
+                                push @row, ($time, $phenotype_original, $effect_original_6, $geno_effect, $residual);
+
+                                my $line = join ',', @row;
+                                print $F_plot_level_original_values "$line\n";
+                            }
+                        }
+                    close($F_plot_level_original_values);
+
+                    push @$spatial_effects_files_store, [$plot_level_original_values_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_plotlevelresidualspatialgenotypicvalues_"."envvar_".$env_variance_percent."_".$iterations];
                 };
 
                 eval {
