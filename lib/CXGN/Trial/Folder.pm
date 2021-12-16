@@ -579,7 +579,7 @@ sub get_jstree_html {
     $html .= "<ul>";
 
     my %children = fast_children($self, $schema, $parent_type);
-    print STDERR Dumper \%children;
+    #print STDERR Dumper \%children;
     if (%children) {
         foreach my $child (sort keys %children) {
             #print STDERR "Working on child ".$children{$child}->{'name'}."\n";
