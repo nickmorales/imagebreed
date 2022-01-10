@@ -2013,6 +2013,37 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                     <label class="col-sm-3 control-label">Base Temperature:</label>
                     <div class="col-sm-9" >
                         <select class="form-control" id="drone_imagery_calculate_gdd_base_temperature_input">
+                            <option value="">Select One</option>
+                            <option value="10">10F</option>
+                            <option value="11">11F</option>
+                            <option value="12">12F</option>
+                            <option value="13">13F</option>
+                            <option value="14">14F</option>
+                            <option value="15">15F</option>
+                            <option value="16">16F</option>
+                            <option value="17">17F</option>
+                            <option value="18">18F</option>
+                            <option value="19">19F</option>
+                            <option value="20">20F</option>
+                            <option value="21">21F</option>
+                            <option value="22">22F</option>
+                            <option value="23">23F</option>
+                            <option value="24">24F</option>
+                            <option value="25">25F</option>
+                            <option value="26">26F</option>
+                            <option value="27">27F</option>
+                            <option value="28">28F</option>
+                            <option value="29">29F</option>
+                            <option value="30">30F</option>
+                            <option value="31">31F</option>
+                            <option value="32">32F</option>
+                            <option value="33">33F</option>
+                            <option value="34">34F</option>
+                            <option value="35">35F</option>
+                            <option value="36">36F</option>
+                            <option value="37">37F</option>
+                            <option value="38">38F</option>
+                            <option value="39">39F</option>
                             <option value="40">40F</option>
                             <option value="41">41F</option>
                             <option value="42">42F</option>
@@ -2029,6 +2060,11 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                             <option value="53">53F</option>
                             <option value="54">54F</option>
                             <option value="55">55F</option>
+                            <option value="56">56F</option>
+                            <option value="57">57F</option>
+                            <option value="58">58F</option>
+                            <option value="59">59F</option>
+                            <option value="60">60F</option>
                         </select>
                     </div>
                 </div>
@@ -4700,21 +4736,28 @@ jQuery(document).ready(function() {
     jQuery('#drone_imagery_upload_gdd_submit').click(function(){
         var manage_drone_imagery_calculate_gdd_base_temp = jQuery('#drone_imagery_calculate_gdd_base_temperature_input').val();
         var manage_drone_imagery_calculate_gdd_formula = jQuery('#drone_imagery_calculate_gdd_formula_input').val();
-        jQuery.ajax({
-            url : '/api/drone_imagery/growing_degree_days?drone_run_project_id='+manage_drone_imagery_calculate_gdd_drone_run_project_id+'&formula='+manage_drone_imagery_calculate_gdd_formula+'&gdd_base_temperature='+manage_drone_imagery_calculate_gdd_base_temp+'&field_trial_id='+manage_drone_imagery_calculate_gdd_field_trial_id,
-            beforeSend: function(){
-                jQuery('#working_modal').modal('show');
-            },
-            success: function(response){
-                console.log(response);
-                jQuery('#working_modal').modal('hide');
-                location.reload();
-            },
-            error: function(response){
-                jQuery('#working_modal').modal('hide');
-                alert('Error calculating growing degree days!');
-            }
-        });
+
+        if (manage_drone_imagery_calculate_gdd_base_temp == '') {
+            alert('Please select the temperature threshold first!');
+            return false;
+        }
+        else {
+            jQuery.ajax({
+                url : '/api/drone_imagery/growing_degree_days?drone_run_project_id='+manage_drone_imagery_calculate_gdd_drone_run_project_id+'&formula='+manage_drone_imagery_calculate_gdd_formula+'&gdd_base_temperature='+manage_drone_imagery_calculate_gdd_base_temp+'&field_trial_id='+manage_drone_imagery_calculate_gdd_field_trial_id,
+                beforeSend: function(){
+                    jQuery('#working_modal').modal('show');
+                },
+                success: function(response){
+                    console.log(response);
+                    jQuery('#working_modal').modal('hide');
+                    location.reload();
+                },
+                error: function(response){
+                    jQuery('#working_modal').modal('hide');
+                    alert('Error calculating growing degree days!');
+                }
+            });
+        }
     });
 
     //
