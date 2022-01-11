@@ -2841,7 +2841,7 @@
 
 jQuery(document).ready(function() {
 
-    get_select_box('trials', 'upload_drone_image_trial_select_div', { 'name' : 'drone_run_field_trial_id', 'id' : 'drone_run_field_trial_id', 'empty':1, 'multiple':0 });
+    get_select_box('trials', 'upload_drone_image_trial_select_div', { 'name' : 'drone_run_field_trial_id', 'id' : 'drone_run_field_trial_id', 'empty':1, 'multiple':1 });
 
     var upload_drone_imagery_vehicle_id;
     jQuery('#upload_drone_imagery_link').click( function() {
@@ -2853,12 +2853,14 @@ jQuery(document).ready(function() {
         }
     });
 
-    var upload_drone_imagery_field_trial_id;
+    var upload_drone_imagery_field_trial_ids_string = '';
     jQuery(document).on('change', '#drone_run_field_trial_id', function() {
-        upload_drone_imagery_field_trial_id = jQuery(this).val();
+        var upload_drone_imagery_field_trial_ids = jQuery(this).val();
+        upload_drone_imagery_field_trial_ids_string = upload_drone_imagery_field_trial_ids.join();
+
         jQuery('#drone_image_upload_drone_runs_table').DataTable({
             destroy : true,
-            ajax : '/api/drone_imagery/drone_runs?select_checkbox_name=upload_drone_imagery_drone_run_select&field_trial_ids='+upload_drone_imagery_field_trial_id+'&disable=1'
+            ajax : '/api/drone_imagery/drone_runs?select_checkbox_name=upload_drone_imagery_drone_run_select&field_trial_ids='+upload_drone_imagery_field_trial_ids_string+'&disable=1'
         });
     });
 
@@ -2875,27 +2877,22 @@ jQuery(document).ready(function() {
     });
 
     jQuery('#upload_drone_image_field_trial_select_continue').click(function(){
-        if (jQuery('#drone_run_field_trial_id').val() == ''){
-            alert('Please select a field trial first');
-        } else {
+        if (upload_drone_imagery_field_trial_ids_string == '') {
+            alert('Please select atleast one field trial first!');
+            return false;
+        }
+        else {
             jQuery.ajax({
-                url : '/ajax/breeders/trial/'+jQuery('#drone_run_field_trial_id').val()+'/details',
+                url : '/api/drone_imagery/check_field_trial_ids?field_trial_ids='+upload_drone_imagery_field_trial_ids_string,
                 success: function(response){
                     console.log(response);
-
-                    if (response.details.planting_date) {
-                        if (response.details.location_noaa_station_id) {
-                            Workflow.complete('#upload_drone_image_field_trial_select_continue');
-                            Workflow.focus('#drone_imagery_upload_workflow', 2);
-                        }
-                        else {
-                            jQuery('#upload_drone_image_field_trial_info').html("<div class='well well-sm'>Please set the NOAA location id for this field trial before proceeding. You can do so from the manage locations page.</div>");
-                        }
+                    if (response.html) {
+                        jQuery('#upload_drone_image_field_trial_info').html(response.html);
                     }
                     else {
-                        jQuery('#upload_drone_image_field_trial_info').html("<div class='well well-sm'>Please set the planting date for this field trial before proceeding. You can do so from the trial's <a href='/breeders/trial/"+jQuery('#drone_run_field_trial_id').val()+"' target=_blank>Detail Page</a></div>");
+                        Workflow.complete('#upload_drone_image_field_trial_select_continue');
+                        Workflow.focus('#drone_imagery_upload_workflow', 2);
                     }
-                    return false;
                 },
                 error: function(response){
                     alert('Error checking field trial details!');
@@ -3112,7 +3109,7 @@ jQuery(document).ready(function() {
         console.log(drone_run_band_number);
         console.log(drone_run_camera_info);
 
-        jQuery('input[name="drone_run_field_trial_id"]').val(upload_drone_imagery_field_trial_id);
+        jQuery('input[name="drone_run_field_trial_id"]').val(upload_drone_imagery_field_trial_ids_string);
         jQuery('input[name="drone_run_name"]').val(drone_run_name);
         jQuery('input[name="drone_run_type"]').val(drone_run_type);
         jQuery('input[name="drone_image_upload_camera_info"]').val(drone_run_camera_info);

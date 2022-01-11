@@ -6305,6 +6305,49 @@ sub _get_image_background_remove_threshold_percentage {
     return [$lower, $upper, $val];
 }
 
+sub get_check_field_trial_ids : Path('/api/drone_imagery/check_field_trial_ids') : ActionClass('REST') { }
+sub get_check_field_trial_ids_GET : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
+    my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
+    my $field_trial_ids_string = $c->req->param('field_trial_ids');
+    my @field_trial_ids = split ',', $field_trial_ids_string;
+
+    my $html = '';
+    if (scalar(@field_trial_ids) == 0) {
+        $html = $html . "<div class='well well-sm'>Please select atleast one field trial first.</div>";
+    }
+
+    foreach my $trial_id (@field_trial_ids) {
+        my $trial = CXGN::Trial->new({
+            bcs_schema => $bcs_schema,
+            metadata_schema => $metadata_schema,
+            phenome_schema => $phenome_schema,
+            trial_id => $trial_id
+        });
+        my $trial_name = $trial->get_name();
+        my $planting_date = $trial->get_planting_date();
+        my $harvest_date = $trial->get_harvest_date();
+        my $get_location_noaa_station_id = $trial->get_location_noaa_station_id();
+
+        if ($planting_date) {
+            if ($get_location_noaa_station_id) {
+                print STDERR "Field trial $trial_id passes \n";
+            }
+            else {
+                $html = $html . "<div class='well well-sm'>Please set the NOAA location id for the ".$trial_name." field trial before proceeding. You can do so from the <a href='/breeders/locations' target=_blank>Manage Locations Page</a>.</div>";
+            }
+        }
+        else {
+            $html = $html . "<div class='well well-sm'>Please set the planting date for the ".$trial_name." field trial before proceeding. You can do so from the trial's <a href='/breeders/trial/".$trial_id."' target=_blank>Detail Page</a>.</div>";
+        }
+    }
+
+    $c->stash->{rest} = { html => $html };
+}
+
 sub get_drone_run_projects : Path('/api/drone_imagery/drone_runs') : ActionClass('REST') { }
 sub get_drone_run_projects_GET : Args(0) {
     my $self = shift;
