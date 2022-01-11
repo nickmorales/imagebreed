@@ -50,8 +50,26 @@
                         <div id="upload_drone_image_field_trial_info">
                         </div>
 
+                        <div id="upload_drone_image_field_trial_select_date_continue_div" style="display:none">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Date and Hour (Must be after the planting date):</label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_date" name="drone_run_date" title="drone_run_date" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Is this from a greenhouse, growth chamber, or fixed camera rig?:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_is_fixed_rig" name="drone_run_is_fixed_rig">
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                         <center>
-                        <button class="btn btn-primary" id="upload_drone_image_field_trial_select_continue">Go to Next Step</button>
+                        <button class="btn btn-primary" id="upload_drone_image_field_trial_select_date_continue">Go to Next Step</button>
                         </center>
                     </&>
                     <&| /util/workflow.mas:step, title=> "Drone Run" &>
@@ -80,9 +98,9 @@
                         <br/>
                         <div id="drone_image_upload_create_drone_inputs">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Name (Must be unique): </label>
+                                <label class="col-sm-3 control-label">Imaging Event Name(s) (Uniquely Generated): </label>
                                 <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_name" name="drone_run_name" type="text" placeholder="e.g. Field Trial Name + Date of Flight" />
+                                    <input class="form-control" id="drone_run_name" name="drone_run_name" type="text" placeholder="e.g. Field Trial Name + Date of Flight" disabled/>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -129,12 +147,8 @@
                                     <input class="form-control" id="drone_run_description" name="drone_run_description" type="text" />
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Date and Hour (Must be after the planting date):</label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_date" name="drone_run_date" title="drone_run_date" type="text" />
-                                </div>
-                            </div>
+                        </div>
+                        <div id="drone_image_upload_create_drone_inputs_fixed_camera" style="display:none">
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Fixed Camera Rig Name (For Fixed Camera Rigs e.g. Greenhouse or Growth Chambers) (Leave empty if not applicable):</label>
                                 <div class="col-sm-9" >
@@ -413,24 +427,18 @@
 
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_one_1" name="drone_run_band_name_1" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_one_1" name="drone_run_band_description_1" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_one_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_one_1" name="drone_run_band_description_1" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -516,24 +524,18 @@
 
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_two_1" name="drone_run_band_name_1" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_two_1" name="drone_run_band_description_1" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_two_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_two_1" name="drone_run_band_description_1" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -562,24 +564,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_two_2" name="drone_run_band_name_2" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_two_2" name="drone_run_band_description_2" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_two_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_two_2" name="drone_run_band_description_2" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -663,24 +659,18 @@
 
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_three_1" name="drone_run_band_name_1" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_three_1" name="drone_run_band_description_1" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_three_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_three_1" name="drone_run_band_description_1" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -709,24 +699,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_three_2" name="drone_run_band_name_2" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_three_2" name="drone_run_band_description_2" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_three_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_three_2" name="drone_run_band_description_2" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -755,24 +739,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_three_3" name="drone_run_band_name_3" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_three_3" name="drone_run_band_description_3" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_three_3" name="drone_run_band_coordinate_system_3">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_three_3" name="drone_run_band_description_3" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -856,24 +834,18 @@
 
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_four_1" name="drone_run_band_name_1" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_four_1" name="drone_run_band_description_1" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_four_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_four_1" name="drone_run_band_description_1" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -902,24 +874,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_four_2" name="drone_run_band_name_2" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_four_2" name="drone_run_band_description_2" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_four_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_four_2" name="drone_run_band_description_2" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -948,24 +914,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_four_3" name="drone_run_band_name_3" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_four_3" name="drone_run_band_description_3" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_four_3" name="drone_run_band_coordinate_system_3">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_four_3" name="drone_run_band_description_3" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -994,24 +954,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_four_4" name="drone_run_band_name_4" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_four_4" name="drone_run_band_description_4" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_four_4" name="drone_run_band_coordinate_system_4">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_four_4" name="drone_run_band_description_4" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1095,24 +1049,18 @@
 
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_five_1" name="drone_run_band_name_1" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_five_1" name="drone_run_band_description_1" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_five_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_five_1" name="drone_run_band_description_1" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1141,24 +1089,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_five_2" name="drone_run_band_name_2" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_five_2" name="drone_run_band_description_2" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_five_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_five_2" name="drone_run_band_description_2" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1187,24 +1129,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_five_3" name="drone_run_band_name_3" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_five_3" name="drone_run_band_description_3" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_five_3" name="drone_run_band_coordinate_system_3">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_five_3" name="drone_run_band_description_3" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1233,24 +1169,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_five_4" name="drone_run_band_name_4" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_five_4" name="drone_run_band_description_4" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_five_4" name="drone_run_band_coordinate_system_4">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_five_4" name="drone_run_band_description_4" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1279,24 +1209,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_five_5" name="drone_run_band_name_5" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_five_5" name="drone_run_band_description_5" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_five_5" name="drone_run_band_coordinate_system_5">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_five_5" name="drone_run_band_description_5" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1380,24 +1304,18 @@
 
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_six_1" name="drone_run_band_name_1" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_six_1" name="drone_run_band_description_1" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_six_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_six_1" name="drone_run_band_description_1" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1426,24 +1344,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_six_2" name="drone_run_band_name_2" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_six_2" name="drone_run_band_description_2" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_six_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_six_2" name="drone_run_band_description_2" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1472,24 +1384,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_six_3" name="drone_run_band_name_3" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_six_3" name="drone_run_band_description_3" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_six_3" name="drone_run_band_coordinate_system_3">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_six_3" name="drone_run_band_description_3" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1518,24 +1424,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_six_4" name="drone_run_band_name_4" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_six_4" name="drone_run_band_description_4" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_six_4" name="drone_run_band_coordinate_system_4">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_six_4" name="drone_run_band_description_4" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1564,24 +1464,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_six_5" name="drone_run_band_name_5" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_six_5" name="drone_run_band_description_5" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_six_5" name="drone_run_band_coordinate_system_5">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_six_5" name="drone_run_band_description_5" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1610,24 +1504,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_six_6" name="drone_run_band_name_6" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_six_6" name="drone_run_band_description_6" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_six_6" name="drone_run_band_coordinate_system_6">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_six_6" name="drone_run_band_description_6" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1711,24 +1599,18 @@
 
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_seven_1" name="drone_run_band_name_1" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_seven_1" name="drone_run_band_description_1" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_seven_1" name="drone_run_band_description_1" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1757,24 +1639,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_seven_2" name="drone_run_band_name_2" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_seven_2" name="drone_run_band_description_2" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_seven_2" name="drone_run_band_description_2" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1803,24 +1679,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_seven_3" name="drone_run_band_name_3" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_seven_3" name="drone_run_band_description_3" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_3" name="drone_run_band_coordinate_system_3">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_seven_3" name="drone_run_band_description_3" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1849,24 +1719,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_seven_4" name="drone_run_band_name_4" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_seven_4" name="drone_run_band_description_4" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_4" name="drone_run_band_coordinate_system_4">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_seven_4" name="drone_run_band_description_4" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1895,24 +1759,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_seven_5" name="drone_run_band_name_5" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_seven_5" name="drone_run_band_description_5" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_5" name="drone_run_band_coordinate_system_5">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_seven_5" name="drone_run_band_description_5" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1941,24 +1799,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_seven_6" name="drone_run_band_name_6" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_seven_6" name="drone_run_band_description_6" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_6" name="drone_run_band_coordinate_system_6">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_seven_6" name="drone_run_band_description_6" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -1987,24 +1839,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_seven_7" name="drone_run_band_name_7" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_seven_7" name="drone_run_band_description_7" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_seven_7" name="drone_run_band_coordinate_system_7">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_seven_7" name="drone_run_band_description_7" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -2088,24 +1934,18 @@
 
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_eight_1" name="drone_run_band_name_1" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_eight_1" name="drone_run_band_description_1" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_1" name="drone_run_band_coordinate_system_1">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eight_1" name="drone_run_band_description_1" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -2134,24 +1974,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_eight_2" name="drone_run_band_name_2" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_eight_2" name="drone_run_band_description_2" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_2" name="drone_run_band_coordinate_system_2">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eight_2" name="drone_run_band_description_2" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -2180,24 +2014,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_eight_3" name="drone_run_band_name_3" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_eight_3" name="drone_run_band_description_3" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_3" name="drone_run_band_coordinate_system_3">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eight_3" name="drone_run_band_description_3" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -2226,24 +2054,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_eight_4" name="drone_run_band_name_4" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_eight_4" name="drone_run_band_description_4" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_4" name="drone_run_band_coordinate_system_4">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eight_4" name="drone_run_band_description_4" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -2272,24 +2094,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_eight_5" name="drone_run_band_name_5" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_eight_5" name="drone_run_band_description_5" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_5" name="drone_run_band_coordinate_system_5">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eight_5" name="drone_run_band_description_5" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -2318,24 +2134,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_eight_6" name="drone_run_band_name_6" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_eight_6" name="drone_run_band_description_6" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_6" name="drone_run_band_coordinate_system_6">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eight_6" name="drone_run_band_description_6" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -2364,24 +2174,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_eight_7" name="drone_run_band_name_7" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_eight_7" name="drone_run_band_description_7" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_7" name="drone_run_band_coordinate_system_7">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eight_7" name="drone_run_band_description_7" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -2410,24 +2214,18 @@
                         </div>
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Name (Must be unique): </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_name_eight_8" name="drone_run_band_name_8" type="text" placeholder="e.g. Field Trial Name + Date + Band Type" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="drone_run_band_description_eight_8" name="drone_run_band_description_8" type="text" />
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_run_band_coordinate_system_eight_8" name="drone_run_band_coordinate_system_8">
                                         <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
                                         <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eight_8" name="drone_run_band_description_8" type="text" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -2854,6 +2652,7 @@ jQuery(document).ready(function() {
     });
 
     var upload_drone_imagery_field_trial_ids_string = '';
+    var upload_drone_imagery_field_trial_names = [];
     jQuery(document).on('change', '#drone_run_field_trial_id', function() {
         var upload_drone_imagery_field_trial_ids = jQuery(this).val();
         upload_drone_imagery_field_trial_ids_string = upload_drone_imagery_field_trial_ids.join();
@@ -2862,6 +2661,38 @@ jQuery(document).ready(function() {
             destroy : true,
             ajax : '/api/drone_imagery/drone_runs?select_checkbox_name=upload_drone_imagery_drone_run_select&field_trial_ids='+upload_drone_imagery_field_trial_ids_string+'&disable=1'
         });
+
+        jQuery.ajax({
+            url : '/api/drone_imagery/check_field_trial_ids?field_trial_ids='+upload_drone_imagery_field_trial_ids_string,
+            success: function(response){
+                console.log(response);
+                if (response.html) {
+                    jQuery('#upload_drone_image_field_trial_info').html(response.html);
+                }
+                if (response.can_proceed == 1) {
+                    jQuery('#upload_drone_image_field_trial_select_date_continue_div').show();
+                    upload_drone_imagery_field_trial_names = response.field_trial_names;
+                }
+                else {
+                    upload_drone_imagery_field_trial_ids_string = '';
+                    upload_drone_imagery_field_trial_names = [];
+                    jQuery('#upload_drone_image_field_trial_select_date_continue_div').hide();
+                }
+            },
+            error: function(response){
+                alert('Error checking field trial details!');
+            }
+        });
+    });
+
+    jQuery(document).on('change', '#drone_run_is_fixed_rig', function() {
+        if(jQuery(this).val() == 'Yes') {
+            jQuery('#drone_image_upload_create_drone_inputs_fixed_camera').show();
+        }
+        else {
+            jQuery('#drone_image_upload_create_drone_inputs_fixed_camera').hide();
+        }
+        return false;
     });
 
     jQuery('#upload_drone_imagery_bulk_previous_button').click(function(e){
@@ -2876,28 +2707,49 @@ jQuery(document).ready(function() {
         return;
     });
 
-    jQuery('#upload_drone_image_field_trial_select_continue').click(function(){
+    jQuery('#upload_drone_image_field_trial_select_date_continue').click(function(){
         if (upload_drone_imagery_field_trial_ids_string == '') {
             alert('Please select atleast one field trial first!');
             return false;
         }
         else {
-            jQuery.ajax({
-                url : '/api/drone_imagery/check_field_trial_ids?field_trial_ids='+upload_drone_imagery_field_trial_ids_string,
-                success: function(response){
-                    console.log(response);
-                    if (response.html) {
-                        jQuery('#upload_drone_image_field_trial_info').html(response.html);
-                    }
-                    else {
-                        Workflow.complete('#upload_drone_image_field_trial_select_continue');
-                        Workflow.focus('#drone_imagery_upload_workflow', 2);
-                    }
-                },
-                error: function(response){
-                    alert('Error checking field trial details!');
+            if (jQuery('#drone_run_date').val() == ''){
+                alert('Please give an imaging event date!');
+            }
+            else {
+                var field_trial_names_generated = [];
+                var drone_run_date = jQuery('#drone_run_date').val();
+                var drone_run_date_gen = drone_run_date.replace(/\//g, '');
+                for (var i=0; i<upload_drone_imagery_field_trial_names.length; i++) {
+                    var drone_run_name_gen = upload_drone_imagery_field_trial_names[i]+"_"+drone_run_date_gen;
+                    drone_run_name_gen = drone_run_name_gen.replace(/ /g, '_');
+                    drone_run_name_gen = drone_run_name_gen.replace(/\,/g, '_');
+
+                    jQuery.ajax({
+                        url : '/api/drone_imagery/upload_drone_imagery_check_drone_name?drone_run_name='+drone_run_name_gen,
+                        success: function(response){
+                            console.log(response);
+
+                            if (response.success) {
+                                console.log("Checked "+drone_run_name_gen);
+                            }
+                            else if (response.error) {
+                                alert("Error: " + response.error);
+                            }
+                        },
+                        error: function(response) {
+                            alert('Error checking drone run name!');
+                        }
+                    });
+
+                    field_trial_names_generated.push(drone_run_name_gen);
                 }
-            });
+                var field_trial_names_generated_string = field_trial_names_generated.join();
+                jQuery('#drone_run_name').val(field_trial_names_generated_string);
+
+                Workflow.complete('#upload_drone_image_field_trial_select_date_continue');
+                Workflow.focus('#drone_imagery_upload_workflow', 2);
+            }
         }
         return false;
     });
@@ -3019,41 +2871,31 @@ jQuery(document).ready(function() {
             alert('Only select one drone run!');
         } else {
             if (selected.length == 0 && jQuery('#drone_run_name').val() == ''){
-                alert('Select a drone run or create a new one!');
+                alert('Select an imaging event or create a new one!');
             } else if (selected.length == 1 && jQuery('#drone_run_name').val() != ''){
-                alert('If you selected a drone run, do not try to make a new one at the same time!');
+                alert('If you selected an imaging event, do not try to make a new one at the same time!');
             } else if (selected.length == 1 && jQuery('#drone_run_name').val() == ''){
                 jQuery('#drone_run_id').val(selected[0]);
                 Workflow.complete('#drone_image_upload_drone_run_continue');
                 Workflow.focus('#drone_imagery_upload_workflow', 3);
             } else if (selected.length == 0 && jQuery('#drone_run_name').val() != '') {
                 if (jQuery('#drone_run_description').val() == ''){
-                    alert('Please give a drone run description.');
+                    alert('Please give an imaging event description.');
                 } else if (jQuery('#drone_run_date').val() == ''){
-                    alert('Please give a drone run date.');
-                } else if (jQuery('#drone_run_type') == ''){
-                    alert('Please select a drone run type');
+                    alert('Please give an imaging event date.');
+                } else if (jQuery('#drone_run_type').val() == ''){
+                    alert('Please select an imaging event type');
+                } else if (jQuery('#drone_image_upload_camera_info').val() == ''){
+                    alert('Please select an imaging event sensor type');
+                } else if (jQuery('#drone_run_imaging_vehicle_id').val() == '' || jQuery('#drone_run_imaging_vehicle_battery_name').val() == '') {
+                    alert('Please select an imaging event vehicle and the associated battery! You can create a new vehicle if needed e.g. default_uav');
+                    return false;
                 } else {
                     jQuery('#drone_run_id').val('');
-                    jQuery.ajax({
-                        url : '/api/drone_imagery/upload_drone_imagery_check_drone_name?drone_run_name='+jQuery('#drone_run_name').val(),
-                        success: function(response){
-                            console.log(response);
 
-                            if (response.success) {
-                                Workflow.complete('#drone_image_upload_drone_run_continue');
-                                Workflow.focus('#drone_imagery_upload_workflow', 3);
-                                return false;
-                            }
-                            else if (response.error) {
-                                alert("Error: " + response.error);
-                            }
-                            return false;
-                        },
-                        error: function(response){
-                            alert('Error checking drone run name!');
-                        }
-                    });
+                    Workflow.complete('#drone_image_upload_drone_run_continue');
+                    Workflow.focus('#drone_imagery_upload_workflow', 3);
+                    return false;
                 }
             }
         }
@@ -3092,7 +2934,7 @@ jQuery(document).ready(function() {
             return false;
         }
         if (drone_run_id == '' && drone_run_camera_info == '') {
-            alert('Please select the camera type used.');
+            alert('Please select the sensor type used.');
             return false;
         }
 
@@ -3124,14 +2966,9 @@ jQuery(document).ready(function() {
 
         if (drone_run_band_unstitched == 'no') {
             if (drone_run_band_number == '') {
-                alert('Please select the number of drone run bands you will upload');
+                alert('Please select the number of imaging event bands you will upload!');
             } else {
                 if (drone_run_band_number == 5 && drone_run_camera_info == 'micasense_5'){
-                    jQuery('input[name="drone_run_band_name_1"]').val(drone_run_name+'_'+drone_run_date+'_Blue');
-                    jQuery('input[name="drone_run_band_name_2"]').val(drone_run_name+'_'+drone_run_date+'_Green');
-                    jQuery('input[name="drone_run_band_name_3"]').val(drone_run_name+'_'+drone_run_date+'_Red');
-                    jQuery('input[name="drone_run_band_name_4"]').val(drone_run_name+'_'+drone_run_date+'_NIR');
-                    jQuery('input[name="drone_run_band_name_5"]').val(drone_run_name+'_'+drone_run_date+'_RedEdge');
                     jQuery('select[name="drone_run_band_type_1"] option[value="Blue (450-520nm)"]').attr('selected','selected');
                     jQuery('select[name="drone_run_band_type_2"] option[value="Green (515-600nm)"]').attr('selected','selected');
                     jQuery('select[name="drone_run_band_type_3"] option[value="Red (600-690nm)"]').attr('selected','selected');
@@ -3179,10 +3016,7 @@ jQuery(document).ready(function() {
 
     jQuery('#upload_drone_imagery_select_images_one').click(function(e){
         e.preventDefault();
-        if (jQuery('#drone_run_band_name_one_1').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_one_1').val() == ''){
+        if (jQuery('#drone_run_band_description_one_1').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_one_1').val() == ''){
@@ -3201,10 +3035,7 @@ jQuery(document).ready(function() {
 
     jQuery('#upload_drone_imagery_select_images_two').click(function(e){
         e.preventDefault();
-        if (jQuery('#drone_run_band_name_two_1').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_two_1').val() == ''){
+        if (jQuery('#drone_run_band_description_two_1').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_two_1').val() == ''){
@@ -3215,10 +3046,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_two_2').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_two_2').val() == ''){
+        if (jQuery('#drone_run_band_description_two_2').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_two_2').val() == ''){
@@ -3237,10 +3065,7 @@ jQuery(document).ready(function() {
 
     jQuery('#upload_drone_imagery_select_images_three').click(function(e){
         e.preventDefault();
-        if (jQuery('#drone_run_band_name_three_1').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_three_1').val() == ''){
+        if (jQuery('#drone_run_band_description_three_1').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_three_1').val() == ''){
@@ -3251,10 +3076,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_three_2').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_three_2').val() == ''){
+        if (jQuery('#drone_run_band_description_three_2').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_three_2').val() == ''){
@@ -3265,10 +3087,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_three_3').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_three_3').val() == ''){
+        if (jQuery('#drone_run_band_description_three_3').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_three_3').val() == ''){
@@ -3287,10 +3106,7 @@ jQuery(document).ready(function() {
 
     jQuery('#upload_drone_imagery_select_images_four').click(function(e){
         e.preventDefault();
-        if (jQuery('#drone_run_band_name_four_1').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_four_1').val() == ''){
+        if (jQuery('#drone_run_band_description_four_1').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_four_1').val() == ''){
@@ -3301,10 +3117,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_four_2').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_four_2').val() == ''){
+        if (jQuery('#drone_run_band_description_four_2').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_four_2').val() == ''){
@@ -3315,10 +3128,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_four_3').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_four_3').val() == ''){
+        if (jQuery('#drone_run_band_description_four_3').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_four_3').val() == ''){
@@ -3329,10 +3139,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_four_4').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_four_4').val() == ''){
+        if (jQuery('#drone_run_band_description_four_4').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_four_4').val() == ''){
@@ -3351,10 +3158,7 @@ jQuery(document).ready(function() {
 
     jQuery('#upload_drone_imagery_select_images_five').click(function(e){
         e.preventDefault();
-        if (jQuery('#drone_run_band_name_five_1').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_five_1').val() == ''){
+        if (jQuery('#drone_run_band_description_five_1').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_five_1').val() == ''){
@@ -3365,10 +3169,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_five_2').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_five_2').val() == ''){
+        if (jQuery('#drone_run_band_description_five_2').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_five_2').val() == ''){
@@ -3379,10 +3180,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_five_3').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_five_3').val() == ''){
+        if (jQuery('#drone_run_band_description_five_3').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_five_3').val() == ''){
@@ -3393,10 +3191,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_five_4').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_five_4').val() == ''){
+        if (jQuery('#drone_run_band_description_five_4').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_five_4').val() == ''){
@@ -3407,10 +3202,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_five_5').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_five_5').val() == ''){
+        if (jQuery('#drone_run_band_description_five_5').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_five_5').val() == ''){
@@ -3429,10 +3221,7 @@ jQuery(document).ready(function() {
 
     jQuery('#upload_drone_imagery_select_images_six').click(function(e){
         e.preventDefault();
-        if (jQuery('#drone_run_band_name_six_1').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_six_1').val() == ''){
+        if (jQuery('#drone_run_band_description_six_1').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_six_1').val() == ''){
@@ -3443,10 +3232,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_six_2').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_six_2').val() == ''){
+        if (jQuery('#drone_run_band_description_six_2').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_six_2').val() == ''){
@@ -3457,10 +3243,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_six_3').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_six_3').val() == ''){
+        if (jQuery('#drone_run_band_description_six_3').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_six_3').val() == ''){
@@ -3471,10 +3254,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_six_4').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_six_4').val() == ''){
+        if (jQuery('#drone_run_band_description_six_4').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_six_4').val() == ''){
@@ -3485,10 +3265,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_six_5').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_six_5').val() == ''){
+        if (jQuery('#drone_run_band_description_six_5').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_six_5').val() == ''){
@@ -3499,10 +3276,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_six_6').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_six_6').val() == ''){
+        if (jQuery('#drone_run_band_description_six_6').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_six_6').val() == ''){
@@ -3521,10 +3295,7 @@ jQuery(document).ready(function() {
 
     jQuery('#upload_drone_imagery_select_images_seven').click(function(e){
         e.preventDefault();
-        if (jQuery('#drone_run_band_name_seven_1').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_seven_1').val() == ''){
+        if (jQuery('#drone_run_band_description_seven_1').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_seven_1').val() == ''){
@@ -3535,10 +3306,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_seven_2').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_seven_2').val() == ''){
+        if (jQuery('#drone_run_band_description_seven_2').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_seven_2').val() == ''){
@@ -3549,10 +3317,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_seven_3').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_seven_3').val() == ''){
+        if (jQuery('#drone_run_band_description_seven_3').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_seven_3').val() == ''){
@@ -3563,10 +3328,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_seven_4').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_seven_4').val() == ''){
+        if (jQuery('#drone_run_band_description_seven_4').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_seven_4').val() == ''){
@@ -3577,10 +3339,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_seven_5').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_seven_5').val() == ''){
+        if (jQuery('#drone_run_band_description_seven_5').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_seven_5').val() == ''){
@@ -3591,10 +3350,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_seven_6').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_seven_6').val() == ''){
+        if (jQuery('#drone_run_band_description_seven_6').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_seven_6').val() == ''){
@@ -3605,10 +3361,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_seven_7').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_seven_7').val() == ''){
+        if (jQuery('#drone_run_band_description_seven_7').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_seven_7').val() == ''){
@@ -3627,10 +3380,7 @@ jQuery(document).ready(function() {
 
     jQuery('#upload_drone_imagery_select_images_eight').click(function(e){
         e.preventDefault();
-        if (jQuery('#drone_run_band_name_eight_1').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_eight_1').val() == ''){
+        if (jQuery('#drone_run_band_description_eight_1').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_eight_1').val() == ''){
@@ -3641,10 +3391,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_eight_2').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_eight_2').val() == ''){
+        if (jQuery('#drone_run_band_description_eight_2').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_eight_2').val() == ''){
@@ -3655,10 +3402,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_eight_3').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_eight_3').val() == ''){
+        if (jQuery('#drone_run_band_description_eight_3').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_eight_3').val() == ''){
@@ -3669,10 +3413,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_eight_4').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_eight_4').val() == ''){
+        if (jQuery('#drone_run_band_description_eight_4').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_eight_4').val() == ''){
@@ -3683,10 +3424,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_eight_5').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_eight_5').val() == ''){
+        if (jQuery('#drone_run_band_description_eight_5').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_eight_5').val() == ''){
@@ -3697,10 +3435,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_eight_6').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_eight_6').val() == ''){
+        if (jQuery('#drone_run_band_description_eight_6').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_eight_6').val() == ''){
@@ -3711,10 +3446,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_eight_7').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_eight_7').val() == ''){
+        if (jQuery('#drone_run_band_description_eight_7').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_eight_7').val() == ''){
@@ -3725,10 +3457,7 @@ jQuery(document).ready(function() {
             alert('Please select an image');
             return;
         }
-        if (jQuery('#drone_run_band_name_eight_8').val() == ''){
-            alert('Give a new drone run band name!');
-            return;
-        } else if (jQuery('#drone_run_band_description_eight_8').val() == ''){
+        if (jQuery('#drone_run_band_description_eight_8').val() == ''){
             alert('Please give a drone run band description.');
             return;
         } else if (jQuery('#drone_run_band_type_eight_8').val() == ''){

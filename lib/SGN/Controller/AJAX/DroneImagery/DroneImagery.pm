@@ -6320,6 +6320,8 @@ sub get_check_field_trial_ids_GET : Args(0) {
         $html = $html . "<div class='well well-sm'>Please select atleast one field trial first.</div>";
     }
 
+    my $can_proceed = 1;
+    my @field_trial_names;
     foreach my $trial_id (@field_trial_ids) {
         my $trial = CXGN::Trial->new({
             bcs_schema => $bcs_schema,
@@ -6331,21 +6333,24 @@ sub get_check_field_trial_ids_GET : Args(0) {
         my $planting_date = $trial->get_planting_date();
         my $harvest_date = $trial->get_harvest_date();
         my $get_location_noaa_station_id = $trial->get_location_noaa_station_id();
+        push @field_trial_names, $trial_name;
 
         if ($planting_date) {
             if ($get_location_noaa_station_id) {
-                print STDERR "Field trial $trial_id passes \n";
+                $html = $html . "<div class='well well-sm'><p class='text-success'>The ".$trial_name." field trial has planting date: ".$planting_date." and NOAA Station ID: ".$get_location_noaa_station_id.".</p></div>";
             }
             else {
-                $html = $html . "<div class='well well-sm'>Please set the NOAA location id for the ".$trial_name." field trial before proceeding. You can do so from the <a href='/breeders/locations' target=_blank>Manage Locations Page</a>.</div>";
+                $html = $html . "<div class='well well-sm'><p class='text-warning'>Please set the NOAA location id for the ".$trial_name." field trial before proceeding. You can do so from the <a href='/breeders/locations' target=_blank>Manage Locations Page</a>.</p></div>";
+                $can_proceed = 0;
             }
         }
         else {
-            $html = $html . "<div class='well well-sm'>Please set the planting date for the ".$trial_name." field trial before proceeding. You can do so from the trial's <a href='/breeders/trial/".$trial_id."' target=_blank>Detail Page</a>.</div>";
+            $html = $html . "<div class='well well-sm'><p class='text-warning'>Please set the planting date for the ".$trial_name." field trial before proceeding. You can do so from the trial's <a href='/breeders/trial/".$trial_id."' target=_blank>Detail Page</a>.</p></div>";
+            $can_proceed = 0;
         }
     }
 
-    $c->stash->{rest} = { html => $html };
+    $c->stash->{rest} = { html => $html, can_proceed => $can_proceed, field_trial_names => \@field_trial_names };
 }
 
 sub get_drone_run_projects : Path('/api/drone_imagery/drone_runs') : ActionClass('REST') { }
