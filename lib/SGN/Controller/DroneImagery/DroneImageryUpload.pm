@@ -1689,7 +1689,6 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     my $process_indicator_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_in_progress', 'project_property')->cvterm_id();
     my $processed_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_completed', 'project_property')->cvterm_id();
     my $processed_minimal_vi_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_vi_completed', 'project_property')->cvterm_id();
-    my $drone_run_band_type_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
     my $rotate_angle_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotate_angle', 'project_property')->cvterm_id();
     my $cropping_polygon_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_cropped_polygon', 'project_property')->cvterm_id();
     my $plot_polygon_template_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
@@ -2516,7 +2515,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         my %selected_drone_run_band_types;
         my $q2 = "SELECT project_md_image.image_id, drone_run_band_type.value, drone_run_band.project_id
             FROM project AS drone_run_band
-            JOIN projectprop AS drone_run_band_type ON(drone_run_band_type.project_id = drone_run_band.project_id AND drone_run_band_type.type_id = $drone_run_band_type_type_id)
+            JOIN projectprop AS drone_run_band_type ON(drone_run_band_type.project_id = drone_run_band.project_id AND drone_run_band_type.type_id = $drone_run_band_type_cvterm_id)
             JOIN phenome.project_md_image AS project_md_image ON(project_md_image.project_id = drone_run_band.project_id)
             JOIN metadata.md_image ON(project_md_image.image_id = metadata.md_image.image_id)
             WHERE project_md_image.type_id = $project_image_type_id
@@ -2548,7 +2547,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
             $archive_rotate_temp_image .= '.png';
 
-            my $rotate_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 1);
+            my $rotate_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 1);
             my $rotated_image_id = $rotate_return->{rotated_image_id};
 
             my $image = SGN::Image->new( $schema->storage->dbh, $rotated_image_id, $c );
@@ -2632,14 +2631,14 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
             $archive_temp_image .= '.png';
 
-            my $cropping_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_cropping($c, $schema, $drone_run_band_project_id, $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
+            my $cropping_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_cropping($c, $schema, $drone_run_band_project_id, [], $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
             my $cropped_image_id = $cropping_return->{cropped_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
             my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
             $archive_denoise_temp_image .= '.png';
 
-            my $denoise_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_denoise($c, $schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+            my $denoise_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_denoise($c, $schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image);
             my $denoised_image_id = $denoise_return->{denoised_image_id};
 
             $drone_run_band_info{$drone_run_band_project_id} = {
@@ -3061,7 +3060,6 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
     my $process_indicator_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_in_progress', 'project_property')->cvterm_id();
     my $processed_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_completed', 'project_property')->cvterm_id();
     my $processed_minimal_vi_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_standard_process_vi_completed', 'project_property')->cvterm_id();
-    my $drone_run_band_type_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
     my $rotate_angle_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotate_angle', 'project_property')->cvterm_id();
     my $cropping_polygon_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_cropped_polygon', 'project_property')->cvterm_id();
     my $plot_polygon_template_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
@@ -3230,7 +3228,7 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
     my %selected_drone_run_band_types;
     my $q2 = "SELECT project_md_image.image_id, drone_run_band_type.value, drone_run_band.project_id
         FROM project AS drone_run_band
-        JOIN projectprop AS drone_run_band_type ON(drone_run_band_type.project_id = drone_run_band.project_id AND drone_run_band_type.type_id = $drone_run_band_type_type_id)
+        JOIN projectprop AS drone_run_band_type ON(drone_run_band_type.project_id = drone_run_band.project_id AND drone_run_band_type.type_id = $drone_run_band_type_cvterm_id)
         JOIN phenome.project_md_image AS project_md_image ON(project_md_image.project_id = drone_run_band.project_id)
         JOIN metadata.md_image ON(project_md_image.image_id = metadata.md_image.image_id)
         WHERE project_md_image.type_id = $project_image_type_id
@@ -3260,7 +3258,7 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
         my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
         $archive_rotate_temp_image .= '.png';
 
-        my $rotate_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, $image_id, $rotate_value*-1, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, $rotate_keep_original_size);
+        my $rotate_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $rotate_value*-1, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, $rotate_keep_original_size);
         my $rotated_image_id = $rotate_return->{rotated_image_id};
         my $apply_rotated_image_resize = $rotate_return->{original_image_resize_ratio};
         my $apply_rotated_image_resize_x = $apply_rotated_image_resize->[0];
@@ -3311,14 +3309,14 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
         my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
         $archive_temp_image .= '.png';
 
-        my $cropping_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_cropping($c, $schema, $drone_run_band_project_id, $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
+        my $cropping_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_cropping($c, $schema, $drone_run_band_project_id, [], $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
         my $cropped_image_id = $cropping_return->{cropped_image_id};
 
         $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
         my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
         $archive_denoise_temp_image .= '.png';
 
-        my $denoise_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_denoise($c, $schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+        my $denoise_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_denoise($c, $schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image);
         my $denoised_image_id = $denoise_return->{denoised_image_id};
 
         $drone_run_band_info{$drone_run_band_project_id} = {

@@ -5165,7 +5165,7 @@ sub drone_imagery_rotate_image_GET : Args(0) {
     my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
     $archive_rotate_temp_image .= '.png';
 
-    my $return = _perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, $image_id, $angle_rotation, $view_only, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
+    my $return = _perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $angle_rotation, $view_only, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
 
     $c->stash->{rest} = $return;
 }
@@ -5175,6 +5175,7 @@ sub _perform_image_rotate {
     my $schema = shift;
     my $metadata_schema = shift;
     my $drone_run_band_project_id = shift;
+    my $drone_run_band_same_orthophoto_project_ids = shift || [];
     my $image_id = shift;
     my $angle_rotation = shift || 0;
     my $view_only = shift;
@@ -5264,8 +5265,8 @@ sub _perform_image_rotate {
             my $temp_image = SGN::Image->new( $schema->storage->dbh, $_->{image_id}, $c );
             $temp_image->delete(); #Sets to obsolete
         }
-        $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'rotated_stitched_drone_imagery', 'project_md_image')->cvterm_id();
 
+        $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'rotated_stitched_drone_imagery', 'project_md_image')->cvterm_id();
         my $rotated_stitched_images_search = CXGN::DroneImagery::ImagesSearch->new({
             bcs_schema=>$schema,
             project_image_type_id=>$linking_table_type_id,
@@ -5292,17 +5293,16 @@ sub _perform_image_rotate {
     my $rotated_image_fullpath;
     my $rotated_image_url;
     my $rotated_image_id;
+    my $image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
     if ($dont_check_for_previous) {
-        $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
-        $image->set_sp_person_id($user_id);
-        my $ret = $image->process_image($archive_rotate_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
-        $rotated_image_fullpath = $image->get_filename('original_converted', 'full');
-        $rotated_image_url = $image->get_image_url('original');
-        $rotated_image_id = $image->get_image_id();
+        $image_store->set_sp_person_id($user_id);
+        my $ret = $image_store->process_image($archive_rotate_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
+        $rotated_image_fullpath = $image_store->get_filename('original_converted', 'full');
+        $rotated_image_url = $image_store->get_image_url('original');
+        $rotated_image_id = $image_store->get_image_id();
     }
     else {
-        $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
-        my $md5checksum = $image->calculate_md5sum($archive_rotate_temp_image);
+        my $md5checksum = $image_store->calculate_md5sum($archive_rotate_temp_image);
         my $q = "SELECT md_image.image_id FROM metadata.md_image AS md_image
             JOIN phenome.project_md_image AS project_md_image ON(project_md_image.image_id = md_image.image_id)
             WHERE md_image.obsolete = 'f' AND md_image.md5sum = ? AND project_md_image.type_id = ? AND project_md_image.project_id = ?;";
@@ -5312,16 +5312,77 @@ sub _perform_image_rotate {
 
         if ($saved_image_id) {
             print STDERR Dumper "Image $archive_rotate_temp_image has already been added to the database and will not be added again.";
-            $image = SGN::Image->new( $schema->storage->dbh, $saved_image_id, $c );
-            $rotated_image_fullpath = $image->get_filename('original_converted', 'full');
-            $rotated_image_url = $image->get_image_url('original');
-            $rotated_image_id = $image->get_image_id();
+            $image_store = SGN::Image->new( $schema->storage->dbh, $saved_image_id, $c );
+            $rotated_image_fullpath = $image_store->get_filename('original_converted', 'full');
+            $rotated_image_url = $image_store->get_image_url('original');
+            $rotated_image_id = $image_store->get_image_id();
         } else {
-            $image->set_sp_person_id($user_id);
-            my $ret = $image->process_image($archive_rotate_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
-            $rotated_image_fullpath = $image->get_filename('original_converted', 'full');
-            $rotated_image_url = $image->get_image_url('original');
-            $rotated_image_id = $image->get_image_id();
+            $image_store->set_sp_person_id($user_id);
+            my $ret = $image_store->process_image($archive_rotate_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
+            $rotated_image_fullpath = $image_store->get_filename('original_converted', 'full');
+            $rotated_image_url = $image_store->get_image_url('original');
+            $rotated_image_id = $image_store->get_image_id();
+        }
+    }
+
+    if (!$view_only) {
+        foreach (@$drone_run_band_same_orthophoto_project_ids) {
+            my $drone_run_band_rotate_keep_original_size_polygons_rs = $schema->resultset('Project::Projectprop')->update_or_create({
+                type_id=>$drone_run_band_rotate_keep_original_size_cvterm_id,
+                project_id=>$_,
+                rank=>0,
+                value=> $keep_original_size_rotate
+            },
+            {
+                key=>'projectprop_c1'
+            });
+
+            my $drone_run_band_rotate_resize_rs = $schema->resultset('Project::Projectprop')->update_or_create({
+                type_id=>$rotated_image_resize_ratio_cvterm_id,
+                project_id=>$_,
+                rank=>0,
+                value=> encode_json \@original_image_resize_ratio
+            },
+            {
+                key=>'projectprop_c1'
+            });
+
+            my $rotated_stitched_temporary_drone_images_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'rotated_stitched_temporary_drone_imagery', 'project_md_image')->cvterm_id();
+            my $rotated_stitched_temporary_images_search = CXGN::DroneImagery::ImagesSearch->new({
+                bcs_schema=>$schema,
+                project_image_type_id=>$rotated_stitched_temporary_drone_images_cvterm_id,
+                drone_run_band_project_id_list=>[$_]
+            });
+            my ($rotated_stitched_temporary_result, $rotated_stitched_temporary_total_count) = $rotated_stitched_temporary_images_search->search();
+            foreach (@$rotated_stitched_temporary_result){
+                my $temp_image = SGN::Image->new( $schema->storage->dbh, $_->{image_id}, $c );
+                $temp_image->delete(); #Sets to obsolete
+            }
+
+            my $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'rotated_stitched_drone_imagery', 'project_md_image')->cvterm_id();
+            my $rotated_stitched_images_search = CXGN::DroneImagery::ImagesSearch->new({
+                bcs_schema=>$schema,
+                project_image_type_id=>$linking_table_type_id,
+                drone_run_band_project_id_list=>[$_]
+            });
+            my ($rotated_stitched_result, $rotated_stitched_total_count) = $rotated_stitched_images_search->search();
+            foreach (@$rotated_stitched_result){
+                my $previous_image = SGN::Image->new( $schema->storage->dbh, $_->{image_id}, $c );
+                $previous_image->delete(); #Sets to obsolete
+            }
+
+            my $drone_run_band_rotate_angle_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotate_angle', 'project_property')->cvterm_id();
+            my $drone_run_band_rotate_angle = $schema->resultset('Project::Projectprop')->update_or_create({
+                type_id=>$drone_run_band_rotate_angle_type_id,
+                project_id=>$_,
+                rank=>0,
+                value=>$angle_rotation
+            },
+            {
+                key=>'projectprop_c1'
+            });
+
+            my $ret = $image_store->associate_project($_, $linking_table_type_id);
         }
     }
 
@@ -5799,7 +5860,7 @@ sub drone_imagery_manual_assign_plot_polygon_POST : Args(0) {
         my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
         $archive_rotate_temp_image .= '.png';
 
-        my $rotate_return = _perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, $image_id, $angle_rotated, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
+        my $rotate_return = _perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $angle_rotated, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
         my $rotated_image_id = $rotate_return->{rotated_image_id};
 
         my $return = _perform_plot_polygon_assign($c, $schema, $metadata_schema, $rotated_image_id, $drone_run_band_project_id, $stock_polygons, $plot_polygon_type, $user_id, $user_name, $user_role, 0, 1, 1, 1, 'rectangular_square');
@@ -5941,7 +6002,7 @@ sub drone_imagery_denoise_GET : Args(0) {
     my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
     $archive_denoise_temp_image .= '.png';
 
-    my $return = _perform_image_denoise($c, $schema, $metadata_schema, $image_id, $drone_run_band_project_id, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+    my $return = _perform_image_denoise($c, $schema, $metadata_schema, $image_id, $drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image);
 
     $c->stash->{rest} = $return;
 }
@@ -5952,6 +6013,7 @@ sub _perform_image_denoise {
     my $metadata_schema = shift;
     my $image_id = shift;
     my $drone_run_band_project_id = shift;
+    my $drone_run_band_project_ids_same_orthophoto = shift || [];
     my $user_id = shift;
     my $user_name = shift;
     my $user_role = shift;
@@ -5966,7 +6028,6 @@ sub _perform_image_denoise {
     my $status = system($cmd);
 
     my $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'denoised_stitched_drone_imagery', 'project_md_image')->cvterm_id();
-
     my $previous_denoised_images_search = CXGN::DroneImagery::ImagesSearch->new({
         bcs_schema=>$schema,
         project_image_type_id=>$linking_table_type_id,
@@ -5978,11 +6039,8 @@ sub _perform_image_denoise {
         $previous_image->delete(); #Sets to obsolete
     }
 
-    my $denoised_image_fullpath;
-    my $denoised_image_url;
-    my $denoised_image_id;
-    $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
-    my $md5checksum = $image->calculate_md5sum($archive_denoise_temp_image);
+    my $image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
+    my $md5checksum = $image_store->calculate_md5sum($archive_denoise_temp_image);
     my $q = "SELECT md_image.image_id FROM metadata.md_image AS md_image
         JOIN phenome.project_md_image AS project_md_image ON(project_md_image.image_id = md_image.image_id)
         WHERE md_image.obsolete = 'f' AND md_image.md5sum = ? AND project_md_image.type_id = ? AND project_md_image.project_id = ?;";
@@ -5990,18 +6048,36 @@ sub _perform_image_denoise {
     $h->execute($md5checksum, $linking_table_type_id, $drone_run_band_project_id);
     my ($saved_image_id) = $h->fetchrow_array();
 
+    my $denoised_image_fullpath;
+    my $denoised_image_url;
+    my $denoised_image_id;
     if ($saved_image_id) {
         print STDERR Dumper "Image $archive_denoise_temp_image has already been added to the database and will not be added again.";
-        $image = SGN::Image->new( $schema->storage->dbh, $saved_image_id, $c );
-        $denoised_image_fullpath = $image->get_filename('original_converted', 'full');
-        $denoised_image_url = $image->get_image_url('original');
-        $denoised_image_id = $image->get_image_id();
+        $image_store = SGN::Image->new( $schema->storage->dbh, $saved_image_id, $c );
+        $denoised_image_fullpath = $image_store->get_filename('original_converted', 'full');
+        $denoised_image_url = $image_store->get_image_url('original');
+        $denoised_image_id = $image_store->get_image_id();
     } else {
-        $image->set_sp_person_id($user_id);
-        my $ret = $image->process_image($archive_denoise_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
-        $denoised_image_fullpath = $image->get_filename('original_converted', 'full');
-        $denoised_image_url = $image->get_image_url('original');
-        $denoised_image_id = $image->get_image_id();
+        $image_store->set_sp_person_id($user_id);
+        my $ret = $image_store->process_image($archive_denoise_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
+        $denoised_image_fullpath = $image_store->get_filename('original_converted', 'full');
+        $denoised_image_url = $image_store->get_image_url('original');
+        $denoised_image_id = $image_store->get_image_id();
+    }
+
+    foreach (@$drone_run_band_project_ids_same_orthophoto) {
+        my $previous_denoised_images_search = CXGN::DroneImagery::ImagesSearch->new({
+            bcs_schema=>$schema,
+            project_image_type_id=>$linking_table_type_id,
+            drone_run_band_project_id_list=>[$_]
+        });
+        my ($previous_denoised_result, $previous_denoised_total_count) = $previous_denoised_images_search->search();
+        foreach (@$previous_denoised_result){
+            my $previous_image = SGN::Image->new( $schema->storage->dbh, $_->{image_id}, $c );
+            $previous_image->delete(); #Sets to obsolete
+        }
+
+        my $ret = $image_store->associate_project($_, $linking_table_type_id);
     }
 
     unlink($archive_denoise_temp_image);
@@ -7012,6 +7088,11 @@ sub standard_process_apply_POST : Args(0) {
     my $camera_rig_apply = $c->req->param('apply_to_all_drone_runs_from_same_camera_rig') eq 'Yes' ? 1 : 0;
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
+    my $project = CXGN::Trial->new({ bcs_schema => $bcs_schema, trial_id => $drone_run_project_id_input });
+    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
+    print STDERR Dumper $field_trial_drone_run_projects_in_same_orthophoto;
+    print STDERR Dumper $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash;
+
     my $rotate_angle_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_rotate_angle', 'project_property')->cvterm_id();
     my $cropping_polygon_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_cropped_polygon', 'project_property')->cvterm_id();
     my $plot_polygon_template_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
@@ -7085,45 +7166,52 @@ sub standard_process_apply_POST : Args(0) {
         my $drone_run_band_project_id = $_->{drone_run_band_project_id};
         my $apply_drone_run_band_project_ids = $_->{apply_drone_run_band_project_ids};
 
-        my $drone_run_process_in_progress = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
-            type_id=>$process_indicator_cvterm_id,
-            project_id=>$drone_run_project_id_in,
-            rank=>0,
-            value=>1
-        },
-        {
-            key=>'projectprop_c1'
-        });
+        my @drone_run_project_ids_array = ($drone_run_project_id_in);
+        if (scalar(@$field_trial_drone_run_project_ids_in_same_orthophoto)>0) {
+            push @drone_run_project_ids_array, @$field_trial_drone_run_project_ids_in_same_orthophoto;
+        }
 
-        my $drone_run_process_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
-            type_id=>$processed_cvterm_id,
-            project_id=>$drone_run_project_id_in,
-            rank=>0,
-            value=>0
-        },
-        {
-            key=>'projectprop_c1'
-        });
+        foreach (@drone_run_project_ids_array) {
+            my $drone_run_process_in_progress = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+                type_id=>$process_indicator_cvterm_id,
+                project_id=>$_,
+                rank=>0,
+                value=>1
+            },
+            {
+                key=>'projectprop_c1'
+            });
 
-        my $drone_run_process_minimal_vi_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
-            type_id=>$processed_minimal_vi_cvterm_id,
-            project_id=>$drone_run_project_id_in,
-            rank=>0,
-            value=>0
-        },
-        {
-            key=>'projectprop_c1'
-        });
+            my $drone_run_process_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+                type_id=>$processed_cvterm_id,
+                project_id=>$_,
+                rank=>0,
+                value=>0
+            },
+            {
+                key=>'projectprop_c1'
+            });
 
-        my $drone_run_process_phenotype_margins = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
-            type_id=>$drone_run_band_plot_polygons_phenotype_margins_json_type_id,
-            project_id=>$drone_run_project_id_in,
-            rank=>0,
-            value=>encode_json {top_bottom => $plot_margin_top_bottom, left_right => $plot_margin_left_right}
-        },
-        {
-            key=>'projectprop_c1'
-        });
+            my $drone_run_process_minimal_vi_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+                type_id=>$processed_minimal_vi_cvterm_id,
+                project_id=>$_,
+                rank=>0,
+                value=>0
+            },
+            {
+                key=>'projectprop_c1'
+            });
+
+            my $drone_run_process_phenotype_margins = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+                type_id=>$drone_run_band_plot_polygons_phenotype_margins_json_type_id,
+                project_id=>$_,
+                rank=>0,
+                value=>encode_json {top_bottom => $plot_margin_top_bottom, left_right => $plot_margin_left_right}
+            },
+            {
+                key=>'projectprop_c1'
+            });
+        }
 
         my %vegetative_indices_hash;
         foreach (@$vegetative_indices) {
@@ -7171,6 +7259,8 @@ sub standard_process_apply_POST : Args(0) {
             my ($image_id, $drone_run_band_type, $drone_run_band_project_id) = $h2->fetchrow_array();
             $selected_drone_run_band_types{$drone_run_band_type} = $drone_run_band_project_id;
 
+            my $field_trial_drone_run_band_ids_in_same_orthophoto = $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash->{$drone_run_band_type};
+
             my $check_image_apply = SGN::Image->new( $bcs_schema->storage->dbh, $image_id, $c );
             my $check_image_apply_fullpath = $check_image_apply->get_filename('original_converted', 'full');
             my ($check_image_apply_width, $check_image_apply_height) = imgsize($check_image_apply_fullpath);
@@ -7182,21 +7272,21 @@ sub standard_process_apply_POST : Args(0) {
             my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
             $archive_rotate_temp_image .= '.png';
 
-            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id, $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
+            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
             my $rotated_image_id = $rotate_return->{rotated_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
             my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
             $archive_temp_image .= '.png';
 
-            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id, $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
+            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
             my $cropped_image_id = $cropping_return->{cropped_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
             my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
             $archive_denoise_temp_image .= '.png';
 
-            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
             my $denoised_image_id = $denoise_return->{denoised_image_id};
 
             $drone_run_band_info{$drone_run_band_project_id} = {
@@ -7238,37 +7328,41 @@ sub standard_process_apply_POST : Args(0) {
 
         _perform_minimal_vi_standard_process($c, $bcs_schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_square');
 
-        $drone_run_process_in_progress = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
-            type_id=>$process_indicator_cvterm_id,
-            project_id=>$drone_run_project_id_in,
-            rank=>0,
-            value=>0
-        },
-        {
-            key=>'projectprop_c1'
-        });
+        foreach (@drone_run_project_ids_array) {
+            my $drone_run_process_in_progress = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+                type_id=>$process_indicator_cvterm_id,
+                project_id=>$_,
+                rank=>0,
+                value=>0
+            },
+            {
+                key=>'projectprop_c1'
+            });
 
-        $drone_run_process_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
-            type_id=>$processed_cvterm_id,
-            project_id=>$drone_run_project_id_in,
-            rank=>0,
-            value=>1
-        },
-        {
-            key=>'projectprop_c1'
-        });
+            my $drone_run_process_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+                type_id=>$processed_cvterm_id,
+                project_id=>$_,
+                rank=>0,
+                value=>1
+            },
+            {
+                key=>'projectprop_c1'
+            });
 
-        $drone_run_process_minimal_vi_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
-            type_id=>$processed_minimal_vi_cvterm_id,
-            project_id=>$drone_run_project_id_in,
-            rank=>0,
-            value=>1
-        },
-        {
-            key=>'projectprop_c1'
-        });
+            my $drone_run_process_minimal_vi_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+                type_id=>$processed_minimal_vi_cvterm_id,
+                project_id=>$_,
+                rank=>0,
+                value=>1
+            },
+            {
+                key=>'projectprop_c1'
+            });
+        }
 
-        my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_in, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
+        foreach (@drone_run_project_ids_array) {
+            my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $_, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
+        }
     }
 
     my @result;
@@ -7604,7 +7698,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $dir = $c->tempfiles_subdir('/drone_imagery_rotate');
     my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
     $archive_rotate_temp_image .= '.png';
-    my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id_input, $check_image_id, $rotate_rad_gcp/$rad_conversion, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
+    my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id_input, [], $check_image_id, $rotate_rad_gcp/$rad_conversion, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
     my $rotated_image_id = $rotate_return->{rotated_image_id};
 
     my $h_rotate_check = $bcs_schema->storage->dbh()->prepare($q2);
@@ -7725,7 +7819,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
     $archive_temp_image .= '.png';
 
-    my $check_cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id_input, $rotated_image_id, encode_json $image_crop, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
+    my $check_cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id_input, [], $rotated_image_id, encode_json $image_crop, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
     my $check_cropped_image_id = $check_cropping_return->{cropped_image_id};
 
     my $crop_check_target_image = SGN::Image->new( $bcs_schema->storage->dbh, $check_cropped_image_id, $c );
@@ -7863,21 +7957,21 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
         my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
         $archive_rotate_temp_image .= '.png';
 
-        my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id, $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
+        my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
         my $rotated_image_id = $rotate_return->{rotated_image_id};
 
         $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
         my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
         $archive_temp_image .= '.png';
 
-        my $cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id, $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
+        my $cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id, [], $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
         my $cropped_image_id = $cropping_return->{cropped_image_id};
 
         $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
         my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
         $archive_denoise_temp_image .= '.png';
 
-        my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+        my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image);
         my $denoised_image_id = $denoise_return->{denoised_image_id};
 
         $drone_run_band_info{$drone_run_band_project_id} = {
@@ -8121,21 +8215,21 @@ sub standard_process_apply_previous_imaging_event_POST : Args(0) {
         my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
         $archive_rotate_temp_image .= '.png';
 
-        my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id, $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
+        my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
         my $rotated_image_id = $rotate_return->{rotated_image_id};
 
         $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
         my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
         $archive_temp_image .= '.png';
 
-        my $cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id, $rotated_image_id, $cropping_value_json, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
+        my $cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id, [], $rotated_image_id, $cropping_value_json, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
         my $cropped_image_id = $cropping_return->{cropped_image_id};
 
         $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
         my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
         $archive_denoise_temp_image .= '.png';
 
-        my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+        my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image);
         my $denoised_image_id = $denoise_return->{denoised_image_id};
 
         $drone_run_band_info{$drone_run_band_project_id} = {
@@ -9437,21 +9531,21 @@ sub _perform_minimal_vi_standard_process {
             my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
             $archive_rotate_temp_image .= '.png';
 
-            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $merged_drone_run_band_project_id, $merged_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{rotate_value}, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image,0,0, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{check_resize}, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{keep_original_size_rotate});
+            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $merged_drone_run_band_project_id, [], $merged_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{rotate_value}, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image,0,0, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{check_resize}, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{keep_original_size_rotate});
             my $rotated_image_id = $rotate_return->{rotated_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
             my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
             $archive_temp_image .= '.png';
 
-            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $merged_drone_run_band_project_id, $rotated_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{cropping_value}, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
+            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $merged_drone_run_band_project_id, [], $rotated_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{cropping_value}, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
             my $cropped_image_id = $cropping_return->{cropped_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
             my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
             $archive_denoise_temp_image .= '.png';
 
-            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $merged_drone_run_band_project_id, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $merged_drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image);
             my $denoised_image_id = $denoise_return->{denoised_image_id};
 
             my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{plot_polygons_value}, 'observation_unit_polygon_rgb_imagery', $user_id, $user_name, $user_role, 0, 0, 1, 1, $cropping_polygon_type);
@@ -9488,21 +9582,21 @@ sub _perform_minimal_vi_standard_process {
             my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
             $archive_rotate_temp_image .= '.png';
 
-            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $merged_drone_run_band_project_id, $merged_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{rotate_value}, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{check_resize}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{keep_original_size_rotate});
+            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $merged_drone_run_band_project_id, [], $merged_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{rotate_value}, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{check_resize}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{keep_original_size_rotate});
             my $rotated_image_id = $rotate_return->{rotated_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
             my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
             $archive_temp_image .= '.png';
 
-            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $merged_drone_run_band_project_id, $rotated_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{cropping_value}, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
+            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $merged_drone_run_band_project_id, [], $rotated_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{cropping_value}, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
             my $cropped_image_id = $cropping_return->{cropped_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
             my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
             $archive_denoise_temp_image .= '.png';
 
-            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $merged_drone_run_band_project_id, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $merged_drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image);
             my $denoised_image_id = $denoise_return->{denoised_image_id};
 
             my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{plot_polygons_value}, 'observation_unit_polygon_nrn_imagery', $user_id, $user_name, $user_role, 0, 0, 1, 1, $cropping_polygon_type);
@@ -9520,21 +9614,21 @@ sub _perform_minimal_vi_standard_process {
             my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
             $archive_rotate_temp_image .= '.png';
 
-            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $merged_drone_run_band_project_id, $merged_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{rotate_value}, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{check_resize}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{keep_original_size_rotate});
+            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $merged_drone_run_band_project_id, [], $merged_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{rotate_value}, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{check_resize}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{keep_original_size_rotate});
             my $rotated_image_id = $rotate_return->{rotated_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
             my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
             $archive_temp_image .= '.png';
 
-            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $merged_drone_run_band_project_id, $rotated_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{cropping_value}, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
+            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $merged_drone_run_band_project_id, [], $rotated_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{cropping_value}, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
             my $cropped_image_id = $cropping_return->{cropped_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
             my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
             $archive_denoise_temp_image .= '.png';
 
-            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $merged_drone_run_band_project_id, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $merged_drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image);
             my $denoised_image_id = $denoise_return->{denoised_image_id};
 
             my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{plot_polygons_value}, 'observation_unit_polygon_nren_imagery', $user_id, $user_name, $user_role, 0, 0, 1, 1, $cropping_polygon_type);
@@ -9682,7 +9776,7 @@ sub drone_imagery_crop_image_GET : Args(0) {
     my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
     $archive_temp_image .= '.png';
 
-    my $return = _perform_image_cropping($c, $schema, $drone_run_band_project_id, $image_id, $polygons, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
+    my $return = _perform_image_cropping($c, $schema, $drone_run_band_project_id, [], $image_id, $polygons, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
 
     $c->stash->{rest} = $return;
 }
@@ -9691,6 +9785,7 @@ sub _perform_image_cropping {
     my $c = shift;
     my $schema = shift;
     my $drone_run_band_project_id = shift;
+    my $drone_run_band_same_orthophoto_project_ids = shift || [];
     my $image_id = shift;
     my $polygons = shift;
     my $user_id = shift;
@@ -9721,10 +9816,10 @@ sub _perform_image_cropping {
     print STDERR Dumper $cmd;
     my $status = system($cmd);
 
-    $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
-    $image->set_sp_person_id($user_id);
-    my $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'cropped_stitched_drone_imagery', 'project_md_image')->cvterm_id();
+    my $image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
+    $image_store->set_sp_person_id($user_id);
 
+    my $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'cropped_stitched_drone_imagery', 'project_md_image')->cvterm_id();
     my $previous_cropped_images_search = CXGN::DroneImagery::ImagesSearch->new({
         bcs_schema=>$schema,
         project_image_type_id=>$linking_table_type_id,
@@ -9736,10 +9831,10 @@ sub _perform_image_cropping {
         $previous_image->delete(); #Sets to obsolete
     }
 
-    my $ret = $image->process_image($archive_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
-    my $cropped_image_fullpath = $image->get_filename('original_converted', 'full');
-    my $cropped_image_url = $image->get_image_url('original');
-    my $cropped_image_id = $image->get_image_id();
+    my $ret = $image_store->process_image($archive_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
+    my $cropped_image_fullpath = $image_store->get_filename('original_converted', 'full');
+    my $cropped_image_url = $image_store->get_image_url('original');
+    my $cropped_image_id = $image_store->get_image_id();
 
     my $drone_run_band_cropped_polygon_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_cropped_polygon', 'project_property')->cvterm_id();
     my $drone_run_band_cropped_polygon = $schema->resultset('Project::Projectprop')->update_or_create({
@@ -9751,6 +9846,31 @@ sub _perform_image_cropping {
     {
         key=>'projectprop_c1'
     });
+
+    foreach (@$drone_run_band_same_orthophoto_project_ids) {
+        my $previous_cropped_images_search = CXGN::DroneImagery::ImagesSearch->new({
+            bcs_schema=>$schema,
+            project_image_type_id=>$linking_table_type_id,
+            drone_run_band_project_id_list=>[$_]
+        });
+        my ($previous_result, $previous_total_count) = $previous_cropped_images_search->search();
+        foreach (@$previous_result) {
+            my $previous_image = SGN::Image->new( $schema->storage->dbh, $_->{image_id}, $c );
+            $previous_image->delete(); #Sets to obsolete
+        }
+
+        my $ret = $image_store->associate_project($_, $linking_table_type_id);
+
+        my $drone_run_band_cropped_polygon = $schema->resultset('Project::Projectprop')->update_or_create({
+            type_id=>$drone_run_band_cropped_polygon_type_id,
+            project_id=>$_,
+            rank=>0,
+            value=>$polygons
+        },
+        {
+            key=>'projectprop_c1'
+        });
+    }
 
     unlink($archive_temp_image);
     return {
@@ -13355,8 +13475,9 @@ sub drone_imagery_delete_drone_run_GET : Args(0) {
     print STDERR "DELETING DRONE RUN\n";
 
     my $project = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $drone_run_project_id });
-    my $field_trial_drone_run_projects_in_same_orthophoto = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
+    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
     print STDERR Dumper $field_trial_drone_run_projects_in_same_orthophoto;
+    print STDERR Dumper $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash;
 
     my %image_ids_drone_runs_same_orthophoto;
     if (scalar(@$field_trial_drone_run_projects_in_same_orthophoto)>0) {
