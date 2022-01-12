@@ -36,6 +36,56 @@ sub get_associated_image_band_projects {
     return \@image_band_projects;
 }
 
+=head2 function get_field_trial_drone_run_projects_in_same_orthophoto()
+
+ Usage:
+ Desc:         returns the other imaging event projects that are in the same orthophoto
+ Ret:          returns an arrayref [ id, name ] of arrayrefs
+ Args:
+ Side Effects:
+ Example:
+
+=cut
+
+sub get_field_trial_drone_run_projects_in_same_orthophoto {
+    my $self = shift;
+    my $schema = $self->bcs_schema;
+
+    my $field_trial_drone_runs_in_same_orthophoto_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'field_trial_drone_runs_in_same_orthophoto', 'experiment_type')->cvterm_id();
+
+    my @related_imaging_events;
+
+    my $q = "SELECT nd_experiment.nd_experiment_id
+        FROM nd_experiment_project
+        JOIN nd_experiment ON (nd_experiment_project.nd_experiment_id = nd_experiment.nd_experiment_id)
+        WHERE nd_experiment.type_id = ? and project_id = ?;";
+    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($field_trial_drone_runs_in_same_orthophoto_type_id, $self->get_trial_id);
+    my @nd_experiment_ids;
+    while (my ($nd_experiment_id) = $h->fetchrow_array()) {
+        push @nd_experiment_ids, $nd_experiment_id;
+    }
+    if (scalar(@nd_experiment_ids)>1) {
+        die "It should not be possible to save an imaging event into more than one orthophoto!\n";
+    }
+    elsif (scalar(@nd_experiment_ids)==1) {
+        my $nd_experiment_id = $nd_experiment_ids[0];
+        my $q = "SELECT project.project_id, project.name
+            FROM nd_experiment_project
+            JOIN nd_experiment ON (nd_experiment_project.nd_experiment_id = nd_experiment.nd_experiment_id)
+            JOIN project ON (project.project_id = nd_experiment_project.project_id)
+            WHERE nd_experiment.type_id = ? AND nd_experiment_project.nd_experiment_id = ? AND project.project_id != ?;";
+        my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+        $h->execute($field_trial_drone_runs_in_same_orthophoto_type_id, $nd_experiment_id, $self->get_trial_id);
+        while (my ($project_id, $project_name) = $h->fetchrow_array()) {
+            push @related_imaging_events, [$project_id, $project_name];
+        }
+    }
+
+    return \@related_imaging_events;
+}
+
+
 =head2 accessors get_drone_run_date(), set_drone_run_date()
 
  Usage:

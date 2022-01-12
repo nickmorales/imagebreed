@@ -207,10 +207,12 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
         my $drone_run_rig_desc_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_rig_description', 'project_property')->cvterm_id();
         my $drone_run_related_cvterms_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_related_time_cvterms_json', 'project_property')->cvterm_id();
         my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
+        my $field_trial_drone_runs_in_same_orthophoto_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'field_trial_drone_runs_in_same_orthophoto', 'experiment_type')->cvterm_id();
         my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle', 'stock_type')->cvterm_id();
         my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
 
         my $iterator = 0;
+        my $field_trial_drone_runs_in_same_orthophoto_nd_experiment_id;
         foreach my $selected_trial_id (@selected_trial_ids) {
             my $new_drone_run_name = $new_drone_run_names[$iterator];
 
@@ -298,12 +300,25 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
             });
             my $drone_run_nd_experiment_id = $nd_experiment_rs->nd_experiment_id();
 
+            my @drone_run_nd_experiment_projects = ({nd_experiment_id => $drone_run_nd_experiment_id});
+
+            if (scalar(@selected_trial_ids)>1) {
+                if ($iterator == 0) {
+                    my $nd_experiment_rs = $schema->resultset("NaturalDiversity::NdExperiment")->create({
+                        nd_geolocation_id => $trial_location_id,
+                        type_id => $field_trial_drone_runs_in_same_orthophoto_type_id,
+                    });
+                    $field_trial_drone_runs_in_same_orthophoto_nd_experiment_id = $nd_experiment_rs->nd_experiment_id();
+                }
+                push @drone_run_nd_experiment_projects, {nd_experiment_id => $field_trial_drone_runs_in_same_orthophoto_nd_experiment_id};
+            }
+
             my $project_rs = $schema->resultset("Project::Project")->create({
                 name => $new_drone_run_name,
                 description => $new_drone_run_desc,
                 projectprops => $drone_run_projectprops,
                 project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $selected_trial_id}],
-                nd_experiment_projects => [{nd_experiment_id => $drone_run_nd_experiment_id}]
+                nd_experiment_projects => \@drone_run_nd_experiment_projects
             });
             $selected_drone_run_id = $project_rs->project_id();
 

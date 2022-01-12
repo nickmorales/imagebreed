@@ -13354,6 +13354,29 @@ sub drone_imagery_delete_drone_run_GET : Args(0) {
     my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
     print STDERR "DELETING DRONE RUN\n";
 
+    my $project = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $drone_run_project_id });
+    my $field_trial_drone_run_projects_in_same_orthophoto = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
+    print STDERR Dumper $field_trial_drone_run_projects_in_same_orthophoto;
+
+    my %image_ids_drone_runs_same_orthophoto;
+    if (scalar(@$field_trial_drone_run_projects_in_same_orthophoto)>0) {
+        my @field_trial_drone_run_projects_in_same_orthophoto_project_ids;
+        foreach (@$field_trial_drone_run_projects_in_same_orthophoto) {
+            push @field_trial_drone_run_projects_in_same_orthophoto_project_ids, $_->[0];
+        }
+
+        my $images_search_drone_runs_same_orthophoto = CXGN::DroneImagery::ImagesSearch->new({
+            bcs_schema=>$schema,
+            drone_run_project_id_list=>\@field_trial_drone_run_projects_in_same_orthophoto_project_ids,
+        });
+        my ($result_drone_runs_same_orthophoto, $total_count_drone_runs_same_orthophoto) = $images_search_drone_runs_same_orthophoto->search();
+        print STDERR Dumper $total_count_drone_runs_same_orthophoto;
+
+        foreach (@$result_drone_runs_same_orthophoto) {
+            $image_ids_drone_runs_same_orthophoto{$_->{image_id}}++;
+        }
+    }
+
     my $images_search = CXGN::DroneImagery::ImagesSearch->new({
         bcs_schema=>$schema,
         drone_run_project_id_list=>[$drone_run_project_id],
@@ -13363,12 +13386,22 @@ sub drone_imagery_delete_drone_run_GET : Args(0) {
 
     my %drone_run_band_project_ids;
     my %image_ids;
+    my %image_ids_not_delete;
     foreach (@$result) {
+        my $image_id = $_->{image_id};
+
         $drone_run_band_project_ids{$_->{drone_run_band_project_id}}++;
-        $image_ids{$_->{image_id}}++;
+
+        if (!exists($image_ids_drone_runs_same_orthophoto{$image_id})) {
+            $image_ids{$image_id}++;
+        }
+        else {
+            $image_ids_not_delete{$image_id}++;
+        }
     }
     my @drone_run_band_ids = keys %drone_run_band_project_ids;
     my @drone_run_image_ids = keys %image_ids;
+    print STDERR Dumper \%image_ids_not_delete;
 
     foreach (keys %image_ids) {
         my $image = SGN::Image->new( $schema->storage->dbh, $_, $c );
@@ -13381,10 +13414,10 @@ sub drone_imagery_delete_drone_run_GET : Args(0) {
     my $q2 = "DELETE FROM project WHERE project_id IN ($drone_run_band_project_ids_sql);";
     my $q3 = "DELETE FROM project WHERE project_id = $drone_run_project_id;";
     my $q4 = "DELETE FROM phenome.stock_image WHERE image_id IN (SELECT image_id FROM phenome.project_md_image WHERE project_id IN ($drone_run_band_project_ids_sql));";
-    print STDERR $q4."\n";
-    print STDERR $q1."\n";
-    print STDERR $q2."\n";
-    print STDERR $q3."\n";
+    # print STDERR $q4."\n";
+    # print STDERR $q1."\n";
+    # print STDERR $q2."\n";
+    # print STDERR $q3."\n";
 
     if (scalar(@drone_run_band_ids)>0) {
         my $h4 = $schema->storage->dbh()->prepare($q4);
