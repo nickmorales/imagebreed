@@ -252,7 +252,7 @@ print STDERR Dumper $message_hash_contours;
 ok($message_hash_contours->{contours_image_id});
 ok($message_hash_contours->{contours_image_url});
 
-my %stock_polygons = ('test_trial1' => [{'x'=>1, 'y'=>1}, {'x'=>12, 'y'=>1}, {'x'=>12, 'y'=>8}, {'x'=>1, 'y'=>7}, {'x'=>1, 'y'=>1}]);
+my %stock_polygons = ('test_trial21' => [{'x'=>1, 'y'=>1}, {'x'=>12, 'y'=>1}, {'x'=>12, 'y'=>8}, {'x'=>1, 'y'=>7}, {'x'=>1, 'y'=>1}]);
 my $stock_polygon_json = encode_json \%stock_polygons;
 
 $ua = LWP::UserAgent->new;

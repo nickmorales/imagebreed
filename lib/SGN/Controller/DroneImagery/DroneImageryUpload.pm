@@ -2674,7 +2674,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                 my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
                 $archive_remove_background_temp_image .= '.png';
 
-                my $background_removed_threshold_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_background_remove_threshold_percentage($c, $schema, $denoised_image_id, $drone_run_band_project_id, $denoised_background_threshold_removed_imagery_types[$iterator], '25', '25', $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+                my $background_removed_threshold_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_background_remove_threshold_percentage($c, $schema, $denoised_image_id, $drone_run_band_project_id, [], $denoised_background_threshold_removed_imagery_types[$iterator], '25', '25', $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
 
                 my $plot_polygon_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_plot_polygon_assign($c, $schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, [], $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, $polygon_type);
             }
@@ -2685,7 +2685,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         print STDERR Dumper \%selected_drone_run_band_types;
         print STDERR Dumper \%vegetative_indices_hash;
 
-        SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_minimal_vi_standard_process($c, $schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, [],  \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_polygon');
+        SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_minimal_vi_standard_process($c, $schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, [], {},  \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_polygon');
 
         $drone_run_process_in_progress = $schema->resultset('Project::Projectprop')->update_or_create({
             type_id=>$process_indicator_cvterm_id,
@@ -3352,7 +3352,7 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
             my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
             $archive_remove_background_temp_image .= '.png';
 
-            my $background_removed_threshold_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_background_remove_threshold_percentage($c, $schema, $denoised_image_id, $drone_run_band_project_id, $denoised_background_threshold_removed_imagery_types[$iterator], '25', '25', $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+            my $background_removed_threshold_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_background_remove_threshold_percentage($c, $schema, $denoised_image_id, $drone_run_band_project_id, [], $denoised_background_threshold_removed_imagery_types[$iterator], '25', '25', $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
 
             my $plot_polygon_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_plot_polygon_assign($c, $schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, [], $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, $polygon_type);
         }
@@ -3391,7 +3391,7 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
     print STDERR Dumper \%selected_drone_run_band_types;
     print STDERR Dumper \%vegetative_indices_hash;
 
-    SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_minimal_vi_standard_process($c, $schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, [],  \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_polygon');
+    SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_minimal_vi_standard_process($c, $schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, [], {},  \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_polygon');
 
     $drone_run_process_in_progress = $schema->resultset('Project::Projectprop')->update_or_create({
         type_id=>$process_indicator_cvterm_id,

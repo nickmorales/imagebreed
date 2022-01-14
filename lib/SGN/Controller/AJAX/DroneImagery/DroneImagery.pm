@@ -5572,6 +5572,7 @@ sub _perform_plot_polygon_assign {
         $stock_ids_all{$stock_name} = $stock->stock_id;
     }
     # print STDERR Dumper $polygon_objs;
+    # print STDERR Dumper \%stock_ids_all;
 
     my $image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
     my $image_url = $image->get_image_url("original");
@@ -5590,10 +5591,13 @@ sub _perform_plot_polygon_assign {
         if ($previous_plot_polygons_rs->count > 0) {
             $save_stock_polygons = decode_json $previous_plot_polygons_rs->first->value;
         }
+        # print STDERR "Previously saved:\n";
+        # print STDERR Dumper $save_stock_polygons;
         foreach my $stock_name (keys %$polygon_objs) {
             $save_stock_polygons->{$stock_name} = $polygon_objs->{$stock_name};
         }
-
+        # print STDERR Dumper $save_stock_polygons;
+        # print STDERR Dumper \%drone_run_band_plot_hash;
         my %stock_ids;
         my $polygon_objs_save;
         foreach my $stock_name (keys %$save_stock_polygons) {
@@ -5603,6 +5607,8 @@ sub _perform_plot_polygon_assign {
                 $polygon_objs_save->{$stock_name} = $polygon;
             }
         }
+        # print STDERR Dumper \%stock_ids;
+        # print STDERR Dumper $polygon_objs_save;
 
         my $drone_run_band_plot_polygons = $schema->resultset('Project::Projectprop')->update_or_create({
             type_id=>$drone_run_band_plot_polygons_type_id,
@@ -10486,8 +10492,8 @@ sub _perform_image_merge {
         $iterator++;
     }
 
-    print STDERR Dumper $selected_merged_drone_run_band_id;
-    print STDERR Dumper \@merged_drone_run_band_ids_same_ortho;
+    # print STDERR Dumper $selected_merged_drone_run_band_id;
+    # print STDERR Dumper \@merged_drone_run_band_ids_same_ortho;
     unlink($archive_temp_image);
 
     print STDERR "Performing image merge end\n";
