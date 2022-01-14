@@ -5502,7 +5502,7 @@ sub _perform_plot_polygon_assign {
     my $schema = shift;
     my $metadata_schema = shift;
     my $image_id = shift;
-    my $drone_run_band_project_id = shift;
+    my $drone_run_band_project_id_input = shift;
     my $drone_run_band_project_ids_same_orthophoto = shift || [];
     my $stock_polygons = shift;
     my $assign_plot_polygons_type = shift;
@@ -5515,6 +5515,20 @@ sub _perform_plot_polygon_assign {
     my $height_ratio = shift;
     my $cropping_type = shift || 'rectangular_square';
 
+    my %drone_run_band_plot_hash;
+    my @drone_run_band_project_ids_all = ($drone_run_band_project_id_input);
+    if (scalar(@$drone_run_band_project_ids_same_orthophoto)>0) {
+        push @drone_run_band_project_ids_all, @$drone_run_band_project_ids_same_orthophoto;
+    }
+    foreach (@drone_run_band_project_ids_all) {
+        my $drone_run_band_project = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $_ });
+        my $field_trial_layout = $drone_run_band_project->get_associated_field_trial_layout();
+
+        while (my($plot_number, $plot_obj) = each %$field_trial_layout) {
+            $drone_run_band_plot_hash{$_}->{$plot_obj->{plot_name}}++;
+        }
+    }
+
     print STDERR "Plot Polygon Assign Type: $assign_plot_polygons_type \n";
 
     my $number_system_cores = `getconf _NPROCESSORS_ONLN` or die "Could not get number of system cores!\n";
@@ -5522,10 +5536,8 @@ sub _perform_plot_polygon_assign {
     print STDERR "NUMCORES $number_system_cores\n";
 
     my $polygon_objs = decode_json $stock_polygons;
-    my %stock_ids;
 
-    # print STDERR Dumper $polygon_objs;
-
+    my %stock_ids_all;
     foreach my $stock_name (keys %$polygon_objs) {
         my $polygon = $polygon_objs->{$stock_name};
 
@@ -5552,143 +5564,159 @@ sub _perform_plot_polygon_assign {
             $c->stash->{rest} = {error=>'Error: Stock name '.$stock_name.' does not exist in the database!'};
             $c->detach();
         }
-        $stock_ids{$stock_name} = $stock->stock_id;
+        $stock_ids_all{$stock_name} = $stock->stock_id;
     }
+    # print STDERR Dumper $polygon_objs;
 
     my $image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
     my $image_url = $image->get_image_url("original");
     my $image_fullpath = $image->get_filename('original_converted', 'full');
 
-    my $drone_run_band_plot_polygons_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
-    my $previous_plot_polygons_rs = $schema->resultset('Project::Projectprop')->search({type_id=>$drone_run_band_plot_polygons_type_id, project_id=>$drone_run_band_project_id});
-    if ($previous_plot_polygons_rs->count > 1) {
-        die "There should not be more than one saved entry for plot polygons for a drone run band";
-    }
+    my @drone_run_band_template_ids;
+    foreach my $drone_run_band_project_id (@drone_run_band_project_ids_all) {
 
-    my $save_stock_polygons;
-    if ($previous_plot_polygons_rs->count > 0) {
-        $save_stock_polygons = decode_json $previous_plot_polygons_rs->first->value;
-    }
-    foreach my $stock_name (keys %$polygon_objs) {
-        $save_stock_polygons->{$stock_name} = $polygon_objs->{$stock_name};
-    }
+        my $drone_run_band_plot_polygons_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
+        my $previous_plot_polygons_rs = $schema->resultset('Project::Projectprop')->search({type_id=>$drone_run_band_plot_polygons_type_id, project_id=>$drone_run_band_project_id});
+        if ($previous_plot_polygons_rs->count > 1) {
+            die "There should not be more than one saved entry for plot polygons for a drone run band";
+        }
 
-    my $drone_run_band_plot_polygons = $schema->resultset('Project::Projectprop')->update_or_create({
-        type_id=>$drone_run_band_plot_polygons_type_id,
-        project_id=>$drone_run_band_project_id,
-        rank=>0,
-        value=> encode_json($save_stock_polygons)
-    },
-    {
-        key=>'projectprop_c1'
-    });
+        my $save_stock_polygons;
+        if ($previous_plot_polygons_rs->count > 0) {
+            $save_stock_polygons = decode_json $previous_plot_polygons_rs->first->value;
+        }
+        foreach my $stock_name (keys %$polygon_objs) {
+            $save_stock_polygons->{$stock_name} = $polygon_objs->{$stock_name};
+        }
 
-    my $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, $assign_plot_polygons_type, 'project_md_image')->cvterm_id();
+        my %stock_ids;
+        my $polygon_objs_save;
+        foreach my $stock_name (keys %$save_stock_polygons) {
+            if (exists($drone_run_band_plot_hash{$drone_run_band_project_id}->{$stock_name})) {
+                my $polygon = $save_stock_polygons->{$stock_name};
+                $stock_ids{$stock_name} = $stock_ids_all{$stock_name};
+                $polygon_objs_save->{$stock_name} = $polygon;
+            }
+        }
 
-    my @found_stock_ids = values %stock_ids;
-    if (!$ignore_previous_image_check) {
-        my $previous_images_search = CXGN::DroneImagery::ImagesSearch->new({
-            bcs_schema=>$schema,
-            drone_run_band_project_id_list=>[$drone_run_band_project_id],
-            project_image_type_id=>$linking_table_type_id,
-            stock_id_list=>\@found_stock_ids
+        my $drone_run_band_plot_polygons = $schema->resultset('Project::Projectprop')->update_or_create({
+            type_id=>$drone_run_band_plot_polygons_type_id,
+            project_id=>$drone_run_band_project_id,
+            rank=>0,
+            value=> encode_json($polygon_objs_save)
+        },
+        {
+            key=>'projectprop_c1'
         });
-        my ($previous_result, $previous_total_count) = $previous_images_search->search();
+        push @drone_run_band_template_ids, $drone_run_band_plot_polygons->projectprop_id;
 
-        if (scalar(@$previous_result) == scalar(@found_stock_ids)) {
-            print STDERR "Plot polygon assignment for $assign_plot_polygons_type on project $drone_run_band_project_id has already occured. Skipping \n";
-            return {warning => "Plot polygon assignment already occured for $assign_plot_polygons_type on project $drone_run_band_project_id."};
+        my $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, $assign_plot_polygons_type, 'project_md_image')->cvterm_id();
+
+        my @found_stock_ids = values %stock_ids;
+        if (!$ignore_previous_image_check) {
+            my $previous_images_search = CXGN::DroneImagery::ImagesSearch->new({
+                bcs_schema=>$schema,
+                drone_run_band_project_id_list=>[$drone_run_band_project_id],
+                project_image_type_id=>$linking_table_type_id,
+                stock_id_list=>\@found_stock_ids
+            });
+            my ($previous_result, $previous_total_count) = $previous_images_search->search();
+
+            if (scalar(@$previous_result) == scalar(@found_stock_ids)) {
+                print STDERR "Plot polygon assignment for $assign_plot_polygons_type on project $drone_run_band_project_id has already occured. Skipping \n";
+                return {warning => "Plot polygon assignment already occured for $assign_plot_polygons_type on project $drone_run_band_project_id."};
+            }
         }
-    }
 
-    my $image_tag_id = CXGN::Tag::exists_tag_named($schema->storage->dbh, $assign_plot_polygons_type);
-    if (!$image_tag_id) {
-        my $image_tag = CXGN::Tag->new($schema->storage->dbh);
-        $image_tag->set_name($assign_plot_polygons_type);
-        $image_tag->set_description('Drone run band project type for plot polygon assignment: '.$assign_plot_polygons_type);
-        $image_tag->set_sp_person_id($user_id);
-        $image_tag_id = $image_tag->store();
-    }
-    my $image_tag = CXGN::Tag->new($schema->storage->dbh, $image_tag_id);
-
-    my $corresponding_channel = CXGN::DroneImagery::ImageTypes::get_all_project_md_image_observation_unit_plot_polygon_types($schema)->{$linking_table_type_id}->{corresponding_channel} || '';
-
-    my @plot_polygon_image_fullpaths;
-    my @plot_polygon_image_urls;
-
-    my $dir = $c->tempfiles_subdir('/drone_imagery_plot_polygons');
-    my $bulk_input_temp_file = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_plot_polygons/bulkinputXXXX');
-
-    open(my $F, ">", $bulk_input_temp_file) || die "Can't open file ".$bulk_input_temp_file;
-
-    my @plot_polygons;
-    foreach my $stock_name (keys %$polygon_objs) {
-        #my $pid = $pm->start and next;
-
-        my $polygon = $polygon_objs->{$stock_name};
-        my $polygons = encode_json [$polygon];
-
-        my $stock_id = $stock_ids{$stock_name};
-
-        my $archive_plot_polygons_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_plot_polygons/imageXXXX');
-        $archive_plot_polygons_temp_image .= '.png';
-
-        print $F "$image_fullpath\t$archive_plot_polygons_temp_image\t$polygons\t$cropping_type\t$corresponding_channel\n";
-
-        push @plot_polygons, {
-            temp_plot_image => $archive_plot_polygons_temp_image,
-            stock_id => $stock_id
-        };
-    }
-
-    my $cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageCropping/CropToPolygonBulk.py --inputfile_path '$bulk_input_temp_file'";
-    print STDERR Dumper $cmd;
-    my $status = system($cmd);
-
-    my $pm = Parallel::ForkManager->new(ceil($number_system_cores/4));
-    $pm->run_on_finish( sub {
-        my ($pid, $exit_code, $ident, $exit_signal, $core_dump, $data_structure_reference) = @_;
-        push @plot_polygon_image_urls, $data_structure_reference->{plot_polygon_image_url};
-        push @plot_polygon_image_fullpaths, $data_structure_reference->{plot_polygon_image_fullpath};
-    });
-
-    foreach my $obj (@plot_polygons) {
-        my $archive_plot_polygons_temp_image = $obj->{temp_plot_image};
-        my $stock_id = $obj->{stock_id};
-
-        my $plot_polygon_image_fullpath;
-        my $plot_polygon_image_url;
-        $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
-        my $md5checksum = $image->calculate_md5sum($archive_plot_polygons_temp_image);
-        my $q = "SELECT md_image.image_id FROM metadata.md_image AS md_image
-            JOIN phenome.project_md_image AS project_md_image ON(project_md_image.image_id = md_image.image_id)
-            JOIN phenome.stock_image AS stock_image ON (stock_image.image_id = md_image.image_id)
-            WHERE md_image.obsolete = 'f' AND md_image.md5sum = ? AND project_md_image.type_id = ? AND project_md_image.project_id = ? AND stock_image.stock_id = ?;";
-        my $h = $schema->storage->dbh->prepare($q);
-        $h->execute($md5checksum, $linking_table_type_id, $drone_run_band_project_id, $stock_id);
-        my ($image_id) = $h->fetchrow_array();
-
-        if ($image_id) {
-            print STDERR Dumper "Image $archive_plot_polygons_temp_image has already been added to the database and will not be added again.";
-            $image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
-            $plot_polygon_image_fullpath = $image->get_filename('original_converted', 'full');
-            $plot_polygon_image_url = $image->get_image_url('original');
-        } else {
-            $image->set_sp_person_id($user_id);
-            my $ret = $image->process_image($archive_plot_polygons_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
-            my $stock_associate = $image->associate_stock($stock_id, $user_name);
-            $plot_polygon_image_fullpath = $image->get_filename('original_converted', 'full');
-            $plot_polygon_image_url = $image->get_image_url('original');
-            my $added_image_tag_id = $image->add_tag($image_tag);
+        my $image_tag_id = CXGN::Tag::exists_tag_named($schema->storage->dbh, $assign_plot_polygons_type);
+        if (!$image_tag_id) {
+            my $image_tag = CXGN::Tag->new($schema->storage->dbh);
+            $image_tag->set_name($assign_plot_polygons_type);
+            $image_tag->set_description('Drone run band project type for plot polygon assignment: '.$assign_plot_polygons_type);
+            $image_tag->set_sp_person_id($user_id);
+            $image_tag_id = $image_tag->store();
         }
-        unlink($archive_plot_polygons_temp_image);
+        my $image_tag = CXGN::Tag->new($schema->storage->dbh, $image_tag_id);
 
-        $pm->finish(0, { plot_polygon_image_url => $plot_polygon_image_url, plot_polygon_image_fullpath => $plot_polygon_image_fullpath });
+        my $corresponding_channel = CXGN::DroneImagery::ImageTypes::get_all_project_md_image_observation_unit_plot_polygon_types($schema)->{$linking_table_type_id}->{corresponding_channel} || '';
+
+        my @plot_polygon_image_fullpaths;
+        my @plot_polygon_image_urls;
+
+        my $dir = $c->tempfiles_subdir('/drone_imagery_plot_polygons');
+        my $bulk_input_temp_file = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_plot_polygons/bulkinputXXXX');
+
+        open(my $F, ">", $bulk_input_temp_file) || die "Can't open file ".$bulk_input_temp_file;
+
+        my @plot_polygons;
+        foreach my $stock_name (keys %$polygon_objs_save) {
+            #my $pid = $pm->start and next;
+
+            my $polygon = $polygon_objs_save->{$stock_name};
+            my $polygons = encode_json [$polygon];
+
+            my $stock_id = $stock_ids{$stock_name};
+
+            my $archive_plot_polygons_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_plot_polygons/imageXXXX');
+            $archive_plot_polygons_temp_image .= '.png';
+
+            print $F "$image_fullpath\t$archive_plot_polygons_temp_image\t$polygons\t$cropping_type\t$corresponding_channel\n";
+
+            push @plot_polygons, {
+                temp_plot_image => $archive_plot_polygons_temp_image,
+                stock_id => $stock_id
+            };
+        }
+
+        my $cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageCropping/CropToPolygonBulk.py --inputfile_path '$bulk_input_temp_file'";
+        print STDERR Dumper $cmd;
+        my $status = system($cmd);
+
+        my $pm = Parallel::ForkManager->new(ceil($number_system_cores/4));
+        $pm->run_on_finish( sub {
+            my ($pid, $exit_code, $ident, $exit_signal, $core_dump, $data_structure_reference) = @_;
+            push @plot_polygon_image_urls, $data_structure_reference->{plot_polygon_image_url};
+            push @plot_polygon_image_fullpaths, $data_structure_reference->{plot_polygon_image_fullpath};
+        });
+
+        foreach my $obj (@plot_polygons) {
+            my $archive_plot_polygons_temp_image = $obj->{temp_plot_image};
+            my $stock_id = $obj->{stock_id};
+
+            my $plot_polygon_image_fullpath;
+            my $plot_polygon_image_url;
+            $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
+            my $md5checksum = $image->calculate_md5sum($archive_plot_polygons_temp_image);
+            my $q = "SELECT md_image.image_id FROM metadata.md_image AS md_image
+                JOIN phenome.project_md_image AS project_md_image ON(project_md_image.image_id = md_image.image_id)
+                JOIN phenome.stock_image AS stock_image ON (stock_image.image_id = md_image.image_id)
+                WHERE md_image.obsolete = 'f' AND md_image.md5sum = ? AND project_md_image.type_id = ? AND project_md_image.project_id = ? AND stock_image.stock_id = ?;";
+            my $h = $schema->storage->dbh->prepare($q);
+            $h->execute($md5checksum, $linking_table_type_id, $drone_run_band_project_id, $stock_id);
+            my ($image_id) = $h->fetchrow_array();
+
+            if ($image_id) {
+                print STDERR Dumper "Image $archive_plot_polygons_temp_image has already been added to the database and will not be added again.";
+                $image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
+                $plot_polygon_image_fullpath = $image->get_filename('original_converted', 'full');
+                $plot_polygon_image_url = $image->get_image_url('original');
+            } else {
+                $image->set_sp_person_id($user_id);
+                my $ret = $image->process_image($archive_plot_polygons_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
+                my $stock_associate = $image->associate_stock($stock_id, $user_name);
+                $plot_polygon_image_fullpath = $image->get_filename('original_converted', 'full');
+                $plot_polygon_image_url = $image->get_image_url('original');
+                my $added_image_tag_id = $image->add_tag($image_tag);
+            }
+            unlink($archive_plot_polygons_temp_image);
+
+            $pm->finish(0, { plot_polygon_image_url => $plot_polygon_image_url, plot_polygon_image_fullpath => $plot_polygon_image_fullpath });
+        }
+        $pm->wait_all_children;
     }
-    $pm->wait_all_children;
 
     return {
-        image_url => $image_url, image_fullpath => $image_fullpath, success => 1, drone_run_band_template_id => $drone_run_band_plot_polygons->projectprop_id
+        image_url => $image_url, image_fullpath => $image_fullpath, success => 1, drone_run_band_template_ids => \@drone_run_band_template_ids
     };
 }
 
@@ -6268,7 +6296,7 @@ sub drone_imagery_remove_background_percentage_save_POST : Args(0) {
         my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
         $archive_remove_background_temp_image .= '.png';
 
-        my $return = _perform_image_background_remove_threshold_percentage($c, $schema, $image_id, $drone_run_band_project_id, $image_type, $lower_threshold_percentage, $upper_threshold_percentage, $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+        my $return = _perform_image_background_remove_threshold_percentage($c, $schema, $image_id, $drone_run_band_project_id, [], $image_type, $lower_threshold_percentage, $upper_threshold_percentage, $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
         push @returns, $return;
     }
 
@@ -6280,6 +6308,7 @@ sub _perform_image_background_remove_threshold_percentage {
     my $schema = shift;
     my $image_id = shift;
     my $drone_run_band_project_id = shift;
+    my $drone_run_band_project_ids_same_orthophoto = shift || [];
     my $image_type = shift;
     my $lower_threshold_percentage = shift;
     my $upper_threshold_percentage = shift;
@@ -6288,6 +6317,11 @@ sub _perform_image_background_remove_threshold_percentage {
     my $user_role = shift;
     my $archive_remove_background_temp_image = shift;
     print STDERR "Remove background threshold percentage $image_type\n";
+
+    my @drone_run_band_project_ids_all = ($drone_run_band_project_id);
+    if (scalar(@$drone_run_band_project_ids_same_orthophoto)>0) {
+        push @drone_run_band_project_ids_all, @$drone_run_band_project_ids_same_orthophoto;
+    }
 
     my $image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
     my $image_url = $image->get_image_url("original");
@@ -6313,7 +6347,7 @@ sub _perform_image_background_remove_threshold_percentage {
     my $previous_background_removed_images_search = CXGN::DroneImagery::ImagesSearch->new({
         bcs_schema=>$schema,
         project_image_type_id=>$linking_table_type_id,
-        drone_run_band_project_id_list=>[$drone_run_band_project_id]
+        drone_run_band_project_id_list=>\@drone_run_band_project_ids_all
     });
     my ($previous_result, $previous_total_count) = $previous_background_removed_images_search->search();
     foreach (@$previous_result){
@@ -6325,22 +6359,38 @@ sub _perform_image_background_remove_threshold_percentage {
     print STDERR Dumper $cmd;
     my $status = system($cmd);
 
-    $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
-    $image->set_sp_person_id($user_id);
-    my $ret = $image->process_image($archive_remove_background_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
-    my $removed_background_image_fullpath = $image->get_filename('original_converted', 'full');
-    my $removed_background_image_url = $image->get_image_url('original');
-    my $removed_background_image_id = $image->get_image_id();
+    my $image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
+    $image_store->set_sp_person_id($user_id);
 
-    my $drone_run_band_remove_background_threshold = $schema->resultset('Project::Projectprop')->update_or_create({
-        type_id=>$drone_run_band_remove_background_threshold_type_id,
-        project_id=>$drone_run_band_project_id,
-        rank=>0,
-        value=>"Lower Threshold Percentage:$lower_threshold_percentage. Upper Threshold Percentage:$upper_threshold_percentage"
-    },
-    {
-        key=>'projectprop_c1'
-    });
+    my $removed_background_image_fullpath;
+    my $removed_background_image_url;
+    my $removed_background_image_id;
+
+    my $iterator = 0;
+    foreach (@drone_run_band_project_ids_all) {
+        if ($iterator == 0) {
+            my $ret = $image_store->process_image($archive_remove_background_temp_image, 'project', $_, $linking_table_type_id);
+
+            $removed_background_image_fullpath = $image_store->get_filename('original_converted', 'full');
+            $removed_background_image_url = $image_store->get_image_url('original');
+            $removed_background_image_id = $image_store->get_image_id();
+        }
+        else {
+            my $ret = $image_store->associate_project($_, $linking_table_type_id);
+        }
+
+        my $drone_run_band_remove_background_threshold = $schema->resultset('Project::Projectprop')->update_or_create({
+            type_id=>$drone_run_band_remove_background_threshold_type_id,
+            project_id=>$_,
+            rank=>0,
+            value=>"Lower Threshold Percentage:$lower_threshold_percentage. Upper Threshold Percentage:$upper_threshold_percentage"
+        },
+        {
+            key=>'projectprop_c1'
+        });
+
+        $iterator++;
+    }
 
     unlink($archive_remove_background_temp_image);
     return {
@@ -7332,7 +7382,7 @@ sub standard_process_apply_POST : Args(0) {
             my @denoised_background_threshold_removed_plot_polygon_types = @{$term_map->{$drone_run_band_type}->{observation_unit_plot_polygon_types}->{threshold_background}};
 
             foreach (@denoised_plot_polygon_type) {
-                my $plot_polygon_original_denoised_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, [],  $plot_polygons_value, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square');
+                my $plot_polygon_original_denoised_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $plot_polygons_value, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square');
             }
 
             for my $iterator (0..(scalar(@denoised_background_threshold_removed_imagery_types)-1)) {
@@ -7340,11 +7390,11 @@ sub standard_process_apply_POST : Args(0) {
                 my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
                 $archive_remove_background_temp_image .= '.png';
 
-                my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $denoised_background_threshold_removed_imagery_types[$iterator], $drone_imagery_remove_background_lower_percentage, $drone_imagery_remove_background_upper_percentage, $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+                my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $denoised_background_threshold_removed_imagery_types[$iterator], $drone_imagery_remove_background_lower_percentage, $drone_imagery_remove_background_upper_percentage, $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
 
                 my $threshold_values = _get_image_background_remove_threshold_percentage($bcs_schema, $drone_run_band_project_id);
 
-                my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, [], $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square');
+                my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square');
             }
         }
 
@@ -8028,7 +8078,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
 
             $drone_run_band_info{$drone_run_band_project_id}->{threshold_values} = $threshold_values->[2];
 
-            my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $denoised_background_threshold_removed_imagery_types[$iterator], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+            my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, [],  $denoised_background_threshold_removed_imagery_types[$iterator], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
 
             my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, [], $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square');
         }
@@ -8286,7 +8336,7 @@ sub standard_process_apply_previous_imaging_event_POST : Args(0) {
 
             $drone_run_band_info{$drone_run_band_project_id}->{threshold_values} = $threshold_values->[2];
 
-            my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $denoised_background_threshold_removed_imagery_types[$iterator], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+            my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, [],  $denoised_background_threshold_removed_imagery_types[$iterator], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
 
             my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, [], $plot_polygons_value_json, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square');
         }
@@ -9357,7 +9407,7 @@ sub _perform_standard_process_extended_vi_calc {
 
     my $threshold_values = _get_image_background_remove_threshold_percentage($bcs_schema, $merged_drone_run_band_project_id);
 
-    my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $index_image_id, $merged_drone_run_band_project_id, (%{$vi_map{$vi}->{index_threshold_background}})[0], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+    my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $index_image_id, $merged_drone_run_band_project_id, [], (%{$vi_map{$vi}->{index_threshold_background}})[0], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
     my $background_removed_threshold_image_id = $background_removed_threshold_return->{removed_background_image_id};
 
     my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_image_id, $merged_drone_run_band_project_id, [], $plot_polygons_value, $vi_map{$vi}->{index_threshold_background}->{(%{$vi_map{$vi}->{index_threshold_background}})[0]}->[0], $user_id, $user_name, $user_role, 0, 0, 1, 1, 'rectangular_square');

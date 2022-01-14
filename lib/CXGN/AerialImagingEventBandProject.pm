@@ -28,7 +28,7 @@ sub get_associated_field_trial_to_drone_run_band {
     my $q = "SELECT drone_run.project_id, drone_run.name, drone_run_band.project_id, drone_run_band.name, field_trial.project_id, field_trial.name
         FROM project AS drone_run
         JOIN project_relationship AS drone_run_on_drone_run_band ON (drone_run.project_id = drone_run_on_drone_run_band.object_project_id AND drone_run_on_drone_run_band.type_id = $drone_run_drone_run_band_type_id)
-        JOIN project AS drone_run_band ON (drone_run_band.project_id = project_relationship.subject_project_id)
+        JOIN project AS drone_run_band ON (drone_run_band.project_id = drone_run_on_drone_run_band.subject_project_id)
         JOIN project_relationship AS drone_run_on_field_trial ON (drone_run.project_id = drone_run_on_field_trial.subject_project_id AND drone_run_on_field_trial.type_id = $drone_run_field_trial_type_id)
         JOIN project AS field_trial ON (field_trial.project_id = drone_run_on_field_trial.object_project_id)
         WHERE drone_run_band.project_id = ?
@@ -53,13 +53,12 @@ sub get_associated_field_trial_to_drone_run_band {
 
 sub get_associated_field_trial_layout {
     my $self = shift;
+    my $schema = $self->bcs_schema;
 
     my ($field_trial_id, $field_trial_name) = $self->get_associated_field_trial_to_drone_run_band();
-    my $layout;
-    return $layout;
+    my $field_trial_layout = CXGN::Trial->new({bcs_schema => $schema, trial_id=>$field_trial_id})->get_layout()->get_design();
+
+    return $field_trial_layout;
 }
-
-#######change _perform_plot_polygon_assign function to separate out plots that are for different field experiment layouts.
-
 
 1;

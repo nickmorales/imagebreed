@@ -271,10 +271,10 @@ my $message_assign_plot_polygons = $response_assign_plot_polygons->decoded_conte
 my $message_hash_assign_plot_polygons = decode_json $message_assign_plot_polygons;
 print STDERR Dumper $message_hash_assign_plot_polygons;
 ok($message_hash_assign_plot_polygons->{success});
-ok($message_hash_assign_plot_polygons->{drone_run_band_template_id});
+ok($message_hash_assign_plot_polygons->{drone_run_band_template_ids});
 
 $ua = LWP::UserAgent->new;
-my $response_get_template = $ua->get('http://localhost:3010/api/drone_imagery/retrieve_parameter_template?sgn_session_id='.$sgn_session_id.'&plot_polygons_template_projectprop_id='.$message_hash_assign_plot_polygons->{drone_run_band_template_id});
+my $response_get_template = $ua->get('http://localhost:3010/api/drone_imagery/retrieve_parameter_template?sgn_session_id='.$sgn_session_id.'&plot_polygons_template_projectprop_id='.$message_hash_assign_plot_polygons->{drone_run_band_template_ids}->[0]);
 ok($response_get_template->is_success);
 my $message_get_template = $response_get_template->decoded_content;
 my $message_hash_get_template = decode_json $message_get_template;
