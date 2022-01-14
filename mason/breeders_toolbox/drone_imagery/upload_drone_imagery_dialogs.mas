@@ -2657,6 +2657,11 @@ jQuery(document).ready(function() {
         var upload_drone_imagery_field_trial_ids = jQuery(this).val();
         upload_drone_imagery_field_trial_ids_string = upload_drone_imagery_field_trial_ids.join();
 
+        if (upload_drone_imagery_field_trial_ids.length > 31) {
+            alert('The maximum number of field trials you can select here is currently 31. Please contact us to change this, by increasing the trial layout table rendering number.');
+            return false;
+        }
+
         jQuery('#drone_image_upload_drone_runs_table').DataTable({
             destroy : true,
             ajax : '/api/drone_imagery/drone_runs?select_checkbox_name=upload_drone_imagery_drone_run_select&field_trial_ids='+upload_drone_imagery_field_trial_ids_string+'&disable=1'

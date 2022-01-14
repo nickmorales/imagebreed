@@ -54,11 +54,15 @@ sub get_field_trial_drone_run_projects_in_same_orthophoto {
     my $field_trial_drone_runs_in_same_orthophoto_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'field_trial_drone_runs_in_same_orthophoto', 'experiment_type')->cvterm_id();
     my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
     my $drone_run_band_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
+    my $drone_run_field_trial_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
 
     my @related_imaging_event_ids;
+    my @related_imaging_event_names;
     my @related_imaging_events;
     my @related_imaging_event_bands;
     my %related_imaging_event_bands_type_hash;
+    my @related_imaging_event_field_trial_ids;
+    my @related_imaging_event_field_trial_names;
 
     my $q = "SELECT nd_experiment.nd_experiment_id
         FROM nd_experiment_project
@@ -85,6 +89,7 @@ sub get_field_trial_drone_run_projects_in_same_orthophoto {
         while (my ($project_id, $project_name) = $h->fetchrow_array()) {
             push @related_imaging_events, [$project_id, $project_name];
             push @related_imaging_event_ids, $project_id;
+            push @related_imaging_event_names, $project_name;
         }
 
         my $q2 = "SELECT drone_run.project_id, drone_run.name, drone_run_band.project_id, drone_run_band.name, drone_run_band_project_type.value
@@ -107,9 +112,22 @@ sub get_field_trial_drone_run_projects_in_same_orthophoto {
             };
             push @{$related_imaging_event_bands_type_hash{$drone_run_band_project_type}}, $drone_run_band_project_id;
         }
+
+        my $related_imaging_event_ids_string = join ',', @related_imaging_event_ids;
+        my $q3 = "SELECT field_trial.project_id, field_trial.name
+            FROM project AS drone_run
+            JOIN project_relationship ON (drone_run.project_id = project_relationship.subject_project_id AND project_relationship.type_id = $drone_run_field_trial_type_id)
+            JOIN project AS field_trial ON (field_trial.project_id = project_relationship.object_project_id)
+            WHERE drone_run.project_id IN ($related_imaging_event_ids_string);";
+        my $h3 = $schema->storage->dbh()->prepare($q3);
+        $h3->execute();
+        while (my ($project_id, $project_name) = $h3->fetchrow_array()) {
+            push @related_imaging_event_field_trial_ids, $project_id;
+            push @related_imaging_event_field_trial_names, $project_name;
+        }
     }
 
-    return (\@related_imaging_event_ids, \@related_imaging_events, \@related_imaging_event_bands, \%related_imaging_event_bands_type_hash);
+    return (\@related_imaging_event_ids, \@related_imaging_event_names, \@related_imaging_event_field_trial_ids, \@related_imaging_event_field_trial_names, \@related_imaging_events, \@related_imaging_event_bands, \%related_imaging_event_bands_type_hash);
 }
 
 

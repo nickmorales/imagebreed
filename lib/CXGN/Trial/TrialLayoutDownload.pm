@@ -238,6 +238,7 @@ sub get_layout_output {
     my $has_plants = $selected_trial->has_plant_entries();
     my $has_subplots = $selected_trial->has_subplot_entries();
     my $has_tissue_samples = $selected_trial->has_tissue_sample_entries();
+    my $trial_name = $selected_trial->name();
 
     print STDERR "TrialLayoutDownload retrieving accessions ".localtime."\n";
 
@@ -439,7 +440,7 @@ sub get_layout_output {
     my $output = $layout_output->retrieve();
 
     print STDERR "TrialLayoutDownload End for Trial id: ($trial_id) ".localtime()."\n";
-    return {output => $output};
+    return {output => $output, trial_name => $trial_name};
 }
 
 sub _add_treatment_to_line {
