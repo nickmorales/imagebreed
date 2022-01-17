@@ -558,41 +558,50 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
             <& /page/page_title.mas, title=>"Calculate phenotypes for all plot polygon images" &>
 
             <form class="form-horizontal">
-                <div class="form-group form-group-sm">
-                    <label class="col-sm-6 control-label">Zonal Statistics to Calculate and Save in Database: </label>
-                    <div class="col-sm-6">
-                        <input name="drone_imagery_standard_process_phenotypes_select" value="zonal" type="checkbox" checked disabled> Zonal Statistics: nonzero_pixel_count, total_pixel_sum, mean_pixel_value, harmonic_mean_value, median_pixel_value, variance_pixel_value, stdev_pixel_value, pstdev_pixel_value, min_pixel_value, max_pixel_value, minority_pixel_value, minority_pixel_count, majority_pixel_value, majority_pixel_count, pixel_variety_count <br/>
+                <div class="well well-sm">
+                    <div class="form-group form-group-sm">
+                        <label class="col-sm-4 control-label">Zonal Statistics to Calculate and Save in Database: </label>
+                        <div class="col-sm-8">
+                            <input name="drone_imagery_standard_process_phenotypes_select" value="zonal" type="checkbox" checked disabled> Zonal Statistics: nonzero_pixel_count, total_pixel_sum, mean_pixel_value, harmonic_mean_value, median_pixel_value, variance_pixel_value, stdev_pixel_value, pstdev_pixel_value, min_pixel_value, max_pixel_value, minority_pixel_value, minority_pixel_count, majority_pixel_value, majority_pixel_count, pixel_variety_count <br/>
+                        </div>
                     </div>
                 </div>
                 <div class="well well-sm">
                     <input type="checkbox" id="drone_imagery_standard_process_phenotypes_margin_button">&nbsp;&nbsp;&nbsp;&nbsp; Change Margin Values
+                    <hr>
 
                     <div class="row">
                         <div class="col-sm-6">
                             <div class="form-group form-group-sm">
-                                <label class="col-sm-6 control-label">Buffer Margin When Calculating Phenotypes On Top/Bottom of Plot Polygons (%): </label>
-                                <div class="col-sm-6">
+                                <label class="col-sm-8 control-label">Buffer Margin When Calculating Phenotypes On Top/Bottom of Plot Polygons (%): </label>
+                                <div class="col-sm-4">
                                     <input class="form-control" id="drone_imagery_standard_process_phenotypes_margin_top_bottom" name="drone_imagery_standard_process_phenotypes_margin_top_bottom" type="number" value=5 disabled/>
                                 </div>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group form-group-sm">
-                                <label class="col-sm-6 control-label">Buffer Margin When Calculating Phenotypes On Left/Right of Plot Polygons (%): </label>
-                                <div class="col-sm-6">
+                                <label class="col-sm-8 control-label">Buffer Margin When Calculating Phenotypes On Left/Right of Plot Polygons (%): </label>
+                                <div class="col-sm-4">
                                     <input class="form-control" id="drone_imagery_standard_process_phenotypes_margin_left_right" name="drone_imagery_standard_process_phenotypes_margin_left_right" type="number" value=5 disabled/>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <hr>
+
+                    <div id="drone_imagery_standard_process_phenotypes_margin_visual_div"></div>
                 </div>
-                <div class="form-group form-group-sm">
-                    <label class="col-sm-6 control-label">Apply same standard process to all uploaded imaging events that use the same camera rig (Only applicable for static camera rigs, such as in a greenhouse or controlled environment): </label>
-                    <div class="col-sm-6">
-                        <select class="form-control" id="drone_imagery_standard_process_camera_rig_apply_select">
-                            <option value="No">No</option>
-                            <option value="Yes">Yes</option>
-                        </select>
+                <div class="well well-sm">
+                    <div class="form-group form-group-sm">
+                        <label class="col-sm-9 control-label">Apply same standard process to all uploaded imaging events that use the same camera rig (Only applicable for static camera rigs, such as in a greenhouse or controlled environment): </label>
+                        <div class="col-sm-3">
+                            <select class="form-control" id="drone_imagery_standard_process_camera_rig_apply_select">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -3481,7 +3490,40 @@ jQuery(document).ready(function() {
             Workflow.complete("#manage_drone_imagery_standard_process_drone_run_band_apply_step");
             Workflow.focus('#manage_drone_imagery_standard_process_workflow', 8);
         }
+
+        drone_imagery_standard_process_preview_plot_polygons(manage_drone_imagery_standard_process_drone_run_band_project_id, manage_drone_imagery_standard_process_denoised_image_id, drone_imagery_plot_polygons);
     });
+
+    function drone_imagery_standard_process_preview_plot_polygons(drone_run_band_project_id, image_id, drone_imagery_plot_polygons, plot_margin_left_right, plot_margin_top_bottom) {
+        jQuery.ajax({
+            type: 'POST',
+            url: '/api/drone_imagery/preview_plot_polygons',
+            dataType: "json",
+            data: {
+                'drone_run_band_project_id': drone_run_band_project_id,
+                'stock_polygons': JSON.stringify(drone_imagery_plot_polygons),
+                'image_id': image_id,
+                'phenotypes_plot_margin_right_left': plot_margin_left_right,
+                'phenotypes_plot_margin_top_bottom': plot_margin_top_bottom
+            },
+            success: function(response){
+                console.log(response);
+                if (response.error) {
+                    alert(response.error);
+                } else {
+                    var html = '';
+                    for (var i=0; i<response.plot_polygon_preview_urls.length; i++) {
+                        html = html + '<img src="'+response.plot_polygon_preview_urls[i]+'" /><br/><br/>';
+                    }
+                    jQuery('#drone_imagery_standard_process_phenotypes_margin_visual_div').html(html);
+                }
+            },
+            error: function(response){
+                alert('Error previewing plot polygons for margin visualization!');
+                return false;
+            }
+        });
+    }
 
     jQuery('#manage_drone_imagery_standard_process_indices_step').click(function(){
         manage_drone_imagery_standard_process_apply_drone_run_band_vegetative_indices = [];
@@ -3506,7 +3548,8 @@ jQuery(document).ready(function() {
                         alert(response.error);
                     }
 
-                    var html = "<div class='well well-sm'><center><h3>Field Trial: "+response.trial_name+"</h3><b>Field Trial Planting Date</b>: "+response.planting_date+"<br/><b>Imaging Event Date</b>: "+response.drone_run_date+"<br/><b>Number of Weeks</b>: "+response.rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response.time_ontology_week_term+"<br/><b>Number of Days</b>:"+response.time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response.time_ontology_day_term+"<hr></center>";
+                    var html = "<div class='well well-sm'><table class='table table-bordered table-hover'><thead><tr><th>Field Trial</th><th>Planting Date</th><th>Imaging Event Date</th><th>Number of Weeks</th><th>Number of Days</th></tr></thead><tbody>";
+                    html = html + "<tr><td>"+response.trial_name+"</td><td>"+response.planting_date+"</td><td>"+response.drone_run_date+"</td><td>"+response.time_ontology_week_term+"</td><td>"+response.time_ontology_day_term+"</td></tr>";
 
                     jQuery.ajax({
                         type: 'GET',
@@ -3519,10 +3562,10 @@ jQuery(document).ready(function() {
                             }
 
                             for (var i=0; i<response.length; i++) {
-                                html = html + "<center><h3>Field Trial: "+response[i].trial_name+"</h3><b>Field Trial Planting Date</b>: "+response[i].planting_date+"<br/><b>Imaging Event Date</b>: "+response[i].drone_run_date+"<br/><b>Number of Weeks</b>: "+response[i].rounded_time_difference_weeks+"<br/><b>Number of Weeks Ontology Term</b>: "+response[i].time_ontology_week_term+"<br/><b>Number of Days</b>:"+response[i].time_difference_days+"<br/><b>Number of Days Ontology Term</b>: "+response[i].time_ontology_day_term+"<hr></center>";
-
+                                html = html + "<tr><td>"+response[i].trial_name+"</td><td>"+response[i].planting_date+"</td><td>"+response[i].drone_run_date+"</td><td>"+response[i].time_ontology_week_term+"</td><td>"+response[i].time_ontology_day_term+"</td></tr>";
                             }
 
+                            html = html + '</tbody></table></div>';
                             jQuery('#drone_imagery_standard_process_week_term_div').html(html);
 
                             manage_drone_imagery_standard_process_phenotype_time = response.time_ontology_day_cvterm_id;
@@ -8387,7 +8430,7 @@ jQuery(document).ready(function() {
     function droneImageryDrawLayoutTable(response, plot_polygons, layout_div_id, layout_table_div_id) {
         var output = response.output;
         var header = output[0];
-        var html = '<h3>Field Trial: '+response.trial_name+'</h3><table class="table table-borders table-hover" id="'+layout_table_div_id+'"><thead><tr>';
+        var html = '<p>Field Trial: <b>'+response.trial_name+'</b></p><table class="table table-borders table-hover" id="'+layout_table_div_id+'"><thead><tr>';
         for (var i=0; i<header.length; i++){
             html = html + '<td>'+header[i]+'</td>';
         }
