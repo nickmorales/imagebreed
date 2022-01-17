@@ -413,7 +413,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                                 <div class="panel panel-default">
                                     <div class="panel-body">
                                         <ul>
-                                            <li>If Option 1 is unable to fit your field experiments, Option 2 enables ultimate flexibility.</li>
+                                            <li>If Option 1 is unable to fit your field experiments, Option 2 and 3 enable greater flexibility.</li>
                                             <li>Upload an <b>XLS</b> file with the following three columns: <b>polygon_number, plot_number, field_trial</b>
                                                 <ul>
                                                     <li><b>polygon_number</b>: The polygon number generated in the templating process. The polygon numbers are visible in the templated image.</li>
@@ -6218,6 +6218,7 @@ jQuery(document).ready(function() {
     var drone_imagery_plot_polygons_removed_numbers = [];
     var field_trial_layout_response = {};
     var field_trial_layout_responses = {};
+    var field_trial_layout_response_names = [];
     var plot_polygon_name;
     var plotpolygonsImg;
     var drone_imagery_plot_polygons_available_stock_names = [];
@@ -6253,6 +6254,7 @@ jQuery(document).ready(function() {
         plot_polygons_plot_names_plot_numbers = {};
         field_trial_layout_response = {};
         field_trial_layout_responses = {};
+        field_trial_layout_response_names = [];
 
         jQuery('#manage_drone_imagery_plot_polygons_div_title').html('<center><h4>'+drone_run_project_name+'</h4></center>');
 
@@ -6274,6 +6276,7 @@ jQuery(document).ready(function() {
 
                 field_trial_layout_response = response;
                 field_trial_layout_responses[response.trial_name] = response;
+                field_trial_layout_response_names.push(response.trial_name);
 
                 var layout = response.output;
 
@@ -6747,10 +6750,20 @@ jQuery(document).ready(function() {
     });
 
     function plotPolygonManualAssignPlotNumberTableStandard(div_id, table_id, input_name, generate_assign_button, save_button) {
-        var html = '<div class="panel panel-default"><div class="panel-body">';
-        html = html + '<table class="table table-bordered table-hover" id="'+table_id+'"><thead><tr><th>Polygon Number</th><th>Plot Number</th></tr></thead><tbody>';
+        var html = '<div class="panel panel-default"><div class="panel-body"><ul><li>If Option 1 was unable to fit your field experiments, Option 2 or 3 offers greater flexibility.</li><li>If you want to skip a generated polygon, leave the plot number blank and it will be skipped.</li></ul>';
+        html = html + '</div></div>';
+        html = html + '<div class="panel panel-default"><div class="panel-body">';
+        html = html + '<table class="table table-bordered table-hover" id="'+table_id+'"><thead><tr><th>Polygon Number</th><th>Plot Number</th><th>Field Trial</th></tr></thead><tbody>';
         for(var i=0; i<plot_polygons_generated_polygons.length; i++) {
-            html = html + '<tr><td>'+i+'</td><td><input type="number" class="form-control" data-polygon_number="'+i+'" name="'+input_name+'" /></td></tr>';
+            html = html + '<tr>';
+            html = html + '<td>'+i+'</td>';
+            html = html + '<td><input type="number" class="form-control" data-polygon_number="'+i+'" name="'+input_name+'" /></td>';
+            html = html + '<td><select class="form-control" data-polygon_number="'+i+'" name="'+input_name+'_field_trial" >';
+            for (var j=0; j<field_trial_layout_response_names.length; j++) {
+                html = html + '<option value="' + field_trial_layout_response_names[j] + '">' + field_trial_layout_response_names[j] + '</option>';
+            }
+            html = html + '</select></td>';
+            html = html + '</tr>';
         }
         html = html + '</tbody></table><hr>';
         html = html + '<button class="btn btn-primary" id="'+generate_assign_button+'">Generate Assignments From Manual Input (Does Not Save)</button>&nbsp;&nbsp;&nbsp;<button class="btn btn-primary" name="'+save_button+'">Finish and Save Polygons To Plots</button></div></div>';
@@ -7851,34 +7864,88 @@ jQuery(document).ready(function() {
     }
 
     function generatePlotPolygonAssignmentsStandardManualSVG(trial_layout_div, trial_layout_table) {
-        var plot_polygons_layout = field_trial_layout_response.output;
         var plot_polygons_plot_numbers = [];
         var plot_polygons_plot_numbers_plot_names = {};
-        for (var i=1; i<plot_polygons_layout.length; i++) {
-            var plot_polygons_plot_number = parseInt(plot_polygons_layout[i][2]);
-            plot_polygons_plot_numbers.push(plot_polygons_plot_number);
-            plot_polygons_plot_numbers_plot_names[plot_polygons_plot_number] = plot_polygons_layout[i][0];
+        var plot_polygons_field_trial_names_order = field_trial_layout_response_names;
+
+        for (var plot_polygons_field_trial_name_iterator=0; plot_polygons_field_trial_name_iterator<plot_polygons_field_trial_names_order.length; plot_polygons_field_trial_name_iterator++) {
+            var plot_polygons_field_trial_names_order_current = plot_polygons_field_trial_names_order[plot_polygons_field_trial_name_iterator];
+            plot_polygons_plot_numbers_plot_names[plot_polygons_field_trial_names_order_current] = {};
         }
 
-        var plot_polygon_new_display = {};
+        for (var plot_polygons_field_trial_name_iterator=0; plot_polygons_field_trial_name_iterator<plot_polygons_field_trial_names_order.length; plot_polygons_field_trial_name_iterator++) {
+            var plot_polygons_field_trial_names_order_current = plot_polygons_field_trial_names_order[plot_polygons_field_trial_name_iterator];
+            var field_trial_layout_response_current = field_trial_layout_responses[plot_polygons_field_trial_names_order_current];
+            var plot_polygons_layout = field_trial_layout_response_current.output;
+            for (var i=1; i<plot_polygons_layout.length; i++) {
+                var plot_polygons_plot_number = parseInt(plot_polygons_layout[i][2]);
+                plot_polygons_plot_numbers.push(plot_polygons_plot_number);
+                plot_polygons_plot_numbers_plot_names[plot_polygons_field_trial_names_order_current][plot_polygons_plot_number] = plot_polygons_layout[i][0];
+            }
+        }
+
+        var plot_polygon_assign_manual_polygon_numbers_ordered = [];
+        var plot_polygon_assign_manual_plot_numbers_ordered = [];
+        var plot_polygon_assign_manual_field_trial_ordered = [];
+
         jQuery('input[name="drone_imagery_standard_process_generated_polygons_table_input"]').each(function() {
             var plot_number = jQuery(this).val();
-            if (plot_number != '') {
-                var polygon_number = jQuery(this).data('polygon_number');
+            var polygon_number = jQuery(this).data('polygon_number');
+            plot_polygon_assign_manual_polygon_numbers_ordered.push(polygon_number);
+            plot_polygon_assign_manual_plot_numbers_ordered.push(plot_number);
+        });
 
+        jQuery('select[name="drone_imagery_standard_process_generated_polygons_table_input_field_trial"]').each(function() {
+            var field_trial = jQuery(this).val();
+            var polygon_number = jQuery(this).data('polygon_number');
+            plot_polygon_assign_manual_field_trial_ordered.push(field_trial);
+        });
+
+        var plot_polygon_new_display = {};
+        for (var i=0; i<plot_polygon_assign_manual_polygon_numbers_ordered.length; i++) {
+            var polygon_number = plot_polygon_assign_manual_polygon_numbers_ordered[i];
+            var plot_number = plot_polygon_assign_manual_plot_numbers_ordered[i];
+            var field_trial = plot_polygon_assign_manual_field_trial_ordered[i];
+            console.log([polygon_number, plot_number, field_trial]);
+
+            if (plot_number != '') {
                 if (drone_imagery_plot_polygons_removed_numbers.includes(polygon_number.toString())) {
                     console.log("Skipping "+polygon_number);
                     plot_polygon_new_display[polygon_number] = drone_imagery_plot_polygons_display[polygon_number];
                 } else {
-                    plot_polygon_new_display[plot_polygons_plot_numbers_plot_names[plot_number]] = drone_imagery_plot_polygons_display[polygon_number];
-                    drone_imagery_plot_polygons[plot_polygons_plot_numbers_plot_names[plot_number]] = drone_imagery_plot_generated_polygons[polygon_number];
+                    plot_polygon_new_display[plot_polygons_plot_numbers_plot_names[field_trial][plot_number]] = drone_imagery_plot_polygons_display[polygon_number];
+                    drone_imagery_plot_polygons[plot_polygons_plot_numbers_plot_names[field_trial][plot_number]] = drone_imagery_plot_generated_polygons[polygon_number];
                 }
             }
-        });
-
-        droneImageryDrawLayoutTable(field_trial_layout_response, drone_imagery_plot_polygons, trial_layout_div, trial_layout_table);
-
+        }
         drone_imagery_plot_polygons_display = plot_polygon_new_display;
+
+        for (var plot_polygons_field_trial_name_iterator=0; plot_polygons_field_trial_name_iterator<plot_polygons_field_trial_names_order.length; plot_polygons_field_trial_name_iterator++) {
+            var plot_polygons_field_trial_names_order_current = plot_polygons_field_trial_names_order[plot_polygons_field_trial_name_iterator];
+            var field_trial_layout_response_current = field_trial_layout_responses[plot_polygons_field_trial_names_order_current];
+            droneImageryDrawLayoutTable(field_trial_layout_response_current, drone_imagery_plot_polygons, trial_layout_div+'_'+plot_polygons_field_trial_name_iterator, trial_layout_table+'_'+plot_polygons_field_trial_name_iterator);
+        }
+
+
+        plot_polygons_plot_names_colors = {};
+        plot_polygons_plot_names_plot_numbers = {};
+
+        for (var plot_polygons_field_trial_name_iterator=0; plot_polygons_field_trial_name_iterator<plot_polygons_field_trial_names_order.length; plot_polygons_field_trial_name_iterator++) {
+            var plot_polygons_field_trial_names_order_current = plot_polygons_field_trial_names_order[plot_polygons_field_trial_name_iterator];
+            var field_trial_layout_response_current = field_trial_layout_responses[plot_polygons_field_trial_names_order_current];
+
+            var randomColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+
+            var plot_polygons_layout = field_trial_layout_response_current.output;
+            for (var i=1; i<plot_polygons_layout.length; i++) {
+                var plot_polygons_plot_number = parseInt(plot_polygons_layout[i][2]);
+                var plot_polygons_plot_name = plot_polygons_layout[i][0];
+
+                plot_polygons_plot_names_colors[plot_polygons_plot_name] = randomColor;
+                plot_polygons_plot_names_plot_numbers[plot_polygons_plot_name] = plot_polygons_plot_number;
+            }
+        }
+
         draw_polygons_svg_plots_labeled(1);
     }
 
