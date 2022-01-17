@@ -377,7 +377,6 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                 <div id="drone_imagery_standard_process_plot_polygons_top_section"></div>
 
                 <button id="drone_imagery_standard_process_plot_polygons_clear" class="btn btn-danger">Clear All Polygons and Start Over Templating</button>
-                <button id="drone_imagery_standard_process_plot_polygons_clear_one" class="btn btn-danger">Clear One Polygon</button>
                 <br/><br/>
                 <button id="drone_imagery_standard_process_plot_polygons_get_distance" class="btn btn-default">Find Distance Between Points</button>
                 <button id="drone_imagery_standard_process_plot_polygons_switch_image_url" class="btn btn-default">Switch Between Original and Background Removed Image</button>
@@ -395,7 +394,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                 <div id="drone_imagery_standard_process_generated_polygons_table_header_div"></div>
 
                 <div class="panel panel-default"><div class="panel-body">
-                    <h3>(Option 1) Auto Assign Plot Numbers to Generated Polygons</h3>
+                    <h3>(Option 1)</h3>
 
                     <&| /page/info_section.mas, title => 'Auto Assign Plot Numbers to Polygon Numbers', collapsible=>1, collapsed => 1, subtitle=> 'Interface for automatically assigning plot numbers to polygon numbers.' &>
                         <div class="well well-sm">
@@ -405,7 +404,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                 </div></div>
 
                 <div class="panel panel-default"><div class="panel-body">
-                    <h3>(Option 2) Upload Spreadsheet File to Assign Plot Numbers to Generated Polygons</h3>
+                    <h3>(Option 2)</h3>
 
                     <&| /page/info_section.mas, title => 'Upload Spreadsheet File to Assign Plot Numbers to Polygon Numbers', collapsible=>1, collapsed => 1, subtitle=> 'Upload a spreadsheet file assigning plot numbers to polygon numbers.' &>
                         <div class="well well-sm">
@@ -419,7 +418,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                                                     <li><b>polygon_number</b>: The polygon number generated in the templating process. The polygon numbers are visible in the templated image.</li>
                                                     <li><b>plot_number</b>: The plot number to assign to the polygon number. Field layouts are visible at the bottom of this page, where available plot numbers can be determined.</li>
                                                     <li><b>field_trial</b>: The field trial for the plot number being assigned. The same plot number (e.g. 101) can exist in different field trials, so this column differentiates plot numbers among field trials.</li>
-                                                <ul>
+                                                </ul>
                                             </li>
                                             <li>If you want to skip a generated polygon number, simply do not include it in the uploaded spreadsheet.</li>
                                         </ul>
@@ -448,7 +447,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                 </div></div>
 
                 <div class="panel panel-default"><div class="panel-body">
-                    <h3>(Option 3) Manually Assign Plot Numbers to Generated Polygons</h3>
+                    <h3>(Option 3)</h3>
 
                     <&| /page/info_section.mas, title => 'Manually Assign Plot Numbers to Polygon Numbers', collapsible=>1, collapsed => 1, subtitle=> 'Table input for manually assigning plot numbers to polygon numbers.' &>
                         <div class="well well-sm">
@@ -2591,13 +2590,13 @@ jQuery(document).ready(function() {
                 manage_drone_imagery_standard_process_field_trial_ids_in_same_orthophoto = response.drone_run_field_trial_ids;
                 manage_drone_imagery_standard_process_field_trial_names_in_same_orthophoto = response.drone_run_field_trial_names;
 
-                var html = '<div class="panel panel-default"><div class="panel-body"><h3>The image contains the '+project_drone_imagery_ground_control_points_drone_run_project_name+' imaging event';
+                var html = '<div class="panel panel-default"><div class="panel-body"><p>The image contains the '+project_drone_imagery_ground_control_points_drone_run_project_name+' imaging event';
 
                 if (manage_drone_imagery_standard_process_drone_run_project_names_in_same_orthophoto.length > 0) {
                     html = html + ' as well as the following imaging events: '+manage_drone_imagery_standard_process_drone_run_project_names_in_same_orthophoto.join();
                 }
 
-                html = html + '.</h3><p>Use one of the following three options to assign the generated polygons to the field experiments of these imaging events.</p></div></div>';
+                html = html + '.</p><p><b>Use one of the following three options to assign the generated polygons to the field experiment(s) of these imaging event(s).</b></p></div></div>';
 
                 jQuery('#drone_imagery_standard_process_generated_polygons_table_header_div').html(html);
             },
@@ -6342,7 +6341,7 @@ jQuery(document).ready(function() {
                 background_image_width = response.image_width;
                 background_image_height = response.image_height;
 
-                var top_section_html = '<h4>Total Image Width: '+response.image_width+'px. Total Image Height: '+response.image_height+'px.</h4>';
+                var top_section_html = '<p>Total Image Width: '+response.image_width+'px. Total Image Height: '+response.image_height+'px.</p>';
 
                 jQuery('#'+info_div_id).html(top_section_html);
 
@@ -6385,7 +6384,7 @@ jQuery(document).ready(function() {
                 background_image_width = response.image_width;
                 background_image_height = response.image_height;
 
-                var top_section_html = '<h4>Total Image Width: '+response.image_width+'px. Total Image Height: '+response.image_height+'px.</h4>';
+                var top_section_html = '<p>Total Image Width: '+response.image_width+'px. Total Image Height: '+response.image_height+'px.</p>';
 
                 jQuery('#'+info_div_id).html(top_section_html);
 
@@ -8365,7 +8364,7 @@ jQuery(document).ready(function() {
 
     function droneImageryRectangleLayoutTable(generated_polygons, plot_polygons_layout_assignment_info, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button) {
 
-        var html = '<div class="panel panel-default"><div class="panel-body"><ul><li><p>Field trial plot numbers and generated numbers will be paired up in the following orders:</p><ul><li>Field Trial Plot Numbers: Field trials are ordered based on your input below and then plot numbers within each field trial follow in increasing order (e.g. 1 to 100, or 101 to 536)</li><li>Generated Polygon Numbers: Templates are considered in order of template number (e.g. 1 to 10) and then the order of the polygons follows inputs below for the location of the first plot number, the direction of the second plot number, and the orientation (serpentine or zigzag). The orientation will persist across templates.</li></ul></li><li><p>If you want to skip a generated polygon, use the "Clear One Polygon" button above and it will be skipped.</p></li><li><p>If the first plot number is showing at the bottom of the image, you may need to rotate the image in the previous step so that the first plot is in the top left or right of the image.</p></li><li><p>Please use Option 2 or 3 if Option 1 is not able to handle your experiments.</p></li></ul></div></div>';
+        var html = '<div class="panel panel-default"><div class="panel-body"><ul><li><p>Field trial plot numbers and generated numbers will be paired up in the following orders:</p><ul><li>Field Trial Plot Numbers: Field trials are ordered based on your input below and then plot numbers within each field trial follow in increasing order (e.g. 1 to 100, or 101 to 536)</li><li>Generated Polygon Numbers: Templates are considered in order of template number (e.g. 1 to 10) and then the order of the polygons follows inputs below for the location of the first plot number, the direction of the second plot number, and the orientation (serpentine or zigzag). The orientation will persist across templates.</li></ul><hr></li><li><p>If you want to skip a generated polygon, use the "Clear One Polygon" button and it will be skipped.</p><button id="drone_imagery_standard_process_plot_polygons_clear_one" class="btn btn-sm btn-warning">Clear One Polygon</button></li><hr><li><p>If the first plot number is showing at the bottom of the image, you may need to rotate the image in the previous step so that the first plot is in the top left or right of the image.</p></li><li><p>Please use Option 2 or 3 if Option 1 is not able to handle your experiments.</p></li></ul></div></div>';
         html = html + '<div class="panel panel-default"><div class="panel-body"><div class="form form-horizontal">';
 
         html = html + '<div class="form-group form-group-sm"><label class="col-sm-3 control-label">Order of Field Trials: </label><div class="col-sm-9"><input class="form-control" id="drone_imagery_plot_polygons_field_trial_names_order" type="text" value="'+manage_drone_imagery_standard_process_field_trial_name;
