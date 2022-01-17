@@ -397,7 +397,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                 <div class="panel panel-default"><div class="panel-body">
                     <h3>(Option 1) Auto Assign Plot Numbers to Generated Polygons</h3>
 
-                    <&| /page/info_section.mas, title => 'Auto Assign Plot Numbers to Polygon Numbers', collapsible=>1, collapsed => 0, subtitle=> 'Interface for automatically assigning plot numbers to polygon numbers.' &>
+                    <&| /page/info_section.mas, title => 'Auto Assign Plot Numbers to Polygon Numbers', collapsible=>1, collapsed => 1, subtitle=> 'Interface for automatically assigning plot numbers to polygon numbers.' &>
                         <div class="well well-sm">
                             <div id="drone_imagery_standard_process_generated_polygons_div">First Complete the Templating Above</div>
                         </div>
@@ -409,7 +409,40 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
                     <&| /page/info_section.mas, title => 'Upload Spreadsheet File to Assign Plot Numbers to Polygon Numbers', collapsible=>1, collapsed => 1, subtitle=> 'Upload a spreadsheet file assigning plot numbers to polygon numbers.' &>
                         <div class="well well-sm">
-                            <div id="drone_imagery_standard_process_generated_polygons_spreadsheet">First Complete the Templating Above</div>
+                            <div id="drone_imagery_standard_process_generated_polygons_spreadsheet_div">
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                        <ul>
+                                            <li>If Option 1 is unable to fit your field experiments, Option 2 enables ultimate flexibility.</li>
+                                            <li>Upload an <b>XLS</b> file with the following three columns: <b>polygon_number, plot_number, field_trial</b>
+                                                <ul>
+                                                    <li><b>polygon_number</b>: The polygon number generated in the templating process. The polygon numbers are visible in the templated image.</li>
+                                                    <li><b>plot_number</b>: The plot number to assign to the polygon number. Field layouts are visible at the bottom of this page, where available plot numbers can be determined.</li>
+                                                    <li><b>field_trial</b>: The field trial for the plot number being assigned. The same plot number (e.g. 101) can exist in different field trials, so this column differentiates plot numbers among field trials.</li>
+                                                <ul>
+                                            </li>
+                                            <li>If you want to skip a generated polygon number, simply do not include it in the uploaded spreadsheet.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                        <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="drone_imagery_plot_polygons_spreadsheet_upload_form" name="drone_imagery_plot_polygons_spreadsheet_upload_form">
+                                            <div class="form-group form-group-sm">
+                                                <label class="col-sm-3 control-label">Spreadsheet Upload (.xls): </label>
+                                                <div class="col-sm-9">
+                                                    <input class="form-control" id="drone_imagery_plot_polygons_spreadsheet_upload" name="drone_imagery_plot_polygons_spreadsheet_upload" type="file" encoding="multipart/form-data" />
+                                                    <input id="drone_imagery_plot_polygons_spreadsheet_upload_stock_polygons" name="drone_imagery_plot_polygons_spreadsheet_upload_stock_polygons" type="hidden" />
+                                                </div>
+                                            </div>
+                                        </form>
+
+                                        <div id="drone_imagery_plot_polygons_spreadsheet_upload_form_response_div"></div>
+
+                                        <button class="btn btn-primary" id="drone_imagery_plot_polygons_spreadsheet_upload_button" name="drone_imagery_plot_polygons_spreadsheet_upload_button">Generate Assignments (Does Not Save)</button>&nbsp;&nbsp;&nbsp;<button class="btn btn-primary" name="drone_imagery_standard_process_plot_polygons_submit_bottom">Finish and Save Polygons To Plots</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </&>
                 </div></div>
@@ -3317,6 +3350,78 @@ jQuery(document).ready(function() {
         droneImageryDrawLayoutTable(field_trial_layout_response, drone_imagery_plot_polygons, 'drone_imagery_standard_process_trial_layout_div_0', 'drone_imagery_standard_process_layout_table_0');
         droneImageryDrawPlotPolygonActiveTemplatesTable("drone_imagery_standard_process_plot_polygons_active_templates", plot_polygons_template_dimensions);
         plotPolygonManualAssignPlotNumberTableStandard('drone_imagery_standard_process_generated_polygons_table', 'drone_imagery_standard_process_generated_polygons_table_id', 'drone_imagery_standard_process_generated_polygons_table_input', 'drone_imagery_standard_process_generated_polygons_table_input_generate_button', 'drone_imagery_standard_process_plot_polygons_submit_bottom');
+    });
+
+    jQuery('#drone_imagery_plot_polygons_spreadsheet_upload_button').click(function(){
+        var uploadFile = jQuery("#drone_imagery_plot_polygons_spreadsheet_upload").val();
+        jQuery('#drone_imagery_plot_polygons_spreadsheet_upload_form').attr("action", "/api/drone_imagery/plot_polygon_spreadsheet_parse");
+        if (uploadFile === '') {
+            alert("Please select a file");
+            return;
+        }
+        jQuery('#drone_imagery_plot_polygons_spreadsheet_upload_stock_polygons').val(JSON.stringify(drone_imagery_plot_polygons_display));
+        jQuery("#drone_imagery_plot_polygons_spreadsheet_upload_form").submit();
+    });
+
+    jQuery('#drone_imagery_plot_polygons_spreadsheet_upload_form').iframePostForm({
+        json: true,
+        post: function () {
+            jQuery('#working_modal').modal("show");
+        },
+        complete: function (response) {
+            console.log(response);
+            jQuery('#working_modal').modal("hide");
+
+            if (response.error) {
+                alert(response.error);
+                return;
+            }
+            else {
+                var html = '<div class="well well-sm">';
+                if (response.error_messages) {
+                    for (var i=0; i<response.error_messages.length; i++) {
+                        html = html + '<p class="text-danger">' + response.error_messages[i] + '</p>';
+                    }
+                }
+                else {
+                    html = html + '<p class="text-success">Successfully assigned plot numbers to polygon numbers! View the assignments in the image above before proceeding.</p>';
+
+                    plot_polygon_new_display = response.assigned_polygons;
+                    drone_imagery_plot_polygons = response.assigned_polygons;
+                    plot_polygons_field_trial_names_order = response.trial_names;
+                    drone_imagery_plot_polygons_display = plot_polygon_new_display;
+
+                    for (var plot_polygons_field_trial_name_iterator=0; plot_polygons_field_trial_name_iterator<plot_polygons_field_trial_names_order.length; plot_polygons_field_trial_name_iterator++) {
+                        var plot_polygons_field_trial_names_order_current = plot_polygons_field_trial_names_order[plot_polygons_field_trial_name_iterator];
+                        var field_trial_layout_response_current = field_trial_layout_responses[plot_polygons_field_trial_names_order_current];
+                        droneImageryDrawLayoutTable(field_trial_layout_response_current, drone_imagery_plot_polygons, 'drone_imagery_standard_process_trial_layout_div_'+plot_polygons_field_trial_name_iterator, 'drone_imagery_standard_process_layout_table_'+plot_polygons_field_trial_name_iterator);
+                    }
+
+                    plot_polygons_plot_names_colors = {};
+                    plot_polygons_plot_names_plot_numbers = {};
+
+                    for (var plot_polygons_field_trial_name_iterator=0; plot_polygons_field_trial_name_iterator<plot_polygons_field_trial_names_order.length; plot_polygons_field_trial_name_iterator++) {
+                        var plot_polygons_field_trial_names_order_current = plot_polygons_field_trial_names_order[plot_polygons_field_trial_name_iterator];
+                        var field_trial_layout_response_current = field_trial_layout_responses[plot_polygons_field_trial_names_order_current];
+
+                        var randomColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+
+                        var plot_polygons_layout = field_trial_layout_response_current.output;
+                        for (var i=1; i<plot_polygons_layout.length; i++) {
+                            var plot_polygons_plot_number = parseInt(plot_polygons_layout[i][2]);
+                            var plot_polygons_plot_name = plot_polygons_layout[i][0];
+
+                            plot_polygons_plot_names_colors[plot_polygons_plot_name] = randomColor;
+                            plot_polygons_plot_names_plot_numbers[plot_polygons_plot_name] = plot_polygons_plot_number;
+                        }
+                    }
+
+                    draw_polygons_svg_plots_labeled(undefined);
+                }
+                html = html + '</div>';
+                jQuery('#drone_imagery_plot_polygons_spreadsheet_upload_form_response_div').html(html);
+            }
+        }
     });
 
     jQuery(document).on('click', '#drone_imagery_standard_process_plot_polygons_clear_one', function(){
@@ -8193,7 +8298,7 @@ jQuery(document).ready(function() {
 
     function droneImageryRectangleLayoutTable(generated_polygons, plot_polygons_layout_assignment_info, plot_polygons_generate_assignment_button, plot_polygon_assignment_submit_button) {
 
-        var html = '<div class="panel panel-default"><div class="panel-body"><ul><li><p>Field trial plot numbers and generated numbers will be paired up in the following orders:</p><ul><li>Field Trial Plot Numbers: Field trials are ordered based on your input below and then plot numbers within each field trial follow in increasing order (e.g. 1 to 100, or 101 to 536)</li><li>Generated Polygon Numbers: Templates are considered in order of template number (e.g. 1 to 10) and then the order of the polygons follows inputs below for the location of the first plot number, the direction of the second plot number, and the orientation (serpentine or zigzag). The orientation will persist across templates.</li></ul></li><li><br/><p>If you want to skip a generated polygon, use the "Clear One Polygon" button above and it will be skipped.</p></li><li><p>If the first plot number is showing at the bottom of the image, you may need to rotate the image in the previous step so that the first plot is in the top left or right of the image.</p></li><li><p>Please use Option 2 or 3 if Option 1 is not able to handle your experiments.</p></li></ul></div></div>';
+        var html = '<div class="panel panel-default"><div class="panel-body"><ul><li><p>Field trial plot numbers and generated numbers will be paired up in the following orders:</p><ul><li>Field Trial Plot Numbers: Field trials are ordered based on your input below and then plot numbers within each field trial follow in increasing order (e.g. 1 to 100, or 101 to 536)</li><li>Generated Polygon Numbers: Templates are considered in order of template number (e.g. 1 to 10) and then the order of the polygons follows inputs below for the location of the first plot number, the direction of the second plot number, and the orientation (serpentine or zigzag). The orientation will persist across templates.</li></ul></li><li><p>If you want to skip a generated polygon, use the "Clear One Polygon" button above and it will be skipped.</p></li><li><p>If the first plot number is showing at the bottom of the image, you may need to rotate the image in the previous step so that the first plot is in the top left or right of the image.</p></li><li><p>Please use Option 2 or 3 if Option 1 is not able to handle your experiments.</p></li></ul></div></div>';
         html = html + '<div class="panel panel-default"><div class="panel-body"><div class="form form-horizontal">';
 
         html = html + '<div class="form-group form-group-sm"><label class="col-sm-3 control-label">Order of Field Trials: </label><div class="col-sm-9"><input class="form-control" id="drone_imagery_plot_polygons_field_trial_names_order" type="text" value="'+manage_drone_imagery_standard_process_field_trial_name;

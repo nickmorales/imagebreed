@@ -54,6 +54,7 @@ use List::MoreUtils qw(first_index);
 use List::Util qw(sum);
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use Spreadsheet::WriteExcel;
+use Spreadsheet::ParseExcel;
 use CXGN::Location;
 #use Inline::Python;
 
@@ -11051,6 +11052,181 @@ sub drone_imagery_get_image_for_saving_gcp_GET : Args(0) {
     my @saved_gcps_array = values %$saved_gcps_full;
 
     $c->stash->{rest} = {success => 1, result => $result, image_ids => \@image_ids, image_types => \@image_types, saved_gcps_full => $saved_gcps_full, gcps_array => \@saved_gcps_array};
+}
+
+sub drone_imagery_plot_polygon_spreadsheet_parse : Path('/api/drone_imagery/plot_polygon_spreadsheet_parse') : ActionClass('REST') { }
+sub drone_imagery_plot_polygon_spreadsheet_parse_POST : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
+    my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+    my $spreadsheet = $c->req->upload('drone_imagery_plot_polygons_spreadsheet_upload');
+    my $polygons = $c->req->param('drone_imagery_plot_polygons_spreadsheet_upload_stock_polygons') ? decode_json $c->req->param('drone_imagery_plot_polygons_spreadsheet_upload_stock_polygons') : {};
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my @error_messages;
+    # print STDERR Dumper $polygons;
+
+    if (scalar(keys %$polygons) == 0) {
+        push @error_messages, "Please complete the templating step above first!";
+        $c->stash->{rest} = {error_messages => \@error_messages};
+        $c->detach();
+    }
+
+    my $parser = Spreadsheet::ParseExcel->new();
+    my $excel_obj = $parser->parse($spreadsheet->tempname);
+    if ( !$excel_obj ) {
+        push @error_messages, $parser->error();
+        $c->stash->{rest} = {error_messages => \@error_messages};
+        $c->detach();
+    }
+
+    my $worksheet = ( $excel_obj->worksheets() )[0]; #support only one worksheet
+    if (!$worksheet) {
+        push @error_messages, "Spreadsheet must be on 1st tab in Excel (.xls) file";
+        $c->stash->{rest} = {error_messages => \@error_messages};
+        $c->detach();
+    }
+    my ( $row_min, $row_max ) = $worksheet->row_range();
+    my ( $col_min, $col_max ) = $worksheet->col_range();
+    if (($col_max - $col_min)  < 2 || ($row_max - $row_min) < 1 ) { #must have header and at least one row of plot data
+        push @error_messages, "Spreadsheet is missing header or contains no rows";
+        $c->stash->{rest} = {error_messages => \@error_messages};
+        $c->detach();
+    }
+
+    my $polygon_number_header;
+    my $plot_number_header;
+    my $trial_name_header;
+
+    if ($worksheet->get_cell(0,0)) {
+        $polygon_number_header  = $worksheet->get_cell(0,0)->value();
+    }
+    if ($worksheet->get_cell(0,1)) {
+        $plot_number_header  = $worksheet->get_cell(0,1)->value();
+    }
+    if ($worksheet->get_cell(0,2)) {
+        $trial_name_header  = $worksheet->get_cell(0,2)->value();
+    }
+
+    if (!$polygon_number_header || $polygon_number_header ne 'polygon_number') {
+        push @error_messages, "Cell A1: polygon_number is missing from the header. The first row must be: polygon_number, plot_number, field_trial";
+    }
+    if (!$plot_number_header || $plot_number_header ne 'plot_number') {
+        push @error_messages, "Cell B1: plot_number is missing from the header. The first row must be: polygon_number, plot_number, field_trial";
+    }
+    if (!$trial_name_header || $trial_name_header ne 'field_trial') {
+        push @error_messages, "Cell C1: field_trial is missing from the header. The first row must be: polygon_number, plot_number, field_trial";
+    }
+
+    if (scalar(@error_messages) > 0) {
+        $c->stash->{rest} = {error_messages => \@error_messages};
+        $c->detach();
+    }
+
+    my %seen_trials;
+    for my $row ( 1 .. $row_max ) {
+        my $row_name = $row+1;
+
+        my $polygon_number;
+        my $plot_number;
+        my $trial_name;
+
+        if ($worksheet->get_cell($row,0)) {
+            $polygon_number = $worksheet->get_cell($row,0)->value();
+        }
+        if ($worksheet->get_cell($row,1)) {
+            $plot_number = $worksheet->get_cell($row,1)->value();
+        }
+        if ($worksheet->get_cell($row,2)) {
+            $trial_name = $worksheet->get_cell($row,2)->value();
+        }
+
+        if (!defined($polygon_number)) {
+            push @error_messages, "A$row_name is blank! Please give a polygon number for every row!";
+        }
+        if (!exists($polygons->{$polygon_number})) {
+            push @error_messages, "The polygon number in A$row_name does not exist in the generated template! Maybe it was a typo?";
+        }
+        if (!defined($plot_number)) {
+            push @error_messages, "B$row_name is blank! Please give a plot number for every row!";
+        }
+        if (!defined($trial_name)) {
+            push @error_messages, "C$row_name is blank! Please give a field trial name for every row!";
+        }
+        $seen_trials{$trial_name}++;
+    }
+
+    my %field_trial_designs;
+    foreach (keys %seen_trials) {
+        my $row = $schema->resultset("Project::Project")->find( { name => $_ });
+        if ($row) {
+            my $layout = CXGN::Trial::TrialLayout->new({schema => $schema, trial_id => $row->project_id(), experiment_type=>'field_layout'});
+            my $design = $layout->get_design();
+            $field_trial_designs{$_} = $design;
+        }
+        else {
+            push @error_messages, "The field trial $_ does not exist in the database!";
+        }
+    }
+    # print STDERR Dumper \%field_trial_designs;
+
+    for my $row ( 1 .. $row_max ) {
+        my $row_name = $row+1;
+
+        my $polygon_number;
+        my $plot_number;
+        my $trial_name;
+
+        if ($worksheet->get_cell($row,0)) {
+            $polygon_number = $worksheet->get_cell($row,0)->value();
+        }
+        if ($worksheet->get_cell($row,1)) {
+            $plot_number = $worksheet->get_cell($row,1)->value();
+        }
+        if ($worksheet->get_cell($row,2)) {
+            $trial_name = $worksheet->get_cell($row,2)->value();
+        }
+
+        if (!exists($field_trial_designs{$trial_name}->{$plot_number})) {
+            push @error_messages, "The plot_number in B$row_name does not exist in the field_trial $trial_name!";
+        }
+    }
+
+    if (scalar(@error_messages) > 0) {
+        $c->stash->{rest} = {error_messages => \@error_messages};
+        $c->detach();
+    }
+
+    my %assigned_plot_polygons;
+    for my $row ( 1 .. $row_max ) {
+        my $row_name = $row+1;
+
+        my $polygon_number;
+        my $plot_number;
+        my $trial_name;
+
+        if ($worksheet->get_cell($row,0)) {
+            $polygon_number = $worksheet->get_cell($row,0)->value();
+        }
+        if ($worksheet->get_cell($row,1)) {
+            $plot_number = $worksheet->get_cell($row,1)->value();
+        }
+        if ($worksheet->get_cell($row,2)) {
+            $trial_name = $worksheet->get_cell($row,2)->value();
+        }
+
+        my $plot_name = $field_trial_designs{$trial_name}->{$plot_number}->{plot_name};
+        $assigned_plot_polygons{$plot_name} = $polygons->{$polygon_number};
+    }
+    # print STDERR Dumper \%assigned_plot_polygons;
+
+    my @trial_names_sorted = sort keys %seen_trials;
+    $c->stash->{rest} = {
+        success => 1,
+        assigned_polygons => \%assigned_plot_polygons,
+        trial_names => \@trial_names_sorted
+    };
 }
 
 sub drone_imagery_get_image_for_time_series : Path('/api/drone_imagery/get_image_for_time_series') : ActionClass('REST') { }
