@@ -3,7 +3,6 @@ package CXGN::Trial::TrialDesignStore::PhenotypingTrial;
 
 use Moose;
 use Try::Tiny;
-use Data::Dumper;
 
 extends 'CXGN::Trial::TrialDesignStore::AbstractTrial';
 
@@ -48,7 +47,6 @@ sub validate_design {
     my $design_type = $self->get_design_type;
     my %design = %{$self->get_design};
     my $error = '';
-    # print STDERR Dumper \%design;
 
     if (defined $design_type){
         if ($design_type ne 'CRD' && $design_type ne 'Alpha' && $design_type ne 'MAD' && $design_type ne 'Lattice' && $design_type ne 'Augmented' && $design_type ne 'RCBD' && $design_type ne 'RRC' && $design_type ne 'p-rep' && $design_type ne 'splitplot' && $design_type ne 'greenhouse' && $design_type ne 'Westcott' && $design_type ne 'Analysis'){
