@@ -468,6 +468,7 @@ sub _validate_with_plugin {
   my %valid_design_types = (
     "CRD" => 1,
     "RCBD" => 1,
+    "RRC" => 1,
     "Alpha" => 1,
     "Lattice" => 1,
     "Augmented" => 1,
