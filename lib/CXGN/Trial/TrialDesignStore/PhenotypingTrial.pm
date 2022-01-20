@@ -3,6 +3,7 @@ package CXGN::Trial::TrialDesignStore::PhenotypingTrial;
 
 use Moose;
 use Try::Tiny;
+use Data::Dumper;
 
 extends 'CXGN::Trial::TrialDesignStore::AbstractTrial';
 
@@ -47,6 +48,7 @@ sub validate_design {
     my $design_type = $self->get_design_type;
     my %design = %{$self->get_design};
     my $error = '';
+    # print STDERR Dumper \%design;
 
     if (defined $design_type){
         if ($design_type ne 'CRD' && $design_type ne 'Alpha' && $design_type ne 'MAD' && $design_type ne 'Lattice' && $design_type ne 'Augmented' && $design_type ne 'RCBD' && $design_type ne 'RRC' && $design_type ne 'p-rep' && $design_type ne 'splitplot' && $design_type ne 'greenhouse' && $design_type ne 'Westcott' && $design_type ne 'Analysis'){
@@ -56,7 +58,7 @@ sub validate_design {
     }
     my @valid_properties;
 
-    if ($design_type eq 'CRD' || $design_type eq 'Alpha' || $design_type eq 'Augmented' || $design_type eq 'RCBD' || $design_type eq 'p-rep' || $design_type eq 'splitplot' || $design_type eq 'Lattice' || $design_type eq 'MAD' || $design_type eq 'greenhouse' || $design_type eq 'Westcott' || $design_type eq 'Analysis'){
+    if ($design_type eq 'CRD' || $design_type eq 'Alpha' || $design_type eq 'Augmented' || $design_type eq 'RCBD' || $design_type eq 'RRC' || $design_type eq 'p-rep' || $design_type eq 'splitplot' || $design_type eq 'Lattice' || $design_type eq 'MAD' || $design_type eq 'greenhouse' || $design_type eq 'Westcott' || $design_type eq 'Analysis'){
         # valid plot's properties
         @valid_properties = @{$self->get_valid_properties()};
     }
