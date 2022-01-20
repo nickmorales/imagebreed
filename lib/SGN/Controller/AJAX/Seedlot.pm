@@ -265,7 +265,7 @@ sub seedlot_verify_delete_by_list :Path('/ajax/seedlots/verify_delete_by_list') 
     }
 
     print STDERR "DELETE VERIFY USING LIST!\n";
-    
+
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($ok, $errors) = CXGN::Stock::Seedlot->delete_verify_using_list($schema, $phenome_schema, $list_id);
@@ -293,7 +293,7 @@ sub seedlot_confirm_delete_by_list :Path('/ajax/seedlots/confirm_delete_by_list'
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($total_count, $delete_count, $errors) = CXGN::Stock::Seedlot->delete_using_list($schema, $phenome_schema, $list_id);
 
-    if (@$errors) { 
+    if (@$errors) {
 	$c->stash->{rest} = { error => join("\n", @$errors), total_count => $total_count, delete_count => $delete_count }
     }
     else {
@@ -306,10 +306,16 @@ sub seedlot_confirm_delete_by_list :Path('/ajax/seedlots/confirm_delete_by_list'
 sub create_seedlot :Path('/ajax/breeders/seedlot-create/') :Args(0) {
     my $self = shift;
     my $c = shift;
+
     if (!$c->user){
         $c->stash->{rest} = {error=>'You must be logged in to add a seedlot transaction!'};
         $c->detach();
     }
+    if (!($c->user()->check_roles('curator') || $c->user()->check_roles('submitter'))) {
+        $c->stash->{rest} = { error => "You do not have the correct submitter or curator role to add seedlots. Please contact us." };
+        $c->detach();
+    }
+
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $seedlot_uniquename = $c->req->param("seedlot_name");
