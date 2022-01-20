@@ -5603,6 +5603,7 @@ sub _perform_plot_polygon_assign {
 
     my @plot_polygon_image_fullpaths;
     my @plot_polygon_image_urls;
+    my @plot_polygon_image_sizes;
 
     my @drone_run_band_template_ids;
     foreach my $drone_run_band_project_id (@drone_run_band_project_ids_all) {
@@ -5669,23 +5670,29 @@ sub _perform_plot_polygon_assign {
         open(my $F, ">", $bulk_input_temp_file) || die "Can't open file ".$bulk_input_temp_file;
 
         my @plot_polygons;
+        my $iteration_count = 0;
         foreach my $stock_name (keys %$polygon_objs_save) {
             #my $pid = $pm->start and next;
 
-            my $polygon = $polygon_objs_save->{$stock_name};
-            my $polygons = encode_json [$polygon];
+            if (!$preview_only || ($preview_only && $iteration_count < $preview_only_count)) {
 
-            my $stock_id = $stock_ids{$stock_name};
+                my $polygon = $polygon_objs_save->{$stock_name};
+                my $polygons = encode_json [$polygon];
 
-            my $archive_plot_polygons_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_plot_polygons/imageXXXX');
-            $archive_plot_polygons_temp_image .= '.png';
+                my $stock_id = $stock_ids{$stock_name};
 
-            print $F "$image_fullpath\t$archive_plot_polygons_temp_image\t$polygons\t$cropping_type\t$corresponding_channel\n";
+                my $archive_plot_polygons_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_plot_polygons/imageXXXX');
+                $archive_plot_polygons_temp_image .= '.png';
 
-            push @plot_polygons, {
-                temp_plot_image => $archive_plot_polygons_temp_image,
-                stock_id => $stock_id
-            };
+                print $F "$image_fullpath\t$archive_plot_polygons_temp_image\t$polygons\t$cropping_type\t$corresponding_channel\n";
+
+                push @plot_polygons, {
+                    temp_plot_image => $archive_plot_polygons_temp_image,
+                    stock_id => $stock_id
+                };
+            }
+
+            $iteration_count++;
         }
 
         my $cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageCropping/CropToPolygonBulk.py --inputfile_path '$bulk_input_temp_file'";
@@ -5693,33 +5700,31 @@ sub _perform_plot_polygon_assign {
         my $status = system($cmd);
 
         if ($preview_only) {
-            my $iteration_count = 0;
             foreach my $obj (@plot_polygons) {
-                if ($iteration_count < $preview_only_count) {
-                    my $archive_plot_polygons_temp_image = $obj->{temp_plot_image};
-                    my $stock_id = $obj->{stock_id};
+                my $archive_plot_polygons_temp_image = $obj->{temp_plot_image};
+                my $stock_id = $obj->{stock_id};
 
-                    $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
-                    $image->set_sp_person_id($user_id);
-                    my $ret = $image->process_image($archive_plot_polygons_temp_image, "test");
-                    my $plot_polygon_image_fullpath = $image->get_filename('original_converted', 'full');
-                    my $plot_polygon_image_url = $image->get_image_url('original');
+                $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
+                $image->set_sp_person_id($user_id);
+                my $ret = $image->process_image($archive_plot_polygons_temp_image, "test");
+                my $plot_polygon_image_fullpath = $image->get_filename('original_converted', 'full');
+                my $plot_polygon_image_url = $image->get_image_url('original');
+                my ($image_width, $image_height) = imgsize($plot_polygon_image_fullpath);
 
-                    push @plot_polygon_image_fullpaths, $plot_polygon_image_fullpath;
-                    push @plot_polygon_image_urls, $plot_polygon_image_url;
+                push @plot_polygon_image_fullpaths, $plot_polygon_image_fullpath;
+                push @plot_polygon_image_urls, $plot_polygon_image_url;
+                push @plot_polygon_image_sizes, [$image_width, $image_height];
 
-                    unlink($archive_plot_polygons_temp_image);
-                }
-                $iteration_count++;
+                unlink($archive_plot_polygons_temp_image);
             }
         }
         else {
-            my $pm = Parallel::ForkManager->new(ceil($number_system_cores/4));
-            $pm->run_on_finish( sub {
-                my ($pid, $exit_code, $ident, $exit_signal, $core_dump, $data_structure_reference) = @_;
-                push @plot_polygon_image_urls, $data_structure_reference->{plot_polygon_image_url};
-                push @plot_polygon_image_fullpaths, $data_structure_reference->{plot_polygon_image_fullpath};
-            });
+            # my $pm = Parallel::ForkManager->new(ceil($number_system_cores/4));
+            # $pm->run_on_finish( sub {
+            #     my ($pid, $exit_code, $ident, $exit_signal, $core_dump, $data_structure_reference) = @_;
+            #     push @plot_polygon_image_urls, $data_structure_reference->{plot_polygon_image_url};
+            #     push @plot_polygon_image_fullpaths, $data_structure_reference->{plot_polygon_image_fullpath};
+            # });
 
             foreach my $obj (@plot_polygons) {
                 my $archive_plot_polygons_temp_image = $obj->{temp_plot_image};
@@ -5751,11 +5756,15 @@ sub _perform_plot_polygon_assign {
                     $plot_polygon_image_url = $image->get_image_url('original');
                     my $added_image_tag_id = $image->add_tag($image_tag);
                 }
+
+                push @plot_polygon_image_fullpaths, $plot_polygon_image_fullpath;
+                push @plot_polygon_image_urls, $plot_polygon_image_url;
+
                 unlink($archive_plot_polygons_temp_image);
 
-                $pm->finish(0, { plot_polygon_image_url => $plot_polygon_image_url, plot_polygon_image_fullpath => $plot_polygon_image_fullpath });
+                # $pm->finish(0, { plot_polygon_image_url => $plot_polygon_image_url, plot_polygon_image_fullpath => $plot_polygon_image_fullpath });
             }
-            $pm->wait_all_children;
+            # $pm->wait_all_children;
         }
     }
 
@@ -5765,7 +5774,8 @@ sub _perform_plot_polygon_assign {
         success => 1,
         drone_run_band_template_ids => \@drone_run_band_template_ids,
         plot_polygon_image_fullpaths => \@plot_polygon_image_fullpaths,
-        plot_polygon_image_urls => \@plot_polygon_image_urls
+        plot_polygon_image_urls => \@plot_polygon_image_urls,
+        plot_polygon_image_sizes => \@plot_polygon_image_sizes
     };
 }
 
@@ -7189,6 +7199,43 @@ sub drone_run_get_field_trial_drone_run_projects_in_same_orthophoto_GET : Args(0
     $c->stash->{rest} = { success => 1, drone_run_project_ids => $field_trial_drone_run_project_ids_in_same_orthophoto, drone_run_project_names => $field_trial_drone_run_project_names_in_same_orthophoto, drone_run_field_trial_ids => $field_trial_ids_in_same_orthophoto, drone_run_field_trial_names => $field_trial_names_in_same_orthophoto };
 }
 
+sub retrieve_preview_plot_images : Path('/api/drone_imagery/retrieve_preview_plot_images') : ActionClass('REST') { }
+sub retrieve_preview_plot_images_GET : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    # print STDERR Dumper $c->req->params();
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
+    my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
+    my $drone_run_band_project_id = $c->req->param('drone_run_project_id');
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+
+    my $project_image_type_id_list_all = CXGN::DroneImagery::ImageTypes::get_exported_project_md_image_observation_unit_plot_polygon_types($bcs_schema);
+    my @project_image_type_id_list_array = sort keys %$project_image_type_id_list_all;
+
+    my @plot_polygon_preview_urls;
+    my @plot_polygon_preview_image_sizes;
+
+    my $images_search = CXGN::DroneImagery::ImagesSearch->new({
+        bcs_schema=>$bcs_schema,
+        drone_run_project_id_list=>[$drone_run_band_project_id],
+        project_image_type_id_list=>\@project_image_type_id_list_array,
+        limit=>10
+    });
+    my ($result, $total_count) = $images_search->search();
+
+    foreach (@$result) {
+        my $image = SGN::Image->new( $bcs_schema->storage->dbh, $_->{image_id}, $c );
+        my $image_fullpath = $image->get_filename('original_converted', 'full');
+        my $image_url = $image->get_image_url('original');
+        my ($image_width, $image_height) = imgsize($image_fullpath);
+        push @plot_polygon_preview_urls, $image_url;
+        push @plot_polygon_preview_image_sizes, [$image_width, $image_height];
+    }
+
+    $c->stash->{rest} = { success => 1, plot_polygon_preview_urls => \@plot_polygon_preview_urls, plot_polygon_preview_image_sizes => \@plot_polygon_preview_image_sizes };
+}
+
 sub preview_plot_polygons : Path('/api/drone_imagery/preview_plot_polygons') : ActionClass('REST') { }
 sub preview_plot_polygons_POST : Args(0) {
     my $self = shift;
@@ -7200,14 +7247,13 @@ sub preview_plot_polygons_POST : Args(0) {
     my $stock_polygons = $c->req->param('stock_polygons');
     my $drone_run_band_project_id = $c->req->param('drone_run_band_project_id');
     my $image_id = $c->req->param('image_id');
-    my $plot_margin_top_bottom = defined ($c->req->param('phenotypes_plot_margin_top_bottom')) ? $c->req->param('phenotypes_plot_margin_top_bottom') : 5;
-    my $plot_margin_left_right = defined ($c->req->param('phenotypes_plot_margin_right_left')) ? $c->req->param('phenotypes_plot_margin_right_left') : 5;
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $image_id, $drone_run_band_project_id, [], $stock_polygons, undef, $user_id, $user_name, $user_role, 1, 0, 1, 1, 'rectangular_square', 1, 5);
     my $plot_polygon_preview_urls = $plot_polygon_return->{plot_polygon_image_urls};
+    my $plot_polygon_preview_image_sizes = $plot_polygon_return->{plot_polygon_image_sizes};
 
-    $c->stash->{rest} = { success => 1, plot_polygon_preview_urls => $plot_polygon_preview_urls };
+    $c->stash->{rest} = { success => 1, plot_polygon_preview_urls => $plot_polygon_preview_urls, plot_polygon_preview_image_sizes => $plot_polygon_preview_image_sizes };
 }
 
 sub standard_process_apply : Path('/api/drone_imagery/standard_process_apply') : ActionClass('REST') { }

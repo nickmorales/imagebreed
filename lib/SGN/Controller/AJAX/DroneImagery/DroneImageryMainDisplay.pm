@@ -198,7 +198,7 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
             if ($v->{drone_run_phenotypes_indicator}) {
                 $drone_run_html .= '<span class="label label-info" ><span class="glyphicon glyphicon-hourglass"></span>&nbsp;&nbsp;&nbsp;Processing Phenotypes in Progress</span><br/><br/>';
             } elsif ($v->{drone_run_processed}) {
-                # $drone_run_html .= '<button class="btn btn-primary btn-sm" name="project_drone_imagery_phenotype_run" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Generate Phenotypes for <br/>'.$v->{drone_run_project_name}.'</button>';
+                # $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_phenotype_run" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Calculate Phenotypes Again for <br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
             }
             #$drone_run_html .= '<button class="btn btn-primary btn-sm" name="project_drone_imagery_phenotype_run" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Generate Phenotypes for <br/>'.$v->{drone_run_project_name}.'</button>';
 
@@ -224,6 +224,8 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
 
                     # if ($v->{drone_run_processed} && !$v->{drone_run_ground_control_points}) {
                     if ($v->{drone_run_processed}) {
+                        $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_phenotype_run" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Calculate Phenotypes Again for <br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
+
                         $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_apply_other_vi" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Apply Other Vegetation Indices For<br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
 
                         $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_ground_control_points" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Save Ground Control Points For<br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';

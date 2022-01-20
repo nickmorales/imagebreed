@@ -85,6 +85,15 @@ print STDERR Dumper $message_micasense_stitch;
 # is(scalar(@{$message_hash_micasense_stitch->{drone_run_band_image_ids}}), 6);
 ok($message_micasense_stitch =~ /Successfully uploaded!/);
 
+my $NewMicasenseUnstitchedDroneRunProject_project_id = $schema->resultset("Project:Project")->find({name=>"NewMicasenseUnstitchedDroneRunProject"})->project_id();
+my $images_search_mica = CXGN::DroneImagery::ImagesSearch->new({
+    bcs_schema=>$schema,
+    drone_run_project_id_list=>[$NewMicasenseUnstitchedDroneRunProject_project_id],
+});
+my ($result_mica, $total_count_mica) = $images_search_mica->search();
+print STDERR Dumper $result_mica;
+is($total_count_mica, 6);
+
 #Testing upload of RGB unstitched raw captures.
 my $rgbrawimageszipfile = "/home/production/public/static_content/imagebreed/ExampleColorAerialDroneFlightRawCaptures.zip";
 $ua = LWP::UserAgent->new;
@@ -116,6 +125,15 @@ print STDERR Dumper $message_rgb_stitch;
 # is(scalar(@{$message_hash_rgb_stitch->{drone_run_band_project_ids}}), 2);
 # is(scalar(@{$message_hash_rgb_stitch->{drone_run_band_image_ids}}), 2);
 ok($message_rgb_stitch =~ /Successfully uploaded!/);
+
+my $NewRGBUnstitchedDroneRunProject_project_id = $schema->resultset("Project:Project")->find({name=>"NewRGBUnstitchedDroneRunProject"})->project_id();
+my $images_search_rgb = CXGN::DroneImagery::ImagesSearch->new({
+    bcs_schema=>$schema,
+    drone_run_project_id_list=>[$NewRGBUnstitchedDroneRunProject_project_id],
+});
+my ($result_rgb, $total_count_rgb) = $images_search_rgb->search();
+print STDERR Dumper $result_rgb;
+is($total_count_rgb, 2);
 
 }
 
