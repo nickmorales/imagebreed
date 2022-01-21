@@ -5536,6 +5536,7 @@ sub _perform_plot_polygon_assign {
             $drone_run_band_plot_hash{$_}->{$plot_obj->{plot_name}}++;
         }
     }
+    # print STDERR Dumper \%drone_run_band_plot_hash;
 
     print STDERR "Plot Polygon Assign Type: $assign_plot_polygons_type \n";
 
@@ -5544,6 +5545,7 @@ sub _perform_plot_polygon_assign {
     print STDERR "NUMCORES $number_system_cores\n";
 
     my $polygon_objs = decode_json $stock_polygons;
+    # print STDERR Dumper $polygon_objs;
 
     my %stock_ids_all;
     foreach my $stock_name (keys %$polygon_objs) {
@@ -5637,16 +5639,18 @@ sub _perform_plot_polygon_assign {
         # print STDERR Dumper \%stock_ids;
         # print STDERR Dumper $polygon_objs_save;
 
-        my $drone_run_band_plot_polygons = $schema->resultset('Project::Projectprop')->update_or_create({
-            type_id=>$drone_run_band_plot_polygons_type_id,
-            project_id=>$drone_run_band_project_id,
-            rank=>0,
-            value=> encode_json($polygon_objs_save)
-        },
-        {
-            key=>'projectprop_c1'
-        });
-        push @drone_run_band_template_ids, $drone_run_band_plot_polygons->projectprop_id;
+        if (!$preview_only) {
+            my $drone_run_band_plot_polygons = $schema->resultset('Project::Projectprop')->update_or_create({
+                type_id=>$drone_run_band_plot_polygons_type_id,
+                project_id=>$drone_run_band_project_id,
+                rank=>0,
+                value=> encode_json($polygon_objs_save)
+            },
+            {
+                key=>'projectprop_c1'
+            });
+            push @drone_run_band_template_ids, $drone_run_band_plot_polygons->projectprop_id;
+        }
 
         my @found_stock_ids = values %stock_ids;
         if (!$ignore_previous_image_check && !$preview_only) {
@@ -5659,7 +5663,8 @@ sub _perform_plot_polygon_assign {
             my ($previous_result, $previous_total_count) = $previous_images_search->search();
 
             if (scalar(@$previous_result) == scalar(@found_stock_ids)) {
-                print STDERR "Plot polygon assignment for $assign_plot_polygons_type on project $drone_run_band_project_id has already occured. Skipping \n";
+                # print STDERR Dumper $previous_result;
+                print STDERR "Plot polygon assignment for $assign_plot_polygons_type on project $drone_run_band_project_id has already occured ($previous_total_count). Skipping \n";
                 return {warning => "Plot polygon assignment already occured for $assign_plot_polygons_type on project $drone_run_band_project_id."};
             }
         }
@@ -7529,33 +7534,46 @@ sub standard_process_apply_POST : Args(0) {
             {
                 key=>'projectprop_c1'
             });
-
-            my $drone_run_process_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
-                type_id=>$processed_cvterm_id,
-                project_id=>$_,
-                rank=>0,
-                value=>1
-            },
-            {
-                key=>'projectprop_c1'
-            });
-
-            my $drone_run_process_minimal_vi_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
-                type_id=>$processed_minimal_vi_cvterm_id,
-                project_id=>$_,
-                rank=>0,
-                value=>1
-            },
-            {
-                key=>'projectprop_c1'
-            });
         }
 
         foreach (@drone_run_project_ids_array) {
             my $drone_run_time_obj = _perform_get_weeks_drone_run_after_planting($bcs_schema, $_);
             my $time_cvterm_id_save = $drone_run_time_obj->{time_ontology_day_cvterm_id};
 
-            my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $_, $time_cvterm_id_save, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
+            my $project_image_type_id_list_all = CXGN::DroneImagery::ImageTypes::get_exported_project_md_image_observation_unit_plot_polygon_types($bcs_schema);
+            my @project_image_type_id_list_array = keys %$project_image_type_id_list_all;
+
+            my $images_search = CXGN::DroneImagery::ImagesSearch->new({
+                bcs_schema=>$bcs_schema,
+                drone_run_project_id_list=>[$_],
+                project_image_type_id_list=>\@project_image_type_id_list_array,
+                limit=>10
+            });
+            my ($result, $total_count) = $images_search->search();
+
+            if ($total_count > 0) {
+                my $drone_run_process_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+                    type_id=>$processed_cvterm_id,
+                    project_id=>$_,
+                    rank=>0,
+                    value=>1
+                },
+                {
+                    key=>'projectprop_c1'
+                });
+
+                my $drone_run_process_minimal_vi_completed = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+                    type_id=>$processed_minimal_vi_cvterm_id,
+                    project_id=>$_,
+                    rank=>0,
+                    value=>1
+                },
+                {
+                    key=>'projectprop_c1'
+                });
+
+                my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $_, $time_cvterm_id_save, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
+            }
         }
     }
 
