@@ -125,7 +125,7 @@ $design_types => ()
 <tbody>
 <tr>
 <td>
-<a name="add_accessions_link"><p>Add Accessions Using List</p></a>
+<a name="add_accessions_link"><p>Add Accessions Using List or File Upload</p></a>
 </td>
 <td>
 <a href="/breeders/accessions"><p>Go To Manage Accessions Page</p></a>
