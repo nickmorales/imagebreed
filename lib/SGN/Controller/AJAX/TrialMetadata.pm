@@ -2518,6 +2518,9 @@ sub replace_plot_accession : Chained('trial') PathPart('replace_plot_accessions'
         }
     }
 
+    my $bs = CXGN::BreederSearch->new( { dbh=>$c->dbc->dbh, dbname=>$c->config->{dbname}, } );
+    my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
+
     print "OldAccession: $old_accession, NewAcc: $new_accession, OldPlotName: $old_plot_name, NewPlotName: $new_plot_name OldPlotId: $plot_id\n";
     $c->stash->{rest} = { success => 1};
 }
@@ -3291,6 +3294,19 @@ sub cross_additional_info_trial : Chained('trial') PathPart('cross_additional_in
     }
 
     $c->stash->{rest} = { data => \@crosses };
+}
+
+
+sub intercross_file_metadata : Chained('trial') PathPart('intercross_file_metadata') Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+
+    my $trial_id = $c->stash->{trial_id};
+    my $crosses = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id});
+    my $result = $crosses->get_intercross_file_metadata();
+
+    $c->stash->{rest} = { data => $result };
 }
 
 
