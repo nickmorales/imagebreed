@@ -2186,6 +2186,26 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                             <option value="58">58F</option>
                             <option value="59">59F</option>
                             <option value="60">60F</option>
+                            <option value="61">61F</option>
+                            <option value="62">62F</option>
+                            <option value="63">63F</option>
+                            <option value="64">64F</option>
+                            <option value="65">65F</option>
+                            <option value="66">66F</option>
+                            <option value="67">67F</option>
+                            <option value="68">68F</option>
+                            <option value="69">69F</option>
+                            <option value="70">70F</option>
+                            <option value="71">71F</option>
+                            <option value="72">72F</option>
+                            <option value="73">73F</option>
+                            <option value="74">74F</option>
+                            <option value="75">75F</option>
+                            <option value="76">76F</option>
+                            <option value="77">77F</option>
+                            <option value="78">78F</option>
+                            <option value="79">79F</option>
+                            <option value="80">80F</option>
                         </select>
                     </div>
                 </div>
