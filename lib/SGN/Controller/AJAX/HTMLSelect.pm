@@ -2131,6 +2131,27 @@ sub get_drone_imagery_drone_run_band : Path('/ajax/html/select/drone_imagery_dro
     $c->stash->{rest} = { select => $html };
 }
 
+
+sub get_items_select : Path('/ajax/html/select/items') Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $params = _clean_inputs($c->req->params);
+    my $items = $params->{list_items},
+    my $size = $params->{size};
+    my $multiple = defined($c->req->param("multiple")) ? $c->req->param("multiple") : 1;
+
+    my $names_as_select = $params->{names_as_select}->[0] || 0;
+    my $html = simple_selectbox_html(
+        multiple => $multiple,
+        choices => $items,
+        size => $size
+    );
+
+    $c->stash->{rest} = { select => $html };
+
+}
+
+
 sub _clean_inputs {
 	no warnings 'uninitialized';
 	my $params = shift;
@@ -2151,5 +2172,6 @@ sub _clean_inputs {
 	}
 	return $params;
 }
+
 
 1;
