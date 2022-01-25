@@ -275,7 +275,7 @@ jQuery(document).ready(function() {
 
                 var result_blups_all = response.result_blups_all;
 
-                var html = '<p>Genotypic Effects For Selected Trait:'+response.germplasm_trait_gen_file+'</p>';
+                var html = '<p>Genotypic Effects For Selected Trait: <a href="'+response.germplasm_trait_gen_file+'" target="_blank">Download</a></p>';
 
                 html = html + '<h2>Model Iterations</h2>';
                 for(var i=0; i<result_blups_all.length; i++) {
