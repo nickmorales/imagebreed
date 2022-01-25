@@ -4615,6 +4615,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $ggcorr_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $fixed_eff_anova_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
+    my $analytics_protocol_genfile_tempfile_string_1 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
+    $analytics_protocol_genfile_tempfile_string_1 .= '.csv';
+    my $analytics_protocol_genfile_tempfile_1 = $c->config->{basepath}."/".$analytics_protocol_genfile_tempfile_string_1;
+
     my @data_matrix_original;
     foreach my $p (@seen_plots) {
         my $obsunit_stock_id = $stock_name_row_col{$p}->{obsunit_stock_id};
@@ -4869,6 +4873,171 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
     close($fh_fits);
     print STDERR Dumper \@fits_grm_trait_2dspl;
+
+    my $result_blup_data_g;
+    my $genetic_effect_max_g = -1000000000;
+    my $genetic_effect_min_g = 10000000000;
+    my $genetic_effect_sum_square_g = 0;
+    my $genetic_effect_sum_g = 0;
+    my $env_effect_sum_square_g = 0;
+    my $result_residual_data_g;
+    my $result_fitted_data_g;
+    my $residual_sum_g = 0;
+    my $residual_sum_square_g = 0;
+    my $model_sum_square_residual_g = 0;
+    my @varcomp_original_grm_trait_g;
+    my @varcomp_h_grm_trait_g;
+    my @fits_grm_trait_g;
+
+    my $spatial_correct_g_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+    mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+    geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+    geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+    geno_mat[is.na(geno_mat)] <- 0;
+    mat\$rowNumber <- as.numeric(mat\$rowNumber);
+    mat\$colNumber <- as.numeric(mat\$colNumber);
+    mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
+    mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
+    mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+    if (!is.null(mix\$U)) {
+    #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+    write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+    write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+    write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+    h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) );
+    write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+    ff <- fitted(mix);
+    r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+    SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+    write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+    }
+    "';
+    print STDERR Dumper $spatial_correct_g_cmd;
+    my $spatial_correct_g_status = system($spatial_correct_g_cmd);
+
+    open($fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+        print STDERR "Opened $stats_out_tempfile\n";
+        $header = <$fh>;
+        @header_cols = ();
+        if ($csv->parse($header)) {
+            @header_cols = $csv->fields();
+        }
+
+        while (my $row = <$fh>) {
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+            my $col_counter = 0;
+            foreach my $encoded_trait (@header_cols) {
+                if ($encoded_trait eq $trait_name_encoded_string) {
+                    my $trait = $trait_name_encoder_rev_s{$encoded_trait};
+                    my $stock_id = $columns[0];
+
+                    my $stock_name = $stock_info{$stock_id}->{uniquename};
+                    my $value = $columns[$col_counter+1];
+                    if (defined $value && $value ne '') {
+                        $result_blup_data_g->{$stock_name}->{$trait} = $value;
+
+                        if ($value < $genetic_effect_min_g) {
+                            $genetic_effect_min_g = $value;
+                        }
+                        elsif ($value >= $genetic_effect_max_g) {
+                            $genetic_effect_max_g = $value;
+                        }
+
+                        $genetic_effect_sum_g += abs($value);
+                        $genetic_effect_sum_square_g = $genetic_effect_sum_square_g + $value*$value;
+                    }
+                }
+                $col_counter++;
+            }
+        }
+    close($fh);
+
+    open($fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+        print STDERR "Opened $stats_out_tempfile_residual\n";
+        $header_residual = <$fh_residual>;
+        @header_cols_residual = ();
+        if ($csv->parse($header_residual)) {
+            @header_cols_residual = $csv->fields();
+        }
+        while (my $row = <$fh_residual>) {
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+
+            my $trait_name = $trait_name_encoder_rev_s{$trait_name_encoded_string};
+            my $stock_id = $columns[0];
+            my $residual = $columns[1];
+            my $fitted = $columns[2];
+            my $stock_name = $plot_id_map{$stock_id};
+            if (defined $residual && $residual ne '') {
+                $result_residual_data_g->{$stock_name}->{$trait_name} = $residual;
+                $residual_sum_g += abs($residual);
+                $residual_sum_square_g = $residual_sum_square_g + $residual*$residual;
+            }
+            if (defined $fitted && $fitted ne '') {
+                $result_fitted_data_g->{$stock_name}->{$trait_name} = $fitted;
+            }
+            $model_sum_square_residual_g = $model_sum_square_residual_g + $residual*$residual;
+        }
+    close($fh_residual);
+
+    open($fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+        print STDERR "Opened $stats_out_tempfile_varcomp\n";
+        $header_varcomp = <$fh_varcomp>;
+        print STDERR Dumper $header_varcomp;
+        @header_cols_varcomp = ();
+        if ($csv->parse($header_varcomp)) {
+            @header_cols_varcomp = $csv->fields();
+        }
+        while (my $row = <$fh_varcomp>) {
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+            push @varcomp_original_grm_trait_g, \@columns;
+        }
+    close($fh_varcomp);
+    print STDERR Dumper \@varcomp_original_grm_trait_g;
+
+    open($fh_varcomp_h, '<', $stats_out_tempfile_vpredict) or die "Could not open file '$stats_out_tempfile_vpredict' $!";
+        print STDERR "Opened $stats_out_tempfile_vpredict\n";
+        $header_varcomp_h = <$fh_varcomp_h>;
+        print STDERR Dumper $header_varcomp_h;
+        @header_cols_varcomp_h = ();
+        if ($csv->parse($header_varcomp_h)) {
+            @header_cols_varcomp_h = $csv->fields();
+        }
+        while (my $row = <$fh_varcomp_h>) {
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+            push @varcomp_h_grm_trait_g, \@columns;
+        }
+    close($fh_varcomp_h);
+    print STDERR Dumper \@varcomp_h_grm_trait_g;
+
+    open($fh_fits, '<', $stats_out_tempfile_fits) or die "Could not open file '$stats_out_tempfile_fits' $!";
+        print STDERR "Opened $stats_out_tempfile_fits\n";
+        $header_fits = <$fh_fits>;
+        print STDERR Dumper $header_fits;
+        @header_cols_fits = ();
+        if ($csv->parse($header_fits)) {
+            @header_cols_fits = $csv->fields();
+        }
+        while (my $row = <$fh_fits>) {
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+            push @fits_grm_trait_g, \@columns;
+        }
+    close($fh_fits);
+    print STDERR Dumper \@fits_grm_trait_g;
 
     my $gcorr_grm_trait_2dspl = 0;
     eval {
@@ -6821,6 +6990,18 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
         # print STDERR Dumper $result_blup_spatial_data_ar1;
     }
+
+    open(my $F_genfile, ">", $analytics_protocol_genfile_tempfile_1) || die "Can't open file ".$analytics_protocol_genfile_tempfile_1;
+        print $F_genfile "trait,accession_name,genetic_effect_g,genetic_effect_2dspl,genetic_effect_ar1\n";
+        foreach my $accession_name (sort keys %$result_blup_data_g) {
+            my $g_g = $result_blup_data_g->{$accession_name}->{$trait_name_string} || '';
+            my $g_s = $result_blup_data_s->{$accession_name}->{$trait_name_string} || '';
+            my $g_ar1 = $result_blup_data_ar1->{$accession_name}->{$trait_name_string} || '';
+
+            my $line = join ',', ($trait_name_string, $accession_name, $g_g, $g_s, $g_ar1);
+            print $F_genfile "$line\n";
+        }
+    close($F_genfile);
 
     # my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
     # my $tmp_grm_dir = $shared_cluster_dir_config."/tmp_genotype_download_grm";
@@ -11963,6 +12144,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         plots_avg_corrected_data_header => \@plots_avg_corrected_data_header,
         plots_avg_corrected_data => \@plots_avg_corrected_data,
         plots_avg_corrected_results => \@plots_avg_corrected_results,
+        germplasm_trait_gen_file => $analytics_protocol_genfile_tempfile_string_1
     };
 }
 

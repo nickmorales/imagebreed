@@ -274,7 +274,10 @@ jQuery(document).ready(function() {
                 jQuery("#working_modal").modal("hide");
 
                 var result_blups_all = response.result_blups_all;
-                html = '<h2>Model Iterations</h2>';
+
+                var html = '<p>Genotypic Effects For Selected Trait:'+response.germplasm_trait_gen_file+'</p>';
+
+                html = html + '<h2>Model Iterations</h2>';
                 for(var i=0; i<result_blups_all.length; i++) {
                     html = html + '<button type="button" class="btn btn-default btn-sm" data-toggle="collapse" data-target="#analytics_protocol_compare_to_trait_model_it'+i+'">('+i+')&nbsp;&nbsp;&nbsp;'+result_blups_all[i]["model_name"]+': '+result_blups_all[i]["result_type"]+'</button>';
                     html = html + '<div id="analytics_protocol_compare_to_trait_model_it'+i+'" class="collapse"><div class="well well-sm">';
