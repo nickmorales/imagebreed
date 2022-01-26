@@ -4155,6 +4155,10 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     push @$spatial_effects_files_store, [$full_plot_level_correlation_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_fullcorr_"."envvar_".$env_variance_percent."_".$permanent_environment_structure."_".$iterations];
                 };
 
+                print STDERR Dumper \%$trait_to_time_map_hash_1;
+                print STDERR Dumper \@sorted_trait_names;
+                print STDERR Dumper $rr_unique_traits_hash_1;
+
                 eval {
                     my ($plot_level_original_values_tempfile_fh, $plot_level_original_values_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
                     open(my $F_plot_level_original_values, ">", $plot_level_original_values_tempfile) || die "Can't open file ".$plot_level_original_values_tempfile;
