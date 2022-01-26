@@ -4155,16 +4155,14 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     push @$spatial_effects_files_store, [$full_plot_level_correlation_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_fullcorr_"."envvar_".$env_variance_percent."_".$permanent_environment_structure."_".$iterations];
                 };
 
-                print STDERR Dumper \@sorted_trait_names;
-                print STDERR Dumper \%$trait_to_time_map_hash_1;
-                print STDERR Dumper $rr_unique_traits_hash_1;
-
-                print STDERR Dumper $result_blup_data_original_1->{$stock_name_row_col{$unique_plot_names[0]}->{germplasm_name}};
-                print STDERR Dumper $phenotype_data_original{$unique_plot_names[0]};
-                print STDERR Dumper $result_blup_pe_data_delta_original_1->{$unique_plot_names[0]};
-                print STDERR Dumper $result_residual_data_original_1->{$unique_plot_names[0]};
-                die;
-                no warnings 'uninitialized';
+                # print STDERR Dumper \@sorted_trait_names;
+                # print STDERR Dumper \%$trait_to_time_map_hash_1;
+                # print STDERR Dumper $rr_unique_traits_hash_1;
+                #
+                # print STDERR Dumper $result_blup_data_original_1->{$stock_name_row_col{$unique_plot_names[0]}->{germplasm_name}};
+                # print STDERR Dumper $phenotype_data_original{$unique_plot_names[0]};
+                # print STDERR Dumper $result_blup_pe_data_delta_original_1->{$unique_plot_names[0]};
+                # print STDERR Dumper $result_residual_data_original_1->{$unique_plot_names[0]};
 
                 eval {
                     my ($plot_level_original_values_tempfile_fh, $plot_level_original_values_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
@@ -4193,7 +4191,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                         }
                                     }
                                 }
-                                my $geno_effect = $result_blup_data_original_1->{$stock_name_row_col{$p}->{germplasm_name}}->{$t_geno}->[0];
+                                #my $geno_effect = $result_blup_data_original_1->{$stock_name_row_col{$p}->{germplasm_name}}->{$t_geno}->[0];
+                                my $geno_effect = $result_blup_data_delta_original_1->{$p}->{$time}->[0];
 
                                 my $phenotype_original = $phenotype_data_original{$p}->{$time};
                                 my $effect_original_1 = $result_blup_pe_data_delta_original_1->{$p}->{$time}->[0];
@@ -4234,18 +4233,26 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                     #PHENO POST M START
 
+                    my @encoded_pheno_orig_labels;
                     my @altered_pheno_vals;
                     my ($phenotypes_post_heatmap_tempfile_fh, $phenotypes_post_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
                     open($F_pheno, ">", $phenotypes_post_heatmap_tempfile) || die "Can't open file ".$phenotypes_post_heatmap_tempfile;
                         print $F_pheno "trait_type,row,col,value\n";
+                        my $phenotype_original_counter = 0;
                         foreach my $p (@unique_plot_names) {
                             foreach my $t (@sorted_trait_names) {
+                                my $trait_type = "pheno_postm1_".$trait_name_encoder{$t};
                                 my $val = $phenotype_data_altered_hash_1->{$p}->{$t} || 'NA';
-                                my @row = ("pheno_postm1_".$trait_name_encoder{$t}, $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $val);
+                                my @row = ($trait_type, $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $val);
                                 push @altered_pheno_vals, $val;
                                 my $line = join ',', @row;
                                 print $F_pheno "$line\n";
+
+                                if ($phenotype_original_counter == 0) {
+                                    push @encoded_pheno_orig_labels, $trait_type;
+                                }
                             }
+                            $phenotype_original_counter++;
                         }
                     close($F_pheno);
                     push @plot_corr_full_vals, \@altered_pheno_vals;
@@ -4256,18 +4263,26 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                     # EFFECT ORIGINAL M
 
+                    my @encoded_orig_effect_labels;
                     my @original_effect_vals;
                     my ($effects_heatmap_tempfile_fh, $effects_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
                     open(my $F_eff, ">", $effects_heatmap_tempfile) || die "Can't open file ".$effects_heatmap_tempfile;
                         print $F_eff "trait_type,row,col,value\n";
+                        my $effect_original_counter = 0;
                         foreach my $p (@unique_plot_names) {
                             foreach my $t (@sorted_trait_names) {
+                                my $trait_type = "eff_origm1_".$trait_name_encoder{$t};
                                 my $val = $result_blup_pe_data_delta_original_1->{$p}->{$t}->[0];
-                                my @row = ("eff_origm1_".$trait_name_encoder{$t}, $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $val);
+                                my @row = ($trait_type, $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $val);
                                 my $line = join ',', @row;
                                 print $F_eff "$line\n";
                                 push @original_effect_vals, $val;
+
+                                if ($effect_original_counter == 0) {
+                                    push @encoded_orig_effect_labels, $trait_type;
+                                }
                             }
+                            $effect_original_counter++;
                         }
                     close($F_eff);
                     push @plot_corr_full_vals, \@original_effect_vals;
@@ -4685,10 +4700,13 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         $output_plot_col = 'row';
                     }
 
+                    my $encoded_orig_pheno_labels_string = join('\',\'', @encoded_pheno_orig_labels);
+
                     my $cmd_spatialfirst_plot_2 = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
                     mat_orig <- fread(\''.$phenotypes_original_heatmap_tempfile.'\', header=TRUE, sep=\',\');
                     mat_altered_1 <- fread(\''.$phenotypes_post_heatmap_tempfile.'\', header=TRUE, sep=\',\');
                     pheno_mat <- rbind(mat_orig, mat_altered_1);
+                    pheno_mat\$trait_type <- factor(pheno_mat\$trait_type, levels=c(\''.$encoded_orig_pheno_labels_string.'\'));
                     options(device=\'png\');
                     par();
                     gg <- ggplot(pheno_mat, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) +
@@ -4703,6 +4721,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     push @$spatial_effects_plots, [$env_effects_first_figure_tempfile_string_2, $statistics_select.$sim_env_change_over_time.$correlation_between_times."_origheatmap_"."envvar_".$env_variance_percent."_".$permanent_environment_structure."_".$iterations];
 
                     my ($sim_effects_corr_results_fh, $sim_effects_corr_results) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
+                    my $encoded_orig_effect_labels_string = join('\',\'', @encoded_orig_effect_labels);
 
                     if (!$run_only_first_env_estimation) {
                         my $cmd_spatialfirst_plot = 'R -e "library(data.table); library(ggplot2); library(dplyr); library(viridis); library(GGally); library(gridExtra);
@@ -4724,6 +4744,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         mat_env4 <- fread(\''.$phenotypes_env_heatmap_tempfile4.'\', header=TRUE, sep=\',\');
                         mat_env5 <- fread(\''.$phenotypes_env_heatmap_tempfile5.'\', header=TRUE, sep=\',\');
                         mat_env6 <- fread(\''.$phenotypes_env_heatmap_tempfile6.'\', header=TRUE, sep=\',\');
+                        effect_mat_1\$trait_type <- factor(effect_mat_1\$trait_type, levels=c(\''.$encoded_orig_effect_labels_string.'\'));
                         options(device=\'png\');
                         par();
                         gg_eff_1 <- ggplot(effect_mat_1, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) +
@@ -4743,6 +4764,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         mat_full <- data.frame(t(mat_full_t));
                         colnames(mat_full) <- c(\'mat_orig\', \'mat_altered_1\', \'mat_eff_1\');
                         mat_eff_1 <- fread(\''.$effects_heatmap_tempfile.'\', header=TRUE, sep=\',\');
+                        mat_eff_1\$trait_type <- factor(mat_eff_1\$trait_type, levels=c(\''.$encoded_orig_effect_labels_string.'\'));
                         options(device=\'png\');
                         par();
                         gg_eff_1 <- ggplot(mat_eff_1, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) +
