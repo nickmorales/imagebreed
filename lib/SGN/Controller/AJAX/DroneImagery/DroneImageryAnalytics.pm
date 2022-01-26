@@ -4158,6 +4158,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 print STDERR Dumper \%$trait_to_time_map_hash_1;
                 print STDERR Dumper \@sorted_trait_names;
                 print STDERR Dumper $rr_unique_traits_hash_1;
+                no warnings 'uninitialized';
 
                 eval {
                     my ($plot_level_original_values_tempfile_fh, $plot_level_original_values_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
