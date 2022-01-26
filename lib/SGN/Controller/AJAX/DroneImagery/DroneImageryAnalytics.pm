@@ -4155,9 +4155,15 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     push @$spatial_effects_files_store, [$full_plot_level_correlation_tempfile, "datafile_".$statistics_select.$sim_env_change_over_time.$correlation_between_times."_fullcorr_"."envvar_".$env_variance_percent."_".$permanent_environment_structure."_".$iterations];
                 };
 
-                print STDERR Dumper \%$trait_to_time_map_hash_1;
                 print STDERR Dumper \@sorted_trait_names;
+                print STDERR Dumper \%$trait_to_time_map_hash_1;
                 print STDERR Dumper $rr_unique_traits_hash_1;
+
+                print STDERR Dumper $result_blup_data_original_1;
+                print STDERR Dumper \%phenotype_data_original;
+                print STDERR Dumper $result_blup_pe_data_delta_original_1;
+                print STDERR Dumper $result_residual_data_original_1;
+                die;
                 no warnings 'uninitialized';
 
                 eval {
