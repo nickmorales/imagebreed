@@ -4159,10 +4159,10 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 print STDERR Dumper \%$trait_to_time_map_hash_1;
                 print STDERR Dumper $rr_unique_traits_hash_1;
 
-                print STDERR Dumper $result_blup_data_original_1;
-                print STDERR Dumper \%phenotype_data_original;
-                print STDERR Dumper $result_blup_pe_data_delta_original_1;
-                print STDERR Dumper $result_residual_data_original_1;
+                print STDERR Dumper $result_blup_data_original_1->{$stock_name_row_col{$unique_plot_names[0]}->{germplasm_name}};
+                print STDERR Dumper $phenotype_data_original{$unique_plot_names[0]};
+                print STDERR Dumper $result_blup_pe_data_delta_original_1->{$unique_plot_names[0]};
+                print STDERR Dumper $result_residual_data_original_1->{$unique_plot_names[0]};
                 die;
                 no warnings 'uninitialized';
 
