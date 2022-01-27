@@ -1261,14 +1261,24 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
     my $csv = Text::CSV->new({ sep_char => "\t" });
 
+    # my @legendre_coeff_exec = (
+    #     '1 * $b',
+    #     '$time * $b',
+    #     '(1/2*(3*$time**2 - 1)*$b)',
+    #     '1/2*(5*$time**3 - 3*$time)*$b',
+    #     '1/8*(35*$time**4 - 30*$time**2 + 3)*$b',
+    #     '1/16*(63*$time**5 - 70*$time**2 + 15*$time)*$b',
+    #     '1/16*(231*$time**6 - 315*$time**4 + 105*$time**2 - 5)*$b'
+    # );
+
     my @legendre_coeff_exec = (
         '1 * $b',
-        '$time * $b',
-        '(1/2*(3*$time**2 - 1)*$b)',
-        '1/2*(5*$time**3 - 3*$time)*$b',
-        '1/8*(35*$time**4 - 30*$time**2 + 3)*$b',
-        '1/16*(63*$time**5 - 70*$time**2 + 15*$time)*$b',
-        '1/16*(231*$time**6 - 315*$time**4 + 105*$time**2 - 5)*$b'
+        '($time**1)*$b',
+        '($time**2)*$b',
+        '($time**3)*$b',
+        '($time**4)*$b',
+        '($time**5)*$b',
+        '($time**6)*$b'
     );
 
     my $env_sim_exec = {
@@ -2433,7 +2443,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     my $leg_pos_counter = 0;
                     foreach (@sorted_trait_names) {
                         my $scaled_time = ($_ - $time_min)/($time_max - $time_min);
-                        push @sorted_trait_names_scaled, $scaled_time;
+                        my $scaled_time_ortho = 2*($_ - $time_min)/($time_max - $time_min) - 1;
+                        push @sorted_trait_names_scaled, $scaled_time_ortho;
                         if ($leg_pos_counter < $legendre_order_number+1) {
                             push @sorted_scaled_ln_times, log($scaled_time+0.0001);
                         }
