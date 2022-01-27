@@ -4245,7 +4245,12 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 my $trait_type = "pheno_postm1_".$trait_name_encoder{$t};
                                 my $val = $phenotype_data_altered_hash_1->{$p}->{$t} || 'NA';
                                 my @row = ($trait_type, $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $val);
-                                push @altered_pheno_vals, $val;
+
+
+                                if ($val ne 'NA') {
+                                    push @altered_pheno_vals, $val;
+                                }
+
                                 my $line = join ',', @row;
                                 print $F_pheno "$line\n";
 
@@ -4311,6 +4316,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     my ($phenotypes_env_heatmap_tempfile6_fh, $phenotypes_env_heatmap_tempfile6) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
                     my ($phenotypes_pheno_sim_heatmap_tempfile6_fh, $phenotypes_pheno_sim_heatmap_tempfile6) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
                     my ($effects_sim_heatmap_tempfile6_fh, $effects_sim_heatmap_tempfile6) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
                     if (!$run_only_first_env_estimation) {
                         # EFFECT POST M MIN
 
