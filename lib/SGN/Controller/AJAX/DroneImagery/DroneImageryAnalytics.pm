@@ -4246,10 +4246,10 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 my $val = $phenotype_data_altered_hash_1->{$p}->{$t} || 'NA';
                                 my @row = ($trait_type, $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $val);
 
-
-                                if ($val ne 'NA') {
-                                    push @altered_pheno_vals, $val;
+                                if ($val eq 'NA') {
+                                    $val = '';
                                 }
+                                push @altered_pheno_vals, $val;
 
                                 my $line = join ',', @row;
                                 print $F_pheno "$line\n";
