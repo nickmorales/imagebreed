@@ -240,8 +240,11 @@ sub download_list :Path('/list/download') Args(0) {
     }
 
     $list = $self->retrieve_list($c, $list_id);
+    my ($name_ref) = $self->get_list_metadata($c, $list_id);
+    my $name = $name_ref->{name};
 
     $c->res->content_type("text/plain");
+    $c->res->header('Content-Disposition'=>"attachment; filename=$name.txt");
     $c->res->body(join "\n", map { $_->[1] }  @$list);
 }
 
