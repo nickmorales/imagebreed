@@ -4236,6 +4236,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
 
                     my @encoded_pheno_orig_labels;
                     my @altered_pheno_vals;
+                    my @altered_pheno_vals_stats;
                     my ($phenotypes_post_heatmap_tempfile_fh, $phenotypes_post_heatmap_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
                     open($F_pheno, ">", $phenotypes_post_heatmap_tempfile) || die "Can't open file ".$phenotypes_post_heatmap_tempfile;
                         print $F_pheno "trait_type,row,col,value\n";
@@ -4245,11 +4246,11 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 my $trait_type = "pheno_postm1_".$trait_name_encoder{$t};
                                 my $val = $phenotype_data_altered_hash_1->{$p}->{$t} || 'NA';
                                 my @row = ($trait_type, $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $val);
-
-                                if ($val eq 'NA') {
-                                    $val = '';
-                                }
                                 push @altered_pheno_vals, $val;
+
+                                if ($val ne 'NA') {
+                                    push @altered_pheno_vals_stats, $val;
+                                }
 
                                 my $line = join ',', @row;
                                 print $F_pheno "$line\n";
@@ -4264,7 +4265,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     push @plot_corr_full_vals, \@altered_pheno_vals;
 
                     my $altered_pheno_stat = Statistics::Descriptive::Full->new();
-                    $altered_pheno_stat->add_data(@altered_pheno_vals);
+                    $altered_pheno_stat->add_data(@altered_pheno_vals_stats);
                     my $sig_altered_pheno = $altered_pheno_stat->variance();
 
                     # EFFECT ORIGINAL M
