@@ -717,12 +717,26 @@ sub get_ontologies : Path('/ajax/html/select/trait_variable_ontologies') Args(0)
     my $result = $observation_variables->observation_variable_ontologies({cvprop_type_names => $cvprop_type_names});
     #print STDERR Dumper $result;
 
+    my %protected_onts = (
+        'COMP' => 1,
+        'SGNSTAT' => 1,
+        'G2F' => 1,
+        'ALF' => 1,
+        'CO_334' => 1,
+        'TIME' => 1,
+        'UO' => 1,
+        'ISOL' => 1,
+        'CHEBI' => 1
+    );
+
     my @ontos;
     foreach my $o (@{$result->{result}->{data}}) {
-        if ($use_full_trait_name) {
-            push @ontos, [$o->{description}."|".$o->{ontologyName}.":".$o->{ontologyDbxrefAccession}, $o->{description}."|".$o->{ontologyName}.":".$o->{ontologyDbxrefAccession} ];
-        } else {
-            push @ontos, [$o->{ontologyDbId}, $o->{ontologyName}." (".$o->{description}.")" ];
+        if (!exists($protected_onts{$o->{ontologyName}})) {
+            if ($use_full_trait_name) {
+                push @ontos, [$o->{description}."|".$o->{ontologyName}.":".$o->{ontologyDbxrefAccession}, $o->{description}."|".$o->{ontologyName}.":".$o->{ontologyDbxrefAccession} ];
+            } else {
+                push @ontos, [$o->{ontologyDbId}, $o->{ontologyName}." (".$o->{description}.")" ];
+            }
         }
     }
 
