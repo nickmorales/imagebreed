@@ -703,6 +703,7 @@ sub get_ontologies : Path('/ajax/html/select/trait_variable_ontologies') Args(0)
     my $c = shift;
     my $cvprop_type_names = $c->req->param("cvprop_type_name") ? decode_json $c->req->param("cvprop_type_name") : ['trait_ontology', 'method_ontology', 'unit_ontology'];
     my $use_full_trait_name = $c->req->param("use_full_trait_name") || 0;
+    my $hide_onts = $c->req->param("hide_protected_onts") || 0;
 
     my $observation_variables = CXGN::BrAPI::v1::ObservationVariables->new({
         bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
@@ -731,7 +732,7 @@ sub get_ontologies : Path('/ajax/html/select/trait_variable_ontologies') Args(0)
 
     my @ontos;
     foreach my $o (@{$result->{result}->{data}}) {
-        if (!exists($protected_onts{$o->{ontologyName}})) {
+        if (!$hide_onts || ($hide_onts && !exists($protected_onts{$o->{ontologyName}})) ) {
             if ($use_full_trait_name) {
                 push @ontos, [$o->{description}."|".$o->{ontologyName}.":".$o->{ontologyDbxrefAccession}, $o->{description}."|".$o->{ontologyName}.":".$o->{ontologyDbxrefAccession} ];
             } else {

@@ -370,11 +370,11 @@ jQuery(document).ready(function() {
     jQuery('button[name="add_new_observation_variable_button"]').click(function(){
         jQuery('#add_new_observation_variable_dialog').modal('show');
 
-        get_select_box('trait_variable_ontologies', 'add_new_observation_variable_ontology_select_div', { 'name':'add_new_observation_variable_ontology_select',    'id':'add_new_observation_variable_ontology_select', 'empty':1, 'cvprop_type_name':JSON.stringify(['trait_ontology','composed_trait_ontology','attribute_ontology']) });
-        get_select_box('trait_variable_ontologies', 'add_new_trait_ontology_select_div', { 'name':'add_new_trait_ontology_select', 'id':'add_new_trait_ontology_select', 'empty':1, 'cvprop_type_name':JSON.stringify(['trait_ontology','composed_trait_ontology','attribute_ontology']) });
-        get_select_box('trait_variable_ontologies', 'add_new_trait_method_ontology_select_div', { 'name':'add_new_trait_method_ontology_select', 'id':'add_new_trait_method_ontology_select', 'empty':1, 'cvprop_type_name':JSON.stringify(['method_ontology']) });
-        get_select_box('trait_variable_ontologies', 'add_new_trait_scale_ontology_select_div', { 'name':'add_new_trait_scale_ontology_select', 'id':'add_new_trait_scale_ontology_select', 'empty':1, 'cvprop_type_name':JSON.stringify(['unit_ontology']) });
-        
+        get_select_box('trait_variable_ontologies', 'add_new_observation_variable_ontology_select_div', { 'name':'add_new_observation_variable_ontology_select',    'id':'add_new_observation_variable_ontology_select', 'empty':1, 'hide_protected_onts':1, 'cvprop_type_name':JSON.stringify(['trait_ontology','composed_trait_ontology','attribute_ontology']) });
+        get_select_box('trait_variable_ontologies', 'add_new_trait_ontology_select_div', { 'name':'add_new_trait_ontology_select', 'id':'add_new_trait_ontology_select', 'empty':1, 'hide_protected_onts':1, 'cvprop_type_name':JSON.stringify(['trait_ontology','composed_trait_ontology','attribute_ontology']) });
+        get_select_box('trait_variable_ontologies', 'add_new_trait_method_ontology_select_div', { 'name':'add_new_trait_method_ontology_select', 'id':'add_new_trait_method_ontology_select', 'empty':1, 'hide_protected_onts':1, 'cvprop_type_name':JSON.stringify(['method_ontology']) });
+        get_select_box('trait_variable_ontologies', 'add_new_trait_scale_ontology_select_div', { 'name':'add_new_trait_scale_ontology_select', 'id':'add_new_trait_scale_ontology_select', 'empty':1, 'hide_protected_onts':1, 'cvprop_type_name':JSON.stringify(['unit_ontology']) });
+
     });
 
     var add_new_trait_new_observation_variable_db_id;
