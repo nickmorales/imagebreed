@@ -2292,14 +2292,16 @@ sub _delete_field_layout_experiment {
     }
     #print STDERR Dumper \@all_stock_ids;
 
-    my $all_stock_ids_sql = join ',', @all_stock_ids;
-    my $delete_stocks_sql = "DELETE FROM phenome.stock_owner WHERE stock_id IN ($all_stock_ids_sql);";
-    my $delete_stocks_h = $self->bcs_schema->storage->dbh()->prepare($delete_stocks_sql);
-    $delete_stocks_h->execute();
+    if (scalar(@all_stock_ids)>0) {
+        my $all_stock_ids_sql = join ',', @all_stock_ids;
+        my $delete_stocks_sql = "DELETE FROM phenome.stock_owner WHERE stock_id IN ($all_stock_ids_sql);";
+        my $delete_stocks_h = $self->bcs_schema->storage->dbh()->prepare($delete_stocks_sql);
+        $delete_stocks_h->execute();
 
-    my $stock_delete_rs = $self->bcs_schema->resultset('Stock::Stock')->search({stock_id=>{'-in'=>\@all_stock_ids}});
-    while (my $r = $stock_delete_rs->next){
-        $r->delete();
+        my $stock_delete_rs = $self->bcs_schema->resultset('Stock::Stock')->search({stock_id=>{'-in'=>\@all_stock_ids}});
+        while (my $r = $stock_delete_rs->next){
+            $r->delete();
+        }
     }
 
     my $has_plants = $self->has_plant_entries();
