@@ -252,31 +252,31 @@ sub _missing_field_response {
 
 sub _authenticate_user {
     my $c = shift;
-	my $force_authenticate = shift;
+    my $force_authenticate = shift;
     my $status = $c->stash->{status};
-	my $user_id;
-	my $user_type;
-	my $user_pref;
-	my $expired;
-	my $wildcard = 'any';
+    my $user_id;
+    my $user_type;
+    my $user_pref;
+    my $expired;
+    my $wildcard = 'any';
 
-	my %server_permission;
-	my $rc = eval{
-		my $server_permission = $c->config->{"brapi_" . $c->request->method};
-		my @server_permission  = split ',', $server_permission;
-		%server_permission = map { $_ => 1 } @server_permission;
-	1; };
+    my %server_permission;
+    my $rc = eval{
+        my $server_permission = $c->config->{"brapi_" . $c->request->method};
+        my @server_permission  = split ',', $server_permission;
+        %server_permission = map { $_ => 1 } @server_permission;
+    1; };
 
-	if(!$rc && !%server_permission){
-		$server_permission{$wildcard} = 1;
-	}
+    if (!$rc && !%server_permission) {
+        $server_permission{$wildcard} = 1;
+    }
 
     try {
         ($user_id, $user_type, $user_pref, $expired) = CXGN::Login->new($c->dbc->dbh)->query_from_cookie($c->stash->{session_token});
     };
 
-	# If our brapi config is set to authenticate or the controller calling this asks for forcing of
-	# authentication or serverinfo call method request auth, we authenticate.
+    # If our brapi config is set to authenticate or the controller calling this asks for forcing of
+    # authentication or serverinfo call method request auth, we authenticate.
     if ($c->config->{brapi_require_login} == 1 || $force_authenticate || !exists($server_permission{$wildcard})){
         #print STDERR $user_id." : ".$user_type." : ".$expired;
 
@@ -2096,6 +2096,8 @@ sub studies_search_retrieve : Chained('brapi') PathPart('search/studies') Args(1
     my $self = shift;
     my $c = shift;
     my $search_id = shift;
+    my ($auth, $user_id, $user_type, $user_pref, $expired) = _authenticate_user($c);
+
     retrieve_results($self, $c, $search_id, 'Studies');
 }
 
@@ -2206,7 +2208,8 @@ sub studies_info_GET {
     my $brapi_package_result = $brapi_module->detail(
         $c->stash->{study_id},
         $c->config->{main_production_site_url},
-        $c->config->{supportedCrop}
+        $c->config->{supportedCrop},
+        $user_id
     );
     _standard_response_construction($c, $brapi_package_result);
 }
@@ -5258,15 +5261,8 @@ sub save_results {
     my $search_params = shift;
     my $search_type = shift;
 
-	my %server_permission;
-	my $rc = eval{
-		my $server_permission = $c->config->{"brapi_GET"};
-		my @server_permission  = split ',', $server_permission;
-		%server_permission = map { $_ => 1 } @server_permission;
-	1; };
-	if($rc && !$server_permission{'any'}){
-	    my ($auth, $user_id, $user_type, $user_pref, $expired) = _authenticate_user($c);
-	}
+    my ($auth, $user_id, $user_type, $user_pref, $expired) = _authenticate_user($c);
+    $search_params->{sp_person_id} = $user_id;
 
     my $brapi = $self->brapi_module;
     my $brapi_module = $brapi->brapi_wrapper($search_type);

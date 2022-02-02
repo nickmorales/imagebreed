@@ -292,6 +292,7 @@ sub detail {
 	my $study_id = shift;
     my $main_production_site_url = shift;
 	my $supported_crop = shift;
+    my $user_id = shift;
 	my $page_size = $self->page_size;
 	my $page = $self->page;
 	my $status = $self->status;

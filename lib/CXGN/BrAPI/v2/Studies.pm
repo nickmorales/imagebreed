@@ -107,6 +107,7 @@ sub search {
     my $active = $search_params->{active} || undef;
     my $sortBy = $search_params->{sortBy} || undef;
     my $sortOrder = $search_params->{sortOrder} || undef;
+    my $sp_person_id = $search_params->{sp_person_id} || undef;
 
     if (scalar(@crop)>0 && !grep { lc($_) eq lc($supported_crop) } @crop ){
     	return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('commonCropName not found!'));
@@ -119,7 +120,29 @@ sub search {
         push @$status, { 'error' => 'The following search parameters are not implemented: studyPUI, externalReferenceID, externalReferenceSource' };
     }
 
-    my ($data_out,$total_count) = _search($self,$schema,$page_size,$page,$supported_crop,\@study_dbids,\@location_names,\@location_ids,\@study_type_list,\@study_names,\@program_names,\@program_dbids,\@folder_dbids,\@folder_names,\@obs_variable_ids,\@germplasm_dbids,\@germplasm_names, \@year_list,$sortBy,$sortOrder);
+    my ($data_out,$total_count) = _search(
+        $self,
+        $schema,
+        $page_size,
+        $page,
+        $supported_crop,
+        $sp_person_id,
+        \@study_dbids,
+        \@location_names,
+        \@location_ids,
+        \@study_type_list,
+        \@study_names,
+        \@program_names,
+        \@program_dbids,
+        \@folder_dbids,
+        \@folder_names,
+        \@obs_variable_ids,
+        \@germplasm_dbids,
+        \@germplasm_names,
+        \@year_list,
+        $sortBy,
+        $sortOrder
+    );
 
     my %result = (data=>$data_out);
     my @data_files;
@@ -132,11 +155,20 @@ sub detail {
 	my $study_id = shift;
     my $main_production_site_url = shift;
 	my $supported_crop = shift;
+    my $sp_person_id = shift;
 	my $page_size = $self->page_size;
 	my $page = $self->page;
 	my $status = $self->status;
 
-	my ($data_out,$total_count) = _search($self,$self->bcs_schema(),$page_size,$page,$supported_crop,[$study_id]);
+	my ($data_out,$total_count) = _search(
+        $self,
+        $self->bcs_schema(),
+        $page_size,
+        $page,
+        $supported_crop,
+        $sp_person_id,
+        [$study_id]
+    );
 
 	if ($data_out > 0){
 		my $result = @$data_out[0];
@@ -151,7 +183,7 @@ sub detail {
 sub store {
 	my $self = shift;
     my $data = shift;
-    my $user_id =shift;
+    my $user_id = shift;
     my $c = shift;
 
     if (!$user_id){
@@ -328,7 +360,15 @@ sub store {
 
 		my $supported_crop = $c->config->{"supportedCrop"};
 
-	    ($data_out,$total_count) = _search($self,$schema,$page_size,$page,$supported_crop,\@study_dbids);
+	    ($data_out,$total_count) = _search(
+            $self,
+            $schema,
+            $page_size,
+            $page,
+            $supported_crop,
+            $user_id,
+            \@study_dbids
+        );
 	}
 
     my %result = (data=>$data_out);
@@ -497,7 +537,15 @@ sub update {
 
 	my $supported_crop = $c->config->{"supportedCrop"};
 
-	my ($data_out,$total_count_ret) = _search($self,$self->bcs_schema(),$page_size,$page,$supported_crop,[$trial_id]);
+	my ($data_out,$total_count_ret) = _search(
+        $self,
+        $self->bcs_schema(),
+        $page_size,
+        $page,
+        $supported_crop,
+        $user_id,
+        [$trial_id]
+    );
 
 	my $result = @$data_out[0];
 	my @data_files;
@@ -511,6 +559,7 @@ sub _search {
 	my $page_size = shift;
 	my $page = shift;
 	my $supported_crop = shift;
+    my $sp_person_id = shift;
 	my $study_dbids = shift;
 	my $location_names = shift;
 	my $location_ids = shift;
@@ -552,7 +601,8 @@ sub _search {
         offset => $page_size*$page,
         sort_by => $sort_by,
         order_by => $sort_order,
-        field_trials_only => 1
+        field_trials_only => 1,
+        sp_person_id => $sp_person_id
     });
     my ($data, $total_count) = $trial_search->search();
     #print STDERR Dumper $data;
