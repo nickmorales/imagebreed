@@ -157,6 +157,11 @@ has 'offset' => (
     is => 'rw'
 );
 
+has 'sp_person_id' => (
+    isa => 'Int|Undef',
+    is => 'rw'
+);
+
 sub search {
     my $self = shift;
     my $schema = $self->bcs_schema();
@@ -180,6 +185,7 @@ sub search {
     my $offset = $self->offset;
     my $sort_by = $self->sort_by;
     my $order_by = $self->order_by;
+    my $sp_person_id = $self->sp_person_id;
 
     my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'accession', 'stock_type')->cvterm_id();
     my $breeding_program_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'breeding_program', 'project_property')->cvterm_id();
@@ -324,6 +330,23 @@ sub search {
 
     my $where_clause = scalar(@where_clause)>0 ? " WHERE " . (join (" AND " , @where_clause)) : '';
 
+
+    my $private_company_join = '';
+    my @private_company_where = ("study.is_private='f'");
+    if ($sp_person_id) {
+        $private_company_join = ' JOIN sgn_people.private_company AS private_company ON(private_company.private_company_id=study.private_company_id)
+        JOIN sgn_people.private_company_sp_person AS private_company_sp_person ON(private_company_sp_person.private_company_id=private_company.private_company_id) ';
+
+        push @private_company_where, "private_company_sp_person.sp_person_id=$sp_person_id";
+    }
+    my $private_company_where_clause = " ( " . (join(" OR ", @private_company_where)) . " ) ";
+    if ($where_clause) {
+        $where_clause .= " AND ".$private_company_where_clause;
+    }
+    else {
+        $where_clause .= " WHERE ".$private_company_where_clause;
+    }
+
     my $q = "SELECT study.name, study.project_id, study.description, folder.name, folder.project_id, folder.description, trial_type_name.cvterm_id, trial_type_name.name, projectprop.value as trial_type_value, year.value, location.value, breeding_program.name, breeding_program.project_id, breeding_program.description, harvest_date.value, planting_date.value, design.value, genotyping_facility.value, genotyping_facility_submitted.value, genotyping_facility_status.value, genotyping_plate_format.value, genotyping_plate_sample_type.value, genotyping_facility_plate_id.value, sampling_facility.value, sampling_facility_sample_type.value, project_additional_info.value, count(study.project_id) OVER() AS full_count
         FROM project AS study
         JOIN project_relationship AS bp_rel ON(study.project_id=bp_rel.subject_project_id AND bp_rel.type_id=$breeding_program_trial_relationship_id)
@@ -348,6 +371,7 @@ sub search {
         LEFT JOIN projectprop AS sampling_facility ON(study.project_id=sampling_facility.project_id AND sampling_facility.type_id=$sampling_facility_cvterm_id)
         LEFT JOIN projectprop AS sampling_facility_sample_type ON(study.project_id=sampling_facility_sample_type.project_id AND sampling_facility_sample_type.type_id=$sampling_facility_sample_type_cvterm_id)
         LEFT JOIN projectprop AS project_additional_info ON(study.project_id=project_additional_info.project_id AND project_additional_info.type_id=$additional_info_cvterm_id)
+        $private_company_join
         $accession_join
         $trait_join
         $where_clause

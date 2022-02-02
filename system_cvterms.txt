@@ -298,6 +298,11 @@ trait_property	trait_maximum
 trait_property	trait_minimum
 trial_type	genotyping_trial
 trial_type	phenotyping_trial
+company_type	default_access	For securing data in private company table	02/02/2022	nm529	00155
+company_person_type	user_access	For securing data in private company table	02/02/2022	nm529	00155
+company_person_type	submitter_access	For securing data in private company table	02/02/2022	nm529	00155
+company_person_type	curator_access	For securing data in private company table	02/02/2022	nm529	00155
+company_cvterm_type	default_cvterm_access	For securing data in private company table	02/02/2022	nm529	00155
 cvterm_property	uri	From BrAPI	03/27/2017	nm529	00076
 cvterm_property	datatype	From BrAPI	03/27/2017	nm529	00076
 cvterm_property	code	From BrAPI	03/27/2017	nm529	00076
