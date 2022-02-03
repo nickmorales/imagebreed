@@ -7677,7 +7677,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     $current_gcp_h->execute($drone_run_project_id_input);
     my ($current_gcp_points_json) = $current_gcp_h->fetchrow_array();
     my $current_gcp_points = decode_json $current_gcp_points_json;
-    # print STDERR Dumper $current_gcp_points;
+    print STDERR Dumper $current_gcp_points;
     if (scalar(keys %$current_gcp_points)<3) {
         $c->stash->{rest} = { error => "Not enough GCP points defined in the current drone run!" };
         $c->detach();
@@ -7998,7 +7998,10 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
         my $y = $_->{'y'} - $min_old_crop_y;
         my @diffs;
         foreach my $t (@gcp_points_template) {
-            push @diffs, [$t->[0] - $x, $t->[1] - $y];
+            push @diffs, [
+                $t->[0] - $x,
+                $t->[1] - $y
+            ];
         }
         push @old_cropping_val_dists, \@diffs;
     }
@@ -8019,24 +8022,15 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
             push @pos_y, $r_y - $o_y;
             $counter++;
         }
+        my $crop_x = sum(@pos_x)/scalar(@pos_x);
+        my $crop_y = sum(@pos_y)/scalar(@pos_y);
         $image_crop->[0]->[$counter_c] = {
-            x => sum(@pos_x)/scalar(@pos_x),
-            y => sum(@pos_y)/scalar(@pos_y)
+            x => $crop_x,
+            y => $crop_y
         };
         $counter_c++;
     }
     # print STDERR Dumper $image_crop;
-
-    $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
-    my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
-    $archive_temp_image .= '.png';
-
-    my $check_cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id_input, [], $rotated_image_id, encode_json $image_crop, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
-    my $check_cropped_image_id = $check_cropping_return->{cropped_image_id};
-
-    my $crop_check_target_image = SGN::Image->new( $bcs_schema->storage->dbh, $check_cropped_image_id, $c );
-    my $crop_check_target_image_url = $crop_check_target_image->get_image_url("original");
-    my $crop_check_target_image_fullpath = $crop_check_target_image->get_filename('original_converted', 'full');
 
     my $min_new_crop_x = 1000000000;
     my $min_new_crop_y = 1000000000;
@@ -8050,6 +8044,29 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
             $min_new_crop_y = $y;
         }
     }
+
+    my $rotated_cropped_current_points_counter = 0;
+    my @rotated_cropped_current_points;
+    foreach my $name (@gcp_names_template) {
+        my $x_pos = round($rotated_current_points[$rotated_cropped_current_points_counter]->[0] - $min_new_crop_x);
+        my $y_pos = round($rotated_current_points[$rotated_cropped_current_points_counter]->[1] - $min_new_crop_y);
+        $current_gcp_points->{$name}->{x_pos} = $x_pos;
+        $current_gcp_points->{$name}->{y_pos} = $y_pos;
+        push @rotated_cropped_current_points, [$x_pos, $y_pos];
+        $rotated_cropped_current_points_counter++;
+    }
+    # print STDERR Dumper $current_gcp_points;
+
+    $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
+    my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
+    $archive_temp_image .= '.png';
+
+    my $check_cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id_input, [], $rotated_image_id, encode_json $image_crop, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
+    my $check_cropped_image_id = $check_cropping_return->{cropped_image_id};
+
+    my $crop_check_target_image = SGN::Image->new( $bcs_schema->storage->dbh, $check_cropped_image_id, $c );
+    my $crop_check_target_image_url = $crop_check_target_image->get_image_url("original");
+    my $crop_check_target_image_fullpath = $crop_check_target_image->get_filename('original_converted', 'full');
 
     my @old_plot_val_names;
     my @old_plot_val_dists;
@@ -8098,7 +8115,14 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     }
 
     if ($is_test_run eq 'Yes') {
-        $c->stash->{rest} = { old_cropped_points => $cropping_value_old, cropped_points => $image_crop, rotated_points => \@rotated_current_points, rotated_image_id => $check_cropped_image_id, plot_polygons => \%scaled_plot_polygons };
+        $c->stash->{rest} = {
+            old_cropped_points => $cropping_value_old,
+            cropped_points => $image_crop,
+            rotated_points => \@rotated_current_points,
+            rotated_cropped_points => \@rotated_cropped_current_points,
+            rotated_image_id => $check_cropped_image_id,
+            plot_polygons => \%scaled_plot_polygons
+        };
         $c->detach();
     }
 
@@ -8134,6 +8158,16 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
         project_id=>$drone_run_project_id_input,
         rank=>0,
         value=>0
+    },
+    {
+        key=>'projectprop_c1'
+    });
+
+    my $drone_run_gcp_current = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+        type_id=>$drone_run_gcp_type_id_cvterm_id,
+        project_id=>$drone_run_project_id_input,
+        rank=>0,
+        value=> encode_json $current_gcp_points
     },
     {
         key=>'projectprop_c1'
