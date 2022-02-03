@@ -2635,7 +2635,10 @@ jQuery(document).ready(function() {
         });
 
         jQuery.ajax({
-            url : '/api/drone_imagery/get_field_trial_drone_run_projects_in_same_orthophoto?drone_run_project_id='+manage_drone_imagery_standard_process_drone_run_project_id,
+            url : '/api/drone_imagery/get_field_trial_drone_run_projects_in_same_orthophoto?drone_run_project_id='+manage_drone_imagery_standard_process_drone_run_project_id+'&field_trial_project_id='+manage_drone_imagery_standard_process_field_trial_id,
+            beforeSend: function(){
+                jQuery("#working_modal").modal("show");
+            },
             success: function(response){
                 console.log(response);
                 manage_drone_imagery_standard_process_drone_run_project_ids_in_same_orthophoto = response.drone_run_project_ids;
@@ -2643,10 +2646,43 @@ jQuery(document).ready(function() {
                 manage_drone_imagery_standard_process_field_trial_ids_in_same_orthophoto = response.drone_run_field_trial_ids;
                 manage_drone_imagery_standard_process_field_trial_names_in_same_orthophoto = response.drone_run_field_trial_names;
 
-                showPlotPolygonTableStart(manage_drone_imagery_standard_process_field_trial_id, 'drone_imagery_standard_process_trial_layout_div_0', 'drone_imagery_standard_process_layout_table_0')
+                field_trial_layout_responses = response.drone_run_all_field_trial_layouts;
+                field_trial_layout_response = field_trial_layout_responses[0];
+                field_trial_layout_response_names = response.drone_run_all_field_trial_names;
 
-                for (var i=1; i<manage_drone_imagery_standard_process_field_trial_ids_in_same_orthophoto.length+1; i++) {
-                    showPlotPolygonTableStart(manage_drone_imagery_standard_process_field_trial_ids_in_same_orthophoto[i-1], 'drone_imagery_standard_process_trial_layout_div_'+i, 'drone_imagery_standard_process_layout_table_'+i);
+                var field_trial_layout_counter = 0;
+                for (var key in field_trial_layout_responses) {
+                    if (field_trial_layout_responses.hasOwnProperty(key)) {
+                        var response = field_trial_layout_responses[key];
+                        var layout = response.output;
+
+                        for (var i=1; i<layout.length; i++) {
+                            drone_imagery_plot_polygons_available_stock_names.push(layout[i][0]);
+                        }
+                        droneImageryDrawLayoutTable(response, {}, 'drone_imagery_standard_process_trial_layout_div_'+field_trial_layout_counter, 'drone_imagery_standard_process_layout_table_'+field_trial_layout_counter);
+
+                        field_trial_layout_counter = field_trial_layout_counter + 1;
+                    }
+                }
+
+                plot_polygons_plot_names_colors = {};
+                plot_polygons_plot_names_plot_numbers = {};
+                var plot_polygons_field_trial_names_order = field_trial_layout_response_names;
+
+                for (var plot_polygons_field_trial_name_iterator=0; plot_polygons_field_trial_name_iterator<plot_polygons_field_trial_names_order.length; plot_polygons_field_trial_name_iterator++) {
+                    var plot_polygons_field_trial_names_order_current = plot_polygons_field_trial_names_order[plot_polygons_field_trial_name_iterator];
+                    var field_trial_layout_response_current = field_trial_layout_responses[plot_polygons_field_trial_names_order_current];
+
+                    var randomColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+
+                    var plot_polygons_layout = field_trial_layout_response_current.output;
+                    for (var i=1; i<plot_polygons_layout.length; i++) {
+                        var plot_polygons_plot_number = parseInt(plot_polygons_layout[i][2]);
+                        var plot_polygons_plot_name = plot_polygons_layout[i][0];
+
+                        plot_polygons_plot_names_colors[plot_polygons_plot_name] = randomColor;
+                        plot_polygons_plot_names_plot_numbers[plot_polygons_plot_name] = plot_polygons_plot_number;
+                    }
                 }
 
                 var html = '<div class="panel panel-default"><div class="panel-body"><p>The image contains the '+project_drone_imagery_ground_control_points_drone_run_project_name+' imaging event';
@@ -2658,9 +2694,11 @@ jQuery(document).ready(function() {
                 html = html + '.</p><p><b>Use one of the following three options to assign the generated polygons to the field experiment(s) of these imaging event(s).</b></p></div></div>';
 
                 jQuery('#drone_imagery_standard_process_generated_polygons_table_header_div').html(html);
+                jQuery("#working_modal").modal("hide");
             },
             error: function(response){
                 alert('Error getting other field trial imaging events in the same orthophoto!');
+                jQuery("#working_modal").modal("hide");
             }
         });
     });
@@ -6591,34 +6629,37 @@ jQuery(document).ready(function() {
 
         showPlotPolygonStart(background_removed_stitched_image_id, drone_run_band_project_id, 'drone_imagery_plot_polygons_original_stitched_div', 'drone_imagery_plot_polygons_top_section', 'manage_drone_imagery_plot_polygons_load_div', 0);
 
-        showPlotPolygonTableStart(trial_id, 'drone_imagery_trial_layout_div', 'drone_imagery_layout_table');
-    });
-
-    function showPlotPolygonTableStart(trial_id, layout_div, layout_table){
         jQuery.ajax({
-            url : '/ajax/breeders/trial/'+trial_id+'/layout_table',
-            beforeSend: function() {
-                jQuery("#working_modal").modal("show");
-            },
+            url : '/api/drone_imagery/get_field_trial_drone_run_projects_in_same_orthophoto?drone_run_project_id='+drone_run_project_id+'&field_trial_project_id='+trial_id,
             success: function(response){
                 console.log(response);
+                manage_drone_imagery_standard_process_drone_run_project_ids_in_same_orthophoto = response.drone_run_project_ids;
+                manage_drone_imagery_standard_process_drone_run_project_names_in_same_orthophoto = response.drone_run_project_names;
+                manage_drone_imagery_standard_process_field_trial_ids_in_same_orthophoto = response.drone_run_field_trial_ids;
+                manage_drone_imagery_standard_process_field_trial_names_in_same_orthophoto = response.drone_run_field_trial_names;
 
-                field_trial_layout_response = response;
-                field_trial_layout_responses[response.trial_name] = response;
-                field_trial_layout_response_names.push(response.trial_name);
+                field_trial_layout_responses = response.drone_run_all_field_trial_layouts;
+                field_trial_layout_response = field_trial_layout_responses[0];
+                field_trial_layout_response_names = response.drone_run_all_field_trial_names;
 
-                var layout = response.output;
+                var field_trial_layout_counter = 0;
+                for (var key in field_trial_layout_responses) {
+                    if (field_trial_layout_responses.hasOwnProperty(key)) {
+                        var response = field_trial_layout_responses[key];
+                        var layout = response.output;
 
-                for (var i=1; i<layout.length; i++) {
-                    drone_imagery_plot_polygons_available_stock_names.push(layout[i][0]);
+                        for (var i=1; i<layout.length; i++) {
+                            drone_imagery_plot_polygons_available_stock_names.push(layout[i][0]);
+                        }
+                        droneImageryDrawLayoutTable(response, {}, 'drone_imagery_standard_process_trial_layout_div_'+field_trial_layout_counter, 'drone_imagery_standard_process_layout_table_'+field_trial_layout_counter);
+
+                        field_trial_layout_counter = field_trial_layout_counter + 1;
+                    }
                 }
-                droneImageryDrawLayoutTable(response, {}, layout_div, layout_table);
-                jQuery("#working_modal").modal("hide");
 
                 plot_polygons_plot_names_colors = {};
                 plot_polygons_plot_names_plot_numbers = {};
-                var plot_polygons_field_trial_names_order = [manage_drone_imagery_standard_process_field_trial_name];
-                plot_polygons_field_trial_names_order = plot_polygons_field_trial_names_order.concat(manage_drone_imagery_standard_process_field_trial_names_in_same_orthophoto);
+                var plot_polygons_field_trial_names_order = field_trial_layout_response_names;
 
                 for (var plot_polygons_field_trial_name_iterator=0; plot_polygons_field_trial_name_iterator<plot_polygons_field_trial_names_order.length; plot_polygons_field_trial_name_iterator++) {
                     var plot_polygons_field_trial_names_order_current = plot_polygons_field_trial_names_order[plot_polygons_field_trial_name_iterator];
@@ -6635,13 +6676,22 @@ jQuery(document).ready(function() {
                         plot_polygons_plot_names_plot_numbers[plot_polygons_plot_name] = plot_polygons_plot_number;
                     }
                 }
+
+                //var html = '<div class="panel panel-default"><div class="panel-body"><p>The image contains the '+project_drone_imagery_ground_control_points_drone_run_project_name+' imaging event';
+
+                //if (manage_drone_imagery_standard_process_drone_run_project_names_in_same_orthophoto.length > 0) {
+                //    html = html + ' as well as the following imaging events: '+manage_drone_imagery_standard_process_drone_run_project_names_in_same_orthophoto.join();
+                //}
+
+                //html = html + '.</p><p><b>Use one of the following three options to assign the generated polygons to the field experiment(s) of these imaging event(s).</b></p></div></div>';
+
+                //jQuery('#drone_imagery_standard_process_generated_polygons_table_header_div').html(html);
             },
             error: function(response){
-                jQuery("#working_modal").modal("hide");
-                alert('Error retrieving trial layout and design!')
+                alert('Error getting other field trial imaging events in the same orthophoto!');
             }
         });
-    }
+    });
 
     function showPlotPolygonStart(background_removed_stitched_image_id, drone_run_band_project_id, canvas_div_id, info_div_id, load_div_id, hover_plot_layout){
         //jQuery.ajax({

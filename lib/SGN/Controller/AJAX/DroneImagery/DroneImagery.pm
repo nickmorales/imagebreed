@@ -7196,12 +7196,41 @@ sub drone_run_get_field_trial_drone_run_projects_in_same_orthophoto_GET : Args(0
     my $self = shift;
     my $c = shift;
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $field_trial_project_id = $c->req->param('field_trial_project_id');
     my $drone_run_project_id_input = $c->req->param('drone_run_project_id');
 
     my $project = CXGN::Trial->new({ bcs_schema => $bcs_schema, trial_id => $drone_run_project_id_input });
     my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto,  $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
 
-    $c->stash->{rest} = { success => 1, drone_run_project_ids => $field_trial_drone_run_project_ids_in_same_orthophoto, drone_run_project_names => $field_trial_drone_run_project_names_in_same_orthophoto, drone_run_field_trial_ids => $field_trial_ids_in_same_orthophoto, drone_run_field_trial_names => $field_trial_names_in_same_orthophoto };
+    my @all_field_trial_ids = ($field_trial_project_id);
+    push @all_field_trial_ids, @$field_trial_ids_in_same_orthophoto;
+
+    my %all_field_trial_layouts;
+    my @all_field_trial_names;
+    foreach (@all_field_trial_ids) {
+        my $trial_layout_download = CXGN::Trial::TrialLayoutDownload->new({
+            schema => $bcs_schema,
+            trial_id => $_,
+            data_level => 'plots',
+            #treatment_project_ids => [1,2],
+            selected_columns => {"plot_name"=>1,"plot_number"=>1,"block_number"=>1,"accession_name"=>1,"is_a_control"=>1,"rep_number"=>1,"row_number"=>1,"col_number"=>1},
+            include_measured => "false"
+        });
+        my $output = $trial_layout_download->get_layout_output();
+        my $trial_name = $output->{trial_name};
+        $all_field_trial_layouts{$trial_name} = $output;
+        push @all_field_trial_names, $trial_name;
+    }
+
+    $c->stash->{rest} = {
+        success => 1,
+        drone_run_project_ids => $field_trial_drone_run_project_ids_in_same_orthophoto,
+        drone_run_project_names => $field_trial_drone_run_project_names_in_same_orthophoto,
+        drone_run_field_trial_ids => $field_trial_ids_in_same_orthophoto,
+        drone_run_field_trial_names => $field_trial_names_in_same_orthophoto,
+        drone_run_all_field_trial_layouts => \%all_field_trial_layouts,
+        drone_run_all_field_trial_names => \@all_field_trial_names
+    };
 }
 
 sub retrieve_preview_plot_images : Path('/api/drone_imagery/retrieve_preview_plot_images') : ActionClass('REST') { }
