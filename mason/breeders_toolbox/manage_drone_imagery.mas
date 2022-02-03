@@ -2861,7 +2861,9 @@ jQuery(document).ready(function() {
                     'drone_run_project_id':manage_drone_imagery_standard_process_drone_run_project_id,
                     'drone_run_band_project_id':manage_drone_imagery_standard_process_drone_run_band_project_id,
                     'time_cvterm_id':manage_drone_imagery_standard_process_phenotype_time,
-                    'test_run':manage_drone_imagery_standard_process_gcp_test_run
+                    'test_run':manage_drone_imagery_standard_process_gcp_test_run,
+                    'gcp_drag_x_diff':drone_imagery_standard_process_ground_control_points_x_diff,
+                    'gcp_drag_y_diff':drone_imagery_standard_process_ground_control_points_y_diff
                 },
                 success: function(response){
                     console.log(response);
@@ -2995,12 +2997,14 @@ jQuery(document).ready(function() {
 
     d3.select("#drone_imagery_standard_process_rotate_degrees_input").on("input", function() {
         manage_drone_imagery_standard_process_rotate_stitched_image_degrees = this.value;
-        droneImageryStandardProcessRotateImages(manage_drone_imagery_standard_process_rotate_stitched_image_degrees, 1, '#drone_imagery_standard_process_rotate_original_stitched_div_area');
+        droneImageryStandardProcessRotateImages(manage_drone_imagery_standard_process_rotate_stitched_image_degrees, 1, 'drone_imagery_standard_process_rotate_original_stitched_div');
         jQuery('#drone_imagery_standard_process_rotate_degrees_input_text').html(manage_drone_imagery_standard_process_rotate_stitched_image_degrees);
     });
 
-    function droneImageryStandardProcessRotateImages(angle, centered, div_id){
-        d3.selectAll('g').each(function(d) {
+    function droneImageryStandardProcessRotateImages(angle, centered, svg_div_id){
+        var svgElement = d3.select('#'+svg_div_id).selectAll('g');
+
+        svgElement.each(function(d) {
             var x_pos = d3.select(this).attr('x_pos');
             var y_pos = d3.select(this).attr('y_pos');
             if (centered == 1) {
@@ -7327,6 +7331,11 @@ jQuery(document).ready(function() {
         .on('drag', dragged)
         .on('end', dragended);
 
+    var drone_imagery_standard_process_ground_control_points_original_x = 0;
+    var drone_imagery_standard_process_ground_control_points_original_y = 0;
+    var drone_imagery_standard_process_ground_control_points_x_diff = 0;
+    var drone_imagery_standard_process_ground_control_points_y_diff = 0;
+
     function dragstartedgcptemplate(d) {
         d3.select(this).raise().classed('active', true);
     }
@@ -7343,6 +7352,16 @@ jQuery(document).ready(function() {
         d3.select(this).classed('active', false);
         var orig_x = d3.select(this).attr('cx');
         var orig_y = d3.select(this).attr('cy');
+
+        if (drone_imagery_standard_process_ground_control_points_original_x == 0) {
+            drone_imagery_standard_process_ground_control_points_original_x = orig_x;
+        }
+        if (drone_imagery_standard_process_ground_control_points_original_y == 0) {
+            drone_imagery_standard_process_ground_control_points_original_y = orig_y;
+        }
+
+        drone_imagery_standard_process_ground_control_points_x_diff = drone_imagery_standard_process_ground_control_points_original_x - x;
+        drone_imagery_standard_process_ground_control_points_y_diff = drone_imagery_standard_process_ground_control_points_original_y - y;
 
         var x_diff = orig_x - x;
         var y_diff = orig_y - y;

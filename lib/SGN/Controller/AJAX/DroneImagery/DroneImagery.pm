@@ -7595,6 +7595,8 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $time_cvterm_id = $c->req->param('time_cvterm_id');
     my $is_test = $c->req->param('is_test');
     my $is_test_run = $c->req->param('test_run');
+    my $gcp_drag_x_diff = $c->req->param('gcp_drag_x_diff') || 0;
+    my $gcp_drag_y_diff = $c->req->param('gcp_drag_y_diff') || 0;
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $phenotype_methods = ['zonal'];
@@ -8107,8 +8109,8 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
             my $adjusted_x_val = sum(@pos_x)/scalar(@pos_x);
             my $adjusted_y_val = sum(@pos_y)/scalar(@pos_y);
             push @adjusted, {
-                x => $adjusted_x_val,
-                y => $adjusted_y_val
+                x => $adjusted_x_val - $gcp_drag_x_diff,
+                y => $adjusted_y_val - $gcp_drag_y_diff
             };
         }
         $scaled_plot_polygons{$o} = \@adjusted;
