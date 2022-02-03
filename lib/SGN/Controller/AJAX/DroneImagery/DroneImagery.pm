@@ -8091,7 +8091,6 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     foreach my $o (@old_plot_val_names) {
         my $point_diffs = $old_plot_val_dists[$counter_p];
         my @adjusted;
-        my @adjusted_display;
         foreach my $p (@$point_diffs) {
             my @pos_x;
             my @pos_y;
@@ -8105,9 +8104,11 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
                 push @pos_y, $r_y - $o_y;
                 $counter++;
             }
+            my $adjusted_x_val = sum(@pos_x)/scalar(@pos_x);
+            my $adjusted_y_val = sum(@pos_y)/scalar(@pos_y);
             push @adjusted, {
-                x => sum(@pos_x)/scalar(@pos_x),
-                y => sum(@pos_y)/scalar(@pos_y)
+                x => $adjusted_x_val,
+                y => $adjusted_y_val
             };
         }
         $scaled_plot_polygons{$o} = \@adjusted;
