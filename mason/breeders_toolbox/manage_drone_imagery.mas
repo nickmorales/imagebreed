@@ -154,7 +154,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
                             <div id="project_drone_imagery_standard_process_ground_control_points_loading_div"><img src="/img/wheel.gif" /></div>
 
-                            <canvas id="project_drone_imagery_standard_process_ground_control_points_canvas_div"></canvas>
+                            <div id="project_drone_imagery_standard_process_ground_control_points_svg_div"></div>
                         </div>
                     </div>
                 </div>
@@ -649,7 +649,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
     <div id="project_drone_imagery_ground_control_points_loading_div"><img src="/img/wheel.gif" /></div>
 
-    <canvas id="project_drone_imagery_ground_control_points_canvas_div"></canvas>
+    <div id="project_drone_imagery_ground_control_points_svg_div"></div>
 
 </div>
 
@@ -2641,6 +2641,12 @@ jQuery(document).ready(function() {
                 manage_drone_imagery_standard_process_field_trial_ids_in_same_orthophoto = response.drone_run_field_trial_ids;
                 manage_drone_imagery_standard_process_field_trial_names_in_same_orthophoto = response.drone_run_field_trial_names;
 
+                showPlotPolygonTableStart(manage_drone_imagery_standard_process_field_trial_id, 'drone_imagery_standard_process_trial_layout_div_0', 'drone_imagery_standard_process_layout_table_0')
+
+                for (var i=1; i<manage_drone_imagery_standard_process_field_trial_ids_in_same_orthophoto.length+1; i++) {
+                    showPlotPolygonTableStart(manage_drone_imagery_standard_process_field_trial_ids_in_same_orthophoto[i-1], 'drone_imagery_standard_process_trial_layout_div_'+i, 'drone_imagery_standard_process_layout_table_'+i);
+                }
+
                 var html = '<div class="panel panel-default"><div class="panel-body"><p>The image contains the '+project_drone_imagery_ground_control_points_drone_run_project_name+' imaging event';
 
                 if (manage_drone_imagery_standard_process_drone_run_project_names_in_same_orthophoto.length > 0) {
@@ -2680,7 +2686,7 @@ jQuery(document).ready(function() {
                     console.log(response);
                     manage_drone_imagery_standard_process_rotate_stitched_image_id = response.data[0]['image_id'];
 
-                    showPlotPolygonStart(manage_drone_imagery_standard_process_rotate_stitched_image_id, manage_drone_imagery_standard_process_drone_run_project_id, 'project_drone_imagery_standard_process_ground_control_points_canvas_div', 'project_drone_imagery_standard_process_ground_control_points_info_div', 'project_drone_imagery_standard_process_ground_control_points_loading_div', 0);
+                    showPlotPolygonStartSVG(manage_drone_imagery_standard_process_rotate_stitched_image_id, manage_drone_imagery_standard_process_drone_run_project_id, 'project_drone_imagery_standard_process_ground_control_points_svg_div', 'project_drone_imagery_standard_process_ground_control_points_info_div', 'project_drone_imagery_standard_process_ground_control_points_loading_div', 0, 0, 0);
 
                     drone_imagery_plot_polygon_click_type = 'save_ground_control_point';
 
@@ -2759,10 +2765,9 @@ jQuery(document).ready(function() {
                 url: '/api/drone_imagery/get_weeks_after_planting_date?drone_run_project_id='+manage_drone_imagery_standard_process_drone_run_project_id,
                 dataType: "json",
                 beforeSend: function (){
-                    jQuery('#working_modal').modal('show');
+                    showManageDroneImagerySection('manage_drone_imagery_loading_div');
                 },
                 success: function(response){
-                    jQuery('#working_modal').modal('hide');
                     console.log(response);
                     if (response.error) {
                         alert(response.error);
@@ -2783,6 +2788,8 @@ jQuery(document).ready(function() {
                         },
                         success: function(response){
                             console.log(response);
+                            showManageDroneImagerySection('manage_drone_imagery_standard_process_div');
+
                             if (response.error) {
                                 alert(response.error);
                             }
@@ -2791,23 +2798,30 @@ jQuery(document).ready(function() {
                                 manage_drone_imagery_standard_process_gcp_test_run = 'No';
                             }
                             if (response.rotated_image_id && checkonce == 1) {
-                                showPlotPolygonStart(response.rotated_image_id, manage_drone_imagery_standard_process_drone_run_project_id, 'project_drone_imagery_standard_process_ground_control_points_canvas_div', 'project_drone_imagery_standard_process_ground_control_points_info_div', 'project_drone_imagery_standard_process_ground_control_points_loading_div', 0);
+                                showPlotPolygonStartSVG(response.rotated_image_id, manage_drone_imagery_standard_process_drone_run_project_id, 'project_drone_imagery_standard_process_ground_control_points_svg_div', 'project_drone_imagery_standard_process_ground_control_points_info_div', 'project_drone_imagery_standard_process_ground_control_points_loading_div', 0, 1, 1);
+
                                 checkonce = 0;
                             }
                             if (response.rotated_points) {
+                                var project_drone_imagery_ground_control_points_rotated_points = [];
                                 for (var i=0; i<response.rotated_points.length; i++) {
-                                    drawWaypoints([{'x':response.rotated_points[i][0], 'y':response.rotated_points[i][1]}], 'r'+i, 0);
+                                    project_drone_imagery_ground_control_points_rotated_points.push({'x_pos':response.rotated_points[i][0], 'y_pos':response.rotated_points[i][1], 'name':'r'+i});
                                 }
+                                drawWaypointsSVG('project_drone_imagery_standard_process_ground_control_points_svg_div', project_drone_imagery_ground_control_points_rotated_points, undefined);
                             }
                             if (response.cropped_points) {
+                                var project_drone_imagery_ground_control_points_cropped_points = [];
                                 for (var i=0; i<response.cropped_points[0].length; i++) {
-                                    drawWaypoints([{'x':response.cropped_points[0][i]['x'], 'y':response.cropped_points[0][i]['y']}], 'c'+i, 0);
+                                    project_drone_imagery_ground_control_points_cropped_points.push({'x_pos':response.cropped_points[0][i]['x'], 'y_pos':response.cropped_points[0][i]['y'], 'name':'c'+i});
                                 }
+                                drawWaypointsSVG('project_drone_imagery_standard_process_ground_control_points_svg_div', project_drone_imagery_ground_control_points_cropped_points, undefined);
                             }
                             if (response.old_cropped_points) {
+                                var project_drone_imagery_ground_control_points_old_cropped_points = [];
                                 for (var i=0; i<response.old_cropped_points[0].length; i++) {
-                                    drawWaypoints([{'x':response.old_cropped_points[0][i]['x'], 'y':response.old_cropped_points[0][i]['y']}], 'old'+i, 0);
+                                    project_drone_imagery_ground_control_points_old_cropped_points.push({'x_pos':response.old_cropped_points[0][i]['x'], 'y_pos':response.old_cropped_points[0][i]['y'], 'name':'old'+i});
                                 }
+                                drawWaypointsSVG('project_drone_imagery_standard_process_ground_control_points_svg_div', project_drone_imagery_ground_control_points_old_cropped_points, undefined);
                             }
                         },
                         error: function(response){
@@ -2817,7 +2831,6 @@ jQuery(document).ready(function() {
                 },
                 error: function(response){
                     alert('Error getting time terms for standard process with gcp!');
-                    jQuery('#working_modal').modal('hide');
                 }
             });
         }
@@ -3259,13 +3272,7 @@ jQuery(document).ready(function() {
 
                 //showPlotPolygonStart(manage_drone_imagery_standard_process_removed_background_image_id, drone_run_band_project_id, 'drone_imagery_standard_process_plot_polygons_original_stitched_div', 'drone_imagery_standard_process_plot_polygons_top_section', 'manage_drone_imagery_standard_process_plot_polygons_load_div', 0);
 
-                showPlotPolygonStartSVG(manage_drone_imagery_standard_process_removed_background_image_id, drone_run_band_project_id, 'drone_imagery_standard_process_plot_polygons_original_stitched_div_svg', 'drone_imagery_standard_process_plot_polygons_top_section', 'manage_drone_imagery_standard_process_plot_polygons_load_div', 0);
-
-                showPlotPolygonTableStart(manage_drone_imagery_standard_process_field_trial_id, 'drone_imagery_standard_process_trial_layout_div_0', 'drone_imagery_standard_process_layout_table_0')
-
-                for (var i=1; i<manage_drone_imagery_standard_process_field_trial_ids_in_same_orthophoto.length+1; i++) {
-                    showPlotPolygonTableStart(manage_drone_imagery_standard_process_field_trial_ids_in_same_orthophoto[i-1], 'drone_imagery_standard_process_trial_layout_div_'+i, 'drone_imagery_standard_process_layout_table_'+i);
-                }
+                showPlotPolygonStartSVG(manage_drone_imagery_standard_process_removed_background_image_id, drone_run_band_project_id, 'drone_imagery_standard_process_plot_polygons_original_stitched_div_svg', 'drone_imagery_standard_process_plot_polygons_top_section', 'manage_drone_imagery_standard_process_plot_polygons_load_div', 0, 0, 1);
 
                 get_select_box('drone_imagery_parameter_select','plot_polygons_standard_process_previously_saved_plot_polygon_templates', {'name': 'plot_polygons_standard_process_template_select', 'id': 'plot_polygons_standard_process_template_select', 'empty':1, 'field_trial_id':manage_drone_imagery_standard_process_field_trial_id, 'parameter':'plot_polygons' });
 
@@ -3284,11 +3291,11 @@ jQuery(document).ready(function() {
     var plot_polygons_standard_process_default_image_type_is_background_removed = 0;
     jQuery('#drone_imagery_standard_process_plot_polygons_switch_image_url').click(function() {
         if (plot_polygons_standard_process_default_image_type_is_background_removed == 1) {
-            showPlotPolygonStartSVG(manage_drone_imagery_standard_process_removed_background_image_id, drone_run_band_project_id, 'drone_imagery_standard_process_plot_polygons_original_stitched_div_svg', 'drone_imagery_standard_process_plot_polygons_top_section', 'manage_drone_imagery_standard_process_plot_polygons_load_div', 0);
+            showPlotPolygonStartSVG(manage_drone_imagery_standard_process_removed_background_image_id, drone_run_band_project_id, 'drone_imagery_standard_process_plot_polygons_original_stitched_div_svg', 'drone_imagery_standard_process_plot_polygons_top_section', 'manage_drone_imagery_standard_process_plot_polygons_load_div', 0, 0, 1);
             plot_polygons_standard_process_default_image_type_is_background_removed = 0;
         }
         else {
-            showPlotPolygonStartSVG(manage_drone_imagery_standard_process_denoised_image_id, drone_run_band_project_id, 'drone_imagery_standard_process_plot_polygons_original_stitched_div_svg', 'drone_imagery_standard_process_plot_polygons_top_section', 'manage_drone_imagery_standard_process_plot_polygons_load_div', 0);
+            showPlotPolygonStartSVG(manage_drone_imagery_standard_process_denoised_image_id, drone_run_band_project_id, 'drone_imagery_standard_process_plot_polygons_original_stitched_div_svg', 'drone_imagery_standard_process_plot_polygons_top_section', 'manage_drone_imagery_standard_process_plot_polygons_load_div', 0, 0, 1);
             plot_polygons_standard_process_default_image_type_is_background_removed = 1;
         }
     });
@@ -3976,7 +3983,7 @@ jQuery(document).ready(function() {
                 project_drone_imagery_ground_control_points_image_id = project_drone_imagery_ground_control_points_image_ids[0];
                 project_drone_imagery_ground_control_points_image_type = project_drone_imagery_ground_control_points_image_types[0];
 
-                showPlotPolygonStart(project_drone_imagery_ground_control_points_image_id, project_drone_imagery_ground_control_points_drone_run_project_id, 'project_drone_imagery_ground_control_points_canvas_div', 'project_drone_imagery_ground_control_points_info_div', 'project_drone_imagery_ground_control_points_loading_div', 0);
+                showPlotPolygonStartSVG(project_drone_imagery_ground_control_points_image_id, project_drone_imagery_ground_control_points_drone_run_project_id, 'project_drone_imagery_ground_control_points_svg_div', 'project_drone_imagery_ground_control_points_info_div', 'project_drone_imagery_ground_control_points_loading_div', 0, 0, 1);
 
                 jQuery('#project_drone_imagery_ground_control_points_image_type_div').html('<h4>'+project_drone_imagery_ground_control_points_image_type+'</h4>');
                 jQuery('#project_drone_imagery_ground_control_points_next_buttons').show();
@@ -3998,7 +4005,8 @@ jQuery(document).ready(function() {
             project_drone_imagery_ground_control_points_image_id = project_drone_imagery_ground_control_points_image_ids[project_drone_imagery_ground_control_points_image_id_counter];
             project_drone_imagery_ground_control_points_image_type = project_drone_imagery_ground_control_points_image_types[project_drone_imagery_ground_control_points_image_id_counter];
 
-            showPlotPolygonStart(project_drone_imagery_ground_control_points_image_id, project_drone_imagery_ground_control_points_drone_run_project_id, 'project_drone_imagery_ground_control_points_canvas_div', 'project_drone_imagery_ground_control_points_info_div', 'project_drone_imagery_ground_control_points_loading_div', 0);
+            showPlotPolygonStartSVG(project_drone_imagery_ground_control_points_image_id, project_drone_imagery_ground_control_points_drone_run_project_id, 'project_drone_imagery_ground_control_points_svg_div', 'project_drone_imagery_ground_control_points_info_div', 'project_drone_imagery_ground_control_points_loading_div', 0, 0, 1);
+
             jQuery('#project_drone_imagery_ground_control_points_image_type_div').html('<h4>'+project_drone_imagery_ground_control_points_image_type+'</h4>');
         }
         else {
@@ -4013,7 +4021,8 @@ jQuery(document).ready(function() {
             project_drone_imagery_ground_control_points_image_id = project_drone_imagery_ground_control_points_image_ids[project_drone_imagery_ground_control_points_image_id_counter];
             project_drone_imagery_ground_control_points_image_type = project_drone_imagery_ground_control_points_image_types[project_drone_imagery_ground_control_points_image_id_counter];
 
-            showPlotPolygonStart(project_drone_imagery_ground_control_points_image_id, project_drone_imagery_ground_control_points_drone_run_project_id, 'project_drone_imagery_ground_control_points_canvas_div', 'project_drone_imagery_ground_control_points_info_div', 'project_drone_imagery_ground_control_points_loading_div', 0);
+            showPlotPolygonStartSVG(project_drone_imagery_ground_control_points_image_id, project_drone_imagery_ground_control_points_drone_run_project_id, 'project_drone_imagery_ground_control_points_svg_div', 'project_drone_imagery_ground_control_points_info_div', 'project_drone_imagery_ground_control_points_loading_div', 0, 0, 1);
+
             jQuery('#project_drone_imagery_ground_control_points_image_type_div').html('<h4>'+project_drone_imagery_ground_control_points_image_type+'</h4>');
         }
         else {
@@ -4052,6 +4061,8 @@ jQuery(document).ready(function() {
                     project_drone_imagery_ground_control_points_saved = response.saved_gcps_full;
                     project_drone_imagery_ground_control_points_saved_array = response.gcps_array;
                     _redraw_ground_control_points_table();
+
+                    drawWaypointsSVG('project_drone_imagery_standard_process_ground_control_points_svg_div', project_drone_imagery_ground_control_points_saved_array, 1);
                 },
                 error: function(response){
                     alert('Error deleting GCP name!');
@@ -4097,9 +4108,7 @@ jQuery(document).ready(function() {
 
                 _redraw_ground_control_points_table();
 
-                for(var i=0; i<project_drone_imagery_ground_control_points_saved_array.length; i++) {
-                    drawWaypoints([{'x':project_drone_imagery_ground_control_points_saved_array[i]['x_pos'], 'y':project_drone_imagery_ground_control_points_saved_array[i]['y_pos']}], project_drone_imagery_ground_control_points_saved_array[i]['name'], 0);
-                }
+                drawWaypointsSVG('project_drone_imagery_standard_process_ground_control_points_svg_div', project_drone_imagery_ground_control_points_saved_array, 1);
             },
             error: function(response){
                 alert('Error getting image for GCP saving!')
@@ -4108,9 +4117,8 @@ jQuery(document).ready(function() {
     });
 
     jQuery(document).on('click', 'button[name="project_drone_imagery_ground_control_points_draw_points"]', function(){
-        for(var i=0; i<project_drone_imagery_ground_control_points_saved_array.length; i++) {
-            drawWaypoints([{'x':project_drone_imagery_ground_control_points_saved_array[i]['x_pos'], 'y':project_drone_imagery_ground_control_points_saved_array[i]['y_pos']}], project_drone_imagery_ground_control_points_saved_array[i]['name'], 0);
-        }
+        console.log(project_drone_imagery_ground_control_points_saved_array);
+        drawWaypointsSVG('project_drone_imagery_standard_process_ground_control_points_svg_div', project_drone_imagery_ground_control_points_saved_array, 1);
     });
 
     //
@@ -6390,6 +6398,38 @@ jQuery(document).ready(function() {
         }
     }
 
+    function drawWaypointsSVG(svg_div_id, points, clear_markings){
+        if (clear_markings) {
+            d3.selectAll("path").remove();
+            d3.selectAll("text").remove();
+            d3.selectAll("circle").remove();
+            d3.selectAll("rect").remove();
+        }
+
+        var svg = d3.select('#'+svg_div_id).select("svg");
+        focus = svg.append("g");
+
+        for (var i=0; i<points.length; i++) {
+            focus.append("text")
+                .attr("x", points[i]['x_pos']-12)
+                .attr("y", points[i]['y_pos']-12)
+                .style('fill', 'red')
+                .style("font-size", "28px")
+                .style("font-weight", 600)
+                .text(points[i]['name']);
+        }
+
+        focus.selectAll('circle')
+            .data(points)
+            .enter()
+            .append('circle')
+            .attr('r', 10.0)
+            .attr('cx', function(d) { return d['x_pos'];  })
+            .attr('cy', function(d) { return d['y_pos']; })
+            .style('cursor', 'pointer')
+            .style('fill', 'red');
+    }
+
     jQuery(document).on('click', '#drone_imagery_crop_stitched_submit', function(){
         jQuery.ajax({
             url : '/api/drone_imagery/crop_image?image_id='+rotated_stitched_image_id+'&polygon='+JSON.stringify(crop_points)+'&drone_run_band_project_id='+drone_run_band_project_id,
@@ -6641,15 +6681,19 @@ jQuery(document).ready(function() {
         });
     }
 
-    function showPlotPolygonStartSVG(background_removed_stitched_image_id, drone_run_band_project_id, svg_div_id, info_div_id, load_div_id, hover_plot_layout){
+    function showPlotPolygonStartSVG(background_removed_stitched_image_id, drone_run_band_project_id, svg_div_id, info_div_id, load_div_id, hover_plot_layout, draw_labeled_plots, show_loading_model){
         jQuery.ajax({
             url : '/api/drone_imagery/get_image?image_id='+background_removed_stitched_image_id,
             beforeSend: function() {
-                jQuery("#working_modal").modal("show");
+                if (show_loading_model) {
+                    jQuery("#working_modal").modal("show");
+                }
             },
             success: function(response){
                 console.log(response);
-                jQuery("#working_modal").modal("hide");
+                if (show_loading_model) {
+                    jQuery("#working_modal").modal("hide");
+                }
 
                 background_image_url = response.image_url;
 
@@ -6743,6 +6787,12 @@ jQuery(document).ready(function() {
                                 plot_polygons_get_distance_point_1y = PosY;
                             }
                         }
+                        else if (drone_imagery_plot_polygon_click_type == 'save_ground_control_point') {
+                            //alert('X Coordinate: '+PosX+'. Y Coordinate: '+PosY+'.');
+                            jQuery('#project_drone_imagery_ground_control_points_form_input_x_pos').val(PosX);
+                            jQuery('#project_drone_imagery_ground_control_points_form_input_y_pos').val(PosY);
+                            jQuery('#project_drone_imagery_ground_control_points_form_dialog').modal('show');
+                        }
                     });
 
                 var imageGroup = svgElement.append("g")
@@ -6770,9 +6820,15 @@ jQuery(document).ready(function() {
                     .attr('height', background_image_height);
 
                 jQuery('#'+load_div_id).hide();
+
+                if (draw_labeled_plots) {
+                    draw_polygons_svg_plots_labeled(svg_div_id, undefined);
+                }
             },
             error: function(response){
-                jQuery("#working_modal").modal("hide");
+                if (show_loading_model) {
+                    jQuery("#working_modal").modal("hide");
+                }
                 alert('Error retrieving plot polygon image SVG!')
             }
         });
