@@ -2860,7 +2860,7 @@ jQuery(document).ready(function() {
                                 if (response.rotated_cropped_points) {
                                     var project_drone_imagery_ground_control_points_rotated_cropped_points = [];
                                     for (var i=0; i<response.rotated_cropped_points.length; i++) {
-                                        project_drone_imagery_ground_control_points_rotated_cropped_points.push({'x_pos':response.rotated_cropped_points[i][0], 'y_pos':response.rotated_cropped_points[i][1], 'name':'rc'+i});
+                                        project_drone_imagery_ground_control_points_rotated_cropped_points.push({'x_pos':response.rotated_cropped_points[i][0], 'y_pos':response.rotated_cropped_points[i][1], 'name':''});
                                     }
                                 }
 
