@@ -7622,7 +7622,6 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $drone_run_band_project_id_input = $c->req->param('drone_run_band_project_id');
     my $gcp_drone_run_project_id_input = $c->req->param('gcp_drone_run_project_id');
     my $time_cvterm_id = $c->req->param('time_cvterm_id');
-    my $is_test = $c->req->param('is_test');
     my $is_test_run = $c->req->param('test_run');
     my $gcp_drag_x_diff = $c->req->param('gcp_drag_x_diff') || 0;
     my $gcp_drag_y_diff = $c->req->param('gcp_drag_y_diff') || 0;
