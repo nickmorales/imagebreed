@@ -7415,7 +7415,9 @@ jQuery(document).ready(function() {
         var orig_x = d3.select(this).attr('cx');
         var orig_y = d3.select(this).attr('cy');
         var corner = d3.select(this).attr('corner');
+        //console.log(drone_imagery_plot_polygons_display);
 
+        var drone_imagery_plot_polygons_display_gcp_dragged = {};
         if (corner == 'top_left') {
             if (drone_imagery_standard_process_ground_control_points_original_x == 0) {
                 drone_imagery_standard_process_ground_control_points_original_x = orig_x;
@@ -7430,7 +7432,6 @@ jQuery(document).ready(function() {
             var x_diff = orig_x - x;
             var y_diff = orig_y - y;
 
-            var drone_imagery_plot_polygons_display_gcp_dragged = {};
             for (key in drone_imagery_plot_polygons_display) {
                 if (drone_imagery_plot_polygons_display.hasOwnProperty(key)) {
                     var plot_polygons_display_points_again = drone_imagery_plot_polygons_display[key];
@@ -7464,7 +7465,6 @@ jQuery(document).ready(function() {
             var max_x = -10000000000000000000000;
             var max_y = -10000000000000000000000;
 
-            var drone_imagery_plot_polygons_display_gcp_dragged = {};
             for (key in drone_imagery_plot_polygons_display) {
                 if (drone_imagery_plot_polygons_display.hasOwnProperty(key)) {
                     var plot_polygons_display_points_again = drone_imagery_plot_polygons_display[key];
@@ -7517,7 +7517,7 @@ jQuery(document).ready(function() {
             }
             drone_imagery_plot_polygons_display = drone_imagery_plot_polygons_display_gcp_dragged;
         }
-
+        //console.log(drone_imagery_plot_polygons_display);
         draw_polygons_svg_plots_labeled('project_drone_imagery_standard_process_ground_control_points_svg_div', undefined, 1, undefined);
     }
 
@@ -7916,7 +7916,7 @@ jQuery(document).ready(function() {
             focus.selectAll('circle')
                 .data([
                     [draw_polygons_svg_plots_labeled_min_x, draw_polygons_svg_plots_labeled_min_y, 'top_left', 'black'],
-                    [draw_polygons_svg_plots_labeled_max_x, draw_polygons_svg_plots_labeled_max_y, 'bottom_right', 'yellow']
+                    //[draw_polygons_svg_plots_labeled_max_x, draw_polygons_svg_plots_labeled_max_y, 'bottom_right', 'yellow']
                 ])
                 .enter()
                 .append('circle')

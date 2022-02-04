@@ -3,7 +3,7 @@
 
 =head1 NAME
 
- CreateSpTokenTable.pm
+ CreatePrivateCompanyTable.pm
 
 =head1 SYNOPSIS
 
@@ -14,7 +14,7 @@ see the perldoc of parent class for more details.
 
 =head1 DESCRIPTION
 
-Creates the sgn_people.private_company table and all linking tables
+Creates the sgn_people.private_company table links
 This subclass uses L<Moose>. The parent class uses L<MooseX::Runnable>
 
 =head1 AUTHOR
@@ -37,7 +37,7 @@ extends 'CXGN::Metadata::Dbpatch';
 
 
 has '+description' => ( default => <<'' );
-This patch creates the sgn_people.sp_token table.
+This patch creates the sgn_people.private_company table links
 
 has '+prereq' => (
     default => sub {
