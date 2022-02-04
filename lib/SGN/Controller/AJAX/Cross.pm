@@ -118,6 +118,11 @@ sub upload_cross_file_POST : Args(0) {
 
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
+    if (!($c->user()->check_roles('curator') || $c->user()->check_roles('submitter'))) {
+        $c->stash->{rest} = { error => 'You do not have the required privileges to upload crosses, crosses can only be uploaded by accounts with submitter or curator privileges' };
+        return;
+    }
+
     my $uploader = CXGN::UploadFile->new({
         tempfile => $upload_tempfile,
         subdirectory => $subdirectory,
