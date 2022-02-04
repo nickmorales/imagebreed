@@ -136,7 +136,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                                     <li>Click on the ground control points (GCPs) in the image below and save them.</li>
                                     <li>Please click and save at least three points. The names of the GCPs MUST be consistent across imaging events!</li>
                                     <li>For best results, use ground control points at the far four corners of the field.</li>
-                                    <li>Once the computed polygon template is drawn, you can drag the black dot to reposition the template.</li>
+                                    <li>Once the computed polygon template is drawn, you can drag the <b>black dot</b> to reposition the template.</li>
                                     <li>You can zoom out on your browser (Cntrl + -).</li>
                                 </ul>
                             </div>
@@ -2616,6 +2616,14 @@ jQuery(document).ready(function() {
     var manage_drone_imagery_standard_process_gcp_test_run = 'Yes';
     var manage_drone_imagery_standard_process_preview_image_urls = [];
     var manage_drone_imagery_standard_process_preview_image_sizes = [];
+    var drone_imagery_standard_process_ground_control_points_original_x = 0;
+    var drone_imagery_standard_process_ground_control_points_original_y = 0;
+    var drone_imagery_standard_process_ground_control_points_original_resize_x = 0;
+    var drone_imagery_standard_process_ground_control_points_original_resize_y = 0;
+    var drone_imagery_standard_process_ground_control_points_x_diff = 0;
+    var drone_imagery_standard_process_ground_control_points_y_diff = 0;
+    var drone_imagery_standard_process_ground_control_points_resize_x_diff = 0;
+    var drone_imagery_standard_process_ground_control_points_resize_y_diff = 0;
 
     jQuery(document).on('click', 'button[name="project_drone_imagery_standard_process"]', function(){
         showManageDroneImagerySection('manage_drone_imagery_standard_process_div');
@@ -2802,6 +2810,15 @@ jQuery(document).ready(function() {
             return false;
         }
         else {
+            drone_imagery_standard_process_ground_control_points_original_x = 0;
+            drone_imagery_standard_process_ground_control_points_original_y = 0;
+            drone_imagery_standard_process_ground_control_points_original_resize_x = 0;
+            drone_imagery_standard_process_ground_control_points_original_resize_y = 0;
+            drone_imagery_standard_process_ground_control_points_x_diff = 0;
+            drone_imagery_standard_process_ground_control_points_y_diff = 0;
+            drone_imagery_standard_process_ground_control_points_resize_x_diff = 0;
+            drone_imagery_standard_process_ground_control_points_resize_y_diff = 0;
+
             jQuery.ajax({
                 type: 'GET',
                 url: '/api/drone_imagery/get_weeks_after_planting_date?drone_run_project_id='+manage_drone_imagery_standard_process_drone_run_project_id,
@@ -7381,11 +7398,6 @@ jQuery(document).ready(function() {
         .on('drag', dragged)
         .on('end', dragended);
 
-    var drone_imagery_standard_process_ground_control_points_original_x = 0;
-    var drone_imagery_standard_process_ground_control_points_original_y = 0;
-    var drone_imagery_standard_process_ground_control_points_x_diff = 0;
-    var drone_imagery_standard_process_ground_control_points_y_diff = 0;
-
     function dragstartedgcptemplate(d) {
         d3.select(this).raise().classed('active', true);
     }
@@ -7402,34 +7414,110 @@ jQuery(document).ready(function() {
         d3.select(this).classed('active', false);
         var orig_x = d3.select(this).attr('cx');
         var orig_y = d3.select(this).attr('cy');
+        var corner = d3.select(this).attr('corner');
 
-        if (drone_imagery_standard_process_ground_control_points_original_x == 0) {
-            drone_imagery_standard_process_ground_control_points_original_x = orig_x;
-        }
-        if (drone_imagery_standard_process_ground_control_points_original_y == 0) {
-            drone_imagery_standard_process_ground_control_points_original_y = orig_y;
-        }
-
-        drone_imagery_standard_process_ground_control_points_x_diff = drone_imagery_standard_process_ground_control_points_original_x - x;
-        drone_imagery_standard_process_ground_control_points_y_diff = drone_imagery_standard_process_ground_control_points_original_y - y;
-
-        var x_diff = orig_x - x;
-        var y_diff = orig_y - y;
-
-        var drone_imagery_plot_polygons_display_gcp_dragged = {};
-        for (key in drone_imagery_plot_polygons_display) {
-            if (drone_imagery_plot_polygons_display.hasOwnProperty(key)) {
-                var plot_polygons_display_points_again = drone_imagery_plot_polygons_display[key];
-
-                drone_imagery_plot_polygons_display_gcp_dragged[key] = [
-                    {'x': plot_polygons_display_points_again[0].x - x_diff, 'y': plot_polygons_display_points_again[0].y - y_diff},
-                    {'x': plot_polygons_display_points_again[1].x - x_diff, 'y': plot_polygons_display_points_again[1].y - y_diff},
-                    {'x': plot_polygons_display_points_again[2].x - x_diff, 'y': plot_polygons_display_points_again[2].y - y_diff},
-                    {'x': plot_polygons_display_points_again[3].x - x_diff, 'y': plot_polygons_display_points_again[3].y - y_diff},
-                ];
+        if (corner == 'top_left') {
+            if (drone_imagery_standard_process_ground_control_points_original_x == 0) {
+                drone_imagery_standard_process_ground_control_points_original_x = orig_x;
             }
+            if (drone_imagery_standard_process_ground_control_points_original_y == 0) {
+                drone_imagery_standard_process_ground_control_points_original_y = orig_y;
+            }
+
+            drone_imagery_standard_process_ground_control_points_x_diff = drone_imagery_standard_process_ground_control_points_original_x - x;
+            drone_imagery_standard_process_ground_control_points_y_diff = drone_imagery_standard_process_ground_control_points_original_y - y;
+
+            var x_diff = orig_x - x;
+            var y_diff = orig_y - y;
+
+            var drone_imagery_plot_polygons_display_gcp_dragged = {};
+            for (key in drone_imagery_plot_polygons_display) {
+                if (drone_imagery_plot_polygons_display.hasOwnProperty(key)) {
+                    var plot_polygons_display_points_again = drone_imagery_plot_polygons_display[key];
+
+                    drone_imagery_plot_polygons_display_gcp_dragged[key] = [
+                        {'x': plot_polygons_display_points_again[0].x - x_diff, 'y': plot_polygons_display_points_again[0].y - y_diff},
+                        {'x': plot_polygons_display_points_again[1].x - x_diff, 'y': plot_polygons_display_points_again[1].y - y_diff},
+                        {'x': plot_polygons_display_points_again[2].x - x_diff, 'y': plot_polygons_display_points_again[2].y - y_diff},
+                        {'x': plot_polygons_display_points_again[3].x - x_diff, 'y': plot_polygons_display_points_again[3].y - y_diff},
+                    ];
+                }
+            }
+            drone_imagery_plot_polygons_display = drone_imagery_plot_polygons_display_gcp_dragged;
         }
-        drone_imagery_plot_polygons_display = drone_imagery_plot_polygons_display_gcp_dragged;
+        if (corner == 'bottom_right') {
+            if (drone_imagery_standard_process_ground_control_points_original_resize_x == 0) {
+                drone_imagery_standard_process_ground_control_points_original_resize_x = orig_x;
+            }
+            if (drone_imagery_standard_process_ground_control_points_original_resize_y == 0) {
+                drone_imagery_standard_process_ground_control_points_original_resize_y = orig_y;
+            }
+
+            drone_imagery_standard_process_ground_control_points_resize_x_diff = drone_imagery_standard_process_ground_control_points_original_resize_x - x;
+            drone_imagery_standard_process_ground_control_points_resize_y_diff = drone_imagery_standard_process_ground_control_points_original_resize_y - y;
+
+            var x_diff = orig_x - x;
+            var y_diff = orig_y - y;
+
+            var min_x = 10000000000000000000000;
+            var min_y = 10000000000000000000000;
+            var max_x = -10000000000000000000000;
+            var max_y = -10000000000000000000000;
+
+            var drone_imagery_plot_polygons_display_gcp_dragged = {};
+            for (key in drone_imagery_plot_polygons_display) {
+                if (drone_imagery_plot_polygons_display.hasOwnProperty(key)) {
+                    var plot_polygons_display_points_again = drone_imagery_plot_polygons_display[key];
+
+                    if (plot_polygons_display_points_again[0].x < min_x) {
+                        min_x = plot_polygons_display_points_again[0].x;
+                    }
+                    if (plot_polygons_display_points_again[3].x < min_x) {
+                        min_x = plot_polygons_display_points_again[3].x;
+                    }
+                    if (plot_polygons_display_points_again[1].x > max_x) {
+                        max_x = plot_polygons_display_points_again[1].x;
+                    }
+                    if (plot_polygons_display_points_again[2].x > max_x) {
+                        max_x = plot_polygons_display_points_again[2].x;
+                    }
+                    if (plot_polygons_display_points_again[0].y < min_y) {
+                        min_y = plot_polygons_display_points_again[0].y;
+                    }
+                    if (plot_polygons_display_points_again[1].y < min_y) {
+                        min_y = plot_polygons_display_points_again[1].y;
+                    }
+                    if (plot_polygons_display_points_again[2].y > max_y) {
+                        max_y = plot_polygons_display_points_again[2].y;
+                    }
+                    if (plot_polygons_display_points_again[3].y > max_y) {
+                        max_y = plot_polygons_display_points_again[3].y;
+                    }
+                }
+            }
+            var orig_x_range = max_x - min_x;
+            var orig_y_range = max_y - min_y;
+            var new_x_range = orig_x_range - x_diff;
+            var new_y_range = orig_y_range - y_diff;
+            var x_ratio = new_x_range/orig_x_range;
+            var y_ratio = new_y_range/orig_y_range;
+            console.log([orig_x_range, orig_y_range, new_x_range, new_y_range]);
+
+            for (key in drone_imagery_plot_polygons_display) {
+                if (drone_imagery_plot_polygons_display.hasOwnProperty(key)) {
+                    var plot_polygons_display_points_again = drone_imagery_plot_polygons_display[key];
+
+                    drone_imagery_plot_polygons_display_gcp_dragged[key] = [
+                        {'x': plot_polygons_display_points_again[0].x * x_ratio, 'y': plot_polygons_display_points_again[0].y * y_ratio},
+                        {'x': plot_polygons_display_points_again[1].x * x_ratio, 'y': plot_polygons_display_points_again[1].y * y_ratio},
+                        {'x': plot_polygons_display_points_again[2].x * x_ratio, 'y': plot_polygons_display_points_again[2].y * y_ratio},
+                        {'x': plot_polygons_display_points_again[3].x * x_ratio, 'y': plot_polygons_display_points_again[3].y * y_ratio},
+                    ];
+                }
+            }
+            drone_imagery_plot_polygons_display = drone_imagery_plot_polygons_display_gcp_dragged;
+        }
+
         draw_polygons_svg_plots_labeled('project_drone_imagery_standard_process_ground_control_points_svg_div', undefined, 1, undefined);
     }
 
@@ -7733,6 +7821,8 @@ jQuery(document).ready(function() {
 
         var draw_polygons_svg_plots_labeled_min_x = 1000000000000000;
         var draw_polygons_svg_plots_labeled_min_y = 1000000000000000;
+        var draw_polygons_svg_plots_labeled_max_x = -1000000000000000;
+        var draw_polygons_svg_plots_labeled_max_y = -1000000000000000;
 
         var draw_polygons_svg_counter = 0;
         for (key in drone_imagery_plot_polygons_display) {
@@ -7753,6 +7843,12 @@ jQuery(document).ready(function() {
                     }
                     if (plot_polygons_display_points_again[0].y < draw_polygons_svg_plots_labeled_min_y) {
                         draw_polygons_svg_plots_labeled_min_y = plot_polygons_display_points_again[0].y;
+                    }
+                    if (plot_polygons_display_points_again[2].x > draw_polygons_svg_plots_labeled_max_x) {
+                        draw_polygons_svg_plots_labeled_max_x = plot_polygons_display_points_again[2].x;
+                    }
+                    if (plot_polygons_display_points_again[2].y > draw_polygons_svg_plots_labeled_max_y) {
+                        draw_polygons_svg_plots_labeled_max_y = plot_polygons_display_points_again[2].y;
                     }
 
                     var label = '';
@@ -7818,14 +7914,18 @@ jQuery(document).ready(function() {
         if (gcp_template_allow_drag_corner) {
             focus = svg.append("g");
             focus.selectAll('circle')
-                .data([[draw_polygons_svg_plots_labeled_min_x, draw_polygons_svg_plots_labeled_min_y]])
+                .data([
+                    [draw_polygons_svg_plots_labeled_min_x, draw_polygons_svg_plots_labeled_min_y, 'top_left', 'black'],
+                    [draw_polygons_svg_plots_labeled_max_x, draw_polygons_svg_plots_labeled_max_y, 'bottom_right', 'yellow']
+                ])
                 .enter()
                 .append('circle')
                 .attr('r', 10.0)
                 .attr('cx', function(d) { return d[0];  })
                 .attr('cy', function(d) { return d[1]; })
+                .attr('corner', function(d) { return d[2]; })
                 .style('cursor', 'pointer')
-                .style('fill', 'black');
+                .style('fill', function(d) { return d[3]; });
 
             focus.selectAll('circle')
                     .call(draggcptemplate);

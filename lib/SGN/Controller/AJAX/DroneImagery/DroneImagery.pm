@@ -7862,6 +7862,11 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $check_image_fullpath = $check_image->get_filename('original_converted', 'full');
     my ($check_image_width, $check_image_height) = imgsize($check_image_fullpath);
 
+    my $check_image_dim_ratio = $check_image_width/$check_image_height;
+    print STDERR Dumper [$check_image_width, $check_image_height, $check_image_dim_ratio];
+    my $image_width_buffer = 0.08 * $check_image_height;
+    my $image_height_buffer = 0.08 * $check_image_width;
+
     my $tl_o_x = 0;
     my $tl_o_y = 0;
     my $tr_o_x = $check_image_width;
@@ -7899,6 +7904,31 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
         push @rotated_current_points, [$x_rot, $y_rot];
     }
 
+    my $dir = $c->tempfiles_subdir('/drone_imagery_rotate');
+    my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
+    $archive_rotate_temp_image .= '.png';
+    my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id_input, [], $check_image_id, $rotate_rad_gcp/$rad_conversion, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
+    my $rotated_image_id = $rotate_return->{rotated_image_id};
+    my $rotate_resize_ratio = $rotate_return->{original_image_resize_ratio};
+    my $rotate_resize_ratio_width = $rotate_resize_ratio->[0]; #original/saved
+    my $rotate_resize_ratio_height = $rotate_resize_ratio->[1]; #original/saved
+
+    # my $h_rotate_check = $bcs_schema->storage->dbh()->prepare($q2);
+    # $h_rotate_check->execute($rotated_image_type_id, $gcp_drone_run_band_project_id);
+    # my ($rotate_check_image_id, $rotate_check_drone_run_band_type) = $h_rotate_check->fetchrow_array();
+
+    # my $rotate_check_target_image = SGN::Image->new( $bcs_schema->storage->dbh, $rotated_image_id, $c );
+    # my $rotate_check_target_image_url = $rotate_check_target_image->get_image_url("original");
+    # my $rotate_check_target_image_fullpath = $rotate_check_target_image->get_filename('original_converted', 'full');
+    # my ($rotate_check_target_image_width, $rotate_check_target_image_height) = imgsize($rotate_check_target_image_fullpath);
+    # print STDERR "Target Rotation: $rotate_check_target_image_width $rotate_check_target_image_height \n";
+
+    # my $rotate_check_image = SGN::Image->new( $bcs_schema->storage->dbh, $rotate_check_image_id, $c );
+    # my $rotate_check_image_url = $rotate_check_image->get_image_url("original");
+    # my $rotate_check_image_fullpath = $rotate_check_image->get_filename('original_converted', 'full');
+    # my ($rotate_check_image_width, $rotate_check_image_height) = imgsize($rotate_check_image_fullpath);
+    # print STDERR "Template Rotation: $rotate_check_image_width $rotate_check_image_height \n";
+
     my $tl_gcp_current_point_x = 1000000000;
     my $tl_gcp_current_point_y = 1000000000;
     my $tr_gcp_current_point_x = 0;
@@ -7908,9 +7938,12 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $bl_gcp_current_point_x = 1000000000;
     my $bl_gcp_current_point_y = 0;
 
+    my @rotated_current_points_scaled;
     foreach (@rotated_current_points) {
-        my $x = $_->[0];
-        my $y = $_->[1];
+        my $x = $_->[0]/$rotate_resize_ratio_width;
+        my $y = $_->[1]/$rotate_resize_ratio_height;
+
+        push @rotated_current_points_scaled, [$x, $y];
 
         if ($x < $tl_gcp_current_point_x) {
             $tl_gcp_current_point_x = $x;
@@ -7937,54 +7970,6 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
             $bl_gcp_current_point_y = $y;
         }
     }
-
-    my $dir = $c->tempfiles_subdir('/drone_imagery_rotate');
-    my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
-    $archive_rotate_temp_image .= '.png';
-    my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id_input, [], $check_image_id, $rotate_rad_gcp/$rad_conversion, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
-    my $rotated_image_id = $rotate_return->{rotated_image_id};
-
-    my $h_rotate_check = $bcs_schema->storage->dbh()->prepare($q2);
-    $h_rotate_check->execute($rotated_image_type_id, $gcp_drone_run_band_project_id);
-    my ($rotate_check_image_id, $rotate_check_drone_run_band_type) = $h_rotate_check->fetchrow_array();
-
-    my $rotate_check_target_image = SGN::Image->new( $bcs_schema->storage->dbh, $rotated_image_id, $c );
-    my $rotate_check_target_image_url = $rotate_check_target_image->get_image_url("original");
-    my $rotate_check_target_image_fullpath = $rotate_check_target_image->get_filename('original_converted', 'full');
-    my ($rotate_check_target_image_width, $rotate_check_target_image_height) = imgsize($rotate_check_target_image_fullpath);
-    print STDERR "Target Rotation: $rotate_check_target_image_width $rotate_check_target_image_height \n";
-
-    my $rotate_check_image = SGN::Image->new( $bcs_schema->storage->dbh, $rotate_check_image_id, $c );
-    my $rotate_check_image_url = $rotate_check_image->get_image_url("original");
-    my $rotate_check_image_fullpath = $rotate_check_image->get_filename('original_converted', 'full');
-    my ($rotate_check_image_width, $rotate_check_image_height) = imgsize($rotate_check_image_fullpath);
-    print STDERR "Template Rotation: $rotate_check_image_width $rotate_check_image_height \n";
-
-    # my $template_gcp_x_scale = $rotate_check_image_width/$rotate_check_target_image_width;
-    # my $template_gcp_y_scale = $rotate_check_image_height/$rotate_check_target_image_height;
-    my $template_gcp_x_scale;
-    if ($tr_gcp_template_point_x - $tl_gcp_template_point_x != 0 && $tr_gcp_current_point_x - $tl_gcp_current_point_x != 0) {
-        $template_gcp_x_scale = ($tr_gcp_template_point_x - $tl_gcp_template_point_x) / ($tr_gcp_current_point_x - $tl_gcp_current_point_x);
-    }
-    elsif ($br_gcp_template_point_x - $bl_gcp_template_point_x != 0 && $br_gcp_current_point_x - $bl_gcp_current_point_x != 0) {
-        $template_gcp_x_scale = ($br_gcp_template_point_x - $bl_gcp_template_point_x) / ($br_gcp_current_point_x - $bl_gcp_current_point_x);
-    }
-    else {
-        $c->stash->{rest} = { error => "Not enough GCP points to get the x scale!" };
-        $c->detach();
-    }
-    my $template_gcp_y_scale;
-    if ($bl_gcp_template_point_y - $tl_gcp_template_point_y != 0 && $bl_gcp_current_point_y - $tl_gcp_current_point_y != 0) {
-        $template_gcp_y_scale = ($bl_gcp_template_point_y - $tl_gcp_template_point_y) / ($bl_gcp_current_point_y - $tl_gcp_current_point_y);
-    }
-    if ($br_gcp_template_point_y - $tr_gcp_template_point_y != 0 && $br_gcp_current_point_y - $tr_gcp_current_point_y != 0) {
-        $template_gcp_y_scale = ($br_gcp_template_point_y - $tr_gcp_template_point_y) / ($br_gcp_current_point_y - $tr_gcp_current_point_y);
-    }
-    else {
-        $c->stash->{rest} = { error => "Not enough GCP points to get the y scale!" };
-        $c->detach();
-    }
-    print STDERR Dumper [$template_gcp_x_scale, $template_gcp_y_scale];
 
     my $rotate_angle_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_rotate_angle', 'project_property')->cvterm_id();
     my $cropping_polygon_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_cropped_polygon', 'project_property')->cvterm_id();
@@ -8044,9 +8029,9 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
         my @pos_x;
         my @pos_y;
         my $counter = 0;
-        foreach my $r (@rotated_current_points) {
-            my $o_x = $o->[$counter]->[0]/$template_gcp_x_scale;
-            my $o_y = $o->[$counter]->[1]/$template_gcp_y_scale;
+        foreach my $r (@rotated_current_points_scaled) {
+            my $o_x = $o->[$counter]->[0];
+            my $o_y = $o->[$counter]->[1];
             my $r_x = $r->[0];
             my $r_y = $r->[1];
             push @pos_x, $r_x - $o_x;
@@ -8055,6 +8040,24 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
         }
         my $crop_x = sum(@pos_x)/scalar(@pos_x);
         my $crop_y = sum(@pos_y)/scalar(@pos_y);
+
+        if ($counter_c == 0) {
+            $crop_x = $crop_x - $image_width_buffer;
+            $crop_y = $crop_y - $image_height_buffer;
+        }
+        elsif ($counter_c == 1) {
+            $crop_x = $crop_x + $image_width_buffer;
+            $crop_y = $crop_y - $image_height_buffer;
+        }
+        elsif ($counter_c == 2) {
+            $crop_x = $crop_x + $image_width_buffer;
+            $crop_y = $crop_y + $image_height_buffer;
+        }
+        elsif ($counter_c == 3) {
+            $crop_x = $crop_x - $image_width_buffer;
+            $crop_y = $crop_y + $image_height_buffer;
+        }
+
         $image_crop->[0]->[$counter_c] = {
             x => $crop_x,
             y => $crop_y
@@ -8079,8 +8082,8 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $rotated_cropped_current_points_counter = 0;
     my @rotated_cropped_current_points;
     foreach my $name (@gcp_names_template) {
-        my $x_pos = round($rotated_current_points[$rotated_cropped_current_points_counter]->[0] - $min_new_crop_x);
-        my $y_pos = round($rotated_current_points[$rotated_cropped_current_points_counter]->[1] - $min_new_crop_y);
+        my $x_pos = round($rotated_current_points_scaled[$rotated_cropped_current_points_counter]->[0] - $min_new_crop_x);
+        my $y_pos = round($rotated_current_points_scaled[$rotated_cropped_current_points_counter]->[1] - $min_new_crop_y);
         $current_gcp_points->{$name}->{x_pos} = $x_pos;
         $current_gcp_points->{$name}->{y_pos} = $y_pos;
         push @rotated_cropped_current_points, [$x_pos, $y_pos];
@@ -8126,9 +8129,9 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
             my @pos_x;
             my @pos_y;
             my $counter = 0;
-            foreach my $r (@rotated_current_points) {
-                my $o_x = $p->[$counter]->[0]/$template_gcp_x_scale;
-                my $o_y = $p->[$counter]->[1]/$template_gcp_y_scale;
+            foreach my $r (@rotated_current_points_scaled) {
+                my $o_x = $p->[$counter]->[0];
+                my $o_y = $p->[$counter]->[1];
                 my $r_x = $r->[0] - $min_new_crop_x;
                 my $r_y = $r->[1] - $min_new_crop_y;
                 push @pos_x, $r_x - $o_x;
@@ -8150,7 +8153,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
         $c->stash->{rest} = {
             old_cropped_points => $cropping_value_old,
             cropped_points => $image_crop,
-            rotated_points => \@rotated_current_points,
+            rotated_points => \@rotated_current_points_scaled,
             rotated_cropped_points => \@rotated_cropped_current_points,
             rotated_image_id => $check_cropped_image_id,
             plot_polygons => \%scaled_plot_polygons
