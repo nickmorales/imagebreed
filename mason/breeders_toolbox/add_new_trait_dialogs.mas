@@ -377,6 +377,11 @@ jQuery(document).ready(function() {
 
     });
 
+    jQuery('button[name="upload_new_observation_variable_button"]').click(function(){
+        jQuery('#upload_new_observation_variable_dialog').modal('show');
+
+    });
+
     var add_new_trait_new_observation_variable_db_id;
     var add_new_trait_new_observation_variable_name;
     var add_new_trait_new_observation_variable_definition;
