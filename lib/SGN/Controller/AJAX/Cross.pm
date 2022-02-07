@@ -167,7 +167,7 @@ sub upload_cross_file_POST : Args(0) {
     my $md_row = $metadata_schema->resultset("MdMetadata")->create({create_person_id => $user_id});
     $md_row->insert();
     my $upload_file = CXGN::UploadFile->new();
-    my $md5 = $upload_file->get_md5($archived_filename_with_path);
+    $md5 = $upload_file->get_md5($archived_filename_with_path);
     my $md5checksum = $md5->hexdigest();
     my $file_row = $metadata_schema->resultset("MdFiles")->create({
         basename => basename($archived_filename_with_path),
