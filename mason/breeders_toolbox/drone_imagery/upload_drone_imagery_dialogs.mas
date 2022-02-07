@@ -191,15 +191,15 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Are you not uploading orthophotomosaic(s) or complete image(s) of the experimental field?:</label>
+                            <label class="col-sm-3 control-label">Are you uploading orthophotomosaic(s) or complete image(s) of the experimental field?:</label>
                             <div class="col-sm-9" >
                                 <select class="form-control" id="drone_image_upload_drone_run_band_stitching" name="drone_image_upload_drone_run_band_stitching">
                                     <option value="">Select One</option>
-                                    <option value="no">No, I am uploading stitched orthomosaic(s) or complete image(s)</option>
+                                    <option value="no">Yes, I am uploading stitched orthomosaic(s) or complete image(s)</option>
 %  if ($c->config->{enable_opendronemap}) {
-                                    <option value="yes_open_data_map_stitch">Yes, I am uploading a zipfile of raw images to stitch using OpenDroneMap</option>
+                                    <option value="yes_open_data_map_stitch">No, I am uploading a zipfile of raw images to stitch using OpenDroneMap within ImageBreed</option>
 %  } else {
-                                    <option value="yes_open_data_map_stitch" disabled>Yes, I am uploading a zipfile of raw images to stitch using OpenDroneMap (Not configured on your system. Check Docker deployment README)</option>
+                                    <option value="yes_open_data_map_stitch" disabled>Yes, I am uploading a zipfile of raw images to stitch using OpenDroneMap within ImageBreed (Not configured on your system. Check Docker deployment README)</option>
 %  }
                                 </select>
                             </div>

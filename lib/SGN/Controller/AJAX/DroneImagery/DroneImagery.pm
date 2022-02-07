@@ -10080,6 +10080,56 @@ sub get_project_md_image_GET : Args(0) {
     $c->stash->{rest} = { data => \@result };
 }
 
+sub get_brighten_image : Path('/api/drone_imagery/brighten_image') : ActionClass('REST') { }
+sub get_brighten_image_GET : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $image_id = $c->req->param('image_id');
+    my $brighten_image = $c->req->param('brighten_image');
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+
+    my $image = SGN::Image->new( $bcs_schema->storage->dbh, $image_id, $c );
+    my $image_fullpath = $image->get_filename('original_converted', 'full');
+    my $image_url = $image->get_image_url('original');
+
+    my $brightened_image_fullpath;
+    my $brightened_image_url;
+    my $brightened_image_id;
+    if ($brighten_image) {
+        my $dir = $c->tempfiles_subdir('/drone_imagery_brighten_image');
+
+        my $brighten_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_brighten_image/imageXXXX');
+        $brighten_temp_image .= '.png';
+
+        my $cmd = $c->config->{python_executable}.' '.$c->config->{rootpath}.'/DroneImageScripts/ImageProcess/IncreaseBrightness.py --image_path \''.$image_fullpath.'\' --outfile_path \''.$brighten_temp_image.'\'';
+        print STDERR Dumper $cmd;
+        my $status = system($cmd);
+
+        $image = SGN::Image->new( $bcs_schema->storage->dbh, undef, $c );
+        $image->set_sp_person_id($user_id);
+        my $ret = $image->process_image($brighten_temp_image, "test");
+        $brightened_image_fullpath = $image->get_filename('original_converted', 'full');
+        $brightened_image_url = $image->get_image_url('original');
+        $brightened_image_id = $image->get_image_id();
+    }
+    else {
+        $brightened_image_id = $image_id;
+        $brightened_image_url = $image_url;
+        $brightened_image_fullpath = $image_fullpath;
+    }
+
+    $c->stash->{rest} = {
+        image_id => $image_id,
+        image_url => $image_url,
+        image_fullpath => $image_fullpath,
+        brightened_image_id => $brightened_image_id,
+        brightened_image_url => $brightened_image_url,
+        brightened_image_fullpath => $brightened_image_fullpath,
+        brighten_image => $brighten_image
+    };
+}
+
 sub drone_imagery_get_image : Path('/api/drone_imagery/get_image') : ActionClass('REST') { }
 sub drone_imagery_get_image_GET : Args(0) {
     my $self = shift;
