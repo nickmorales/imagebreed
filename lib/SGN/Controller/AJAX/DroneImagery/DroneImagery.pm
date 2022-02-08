@@ -7294,7 +7294,7 @@ sub standard_process_apply : Path('/api/drone_imagery/standard_process_apply') :
 sub standard_process_apply_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    print STDERR Dumper $c->req->params();
+    # print STDERR Dumper $c->req->params();
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
     my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
@@ -7311,6 +7311,10 @@ sub standard_process_apply_POST : Args(0) {
     my $drone_imagery_remove_background_lower_percentage = defined ($c->req->param('drone_imagery_remove_background_lower_percentage')) ? $c->req->param('drone_imagery_remove_background_lower_percentage') : 0;
     my $drone_imagery_remove_background_upper_percentage = defined ($c->req->param('drone_imagery_remove_background_upper_percentage')) ? $c->req->param('drone_imagery_remove_background_upper_percentage') : 0;
     my $camera_rig_apply = $c->req->param('apply_to_all_drone_runs_from_same_camera_rig') eq 'Yes' ? 1 : 0;
+    my $polygon_template_dimensions_metadata = decode_json $c->req->param('polygon_template_metadata');
+    my $polygon_templates_deleted = decode_json $c->req->param('polygon_templates_deleted');
+    my $polygon_removed_numbers = decode_json $c->req->param('polygon_removed_numbers');
+    my $polygons_to_plot_names = decode_json $c->req->param('polygons_to_plot_names');
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $project = CXGN::Trial->new({ bcs_schema => $bcs_schema, trial_id => $drone_run_project_id_input });
@@ -7330,6 +7334,7 @@ sub standard_process_apply_POST : Args(0) {
     my $project_image_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'stitched_drone_imagery', 'project_md_image')->cvterm_id();
     my $drone_run_band_type_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
     my $drone_run_band_plot_polygons_phenotype_margins_json_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_plot_polygons_phenotype_margins_json', 'project_property')->cvterm_id();
+    my $drone_run_polygon_template_metadata_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_polygon_template_metadata', 'project_property')->cvterm_id();
 
     my $drone_run_process_in_progress_count = $bcs_schema->resultset('Project::Projectprop')->search({type_id=>$process_indicator_cvterm_id, value=>1})->count;
     print STDERR Dumper $drone_run_process_in_progress_count;
@@ -7385,6 +7390,14 @@ sub standard_process_apply_POST : Args(0) {
     }
     print STDERR Dumper \@apply_projects;
 
+    my $polygon_template_metadata = {
+        polygon_template_metadata => $polygon_template_dimensions_metadata,
+        polygon_templates_deleted => $polygon_templates_deleted,
+        polygon_removed_numbers => $polygon_removed_numbers,
+        polygons_to_plot_names => $polygons_to_plot_names
+    };
+    # print STDERR Dumper $polygon_template_metadata;
+
     foreach (@apply_projects) {
         my $drone_run_project_id_in = $_->{drone_run_project_id};
         my $time_cvterm_id = $_->{time_cvterm_id};
@@ -7432,6 +7445,16 @@ sub standard_process_apply_POST : Args(0) {
                 project_id=>$_,
                 rank=>0,
                 value=>encode_json {top_bottom => $plot_margin_top_bottom, left_right => $plot_margin_left_right}
+            },
+            {
+                key=>'projectprop_c1'
+            });
+
+            my $drone_run_template_metadata = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+                type_id=>$drone_run_polygon_template_metadata_type_id,
+                project_id=>$_,
+                rank=>0,
+                value=>encode_json $polygon_template_metadata
             },
             {
                 key=>'projectprop_c1'
@@ -11497,6 +11520,7 @@ sub drone_imagery_plot_polygon_spreadsheet_parse_POST : Args(0) {
     }
 
     my %assigned_plot_polygons;
+    my %polygon_to_plot_name;
     for my $row ( 1 .. $row_max ) {
         my $row_name = $row+1;
 
@@ -11516,6 +11540,7 @@ sub drone_imagery_plot_polygon_spreadsheet_parse_POST : Args(0) {
 
         my $plot_name = $field_trial_designs{$trial_name}->{$plot_number}->{plot_name};
         $assigned_plot_polygons{$plot_name} = $polygons->{$polygon_number};
+        $polygon_to_plot_name{$polygon_number} = $plot_name;
     }
     # print STDERR Dumper \%assigned_plot_polygons;
 
@@ -11523,6 +11548,7 @@ sub drone_imagery_plot_polygon_spreadsheet_parse_POST : Args(0) {
     $c->stash->{rest} = {
         success => 1,
         assigned_polygons => \%assigned_plot_polygons,
+        polygon_to_plot_name => \%polygon_to_plot_name,
         trial_names => \@trial_names_sorted
     };
 }

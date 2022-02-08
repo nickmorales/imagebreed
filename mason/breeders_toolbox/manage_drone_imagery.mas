@@ -3541,6 +3541,7 @@ jQuery(document).ready(function() {
         plot_polygons_ind_points = [];
         plot_polygons_ind_4_points = [];
         drone_imagery_plot_polygons = {};
+        drone_imagery_plot_polygons_plot_names = {};
         drone_imagery_plot_generated_polygons = {};
         drone_imagery_plot_polygons_display = {};
         plot_polygons_plot_names_colors = {};
@@ -3609,6 +3610,8 @@ jQuery(document).ready(function() {
                     drone_imagery_plot_polygons = response.assigned_polygons;
                     plot_polygons_field_trial_names_order = response.trial_names;
                     drone_imagery_plot_polygons_display = plot_polygon_new_display;
+                    drone_imagery_plot_polygons_plot_names = response.polygon_to_plot_name;
+
 
                     for (var plot_polygons_field_trial_name_iterator=0; plot_polygons_field_trial_name_iterator<plot_polygons_field_trial_names_order.length; plot_polygons_field_trial_name_iterator++) {
                         var plot_polygons_field_trial_names_order_current = plot_polygons_field_trial_names_order[plot_polygons_field_trial_name_iterator];
@@ -3958,7 +3961,11 @@ jQuery(document).ready(function() {
                                 'phenotypes_plot_margin_top_bottom':plot_margin_top_bottom,
                                 'phenotypes_plot_margin_right_left':plot_margin_left_right,
                                 'drone_imagery_remove_background_lower_percentage':drone_imagery_remove_background_lower_percentage,
-                                'drone_imagery_remove_background_upper_percentage':drone_imagery_remove_background_upper_percentage
+                                'drone_imagery_remove_background_upper_percentage':drone_imagery_remove_background_upper_percentage,
+                                'polygon_template_metadata':JSON.stringify(plot_polygons_template_dimensions_svg),
+                                'polygon_templates_deleted':JSON.stringify(plot_polygons_template_dimensions_deleted_templates_svg),
+                                'polygon_removed_numbers':JSON.stringify(drone_imagery_plot_polygons_removed_numbers),
+                                'polygons_to_plot_names':JSON.stringify(drone_imagery_plot_polygons_plot_names)
                             },
                             success: function(response){
                                 console.log(response);
@@ -6686,6 +6693,7 @@ jQuery(document).ready(function() {
     var plot_polygons_ind_points = [];
     var plot_polygons_ind_4_points = [];
     var drone_imagery_plot_polygons = {};
+    var drone_imagery_plot_polygons_plot_names = {};
     var drone_imagery_plot_generated_polygons = {};
     var drone_imagery_plot_polygons_display = {};
     var plot_polygons_plot_names_colors = {};
@@ -6724,6 +6732,7 @@ jQuery(document).ready(function() {
         plot_polygons_ind_points = [];
         plot_polygons_ind_4_points = [];
         drone_imagery_plot_polygons = {};
+        drone_imagery_plot_polygons_plot_names = {};
         drone_imagery_plot_generated_polygons = {};
         drone_imagery_plot_polygons_display = {};
         plot_polygons_plot_names_colors = {};
@@ -8247,6 +8256,7 @@ jQuery(document).ready(function() {
         plot_polygons_ind_points = [];
         plot_polygons_ind_4_points = [];
         drone_imagery_plot_polygons = {};
+        drone_imagery_plot_polygons_plot_names = {};
         drone_imagery_plot_generated_polygons = {};
         drone_imagery_plot_polygons_display = {};
         plot_polygons_plot_names_colors = {};
@@ -8614,6 +8624,7 @@ jQuery(document).ready(function() {
                 } else {
                     plot_polygon_new_display[plot_polygons_plot_numbers_plot_names[field_trial][plot_number]] = drone_imagery_plot_polygons_display[polygon_number];
                     drone_imagery_plot_polygons[plot_polygons_plot_numbers_plot_names[field_trial][plot_number]] = drone_imagery_plot_generated_polygons[polygon_number];
+                    drone_imagery_plot_polygons_plot_names[polygon_number] = plot_polygons_plot_numbers_plot_names[field_trial][plot_number];
                 }
             }
         }
@@ -8725,8 +8736,14 @@ jQuery(document).ready(function() {
                             console.log("Skipping "+plot_polygon_current_polygon_index);
                             plot_polygon_new_display[plot_polygon_current_polygon_index] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
                         } else {
-                            plot_polygon_new_display[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
-                            drone_imagery_plot_polygons[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygon_current_polygon_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            var field_trial_name_current = plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index];
+                            var plot_number_current = plot_polygons_plot_numbers[plot_polygons_current_plot_number_index];
+                            var plot_name_current = plot_polygons_plot_numbers_plot_names[field_trial_name_current][plot_number_current];
+
+                            plot_polygon_new_display[plot_name_current] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons[plot_name_current] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons_plot_names[plot_polygon_current_polygon_index] = plot_name_current;
+
                             plot_polygons_current_plot_number_index = plot_polygons_current_plot_number_index + 1;
                             plot_polygons_template_current_plot_polygon_index = plot_polygons_template_current_plot_polygon_index + 1;
                         }
@@ -8763,8 +8780,14 @@ jQuery(document).ready(function() {
                             console.log("Skipping "+plot_polygon_current_polygon_index);
                             plot_polygon_new_display[plot_polygon_current_polygon_index] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
                         } else {
-                            plot_polygon_new_display[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] =  drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
-                            drone_imagery_plot_polygons[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            var field_trial_name_current = plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index];
+                            var plot_number_current = plot_polygons_plot_numbers[plot_polygons_current_plot_number_index];
+                            var plot_name_current = plot_polygons_plot_numbers_plot_names[field_trial_name_current][plot_number_current];
+
+                            plot_polygon_new_display[plot_name_current] =  drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons[plot_name_current] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons_plot_names[plot_polygon_current_polygon_index] = plot_name_current;
+
                             plot_polygons_current_plot_number_index = plot_polygons_current_plot_number_index + 1;
                             plot_polygons_template_current_plot_polygon_index = plot_polygons_template_current_plot_polygon_index + 1;
                         }
@@ -8820,8 +8843,14 @@ jQuery(document).ready(function() {
                             console.log("Skipping "+plot_polygon_current_polygon_index);
                             plot_polygon_new_display[plot_polygon_current_polygon_index] =  drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
                         } else {
-                            plot_polygon_new_display[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] =  drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
-                            drone_imagery_plot_polygons[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            var field_trial_name_current = plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index];
+                            var plot_number_current = plot_polygons_plot_numbers[plot_polygons_current_plot_number_index];
+                            var plot_name_current = plot_polygons_plot_numbers_plot_names[field_trial_name_current][plot_number_current];
+
+                            plot_polygon_new_display[plot_name_current] =  drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons[plot_name_current] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons_plot_names[plot_polygon_current_polygon_index] = plot_name_current;
+
                             plot_polygons_current_plot_number_index = plot_polygons_current_plot_number_index + 1;
                             plot_polygons_template_current_plot_polygon_index = plot_polygons_template_current_plot_polygon_index + 1;
                         }
@@ -8864,8 +8893,14 @@ jQuery(document).ready(function() {
                             console.log("Skipping "+plot_polygon_current_polygon_index);
                             plot_polygon_new_display[plot_polygon_current_polygon_index] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
                         } else {
-                            plot_polygon_new_display[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] =  drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
-                            drone_imagery_plot_polygons[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            var field_trial_name_current = plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index];
+                            var plot_number_current = plot_polygons_plot_numbers[plot_polygons_current_plot_number_index];
+                            var plot_name_current = plot_polygons_plot_numbers_plot_names[field_trial_name_current][plot_number_current];
+
+                            plot_polygon_new_display[plot_name_current] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons[plot_name_current] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons_plot_names[plot_polygon_current_polygon_index] = plot_name_current;
+
                             plot_polygons_current_plot_number_index = plot_polygons_current_plot_number_index + 1;
                             plot_polygons_template_current_plot_polygon_index = plot_polygons_template_current_plot_polygon_index + 1;
                         }
@@ -8926,8 +8961,14 @@ jQuery(document).ready(function() {
                             console.log("Skipping "+plot_polygon_current_polygon_index);
                             plot_polygon_new_display[plot_polygon_current_polygon_index] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
                         } else {
-                            plot_polygon_new_display[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] =  drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
-                            drone_imagery_plot_polygons[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            var field_trial_name_current = plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index];
+                            var plot_number_current = plot_polygons_plot_numbers[plot_polygons_current_plot_number_index];
+                            var plot_name_current = plot_polygons_plot_numbers_plot_names[field_trial_name_current][plot_number_current];
+
+                            plot_polygon_new_display[plot_name_current] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons[plot_name_current] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons_plot_names[plot_polygon_current_polygon_index] = plot_name_current;
+
                             plot_polygons_current_plot_number_index = plot_polygons_current_plot_number_index + 1;
                         }
 
@@ -8956,8 +8997,14 @@ jQuery(document).ready(function() {
                             console.log("Skipping "+plot_polygon_current_polygon_index);
                             plot_polygon_new_display[plot_polygon_current_polygon_index] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
                         } else {
-                            plot_polygon_new_display[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] =  drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
-                            drone_imagery_plot_polygons[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            var field_trial_name_current = plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index];
+                            var plot_number_current = plot_polygons_plot_numbers[plot_polygons_current_plot_number_index];
+                            var plot_name_current = plot_polygons_plot_numbers_plot_names[field_trial_name_current][plot_number_current];
+
+                            plot_polygon_new_display[plot_name_current] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons[plot_name_current] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons_plot_names[plot_polygon_current_polygon_index] = plot_name_current;
+
                             plot_polygons_current_plot_number_index = plot_polygons_current_plot_number_index + 1;
                         }
 
@@ -8991,8 +9038,14 @@ jQuery(document).ready(function() {
                             console.log("Skipping "+plot_polygon_current_polygon_index);
                             plot_polygon_new_display[plot_polygon_current_polygon_index] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
                         } else {
-                            plot_polygon_new_display[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
-                            drone_imagery_plot_polygons[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            var field_trial_name_current = plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index];
+                            var plot_number_current = plot_polygons_plot_numbers[plot_polygons_current_plot_number_index];
+                            var plot_name_current = plot_polygons_plot_numbers_plot_names[field_trial_name_current][plot_number_current];
+
+                            plot_polygon_new_display[plot_name_current] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons[plot_name_current] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons_plot_names[plot_polygon_current_polygon_index] = plot_name_current;
+
                             plot_polygons_current_plot_number_index = plot_polygons_current_plot_number_index + 1;
                         }
 
@@ -9024,8 +9077,14 @@ jQuery(document).ready(function() {
                             console.log("Skipping "+plot_polygon_current_polygon_index);
                             plot_polygon_new_display[plot_polygon_current_polygon_index] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
                         } else {
-                            plot_polygon_new_display[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
-                            drone_imagery_plot_polygons[plot_polygons_plot_numbers_plot_names[plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index]][plot_polygons_plot_numbers[plot_polygons_current_plot_number_index]]] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            var field_trial_name_current = plot_polygons_plot_numbers_field_trial_name[plot_polygons_current_plot_number_index];
+                            var plot_number_current = plot_polygons_plot_numbers[plot_polygons_current_plot_number_index];
+                            var plot_name_current = plot_polygons_plot_numbers_plot_names[field_trial_name_current][plot_number_current];
+
+                            plot_polygon_new_display[plot_name_current] = drone_imagery_plot_polygons_display[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons[plot_name_current] = drone_imagery_plot_generated_polygons[plot_polygon_current_polygon_index];
+                            drone_imagery_plot_polygons_plot_names[plot_polygon_current_polygon_index] = plot_name_current;
+
                             plot_polygons_current_plot_number_index = plot_polygons_current_plot_number_index + 1;
                         }
 

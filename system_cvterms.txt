@@ -162,6 +162,7 @@ project_property	drone_run_geoparam_coordinates_type	When GeoTIFF orthophotos ar
 project_property	drone_run_geoparam_coordinates	When GeoTIFF orthophotos are saved, this saves the geocoords	04/22/2021	nm529	00142
 project_property	drone_run_geoparam_coordinates_plot_polygons	This saves the plot-polygons geocoordinates for a given imaging event	06/15/2021	nm529	00146
 project_property	drone_run_band_plot_polygons_phenotype_margins_json	This saves the plot-polygons margins when calculating phenotypes from images	09/13/2021	nm529	00146
+project_property	drone_run_polygon_template_metadata	This saves the plot-polygons template metadata	02/08/2022	nm529	00156
 project_property	project_sp_person_id	For saving results in analysis trials	06/04/2020	lam87nm529	00119
 project_property	analysis_metadata_json	For saving results in analysis trials	06/04/2020	lam87nm529	00119
 project_property    product_profile_json    00131
