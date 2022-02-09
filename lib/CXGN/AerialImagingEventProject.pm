@@ -113,17 +113,19 @@ sub get_field_trial_drone_run_projects_in_same_orthophoto {
             push @{$related_imaging_event_bands_type_hash{$drone_run_band_project_type}}, $drone_run_band_project_id;
         }
 
-        my $related_imaging_event_ids_string = join ',', @related_imaging_event_ids;
-        my $q3 = "SELECT field_trial.project_id, field_trial.name
-            FROM project AS drone_run
-            JOIN project_relationship ON (drone_run.project_id = project_relationship.subject_project_id AND project_relationship.type_id = $drone_run_field_trial_type_id)
-            JOIN project AS field_trial ON (field_trial.project_id = project_relationship.object_project_id)
-            WHERE drone_run.project_id IN ($related_imaging_event_ids_string);";
-        my $h3 = $schema->storage->dbh()->prepare($q3);
-        $h3->execute();
-        while (my ($project_id, $project_name) = $h3->fetchrow_array()) {
-            push @related_imaging_event_field_trial_ids, $project_id;
-            push @related_imaging_event_field_trial_names, $project_name;
+        if (scalar(@related_imaging_event_ids)>0) {
+            my $related_imaging_event_ids_string = join ',', @related_imaging_event_ids;
+            my $q3 = "SELECT field_trial.project_id, field_trial.name
+                FROM project AS drone_run
+                JOIN project_relationship ON (drone_run.project_id = project_relationship.subject_project_id AND project_relationship.type_id = $drone_run_field_trial_type_id)
+                JOIN project AS field_trial ON (field_trial.project_id = project_relationship.object_project_id)
+                WHERE drone_run.project_id IN ($related_imaging_event_ids_string);";
+            my $h3 = $schema->storage->dbh()->prepare($q3);
+            $h3->execute();
+            while (my ($project_id, $project_name) = $h3->fetchrow_array()) {
+                push @related_imaging_event_field_trial_ids, $project_id;
+                push @related_imaging_event_field_trial_names, $project_name;
+            }
         }
     }
 

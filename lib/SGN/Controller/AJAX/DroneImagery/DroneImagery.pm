@@ -7678,10 +7678,33 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $rotate_angle_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_rotate_angle', 'project_property')->cvterm_id();
     my $cropping_polygon_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_cropped_polygon', 'project_property')->cvterm_id();
     my $plot_polygon_template_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
+    my $template_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_polygon_template_metadata', 'project_property')->cvterm_id();
 
     my $process_indicator_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_standard_process_in_progress', 'project_property')->cvterm_id();
     my $processed_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_standard_process_completed', 'project_property')->cvterm_id();
     my $processed_minimal_vi_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_standard_process_vi_completed', 'project_property')->cvterm_id();
+
+    my $saved_template_json = $bcs_schema->resultset("Project::Projectprop")->find({
+        project_id => $gcp_drone_run_project_id_input,
+        type_id => $template_type_id
+    });
+    my $saved_template_full = {
+        polygon_template_metadata => [],
+        polygon_templates_deleted => [],
+        polygon_removed_numbers => [],
+        polygons_to_plot_names => {}
+    };
+    my $saved_template_metadata = [];
+    my $templates_deleted = [];
+    my $polygon_removed_numbers = [];
+    my $polygons_to_plot_names = {};
+    if ($saved_template_json) {
+        $saved_template_full = decode_json $saved_template_json->value();
+        $saved_template_metadata = $saved_template_full->{polygon_template_metadata};
+        $templates_deleted = $saved_template_full->{polygon_templates_deleted};
+        $polygon_removed_numbers = $saved_template_full->{polygon_removed_numbers};
+        $polygons_to_plot_names = $saved_template_full->{polygons_to_plot_names};
+    }
 
     my $project = CXGN::Trial->new({ bcs_schema => $bcs_schema, trial_id => $drone_run_project_id_input });
     my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
@@ -7769,30 +7792,46 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $template_gcp_q = "SELECT value
         FROM projectprop
         JOIN project USING(project_id)
-        WHERE project_id=? AND type_id=$drone_run_gcp_type_id_cvterm_id;";
+        WHERE project.project_id=? AND projectprop.type_id=$drone_run_gcp_type_id_cvterm_id;";
     my $template_gcp_h = $bcs_schema->storage->dbh()->prepare($template_gcp_q);
     $template_gcp_h->execute($gcp_drone_run_project_id_input);
     my ($template_gcp_points_json) = $template_gcp_h->fetchrow_array();
     my $template_gcp_points = decode_json $template_gcp_points_json;
     # print STDERR Dumper $template_gcp_points;
     if (scalar(keys %$template_gcp_points)<3) {
-        $c->stash->{rest} = { error => "Not enough GCP points defined in the template drone run!" };
+        $c->stash->{rest} = { error => "Not enough GCP points defined in the template imaging event!" };
         $c->detach();
     }
 
     my $current_gcp_q = "SELECT value
         FROM projectprop
         JOIN project USING(project_id)
-        WHERE project_id=? AND type_id=$drone_run_gcp_type_id_cvterm_id;";
+        WHERE project.project_id=? AND projectprop.type_id=$drone_run_gcp_type_id_cvterm_id;";
     my $current_gcp_h = $bcs_schema->storage->dbh()->prepare($current_gcp_q);
     $current_gcp_h->execute($drone_run_project_id_input);
     my ($current_gcp_points_json) = $current_gcp_h->fetchrow_array();
     my $current_gcp_points = decode_json $current_gcp_points_json;
     print STDERR Dumper $current_gcp_points;
     if (scalar(keys %$current_gcp_points)<3) {
-        $c->stash->{rest} = { error => "Not enough GCP points defined in the current drone run!" };
+        $c->stash->{rest} = { error => "Not enough GCP points defined in the current imaging event!" };
         $c->detach();
     }
+
+    my @gcp_names_common;
+    foreach my $name (sort keys %$template_gcp_points) {
+        if (exists($current_gcp_points->{$name})) {
+            push @gcp_names_common, $name;
+        }
+    }
+    print STDERR Dumper \@gcp_names_common;
+    if (scalar(@gcp_names_common)<3) {
+        $c->stash->{rest} = { error => "Not enough GCP points defined in common to the previous imaging event and the current one!" };
+        $c->detach();
+    }
+    my $gcp_dist_1_x = $template_gcp_points->{$gcp_names_common[0]}->{x_pos} - $template_gcp_points->{$gcp_names_common[1]}->{x_pos};
+    my $gcp_dist_1_y = $template_gcp_points->{$gcp_names_common[0]}->{y_pos} - $template_gcp_points->{$gcp_names_common[1]}->{y_pos};
+    my $gcp_dist_2_x = $template_gcp_points->{$gcp_names_common[1]}->{x_pos} - $template_gcp_points->{$gcp_names_common[2]}->{x_pos};
+    my $gcp_dist_2_y = $template_gcp_points->{$gcp_names_common[1]}->{y_pos} - $template_gcp_points->{$gcp_names_common[2]}->{y_pos};
 
     my $tl_gcp_template_point_x = 1000000000;
     my $tl_gcp_template_point_y = 1000000000;
@@ -7842,7 +7881,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
             }
         }
     }
-    print STDERR Dumper \@gcp_names_template;
+    # print STDERR Dumper \@gcp_names_template;
 
     my $template_central_x = sum(@template_x_vals)/scalar(@template_x_vals);
     my $template_central_y = sum(@template_y_vals)/scalar(@template_y_vals);
@@ -8161,51 +8200,40 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $crop_check_target_image_url = $crop_check_target_image->get_image_url("original");
     my $crop_check_target_image_fullpath = $crop_check_target_image->get_filename('original_converted', 'full');
 
-    my @old_plot_val_names;
-    my @old_plot_val_dists;
+    my $gcp_current_dist_1_x = $current_gcp_points->{$gcp_names_common[0]}->{x_pos} - $current_gcp_points->{$gcp_names_common[1]}->{x_pos};
+    my $gcp_current_dist_1_y = $current_gcp_points->{$gcp_names_common[0]}->{y_pos} - $current_gcp_points->{$gcp_names_common[1]}->{y_pos};
+    my $gcp_current_dist_2_x = $current_gcp_points->{$gcp_names_common[1]}->{x_pos} - $current_gcp_points->{$gcp_names_common[2]}->{x_pos};
+    my $gcp_current_dist_2_y = $current_gcp_points->{$gcp_names_common[1]}->{y_pos} - $current_gcp_points->{$gcp_names_common[2]}->{y_pos};
+
+    my $gcp_dist_x_ratio_1 = $gcp_dist_1_x/$gcp_current_dist_1_x;
+    my $gcp_dist_y_ratio_1 = $gcp_dist_1_y/$gcp_current_dist_1_y;
+    my $gcp_dist_x_ratio_2 = $gcp_dist_2_x/$gcp_current_dist_2_x;
+    my $gcp_dist_y_ratio_2 = $gcp_dist_2_y/$gcp_current_dist_2_y;
+
+    my $gcp_dist_x_ratio = sum(($gcp_dist_x_ratio_1,$gcp_dist_x_ratio_2))/2;
+    my $gcp_dist_y_ratio = sum(($gcp_dist_y_ratio_1,$gcp_dist_y_ratio_2))/2;
+
+    my %scaled_plot_polygons;
     foreach my $key (sort keys %all_plot_polygons) {
-        push @old_plot_val_names, $key;
         my $v = $all_plot_polygons{$key};
         my @points;
         foreach (@{$v}) {
-            my $x = $_->{'x'};
-            my $y = $_->{'y'};
-            my @diffs;
-            foreach my $t (@gcp_points_template) {
-                push @diffs, [$t->[0] - $x, $t->[1] - $y];
+            my @points_x;
+            my @points_y;
+            foreach my $name (@gcp_names_common) {
+                my $x0 = $_->{'x'} - $template_gcp_points->{$name}->{x_pos};
+                my $y0 = $_->{'y'} - $template_gcp_points->{$name}->{y_pos};
+                my $x = ($x0 + $current_gcp_points->{$name}->{x_pos})/$gcp_dist_x_ratio;
+                my $y = ($y0 + $current_gcp_points->{$name}->{y_pos})/$gcp_dist_y_ratio;
+                push @points_x, $x;
+                push @points_y, $y;
             }
-            push @points, \@diffs;
-        }
-        push @old_plot_val_dists, \@points;
-    }
-
-    my %scaled_plot_polygons;
-    my $counter_p = 0;
-    foreach my $o (@old_plot_val_names) {
-        my $point_diffs = $old_plot_val_dists[$counter_p];
-        my @adjusted;
-        foreach my $p (@$point_diffs) {
-            my @pos_x;
-            my @pos_y;
-            my $counter = 0;
-            foreach my $r (@rotated_current_points_scaled) {
-                my $o_x = $p->[$counter]->[0];
-                my $o_y = $p->[$counter]->[1];
-                my $r_x = $r->[0] - $min_new_crop_x;
-                my $r_y = $r->[1] - $min_new_crop_y;
-                push @pos_x, $r_x - $o_x;
-                push @pos_y, $r_y - $o_y;
-                $counter++;
-            }
-            my $adjusted_x_val = sum(@pos_x)/scalar(@pos_x);
-            my $adjusted_y_val = sum(@pos_y)/scalar(@pos_y);
-            push @adjusted, {
-                x => $adjusted_x_val - $gcp_drag_x_diff,
-                y => $adjusted_y_val - $gcp_drag_y_diff
+            push @points, {
+                x => sum(@points_x)/scalar(@points_x),
+                y => sum(@points_y)/scalar(@points_y),
             };
         }
-        $scaled_plot_polygons{$o} = \@adjusted;
-        $counter_p++;
+        $scaled_plot_polygons{$key} = \@points;
     }
 
     if ($is_test_run eq 'Yes') {
@@ -8215,7 +8243,8 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
             rotated_points => \@rotated_current_points_scaled,
             rotated_cropped_points => \@rotated_cropped_current_points,
             rotated_image_id => $check_cropped_image_id,
-            plot_polygons => \%scaled_plot_polygons
+            plot_polygons => \%scaled_plot_polygons,
+            saved_template_full => $saved_template_full
         };
         $c->detach();
     }
@@ -11369,10 +11398,16 @@ sub drone_imagery_get_image_for_saving_gcp_GET : Args(0) {
     if ($saved_gcps_json) {
         $saved_gcps_full = decode_json $saved_gcps_json->value();
     }
-
     my @saved_gcps_array = values %$saved_gcps_full;
 
-    $c->stash->{rest} = {success => 1, result => $result, image_ids => \@image_ids, image_types => \@image_types, saved_gcps_full => $saved_gcps_full, gcps_array => \@saved_gcps_array};
+    $c->stash->{rest} = {
+        success => 1,
+        result => $result,
+        image_ids => \@image_ids,
+        image_types => \@image_types,
+        saved_gcps_full => $saved_gcps_full,
+        gcps_array => \@saved_gcps_array
+    };
 }
 
 sub drone_imagery_plot_polygon_spreadsheet_parse : Path('/api/drone_imagery/plot_polygon_spreadsheet_parse') : ActionClass('REST') { }

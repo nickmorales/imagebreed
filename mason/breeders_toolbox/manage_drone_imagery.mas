@@ -7561,62 +7561,6 @@ jQuery(document).ready(function() {
             var x_diff = orig_x - x;
             var y_diff = orig_y - y;
 
-            var min_x = 10000000000000000000000;
-            var min_y = 10000000000000000000000;
-            var max_x = -10000000000000000000000;
-            var max_y = -10000000000000000000000;
-
-            for (key in drone_imagery_plot_polygons_display) {
-                if (drone_imagery_plot_polygons_display.hasOwnProperty(key)) {
-                    var plot_polygons_display_points_again = drone_imagery_plot_polygons_display[key];
-
-                    if (plot_polygons_display_points_again[0].x < min_x) {
-                        min_x = plot_polygons_display_points_again[0].x;
-                    }
-                    if (plot_polygons_display_points_again[3].x < min_x) {
-                        min_x = plot_polygons_display_points_again[3].x;
-                    }
-                    if (plot_polygons_display_points_again[1].x > max_x) {
-                        max_x = plot_polygons_display_points_again[1].x;
-                    }
-                    if (plot_polygons_display_points_again[2].x > max_x) {
-                        max_x = plot_polygons_display_points_again[2].x;
-                    }
-                    if (plot_polygons_display_points_again[0].y < min_y) {
-                        min_y = plot_polygons_display_points_again[0].y;
-                    }
-                    if (plot_polygons_display_points_again[1].y < min_y) {
-                        min_y = plot_polygons_display_points_again[1].y;
-                    }
-                    if (plot_polygons_display_points_again[2].y > max_y) {
-                        max_y = plot_polygons_display_points_again[2].y;
-                    }
-                    if (plot_polygons_display_points_again[3].y > max_y) {
-                        max_y = plot_polygons_display_points_again[3].y;
-                    }
-                }
-            }
-            var orig_x_range = max_x - min_x;
-            var orig_y_range = max_y - min_y;
-            var new_x_range = orig_x_range - x_diff;
-            var new_y_range = orig_y_range - y_diff;
-            var x_ratio = new_x_range/orig_x_range;
-            var y_ratio = new_y_range/orig_y_range;
-            console.log([orig_x_range, orig_y_range, new_x_range, new_y_range]);
-
-            for (key in drone_imagery_plot_polygons_display) {
-                if (drone_imagery_plot_polygons_display.hasOwnProperty(key)) {
-                    var plot_polygons_display_points_again = drone_imagery_plot_polygons_display[key];
-
-                    drone_imagery_plot_polygons_display_gcp_dragged[key] = [
-                        {'x': plot_polygons_display_points_again[0].x * x_ratio, 'y': plot_polygons_display_points_again[0].y * y_ratio},
-                        {'x': plot_polygons_display_points_again[1].x * x_ratio, 'y': plot_polygons_display_points_again[1].y * y_ratio},
-                        {'x': plot_polygons_display_points_again[2].x * x_ratio, 'y': plot_polygons_display_points_again[2].y * y_ratio},
-                        {'x': plot_polygons_display_points_again[3].x * x_ratio, 'y': plot_polygons_display_points_again[3].y * y_ratio},
-                    ];
-                }
-            }
-            drone_imagery_plot_polygons_display = drone_imagery_plot_polygons_display_gcp_dragged;
         }
         //console.log(drone_imagery_plot_polygons_display);
         draw_polygons_svg_plots_labeled('project_drone_imagery_standard_process_ground_control_points_svg_div', undefined, 1, undefined);
@@ -7780,7 +7724,11 @@ jQuery(document).ready(function() {
             'plot_polygons_generated_polygons_rows_svg':plot_polygons_generated_polygons_rows_svg,
             'plot_polygons_generated_polygons_circles_svg':plot_polygons_generated_polygons_circles_svg,
             'polygon_margin_top_bottom_val':polygon_margin_top_bottom_val,
-            'polygon_margin_left_right_val':polygon_margin_left_right_val
+            'polygon_margin_left_right_val':polygon_margin_left_right_val,
+            'col_width':col_width,
+            'row_height':row_height,
+            'col_width_margin':col_width_margin,
+            'row_height_margin':row_height_margin
         });
         console.log(plot_polygons_template_dimensions_svg);
 
