@@ -276,6 +276,7 @@ sub search {
 
     my @sql_or_conditions;
     my @sql_and_conditions;
+    my @execute_swaps; #ORs then ANDs
 
     push @sql_and_conditions, "stock.stock_id > 0";
 
@@ -293,12 +294,14 @@ sub search {
     my $stock_synonym_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'stock_synonym', 'stock_property')->cvterm_id();
 
     if ($any_name) {
+        my $any_name_string = $start.$any_name.$end;
         push @sql_or_conditions, (
-            "stock.name ilike '".$start.$any_name.$end."'",
-            "stock.uniquename ilike '".$start.$any_name.$end."'",
-            "stock.description ilike '".$start.$any_name.$end."'",
-            "(stockprop.value ilike '".$start.$any_name.$end."' AND stockprop.type_id = $stock_synonym_cvterm_id)"
+            "stock.name ilike ?",
+            "stock.uniquename ilike ?",
+            "stock.description ilike ?",
+            "(stockprop.value ilike ? AND stockprop.type_id = $stock_synonym_cvterm_id)"
         );
+        push @execute_swaps, ($any_name_string, $any_name_string, $any_name_string, $any_name_string);
     }
 
     my @uniquename_array_filtered;
@@ -307,7 +310,9 @@ sub search {
             if ($matchtype eq 'contains'){ #for 'wildcard' matching it replaces * with % and ? with _
                 $_ =~ tr/*?/%_/;
             }
-            push @uniquename_array_filtered, "stock.uniquename ilike '".$start.$_.$end."'";
+            my $uniquename_string = $start.$_.$end;
+            push @uniquename_array_filtered, "stock.uniquename ilike ?";
+            push @execute_swaps, $uniquename_string;
         }
     }
     if (scalar(@uniquename_array_filtered)>0) {
@@ -378,7 +383,8 @@ sub search {
         my @trait_name_filtered;
         foreach (@trait_name_array){
             if ($_){
-                push @trait_name_filtered, "observable.name = '$_'";
+                push @trait_name_filtered, "observable.name = ?";
+                push @execute_swaps, $_;
             }
         }
         if (scalar(@trait_name_filtered)>0) {
@@ -397,7 +403,8 @@ sub search {
         my @location_name_filtered;
         foreach (@location_name_array){
             if ($_){
-                push @location_name_filtered, "nd_geolocation.description ilike '$_'";
+                push @location_name_filtered, "nd_geolocation.description ilike ?";
+                push @execute_swaps, $_;
             }
         }
         if (scalar(@location_name_filtered)>0) {
@@ -415,7 +422,8 @@ sub search {
         my @filtered_name_array;
         foreach (@trial_name_array){
             if ($_){
-                push @filtered_name_array, "project.name ilike '$_'";
+                push @filtered_name_array, "project.name ilike ?";
+                push @execute_swaps, $_;
             }
         }
         if (scalar(@filtered_name_array)>0) {
@@ -446,7 +454,8 @@ sub search {
     my @genus_array_filtered;
     foreach (@genus_array){
         if ($_){
-            push @genus_array_filtered, "organism.genus ilike '$_'";
+            push @genus_array_filtered, "organism.genus ilike ?";
+            push @execute_swaps, $_;
         }
     }
     if (scalar(@genus_array_filtered)>0) {
@@ -456,7 +465,8 @@ sub search {
     my @species_array_filtered;
     foreach (@species_array){
         if ($_){
-            push @species_array_filtered, "organism.species ilike '$_'";
+            push @species_array_filtered, "organism.species ilike ?";
+            push @execute_swaps, $_;
         }
     }
     if (scalar(@species_array_filtered)>0) {
@@ -466,11 +476,12 @@ sub search {
     my @crop_name_array_filtered;
     foreach (@crop_name_array){
         if ($_){
-            push @crop_name_array_filtered, "organism.common_name ilike '$_'";
+            push @crop_name_array_filtered, "organism.common_name ilike ?";
+            push @execute_swaps, $_;
         }
     }
-    if (scalar(@species_array_filtered)>0) {
-        push @sql_and_conditions, "(".join(' OR ', @species_array_filtered).")";
+    if (scalar(@crop_name_array_filtered)>0) {
+        push @sql_and_conditions, "(".join(' OR ', @crop_name_array_filtered).")";
     }
 
     my @stockprop_filtered_stock_ids;
@@ -479,7 +490,7 @@ sub search {
         $using_stockprop_filter = 1;
         #print STDERR Dumper $self->stockprops_values;
 
-        my @stockprop_terms = keys %{$self->stockprops_values}; 
+        my @stockprop_terms = keys %{$self->stockprops_values};
         $self->_refresh_materialized_stockprop(\@stockprop_terms);
 
         my @stockprop_wheres;
@@ -558,7 +569,7 @@ sub search {
     }
 
     if (scalar(@sql_or_conditions)>0) {
-        push @sql_and_conditions, "(".join(' OR ', @sql_or_conditions).")";
+        unshift @sql_and_conditions, "(".join(' OR ', @sql_or_conditions).")";
     }
     my $where_clause = join ' AND ', @sql_and_conditions;
 
@@ -576,7 +587,7 @@ sub search {
         $limit_offset;";
     print STDERR $stock_search_q."\n";
     my $stock_search_h = $schema->storage->dbh()->prepare($stock_search_q);
-    $stock_search_h->execute();
+    $stock_search_h->execute(@execute_swaps);
 
     my $owners_hash;
     if (!$self->minimal_info){
@@ -621,7 +632,7 @@ sub search {
         }
     }
     #print STDERR Dumper \%result_hash;
-    
+
     # Comma separated list of query placeholders for the result stock ids
     my $id_ph = scalar(@result_stock_ids) > 0 ? join ",", ("?") x @result_stock_ids : "NULL";
 
@@ -653,7 +664,7 @@ sub search {
 
         push @{$organism_props{$organism_id}->{$prop_type}}, $prop_value;
     }
-    
+
     # Get additional stock properties (pedigree, synonyms, donor info)
     my $stock_query = "SELECT stock.stock_id, stock.uniquename, stock.organism_id,
                mother.uniquename AS female_parent, father.uniquename AS male_parent, m_rel.value AS cross_type,
@@ -667,7 +678,7 @@ sub search {
         WHERE stock.stock_id IN ($id_ph);";
     my $sth = $schema->storage()->dbh()->prepare($stock_query);
     $sth->execute(@result_stock_ids);
-    
+
     # Add additional organism and stock properties to the result hash for each stock
     while (my @r = $sth->fetchrow_array()) {
         my $stock_id = $r[0];
@@ -800,7 +811,7 @@ sub _refresh_materialized_stockprop {
                 });
                 $cvterm_id = $new_term->cvterm_id();
             }
-            
+
             $stockprop_refresh_q .= ",(''".$cvterm_id."'')";
         }
 
