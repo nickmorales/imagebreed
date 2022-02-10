@@ -6,9 +6,9 @@ backend for displaying, adding, deleting, dragging, modifying, and requesting mo
 
 =head1 DESCRIPTION
 
-Calendar events are saved in the projectprop table value field as a tuple of the format {"2007-09-21T00:00:00","2007-09-21T00:00:00","N/A","#"} which correspond to the start datetime, end datetime, description, and web url, respectively. 
+Calendar events are saved in the projectprop table value field as a tuple of the format {"2007-09-21T00:00:00","2007-09-21T00:00:00","N/A","#"} which correspond to the start datetime, end datetime, description, and web url, respectively.
 
-The calendar can display events for projects (breeding programs and their trials) which a user has a role for in the sp_person_roles table. 
+The calendar can display events for projects (breeding programs and their trials) which a user has a role for in the sp_person_roles table.
 
 
 =head1 AUTHOR
@@ -55,7 +55,7 @@ __PACKAGE__->config(
 
 
 sub calendar_events_personal  : Path('/ajax/calendar/populate/personal') : ActionClass('REST') { }
-sub calendar_events_personal_GET : Args(1) { 
+sub calendar_events_personal_GET : Args(1) {
     my $self = shift;
     my $c = shift;
     my $view = shift;
@@ -84,7 +84,7 @@ sub calendar_events_personal_GET : Args(1) {
 =cut
 
 sub add_event : Path('/ajax/calendar/add_event') : ActionClass('REST') { }
-sub add_event_POST { 
+sub add_event_POST {
     my $self = shift;
     my $c = shift;
     my $params = $c->req->params();
@@ -98,7 +98,7 @@ sub add_event_POST {
 
     #A time::piece object is returned from format_time(). Calling ->datetime on this object return an ISO8601 datetime string. This is what is saved in the db.
     my $format_start = $calendar_funcs->format_time($params->{event_start})->datetime;
-    
+
     #If an event end is given, then it is converted to an ISO8601 datetime string to be saved. If none is given then the end will be the same as the start.
     my $format_end;
     if ($params->{event_end} eq '') {$format_end = $format_start;} else {$format_end = $calendar_funcs->format_time($params->{event_end})->datetime;}
@@ -106,12 +106,12 @@ sub add_event_POST {
     #If no description or URL given, then default values will be given.
     if ($params->{event_description} eq '') {$params->{event_description} = 'N/A';}
     if ($params->{event_url} eq '') {$params->{event_url} = '#';} else {$params->{event_url} = 'http://www.'.$params->{event_url};}
-    
+
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
     my $rs = $schema->resultset('Project::Projectprop');
-    my $count = $rs->search({ project_id=>$params->{event_project_select}, type_id=>$params->{event_type_select} })->count;
+    my $count = $rs->search({ project_id=>$params->{event_project_select}, 'me.type_id'=>$params->{event_type_select} })->count;
 
-    if (my $insert = $rs->create({project_id=>$params->{event_project_select}, type_id=>$params->{event_type_select}, rank=>$count, value=>[$format_start, $format_end, $params->{event_description}, $params->{event_url}] })) {
+    if (my $insert = $rs->create({project_id=>$params->{event_project_select}, 'me.type_id'=>$params->{event_type_select}, rank=>$count, value=>[$format_start, $format_end, $params->{event_description}, $params->{event_url}] })) {
 	   $c->stash->{rest} = {status => 1,};
     } else {
 	   $c->stash->{rest} = {status => 2,};
@@ -130,7 +130,7 @@ sub add_event_POST {
 =cut
 
 sub delete_event : Path('/ajax/calendar/delete_event') : ActionClass('REST') { }
-sub delete_event_POST { 
+sub delete_event_POST {
     my $self = shift;
     my $c = shift;
 
@@ -160,7 +160,7 @@ sub delete_event_POST {
 =cut
 
 sub drag_or_resize_event : Path('/ajax/calendar/drag_or_resize') : ActionClass('REST') { }
-sub drag_or_resize_event_POST { 
+sub drag_or_resize_event_POST {
     my $self = shift;
     my $c = shift;
     my $params = $c->req->params();
@@ -175,7 +175,7 @@ sub drag_or_resize_event_POST {
     #First we process the start datetime.
     #A time::piece object is returned from format_time(). Delta is the number of seconds that the date was changed. Calling ->epoch on the time::piece object returns a string representing number of sec since epoch.
     my $formatted_start = $calendar_funcs->format_time($params->{start_drag} )->epoch;
-    
+
     #If the event is being dragged to a new start, then the delta is added to the start here. When resizing, the start is not changed, only the end is changed.
     if ($params->{drag} == 1) {
 	$formatted_start += $params->{delta};
@@ -187,13 +187,13 @@ sub drag_or_resize_event_POST {
     # $new_start is what is saved to db. $new_start_display is what is displayed on mouseover.
     my $new_start = $formatted_start->datetime;
     my $new_start_display = $calendar_funcs->format_display_date($formatted_start);
-    
+
     #Next we process the end datetime. Whether the event is being dragged or resized, the end = end + delta.
     my $formatted_end = $calendar_funcs->format_time($params->{end_drag} )->epoch;
     $formatted_end += $params->{delta};
     $formatted_end = Time::Piece->strptime($formatted_end, '%s');
 
-    # $new_end is what is saved in db. 
+    # $new_end is what is saved in db.
     my $new_end = $formatted_end->datetime;
     my $new_end_time = $calendar_funcs->calendar_end_display($formatted_end, $params->{view}, $params->{allday} );
     my $new_end_display = $calendar_funcs->format_display_date($formatted_end);
@@ -219,7 +219,7 @@ sub drag_or_resize_event_POST {
 =cut
 
 sub edit_event : Path('/ajax/calendar/edit_event') : ActionClass('REST') { }
-sub edit_event_POST { 
+sub edit_event_POST {
     my $self = shift;
     my $c = shift;
 
@@ -233,7 +233,7 @@ sub edit_event_POST {
 
     #A time::piece object is returned from format_time(). Calling ->datetime on this object return an ISO8601 datetime string. This is what is saved in the db.
     my $format_start = $calendar_funcs->format_time($params->{edit_event_start})->datetime;
-    
+
     #If an event end is given, then it is converted to an ISO8601 datetime string to be saved. If none is given then the end will be the same as the start.
     my $format_end;
     if ($params->{edit_event_end} eq '') {$format_end = $format_start;} else {$format_end = $calendar_funcs->format_time($params->{edit_event_end})->datetime;}
@@ -243,7 +243,7 @@ sub edit_event_POST {
     if ($params->{edit_event_url} eq '') {$params->{edit_event_url} = '#';}
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
-    if (my $update_rs = $schema->resultset('Project::Projectprop')->find({projectprop_id=>$params->{edit_event_projectprop_id} }, columns=>['project_id', 'type_id', 'value'])->update({project_id=>$params->{edit_event_project_select}, type_id=>$params->{edit_event_type_select}, value=>[$format_start, $format_end, $params->{edit_event_description}, $params->{edit_event_url}] })) {
+    if (my $update_rs = $schema->resultset('Project::Projectprop')->find({projectprop_id=>$params->{edit_event_projectprop_id} }, columns=>['project_id', 'type_id', 'value'])->update({project_id=>$params->{edit_event_project_select}, 'me.type_id'=>$params->{edit_event_type_select}, value=>[$format_start, $format_end, $params->{edit_event_description}, $params->{edit_event_url}] })) {
 	   $c->stash->{rest} = {status => 1,};
     } else {
 	   $c->stash->{rest} = {error => 1,};
@@ -253,7 +253,7 @@ sub edit_event_POST {
 
 #When a day is clicked or when an event is being editted, this function is called to populate the add_event project name and property type dropdowns.
 sub day_click_personal : Path('/ajax/calendar/dayclick/personal') : ActionClass('REST') { }
-sub day_click_personal_GET { 
+sub day_click_personal_GET {
     my $self = shift;
     my $c = shift;
 
@@ -278,7 +278,7 @@ sub day_click_personal_GET {
     }
 
     my @calendar_projectprop_names = (['project_planting_date', 'project_property'], ['project_harvest_date', 'project_property'], ['Fertilizer Event', 'calendar'], ['Meeting Event', 'calendar'], ['Planning Event', 'calendar'], ['Presentation Event', 'calendar'], ['Phenotyping Event', 'calendar'], ['Genotyping Event', 'calendar'] );
- 
+
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
     my @projectprop_types;
     foreach (@calendar_projectprop_names) {
@@ -289,9 +289,9 @@ sub day_click_personal_GET {
             push(@projectprop_types, {cvterm_id=>'', cvterm_name=>'Error: Missing cvterm '.$_->[0].' : '.$_->[1].' in database.'});
         }
     }
-    
+
     $c->stash->{rest} = {project_list => \@projects, projectprop_list => \@projectprop_types};
 }
-    
+
 
 1;

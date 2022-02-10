@@ -281,7 +281,7 @@ sub delete_location {
 	else {
 	    $row->delete();
         my $location_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'project location', 'project_property')->cvterm_id();
-        my $projectprop_rows = $self->bcs_schema->resultset("Project::Projectprop")->search({ value=> $self->nd_geolocation_id(), type_id=> $location_type_id });
+        my $projectprop_rows = $self->bcs_schema->resultset("Project::Projectprop")->search({ value=> $self->nd_geolocation_id(), 'me.type_id'=> $location_type_id });
         while (my $r = $projectprop_rows->next()){ # remove any links to deleted location in projectprop
             $r->delete();
         }

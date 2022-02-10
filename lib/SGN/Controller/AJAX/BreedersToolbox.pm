@@ -169,7 +169,7 @@ sub get_data_agreement :Path('/breeders/trial/data_agreement/get') :Args(0) {
     print STDERR "PROJECTID: $project_id TYPE_ID: $type_id\n";
 
     my $projectprop_rs = $schema->resultset('Project::Projectprop')->search(
-	{ project_id => $project_id, type_id=>$type_id }
+	{ project_id => $project_id, 'me.type_id'=>$type_id }
 	);
 
     if ($projectprop_rs->count() == 0) {
@@ -322,7 +322,7 @@ sub progress : Path('/ajax/progress') Args(0) {
     my $trait_id = $c->req->param("trait_id");
 
     print STDERR "Trait id = $trait_id\n";
-    
+
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $dbh = $schema->storage->dbh();
 
@@ -331,7 +331,7 @@ sub progress : Path('/ajax/progress') Args(0) {
     my $h = $dbh->prepare($q);
 
     $h->execute($trait_id);
-    
+
     my $data = [];
 
     while (my ($year, $mean, $stddev, $count) = $h->fetchrow_array()) {
@@ -339,7 +339,7 @@ sub progress : Path('/ajax/progress') Args(0) {
     }
 
     print STDERR "Data = ".Dumper($data);
-    
+
     $c->stash->{rest} = { data => $data };
 
 

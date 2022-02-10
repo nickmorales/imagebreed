@@ -7088,20 +7088,20 @@ sub _perform_get_weeks_drone_run_after_planting {
     my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
     my $calendar_funcs = CXGN::Calendar->new({});
 
-    my $drone_run_date_rs = $schema->resultset('Project::Projectprop')->search({project_id=>$drone_run_project_id, type_id=>$project_start_date_type_id});
+    my $drone_run_date_rs = $schema->resultset('Project::Projectprop')->search({project_id=>$drone_run_project_id, 'me.type_id'=>$project_start_date_type_id});
     if ($drone_run_date_rs->count != 1) {
         return { error => 'There is no drone run date saved! This should not be possible, please contact us'};
     }
     my $drone_run_date = $drone_run_date_rs->first->value;
     my $drone_date = $calendar_funcs->display_start_date($drone_run_date);
 
-    my $drone_run_base_date_rs = $schema->resultset('Project::Projectprop')->search({project_id=>$drone_run_project_id, type_id=>$drone_run_base_date_type_id});
+    my $drone_run_base_date_rs = $schema->resultset('Project::Projectprop')->search({project_id=>$drone_run_project_id, 'me.type_id'=>$drone_run_base_date_type_id});
     my $drone_run_base_date;
     if ($drone_run_base_date_rs->count == 1) {
         $drone_run_base_date = $calendar_funcs->display_start_date($drone_run_base_date_rs->first->value);
     }
 
-    my $field_trial_rs = $schema->resultset("Project::ProjectRelationship")->search({subject_project_id=>$drone_run_project_id, type_id=>$project_relationship_type_id});
+    my $field_trial_rs = $schema->resultset("Project::ProjectRelationship")->search({subject_project_id=>$drone_run_project_id, 'me.type_id'=>$project_relationship_type_id});
     if ($field_trial_rs->count != 1) {
         return { drone_run_date => $drone_date, error => 'There is no field trial saved to the drone run! This should not be possible, please contact us'};
     }
@@ -9267,7 +9267,7 @@ sub drone_imagery_save_single_plot_image_POST : Args(0) {
     );
 
     my $drone_run_band_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
-    my $q = "SELECT name,value FROM projectprop JOIN project USING(project_id) WHERE type_id=$drone_run_band_type_cvterm_id and project_id=?;";
+    my $q = "SELECT name,value FROM projectprop JOIN project USING(project_id) WHERE projectprop.type_id=$drone_run_band_type_cvterm_id and project.project_id=?;";
     my $h = $bcs_schema->storage->dbh()->prepare($q);
     $h->execute($drone_run_band_project_id_input);
     my ($project_band_name, $project_band_type) = $h->fetchrow_array();
