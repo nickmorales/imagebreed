@@ -111,7 +111,7 @@ sub add_event_POST {
     my $rs = $schema->resultset('Project::Projectprop');
     my $count = $rs->search({ project_id=>$params->{event_project_select}, 'me.type_id'=>$params->{event_type_select} })->count;
 
-    if (my $insert = $rs->create({project_id=>$params->{event_project_select}, 'me.type_id'=>$params->{event_type_select}, rank=>$count, value=>[$format_start, $format_end, $params->{event_description}, $params->{event_url}] })) {
+    if (my $insert = $rs->create({project_id=>$params->{event_project_select}, type_id=>$params->{event_type_select}, rank=>$count, value=>[$format_start, $format_end, $params->{event_description}, $params->{event_url}] })) {
 	   $c->stash->{rest} = {status => 1,};
     } else {
 	   $c->stash->{rest} = {status => 2,};
@@ -243,7 +243,7 @@ sub edit_event_POST {
     if ($params->{edit_event_url} eq '') {$params->{edit_event_url} = '#';}
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
-    if (my $update_rs = $schema->resultset('Project::Projectprop')->find({projectprop_id=>$params->{edit_event_projectprop_id} }, columns=>['project_id', 'type_id', 'value'])->update({project_id=>$params->{edit_event_project_select}, 'me.type_id'=>$params->{edit_event_type_select}, value=>[$format_start, $format_end, $params->{edit_event_description}, $params->{edit_event_url}] })) {
+    if (my $update_rs = $schema->resultset('Project::Projectprop')->find({projectprop_id=>$params->{edit_event_projectprop_id} }, columns=>['project_id', 'type_id', 'value'])->update({project_id=>$params->{edit_event_project_select}, type_id=>$params->{edit_event_type_select}, value=>[$format_start, $format_end, $params->{edit_event_description}, $params->{edit_event_url}] })) {
 	   $c->stash->{rest} = {status => 1,};
     } else {
 	   $c->stash->{rest} = {error => 1,};
