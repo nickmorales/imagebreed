@@ -8228,9 +8228,11 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
                 push @points_x, $x;
                 push @points_y, $y;
             }
+            my $adjusted_x = sum(@points_x)/scalar(@points_x);
+            my $adjusted_y = sum(@points_y)/scalar(@points_y);
             push @points, {
-                x => sum(@points_x)/scalar(@points_x),
-                y => sum(@points_y)/scalar(@points_y),
+                x => $adjusted_x - $gcp_drag_x_diff,
+                y => $adjusted_y - $gcp_drag_y_diff
             };
         }
         $scaled_plot_polygons{$key} = \@points;
