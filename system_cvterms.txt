@@ -274,6 +274,7 @@ stock_relationship  cross_member_of    00129
 stock_relationship  family_female_parent_of    00129
 stock_relationship  family_male_parent_of    00129
 stock_relationship	analysis_of	For saving results in analysis trials	06/04/2020	lam87nm529	00119
+stock_relatedness	genomic_relatedness_dosage	For saving relatedness in stock_relatedness	02/11/2022	nm529	00157
 stock_type	accession				00052
 stock_type	backcross population				00052
 stock_type	cross				00052

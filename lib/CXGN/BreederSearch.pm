@@ -96,9 +96,9 @@ sub metadata_query {
   my $dataref = shift;
   my $queryref = shift;
   my $h;
-  print STDERR "criteria_list=" . Dumper($criteria_list);
-  print STDERR "dataref=" . Dumper($dataref);
-  print STDERR "queryref=" . Dumper($queryref);
+  # print STDERR "criteria_list=" . Dumper($criteria_list);
+  # print STDERR "dataref=" . Dumper($dataref);
+  # print STDERR "queryref=" . Dumper($queryref);
 
   my $target_table = $criteria_list->[-1];
   print STDERR "target_table=". $target_table . "\n";

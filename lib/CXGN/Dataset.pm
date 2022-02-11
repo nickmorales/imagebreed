@@ -905,7 +905,7 @@ sub retrieve_trials {
         push @$criteria, "trials";
         $trials = $self->breeder_search()->metadata_query($criteria, $self->_get_source_dataref("trials"));
     }
-    print STDERR "TRIALS: ".Dumper($trials);
+    # print STDERR "TRIALS: ".Dumper($trials);
     return $trials->{results};
 }
 
