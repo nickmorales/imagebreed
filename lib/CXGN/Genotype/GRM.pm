@@ -255,7 +255,7 @@ sub _get_grm {
                 foreach my $b (@all_individual_accessions_stock_ids) {
                     $genomic_relatedness_dosage_h->execute($a, $b, $genomic_relatedness_dosage_cvterm_id, $protocol_id);
                     my ($value) = $genomic_relatedness_dosage_h->fetchrow_array();
-                    if ($value) {
+                    if (defined($value)) {
                         $seen_accession_stock_ids_relatedness{$a}->{$b} = $value;
                     }
                     else {
@@ -266,8 +266,41 @@ sub _get_grm {
                 }
             }
 
+            my @missing_accession_ids = sort keys %missing_stock_ids_all_relatedness;
+            my $genotypes_search = CXGN::Genotype::Search->new(
+                bcs_schema => $schema,
+                people_schema=> $people_schema,
+                accession_list => \@missing_accession_ids,
+                protocol_id_list => [$protocol_id],
+            );
+            my ($geno_info, $seen_protocol_hash) = $genotypes_search->check_which_have_genotypes();
+            # print STDERR Dumper $geno_info;
+
+            my %missing_have_genotypes_accession_ids;
+            foreach (@$geno_info) {
+                my $accession_id = $_->{germplasmDbId};
+                $missing_have_genotypes_accession_ids{$accession_id}++;
+            }
+
+            my %missing_no_genotypes_accession_ids;
+            foreach (@missing_accession_ids) {
+                if (!exists($missing_have_genotypes_accession_ids{$_})) {
+                    $missing_no_genotypes_accession_ids{$_}++;
+                }
+            }
+
+            my %accessions_get_genotypes;
+            foreach my $a (sort keys %missing_stock_ids_relatedness) {
+                foreach my $b (sort keys %{$missing_stock_ids_relatedness{$a}}) {
+                    if (exists($missing_have_genotypes_accession_ids{$a}) && exists($missing_have_genotypes_accession_ids{$b})) {
+                        $accessions_get_genotypes{$a}++;
+                        $accessions_get_genotypes{$b}++;
+                    }
+                }
+            }
+
             foreach (@all_individual_accessions_stock_ids) {
-                if (exists($missing_stock_ids_all_relatedness{$_})) {
+                if (exists($accessions_get_genotypes{$_})) {
 
                     my $dataset = CXGN::Dataset::Cache->new({
                         people_schema=>$people_schema,
@@ -352,13 +385,46 @@ sub _get_grm {
                 foreach my $b (@all_individual_accessions_stock_ids) {
                     $genomic_relatedness_dosage_h->execute($a, $b, $genomic_relatedness_dosage_cvterm_id, $protocol_id);
                     my ($value) = $genomic_relatedness_dosage_h->fetchrow_array();
-                    if ($value) {
+                    if (defined($value)) {
                         $seen_accession_stock_ids_relatedness{$a}->{$b} = $value;
                     }
                     else {
                         $missing_stock_ids_relatedness{$a}->{$b}++;
                         $missing_stock_ids_all_relatedness{$a}++;
                         $missing_stock_ids_all_relatedness{$b}++;
+                    }
+                }
+            }
+
+            my @missing_accession_ids = sort keys %missing_stock_ids_all_relatedness;
+            my $genotypes_search = CXGN::Genotype::Search->new(
+                bcs_schema => $schema,
+                people_schema=> $people_schema,
+                accession_list => \@missing_accession_ids,
+                protocol_id_list => [$protocol_id],
+            );
+            my ($geno_info, $seen_protocol_hash) = $genotypes_search->check_which_have_genotypes();
+            # print STDERR Dumper $geno_info;
+
+            my %missing_have_genotypes_accession_ids;
+            foreach (@$geno_info) {
+                my $accession_id = $_->{germplasmDbId};
+                $missing_have_genotypes_accession_ids{$accession_id}++;
+            }
+
+            my %missing_no_genotypes_accession_ids;
+            foreach (@missing_accession_ids) {
+                if (!exists($missing_have_genotypes_accession_ids{$_})) {
+                    $missing_no_genotypes_accession_ids{$_}++;
+                }
+            }
+
+            my %accessions_get_genotypes;
+            foreach my $a (sort keys %missing_stock_ids_relatedness) {
+                foreach my $b (sort keys %{$missing_stock_ids_relatedness{$a}}) {
+                    if (exists($missing_have_genotypes_accession_ids{$a}) && exists($missing_have_genotypes_accession_ids{$b})) {
+                        $accessions_get_genotypes{$a}++;
+                        $accessions_get_genotypes{$b}++;
                     }
                 }
             }
@@ -370,7 +436,7 @@ sub _get_grm {
                 my $plot_stock_id = $plot_stock_ids_found[$i];
                 my $accession_id = $plot_accession_stock_ids_found[$i];
 
-                if (!exists($already_included_accession_ids{$accession_id}) && exists($missing_stock_ids_all_relatedness{$accession_id}) ) {
+                if (!exists($already_included_accession_ids{$accession_id}) && exists($accessions_get_genotypes{$accession_id}) ) {
 
                     my $dataset = CXGN::Dataset::Cache->new({
                         people_schema=>$people_schema,
@@ -438,7 +504,7 @@ sub _get_grm {
                 foreach my $b (@all_individual_accessions_stock_ids) {
                     $genomic_relatedness_dosage_h->execute($a, $b, $genomic_relatedness_dosage_cvterm_id, $protocol_id);
                     my ($value) = $genomic_relatedness_dosage_h->fetchrow_array();
-                    if ($value) {
+                    if (defined($value)) {
                         $seen_accession_stock_ids_relatedness{$a}->{$b} = $value;
                     }
                     else {
@@ -449,12 +515,45 @@ sub _get_grm {
                 }
             }
 
+            my @missing_accession_ids = sort keys %missing_stock_ids_all_relatedness;
+            my $genotypes_search = CXGN::Genotype::Search->new(
+                bcs_schema => $schema,
+                people_schema=> $people_schema,
+                accession_list => \@missing_accession_ids,
+                protocol_id_list => [$protocol_id],
+            );
+            my ($geno_info, $seen_protocol_hash) = $genotypes_search->check_which_have_genotypes();
+            # print STDERR Dumper $geno_info;
+
+            my %missing_have_genotypes_accession_ids;
+            foreach (@$geno_info) {
+                my $accession_id = $_->{germplasmDbId};
+                $missing_have_genotypes_accession_ids{$accession_id}++;
+            }
+
+            my %missing_no_genotypes_accession_ids;
+            foreach (@missing_accession_ids) {
+                if (!exists($missing_have_genotypes_accession_ids{$_})) {
+                    $missing_no_genotypes_accession_ids{$_}++;
+                }
+            }
+
+            my %accessions_get_genotypes;
+            foreach my $a (sort keys %missing_stock_ids_relatedness) {
+                foreach my $b (sort keys %{$missing_stock_ids_relatedness{$a}}) {
+                    if (exists($missing_have_genotypes_accession_ids{$a}) && exists($missing_have_genotypes_accession_ids{$b})) {
+                        $accessions_get_genotypes{$a}++;
+                        $accessions_get_genotypes{$b}++;
+                    }
+                }
+            }
+
             for my $i (0..scalar(@accession_stock_ids_found)-1) {
                 my $female_stock_id = $female_stock_ids_found[$i];
                 my $male_stock_id = $male_stock_ids_found[$i];
                 my $accession_stock_id = $accession_stock_ids_found[$i];
 
-                if (exists($missing_stock_ids_all_relatedness{$accession_stock_id})) {
+                if (exists($accessions_get_genotypes{$accession_stock_id})) {
 
                     my $dataset = CXGN::Dataset::Cache->new({
                         people_schema=>$people_schema,
@@ -498,76 +597,78 @@ sub _get_grm {
         my $marker_filter = $self->marker_filter();
         my $individuals_filter = $self->individuals_filter();
 
-        my $cmd = 'R -e "library(genoDataFilter); library(rrBLUP); library(data.table); library(scales);
-        mat <- fread(\''.$grm_tempfile.'\', header=FALSE, sep=\'\t\');
-        range_check <- range(as.matrix(mat)[1,]);
-        if (length(table(as.matrix(mat)[1,])) < 2 || (!is.na(range_check[1]) && !is.na(range_check[2]) && range_check[2] - range_check[1] <= 1 )) {
-            mat <- as.data.frame(rescale(as.matrix(mat), to = c(-1,1), from = c(0,2) ));
-        } else {
-            mat <- as.data.frame(rescale(as.matrix(mat), to = c(-1,1) ));
-        }
-        ';
-        #if (!$get_grm_for_parental_accessions) {
-            #strange behavior in filterGenoData during testing... will use A.mat filters instead in this case...
-        #    $cmd .= 'mat_clean <- filterGenoData(gData=mat, maf='.$maf.', markerFilter='.$marker_filter.', indFilter='.$individuals_filter.');
-        #    A_matrix <- A.mat(mat_clean, impute.method=\'EM\', n.core='.$number_system_cores.', return.imputed=FALSE);
-        #    ';
-        #}
-        #else {
-        if (!$return_imputed_matrix) {
-            $cmd .= 'A <- A.mat(mat, min.MAF='.$maf.', max.missing='.$marker_filter.', impute.method=\'mean\', n.core='.$number_system_cores.', return.imputed=FALSE);
-            ';
-        }
-        else {
-            $cmd .= 'A_list <- A.mat(mat, min.MAF='.$maf.', max.missing='.$marker_filter.', impute.method=\'mean\', n.core='.$number_system_cores.', return.imputed=TRUE);
-            A <- A_list\$A;
-            imputed <- A_list\$imputed;
-            write.table(imputed, file=\''.$grm_imputed_tempfile_out.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            ';
-        }
-        #}
-        if ($ensure_positive_definite) {
-            # Ensure positive definite matrix. Taken from Schaeffer
-            $cmd .= 'E = eigen(A);
-            ev = E\$values;
-            U = E\$vectors;
-            no = dim(A)[1];
-            nev = which(ev < 0);
-            wr = 0;
-            k=length(nev);
-            if(k > 0){
-                p = ev[no - k];
-                B = sum(ev[nev])*2.0;
-                wr = (B*B*100.0)+1;
-                val = ev[nev];
-                ev[nev] = p*(B-val)*(B-val)/wr;
-                A = U%*%diag(ev)%*%t(U);
+        if (scalar(@individuals_stock_ids)>0) {
+            my $cmd = 'R -e "library(genoDataFilter); library(rrBLUP); library(data.table); library(scales);
+            mat <- fread(\''.$grm_tempfile.'\', header=FALSE, sep=\'\t\');
+            range_check <- range(as.matrix(mat)[1,]);
+            if (length(table(as.matrix(mat)[1,])) < 2 || (!is.na(range_check[1]) && !is.na(range_check[2]) && range_check[2] - range_check[1] <= 1 )) {
+                mat <- as.data.frame(rescale(as.matrix(mat), to = c(-1,1), from = c(0,2) ));
+            } else {
+                mat <- as.data.frame(rescale(as.matrix(mat), to = c(-1,1) ));
             }
             ';
-        }
-        if ($return_inverse) {
-            $cmd .= 'A <- solve(A);';
-        }
-        $cmd .= 'write.table(A, file=\''.$grm_tempfile_out.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
-        print STDERR Dumper $cmd;
-
-        # Do the GRM on the cluster
-        my $grm_cmd = CXGN::Tools::Run->new(
-            {
-                backend => $backend_config,
-                submit_host => $cluster_host_config,
-                temp_base => $tmp_output_dir,
-                queue => $web_cluster_queue_config,
-                do_cleanup => 0,
-                out_file => $temp_out_file,
-                # don't block and wait if the cluster looks full
-                max_cluster_jobs => 1_000_000_000,
+            #if (!$get_grm_for_parental_accessions) {
+                #strange behavior in filterGenoData during testing... will use A.mat filters instead in this case...
+            #    $cmd .= 'mat_clean <- filterGenoData(gData=mat, maf='.$maf.', markerFilter='.$marker_filter.', indFilter='.$individuals_filter.');
+            #    A_matrix <- A.mat(mat_clean, impute.method=\'EM\', n.core='.$number_system_cores.', return.imputed=FALSE);
+            #    ';
+            #}
+            #else {
+            if (!$return_imputed_matrix) {
+                $cmd .= 'A <- A.mat(mat, min.MAF='.$maf.', max.missing='.$marker_filter.', impute.method=\'mean\', n.core='.$number_system_cores.', return.imputed=FALSE);
+                ';
             }
-        );
+            else {
+                $cmd .= 'A_list <- A.mat(mat, min.MAF='.$maf.', max.missing='.$marker_filter.', impute.method=\'mean\', n.core='.$number_system_cores.', return.imputed=TRUE);
+                A <- A_list\$A;
+                imputed <- A_list\$imputed;
+                write.table(imputed, file=\''.$grm_imputed_tempfile_out.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+                ';
+            }
+            #}
+            if ($ensure_positive_definite) {
+                # Ensure positive definite matrix. Taken from Schaeffer
+                $cmd .= 'E = eigen(A);
+                ev = E\$values;
+                U = E\$vectors;
+                no = dim(A)[1];
+                nev = which(ev < 0);
+                wr = 0;
+                k=length(nev);
+                if(k > 0){
+                    p = ev[no - k];
+                    B = sum(ev[nev])*2.0;
+                    wr = (B*B*100.0)+1;
+                    val = ev[nev];
+                    ev[nev] = p*(B-val)*(B-val)/wr;
+                    A = U%*%diag(ev)%*%t(U);
+                }
+                ';
+            }
+            if ($return_inverse) {
+                $cmd .= 'A <- solve(A);';
+            }
+            $cmd .= 'write.table(A, file=\''.$grm_tempfile_out.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
+            print STDERR Dumper $cmd;
 
-        $grm_cmd->run_cluster($cmd);
-        $grm_cmd->is_cluster(1);
-        $grm_cmd->wait;
+            # Do the GRM on the cluster
+            my $grm_cmd = CXGN::Tools::Run->new(
+                {
+                    backend => $backend_config,
+                    submit_host => $cluster_host_config,
+                    temp_base => $tmp_output_dir,
+                    queue => $web_cluster_queue_config,
+                    do_cleanup => 0,
+                    out_file => $temp_out_file,
+                    # don't block and wait if the cluster looks full
+                    max_cluster_jobs => 1_000_000_000,
+                }
+            );
+
+            $grm_cmd->run_cluster($cmd);
+            $grm_cmd->is_cluster(1);
+            $grm_cmd->wait;
+        }
     }
     else {
         print STDERR "No protocol, so giving equal relationship of all stocks!!\n";
@@ -645,9 +746,11 @@ sub download_grm {
     my $cluster_host_config = shift;
     my $web_cluster_queue_config = shift;
     my $basepath_config = shift;
+    my $schema = $self->bcs_schema();
     my $download_format = $self->download_format();
     my $return_imputed_matrix = $self->return_imputed_matrix();
     my $grm_tempfile = $self->grm_temp_file();
+    my $protocol_id = $self->protocol_id();
 
     my $return_imputed_matrix_key = $return_imputed_matrix ? '_returnimputed' : '';
 
@@ -672,6 +775,10 @@ sub download_grm {
         # print STDERR Dumper $all_accession_stock_ids;
         # print STDERR Dumper $seen_accession_stock_ids_relatedness;
 
+        my $genomic_relatedness_dosage_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'genomic_relatedness_dosage', 'stock_relatedness')->cvterm_id();
+
+        my $relatedness_fill_q = "INSERT INTO stock_relatedness (type_id, nd_protocol_id, a_stock_id, b_stock_id, value) VALUES ($genomic_relatedness_dosage_cvterm_id,$protocol_id,?,?,?);";
+        my $relatedness_fill_h = $schema->storage->dbh->prepare($relatedness_fill_q);
 
         my %grm_hash;
         open(my $fh, "<", $grm_tempfile_out) or die "Can't open < $grm_tempfile_out: $!";
@@ -689,6 +796,15 @@ sub download_grm {
                 $col_num++;
             }
             $row_num++;
+        }
+
+        foreach my $s (@$all_accession_stock_ids) {
+            foreach my $c (@$all_accession_stock_ids) {
+                if (!defined($seen_accession_stock_ids_relatedness->{$s}->{$c}) && $row_num>1 && defined($grm_hash{$s}->{$c})) {
+                    my $val = $grm_hash{$s}->{$c};
+                    $relatedness_fill_h->execute($s, $c, $val);
+                }
+            }
         }
 
         my $data = '';

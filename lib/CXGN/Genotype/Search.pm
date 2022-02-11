@@ -2171,6 +2171,160 @@ sub _check_filtered_markers {
     return @all_marker_objects;
 }
 
+sub check_which_have_genotypes {
+    my $self = shift;
+    my $schema = $self->bcs_schema;
+    my $trial_list = $self->trial_list;
+    my $genotype_data_project_list = $self->genotype_data_project_list;
+    my $protocol_id_list = $self->protocol_id_list;
+    my $markerprofile_id_list = $self->markerprofile_id_list;
+    my $accession_list = $self->accession_list;
+    my $tissue_sample_list = $self->tissue_sample_list;
+    my $marker_name_list = $self->marker_name_list;
+    my $chromosome_list = $self->chromosome_list;
+    my $start_position = $self->start_position;
+    my $end_position = $self->end_position;
+    my $genotypeprop_hash_select = $self->genotypeprop_hash_select;
+    my $protocolprop_top_key_select = $self->protocolprop_top_key_select;
+    my $protocolprop_marker_hash_select = $self->protocolprop_marker_hash_select;
+    my $marker_search_hash_list = $self->marker_search_hash_list;
+    my $marker_score_search_hash_list = $self->marker_score_search_hash_list;
+    my $return_only_first_genotypeprop_for_stock = $self->return_only_first_genotypeprop_for_stock;
+    my $limit = $self->limit;
+    my $offset = $self->offset;
+    my @data;
+    my %search_params;
+    my @where_clause;
+
+    my $snp_genotyping_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'snp genotyping', 'genotype_property')->cvterm_id();
+    my $vcf_snp_genotyping_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'vcf_snp_genotyping', 'genotype_property')->cvterm_id();
+    my $vcf_map_details_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'vcf_map_details', 'protocol_property')->cvterm_id();
+    my $vcf_map_details_markers_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'vcf_map_details_markers', 'protocol_property')->cvterm_id();
+    my $vcf_map_details_markers_array_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'vcf_map_details_markers_array', 'protocol_property')->cvterm_id();
+    my $igd_genotypeprop_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'igd number', 'genotype_property')->cvterm_id();
+    my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'accession', 'stock_type')->cvterm_id();
+    my $tissue_sample_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'tissue_sample', 'stock_type')->cvterm_id();
+    my $plot_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'plot', 'stock_type')->cvterm_id();
+    my $plant_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'plant', 'stock_type')->cvterm_id();
+    my $tissue_sample_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'tissue_sample_of', 'stock_relationship')->cvterm_id();
+
+    my @trials_accessions;
+    foreach (@$trial_list){
+        my $trial = CXGN::Trial->new({bcs_schema=>$schema, trial_id=>$_});
+        my $accessions = $trial->get_accessions();
+        foreach (@$accessions){
+            push @trials_accessions, $_->{stock_id};
+        }
+    }
+
+    #If accessions are explicitly given, then accessions found from trials will not be added to the search.
+    if (!$accession_list || scalar(@$accession_list)==0) {
+        push @$accession_list, @trials_accessions;
+    }
+
+    #For projects inserted into database during the addition of genotypes and genotypeprops
+    if (scalar(@trials_accessions)==0){
+        if ($trial_list && scalar(@$trial_list)>0) {
+            my $trial_sql = join ("," , @$trial_list);
+            push @where_clause, "project.project_id in ($trial_sql)";
+        }
+    }
+
+    #For genotyping_data_project
+    if ($genotype_data_project_list && scalar($genotype_data_project_list)>0) {
+        my $sql = join ("," , @$genotype_data_project_list);
+        push @where_clause, "project.project_id in ($sql)";
+    }
+    if ($protocol_id_list && scalar(@$protocol_id_list)>0) {
+        my $protocol_sql = join ("," , @$protocol_id_list);
+        push @where_clause, "nd_protocol.nd_protocol_id in ($protocol_sql)";
+    }
+    if ($accession_list && scalar(@$accession_list)>0) {
+        my $accession_sql = join ("," , @$accession_list);
+        push @where_clause, " ( stock.stock_id in ($accession_sql) OR (accession_of_tissue_sample.stock_id in ($accession_sql) AND accession_of_tissue_sample.type_id = $accession_cvterm_id) ) ";
+        push @where_clause, "stock.type_id in ($accession_cvterm_id, $tissue_sample_cvterm_id)";
+    }
+    if ($tissue_sample_list && scalar(@$tissue_sample_list)>0) {
+        my $stock_sql = join ("," , @$tissue_sample_list);
+        push @where_clause, "stock.stock_id in ($stock_sql)";
+        push @where_clause, "stock.type_id = $tissue_sample_cvterm_id";
+    }
+    if ($markerprofile_id_list && scalar(@$markerprofile_id_list)>0) {
+        my $markerprofile_sql = join ("," , @$markerprofile_id_list);
+        push @where_clause, "genotype.genotype_id in ($markerprofile_sql)";
+    }
+
+    my $where_clause = scalar(@where_clause)>0 ? " WHERE " . (join (" AND " , @where_clause)) : '';
+
+    my $offset_clause = '';
+    my $limit_clause = '';
+    if ($limit){
+        $limit_clause = " LIMIT $limit ";
+    }
+    if ($offset){
+        $offset_clause = " OFFSET $offset ";
+    }
+
+    my $q = "SELECT stock.stock_id, nd_protocol.nd_protocol_id, nd_protocol.name, stock.uniquename, stock.type_id, stock_cvterm.name, genotype.genotype_id, genotype.uniquename, genotype.description, project.project_id, project.name, project.description, accession_of_tissue_sample.stock_id, accession_of_tissue_sample.uniquename, count(genotype.genotype_id) OVER() AS full_count
+        FROM stock
+        JOIN cvterm AS stock_cvterm ON(stock.type_id = stock_cvterm.cvterm_id)
+        LEFT JOIN stock_relationship ON(stock_relationship.subject_id=stock.stock_id AND stock_relationship.type_id = $tissue_sample_of_cvterm_id)
+        LEFT JOIN stock AS accession_of_tissue_sample ON(stock_relationship.object_id=accession_of_tissue_sample.stock_id)
+        JOIN nd_experiment_stock ON(stock.stock_id=nd_experiment_stock.stock_id)
+        JOIN nd_experiment USING(nd_experiment_id)
+        JOIN nd_experiment_protocol USING(nd_experiment_id)
+        JOIN nd_experiment_project USING(nd_experiment_id)
+        JOIN nd_experiment_genotype USING(nd_experiment_id)
+        JOIN nd_protocol USING(nd_protocol_id)
+        JOIN genotype USING(genotype_id)
+        JOIN project USING(project_id)
+        $where_clause
+        ORDER BY stock.stock_id, genotype.genotype_id ASC
+        $limit_clause
+        $offset_clause;";
+
+    print STDERR Dumper $q;
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute();
+    my @genotypeprop_infos;
+    my %seen_protocol_ids;
+    while (my ($stock_id, $protocol_id, $protocol_name, $stock_name, $stock_type_id, $stock_type_name, $genotype_id, $genotype_uniquename, $genotype_description, $project_id, $project_name, $project_description, $accession_id, $accession_uniquename, $full_count) = $h->fetchrow_array()) {
+
+        my $germplasmName = '';
+        my $germplasmDbId = '';
+
+        if ($stock_type_name eq 'accession'){
+            $germplasmName = $stock_name;
+            $germplasmDbId = $stock_id;
+        }
+        if ($stock_type_name eq 'tissue_sample'){
+            $germplasmName = $accession_uniquename;
+            $germplasmDbId = $accession_id;
+        }
+
+        push @genotypeprop_infos, {
+            markerProfileDbId => $genotype_id,
+            germplasmDbId => $germplasmDbId,
+            germplasmName => $germplasmName,
+            stock_id => $stock_id,
+            stock_name => $stock_name,
+            stock_type_id => $stock_type_id,
+            stock_type_name => $stock_type_name,
+            genotypeDbId => $genotype_id,
+            genotypeUniquename => $genotype_uniquename,
+            genotypeDescription => $genotype_description,
+            analysisMethodDbId => $protocol_id,
+            analysisMethod => $protocol_name,
+            genotypingDataProjectDbId => $project_id,
+            genotypingDataProjectName => $project_name,
+            genotypingDataProjectDescription => $project_description,
+            full_count => $full_count
+        };
+        $seen_protocol_ids{$protocol_id}++;
+    }
+    return (\@genotypeprop_infos, \%seen_protocol_ids);
+}
+
 
 sub get_pcr_genotype_info {
     my $self = shift;
