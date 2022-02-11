@@ -404,30 +404,56 @@ sub get_location {
 sub set_location {
     my $self = shift;
     my $location_id = shift;
+    my $schema = $self->bcs_schema();
 
     if (!looks_like_number($location_id)) {
         die "Location_id $location_id not an integer!\n";
     }
 
-		my $project_id = $self->get_trial_id();
-		my $type_id = $self->get_location_type_id();
+    my $project_id = $self->get_trial_id();
+    my $type_id = $self->get_location_type_id();
 
-    my $row = $self->bcs_schema()->resultset('Project::Projectprop')->find({
-	    project_id => $project_id,
-	    type_id => $type_id,
-		});
+    ## Use txn_do with the following coderef so that if any part fails, the entire transaction fails.
+    my $coderef = sub {
 
-		if ($row) {
-			$row->value($location_id);
-			$row->update();
-		}
-		else {
-			$row = $self->bcs_schema()->resultset('Project::Projectprop')->create({
-				project_id => $project_id,
-				type_id => $type_id,
-				value => $location_id,
-			});
-		}
+        # update or create location id in projectprop
+        my $row = $schema->resultset('Project::Projectprop')->find({
+            project_id => $project_id,
+            type_id => $type_id,
+        });
+
+        if ($row) {
+            $row->value($location_id);
+            $row->update();
+        }
+        else {
+            $row = $schema->resultset('Project::Projectprop')->create({
+                project_id => $project_id,
+                type_id => $type_id,
+                value => $location_id,
+            });
+        }
+
+        my $nd_experiment_rs = $schema->resultset('NaturalDiversity::NdExperimentProject')->search(
+            { project_id => $project_id }
+        )->search_related('nd_experiment');
+
+        foreach my $exp ($nd_experiment_rs->all()) {
+            $exp->nd_geolocation_id($location_id);
+            $exp->update();
+        }
+
+        my $q = "UPDATE nd_experiment_phenotype_bridge SET nd_geolocation_id=$location_id WHERE project_id=?;";
+        my $h = $schema->storage->dbh()->prepare($q);
+        $h->execute($project_id);
+    };
+
+    try {
+        $schema->txn_do($coderef);
+    } catch {
+        print STDERR "Transaction error updating location: $_\n";
+    };
+
 }
 
 =head2 function get_location_noaa_station_id()
@@ -3505,7 +3531,7 @@ sub _save_plant_entry {
         type_id => $plant_relationship_cvterm,
     });
 
-    #link plant to project through nd_experiment. also add nd_genolocation_id of plot to nd_experiment for the plant
+    #link plant to project through nd_experiment. also add nd_geolocation_id of plot to nd_experiment for the plant
     my $plant_nd_experiment_stock = $chado_schema->resultset("NaturalDiversity::NdExperimentStock")->create({
         nd_experiment_id => $field_layout_experiment->nd_experiment_id(),
         type_id => $field_layout_cvterm,
@@ -4157,7 +4183,7 @@ sub _save_subplot_entry {
         type_id => $subplot_relationship_cvterm,
     });
 
-    #link subplot to project through nd_experiment. also add nd_genolocation_id of plot to nd_experiment for the subplot
+    #link subplot to project through nd_experiment. also add nd_geolocation_id of plot to nd_experiment for the subplot
     my $subplot_nd_experiment_stock = $chado_schema->resultset("NaturalDiversity::NdExperimentStock")->create({
         nd_experiment_id => $field_layout_experiment->nd_experiment_id(),
         type_id => $field_layout_cvterm,
