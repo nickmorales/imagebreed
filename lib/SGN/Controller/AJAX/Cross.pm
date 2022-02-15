@@ -118,6 +118,11 @@ sub upload_cross_file_POST : Args(0) {
 
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
+    if (($user_role ne 'curator') && ($user_role ne 'submitter')) {
+        $c->stash->{rest} = {error=>'Only a submitter or a curator can upload crosses'};
+        $c->detach();
+    }
+
     my $uploader = CXGN::UploadFile->new({
         tempfile => $upload_tempfile,
         subdirectory => $subdirectory,
