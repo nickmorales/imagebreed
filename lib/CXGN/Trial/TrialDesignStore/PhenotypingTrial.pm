@@ -65,6 +65,7 @@ sub validate_design {
     my %seen_stock_names;
     my %seen_source_names;
     my %seen_accession_names;
+    my %seen_plot_numbers;
 
     foreach my $stock (keys %design){
         if ($stock eq 'treatments'){
@@ -86,6 +87,9 @@ sub validate_design {
             }
             if ($property eq 'plot_name') {
                 my $plot_name = $design{$stock}->{$property};
+                # Check that there are no plant names, if so, this could be a lookup value for an existing plot
+                # So, we don't validate that the plot name is unique
+                if ($design{$stock}->{plant_names} && scalar $design{$stock}->{plant_names} > 0) { next; }
                 $seen_stock_names{$plot_name}++;
             }
             if ($property eq 'plant_names') {
@@ -99,6 +103,11 @@ sub validate_design {
                 foreach (@$subplot_names) {
                     $seen_stock_names{$_}++;
                 }
+            }
+            if ($property eq 'plot_number') {
+                my $plot_number = $design{$stock}->{$property};
+                if ($design{$stock}->{plant_names} && scalar $design{$stock}->{plant_names} > 0) { next; }
+                $seen_plot_numbers{$plot_number}++;
             }
         }
     }
@@ -135,8 +144,8 @@ sub validate_design {
 
     my @source_stock_types = @{$self->get_source_stock_types()};
 
-    print STDERR "Source Stock types = ".join(", ",@source_stock_types)."\n";
-    print STDERR "Accession names = ".join(", ", @accession_names)."\n";
+    # print STDERR "Source Stock types = ".join(", ",@source_stock_types)."\n";
+    # print STDERR "Accession names = ".join(", ", @accession_names)."\n";
 
     my %found_data;
     foreach my $a (@accession_names) {
@@ -153,6 +162,22 @@ sub validate_design {
     foreach (@accession_names){
         if (!$found_data{$_}){
             $error .= "The following name is not in the database: $_ .";
+        }
+    }
+
+    # Check that the plot numbers are unique in the db for the given study
+    my $trial_layout_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'trial_layout_json', 'project_property')->cvterm_id();
+    my $plot_number_select = "select projectprop.value from project " .
+        "join projectprop on projectprop.project_id = project.project_id " .
+        "where projectprop.type_id = $trial_layout_cvterm_id and project.project_id = ?";
+    my $sth = $chado_schema->storage->dbh->prepare($plot_number_select);
+    $sth->execute($self->get_trial_id());
+    while (my ($trial_layout_json) = $sth->fetchrow_array()) {
+        my $trial_layout_json = decode_json($trial_layout_json);
+        foreach my $key (keys %{$trial_layout_json}) {
+            if (defined $seen_plot_numbers{$key}) {
+                $error .= "Plot number '$key' already exists in the database for that study. Plot number must be unique.";
+            }
         }
     }
 

@@ -93,7 +93,7 @@ sub search {
 sub detail {
     my $self = shift;
     my $seedlot_id = shift;
-    
+
     my $schema = $self->bcs_schema;
     my $phenome_schema = $self->phenome_schema();
     my $page_size = $self->page_size;
@@ -159,12 +159,12 @@ sub all_transactions {
     my $limit = $page_size*($page+1)-1;
     my $offset = $page_size*$page;
 
-    my ($transactions, $records_total) = CXGN::Stock::Seedlot::Transaction->get_transactions($schema, $seedlot_id->[0], $transaction_id, $germplasm_id, $limit, $offset);
+    my ($transactions, $records_total) = CXGN::Stock::Seedlot::get_transactions($schema, $seedlot_id->[0], $transaction_id, $germplasm_id, $limit, $offset);
 
     foreach my $t (@$transactions) {
         my $from = $t->from_stock->[0];
         my $to = $t->to_stock->[0];
-        my $id = $t->transaction_id;    
+        my $id = $t->transaction_id;
         my $timestamp = format_date($t->timestamp);
         push @data , {
             additionalInfo=>{},
@@ -317,7 +317,7 @@ sub store_seedlots {
 
         if (!$timestamp){
             return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('A seedlot must have a timestamp for the transaction.'));
-        } 
+        }
         my $timestamp_format = check_timestamp($timestamp);
         if (!$timestamp_format){
             return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('A seedlot must have a formatted timestamp for the transaction.'));
@@ -487,7 +487,7 @@ sub store_seedlot_transaction {
                 seedlot_id => $from_stock_id,
             );
         }
-        
+
         if ($to_stock_id){
             $to_stock_uniquename = $schema->resultset('Stock::Stock')->find({stock_id=>$to_stock_id})->uniquename();
             if (!$to_stock_uniquename){
@@ -659,7 +659,7 @@ sub update_seedlot {
     my $return = $seedlot->store();
     if (exists($return->{error})){
         return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('An error occurred, seed lot can not be stored.'));
-    } 
+    }
 
     $phenome_schema->resultset("StockOwner")->find_or_create({
             stock_id     => $seedlot_id,

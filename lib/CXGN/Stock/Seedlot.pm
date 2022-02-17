@@ -692,6 +692,89 @@ sub verify_seedlot_accessions_crosses {
     return \%return;
 }
 
+#CLASS METHOD
+sub get_transactions {
+    my $class = shift;
+    my $schema = shift;
+    my $seedlot_id = shift;
+    my $transaction_id = shift;
+    my $germplasm_id = shift;
+    my $limit = shift;
+    my $offset = shift;
+
+    my %filter;
+    my @ids;
+
+    if($seedlot_id){
+        push @ids, $seedlot_id;
+    }
+    if($transaction_id){
+        $filter{'me.stock_relationship_id'} =  $transaction_id;
+    }
+
+    if($germplasm_id){
+        my $trial_related_stock = CXGN::Stock::RelatedStocks->new({dbic_schema => $schema, stock_id =>$germplasm_id});
+        my $result = $trial_related_stock->get_trial_related_stock();
+
+        foreach (@$result){
+            my $id = $_->[0];
+            if (!$seedlot_id || $seedlot_id eq $id ){
+                push @ids, $id;
+            }
+        }
+    }
+
+    if (@ids){
+        $filter{"-or"} = [
+                subject_id => { -in => \@ids },
+                object_id => { -in => \@ids },
+            ];
+    }
+
+    my $type_id = SGN::Model::Cvterm->get_cvterm_row($schema, "seed transaction", "stock_relationship")->cvterm_id();
+    $filter{'me.type_id'} =  { '-in' => $type_id };
+
+    my $rs = $schema->resultset("Stock::StockRelationship")->search(
+        \%filter,
+        {
+            'join' => ['subject', 'object'],
+            '+select' => ['subject.uniquename', 'subject.type_id', 'object.uniquename', 'object.type_id'],
+            '+as' => ['subject_uniquename', 'subject_type_id', 'object_uniquename', 'object_type_id'],
+            'order_by'=>{'-desc'=>'me.stock_relationship_id'},
+        }
+    );
+    my $total_count = $rs->count();
+    if (defined($limit) && defined($offset)){
+        $rs = $rs->slice($offset, $limit);
+    }
+
+    my @transactions;
+    while (my $row = $rs->next()) {
+        my $t_obj = CXGN::Stock::Seedlot::Transaction->new( schema => $schema );
+        $t_obj->transaction_id($row->stock_relationship_id);
+        $t_obj->from_stock([$row->object_id(), $row->get_column('object_uniquename'), $row->get_column('object_type_id')]);
+        $t_obj->to_stock([$row->subject_id(), $row->get_column('subject_uniquename'), $row->get_column('subject_type_id')]);
+        my $data = JSON::Any->decode($row->value());
+        if (defined($data->{weight_gram})){
+            $t_obj->weight_gram($data->{weight_gram});
+        } else {
+            $t_obj->weight_gram('NA');
+        }
+        if (defined($data->{amount})){
+            $t_obj->amount($data->{amount});
+        } else {
+            $t_obj->amount('NA');
+        }
+        $t_obj->timestamp($data->{timestamp});
+        $t_obj->operator($data->{operator});
+        $t_obj->description($data->{description});
+
+        push @transactions, $t_obj;
+    }
+
+    return \@transactions, $total_count;
+}
+
 sub BUILDARGS {
     my $orig = shift;
     my %args = @_;
@@ -1229,7 +1312,7 @@ sub delete_verify_using_list {
     my $schema = shift;
     my $phenome_schema = shift;
     my $list_id = shift;
-    
+
     my $list = CXGN::List->new( { dbh => $schema->storage->dbh(), list_id => $list_id } );
     my $type_row = SGN::Model::Cvterm->get_cvterm_row($schema, "seedlot", 'stock_type');
 
@@ -1237,9 +1320,9 @@ sub delete_verify_using_list {
     if ($type_row) {
 	$type_id = $type_row->cvterm_id();
     }
-    
+
     print STDERR "TYPE ID = $type_id\n";
-    
+
     my $elements = $list->elements();
 
     my @errors;
@@ -1254,7 +1337,7 @@ sub delete_verify_using_list {
 	    print STDERR "No such seedlot $ele\n";
 	    push @errors, [ $ele, "No seedlot named '$ele' could be found in the database" ];
 	}
-	else { 
+	else {
 	    my $experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, "seedlot_experiment", "experiment_type")->cvterm_id();
 	    my $seedlot_id = $rs->next()->stock_id();
 	    print STDERR "SEEDLOT ID: $seedlot_id\n";
@@ -1270,7 +1353,7 @@ sub delete_verify_using_list {
 	}
     }
     return ( \@ok, \@errors );
-    
+
 
 }
 
@@ -1287,7 +1370,7 @@ sub delete_using_list {
     if ($type_row) {
 	$type_id = $type_row->cvterm_id();
     }
-    
+
     print STDERR "TYPE ID = $type_id\n";
 
     my $elements = $list->elements();

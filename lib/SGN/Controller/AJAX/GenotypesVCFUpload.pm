@@ -121,9 +121,14 @@ sub upload_genotype_verify_POST : Args(0) {
     my $upload_intertek_genotypes = $c->req->upload('upload_genotype_intertek_file_input');
     my $upload_inteterk_marker_info = $c->req->upload('upload_genotype_intertek_snp_file_input');
     my $upload_ssr_data = $c->req->upload('upload_genotype_ssr_file_input');
+    my $upload_grm_data = $c->req->upload('upload_genotype_grm_file_input');
 
     if (defined($upload_vcf) && defined($upload_intertek_genotypes)) {
         $c->stash->{rest} = { error => 'Do not try to upload both VCF and Intertek at the same time!' };
+        $c->detach();
+    }
+    if (defined($upload_vcf) && defined($upload_grm_data)) {
+        $c->stash->{rest} = { error => 'Do not try to upload both VCF and GRM data at the same time!' };
         $c->detach();
     }
     if (defined($upload_vcf) && defined($upload_tassel_hdf5)) {
@@ -161,7 +166,7 @@ sub upload_genotype_verify_POST : Args(0) {
             my @outline;
             my $lastcol;
             while (<$F>) {
-		$_ =~ s/\r//g;
+                $_ =~ s/\r//g;
                 if ($_ =~ m/^\##/) {
                     print $Fout $_;
                 } else {
@@ -301,6 +306,13 @@ sub upload_genotype_verify_POST : Args(0) {
         $upload_tempfile = $upload_ssr_data->tempname;
         $subdirectory = "ssr_data_upload";
         $parser_plugin = 'SSRExcel';
+    }
+
+    if ($upload_grm_data) {
+        $upload_original_name = $upload_grm_data->filename();
+        $upload_tempfile = $upload_grm_data->tempname;
+        $subdirectory = "grm_data_upload";
+        $parser_plugin = 'GRMTSV';
     }
 
     my $uploader = CXGN::UploadFile->new({
@@ -567,7 +579,70 @@ sub upload_genotype_verify_POST : Args(0) {
 
     } elsif ($parser_plugin eq 'SSRExcel') {
         my $parsed_data = $parser->parse();
-        print STDERR "SSR PARSED DATA =".Dumper($parsed_data)."\n";
+        # print STDERR "SSR PARSED DATA =".Dumper($parsed_data)."\n";
+        my $parse_errors;
+        if (!$parsed_data) {
+            my $return_error = '';
+            if (!$parser->has_parse_errors() ){
+                $return_error = "Could not get parsing errors";
+                $c->stash->{rest} = {error_string => $return_error,};
+            } else {
+                $parse_errors = $parser->get_parse_errors();
+                #print STDERR Dumper $parse_errors;
+                foreach my $error_string (@{$parse_errors->{'error_messages'}}){
+                    $return_error=$return_error.$error_string."<br>";
+                }
+            }
+            $c->stash->{rest} = {error_string => $return_error, missing_stocks => $parse_errors->{'missing_stocks'}};
+            $c->detach();
+        }
+
+        my $observation_unit_uniquenames = $parsed_data->{observation_unit_uniquenames};
+        my $genotype_info = $parsed_data->{genotypes_info};
+
+        my @protocol_id_list;
+        push @protocol_id_list, $protocol_id;
+        my $genotypes_search = CXGN::Genotype::Search->new({
+        	bcs_schema=>$schema,
+        	people_schema=>$people_schema,
+        	protocol_id_list=>\@protocol_id_list,
+        });
+        my $result = $genotypes_search->get_pcr_genotype_info();
+        my $protocol_marker_names = $result->{'marker_names'};
+        my $previous_protocol_marker_names = decode_json $protocol_marker_names;
+
+        my %protocolprop_info;
+        $protocolprop_info{'sample_observation_unit_type_name'} = 'accession';
+        $protocolprop_info{'marker_names'} = $previous_protocol_marker_names;
+
+        $store_args->{genotype_info} = $genotype_info;
+        $store_args->{observation_unit_uniquenames} = $observation_unit_uniquenames;
+        $store_args->{protocol_info} = \%protocolprop_info;
+        $store_args->{observation_unit_type_name} = 'accession';
+        $store_args->{genotyping_data_type} = 'ssr';
+
+        my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new($store_args);
+        my $verified_errors = $store_genotypes->validate();
+        if (scalar(@{$verified_errors->{error_messages}}) > 0){
+            my $error_string = join ', ', @{$verified_errors->{error_messages}};
+            $c->stash->{rest} = { error => "There exist errors in your file. $error_string", missing_stocks => $verified_errors->{missing_stocks} };
+            $c->detach();
+        }
+        if (scalar(@{$verified_errors->{warning_messages}}) > 0){
+            #print STDERR Dumper $verified_errors->{warning_messages};
+            my $warning_string = join ', ', @{$verified_errors->{warning_messages}};
+            if (!$accept_warnings){
+                $c->stash->{rest} = { warning => $warning_string, previous_genotypes_exist => $verified_errors->{previous_genotypes_exist} };
+                $c->detach();
+            }
+        }
+
+        $store_genotypes->store_metadata();
+        $return = $store_genotypes->store_identifiers();
+
+    } elsif ($parser_plugin eq 'GRMTSV') {
+        my $parsed_data = $parser->parse();
+        print STDERR "GRM TSV PARSED DATA =".Dumper($parsed_data)."\n";
         my $parse_errors;
         if (!$parsed_data) {
             my $return_error = '';

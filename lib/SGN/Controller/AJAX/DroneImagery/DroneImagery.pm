@@ -7310,11 +7310,11 @@ sub standard_process_apply_POST : Args(0) {
     my $plot_margin_left_right = defined ($c->req->param('phenotypes_plot_margin_right_left')) ? $c->req->param('phenotypes_plot_margin_right_left') : 5;
     my $drone_imagery_remove_background_lower_percentage = defined ($c->req->param('drone_imagery_remove_background_lower_percentage')) ? $c->req->param('drone_imagery_remove_background_lower_percentage') : 0;
     my $drone_imagery_remove_background_upper_percentage = defined ($c->req->param('drone_imagery_remove_background_upper_percentage')) ? $c->req->param('drone_imagery_remove_background_upper_percentage') : 0;
-    my $camera_rig_apply = $c->req->param('apply_to_all_drone_runs_from_same_camera_rig') eq 'Yes' ? 1 : 0;
-    my $polygon_template_dimensions_metadata = decode_json $c->req->param('polygon_template_metadata');
-    my $polygon_templates_deleted = decode_json $c->req->param('polygon_templates_deleted');
-    my $polygon_removed_numbers = decode_json $c->req->param('polygon_removed_numbers');
-    my $polygons_to_plot_names = decode_json $c->req->param('polygons_to_plot_names');
+    my $camera_rig_apply = $c->req->param('apply_to_all_drone_runs_from_same_camera_rig') && $c->req->param('apply_to_all_drone_runs_from_same_camera_rig') eq 'Yes' ? 1 : 0;
+    my $polygon_template_dimensions_metadata = $c->req->param('polygon_template_metadata') ? decode_json $c->req->param('polygon_template_metadata') : [];
+    my $polygon_templates_deleted = $c->req->param('polygon_templates_deleted') ? decode_json $c->req->param('polygon_templates_deleted') : [];
+    my $polygon_removed_numbers = $c->req->param('polygon_removed_numbers') ? decode_json $c->req->param('polygon_removed_numbers') : [];
+    my $polygons_to_plot_names = $c->req->param('polygons_to_plot_names') ? decode_json $c->req->param('polygons_to_plot_names') : {};
     my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $project = CXGN::Trial->new({ bcs_schema => $bcs_schema, trial_id => $drone_run_project_id_input });
@@ -8205,10 +8205,10 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $gcp_current_dist_2_x = $current_gcp_points->{$gcp_names_common[1]}->{x_pos} - $current_gcp_points->{$gcp_names_common[2]}->{x_pos};
     my $gcp_current_dist_2_y = $current_gcp_points->{$gcp_names_common[1]}->{y_pos} - $current_gcp_points->{$gcp_names_common[2]}->{y_pos};
 
-    my $gcp_dist_x_ratio_1 = $gcp_dist_1_x/$gcp_current_dist_1_x;
-    my $gcp_dist_y_ratio_1 = $gcp_dist_1_y/$gcp_current_dist_1_y;
-    my $gcp_dist_x_ratio_2 = $gcp_dist_2_x/$gcp_current_dist_2_x;
-    my $gcp_dist_y_ratio_2 = $gcp_dist_2_y/$gcp_current_dist_2_y;
+    my $gcp_dist_x_ratio_1 = $gcp_current_dist_1_x > 0 ? $gcp_dist_1_x/$gcp_current_dist_1_x : 1;
+    my $gcp_dist_y_ratio_1 = $gcp_current_dist_1_y > 0 ? $gcp_dist_1_y/$gcp_current_dist_1_y : 1;
+    my $gcp_dist_x_ratio_2 = $gcp_current_dist_2_x > 0 ? $gcp_dist_2_x/$gcp_current_dist_2_x : 1;
+    my $gcp_dist_y_ratio_2 = $gcp_current_dist_2_y > 0 ? $gcp_dist_2_y/$gcp_current_dist_2_y : 1;
 
     my $gcp_dist_x_ratio = sum(($gcp_dist_x_ratio_1,$gcp_dist_x_ratio_2))/2;
     my $gcp_dist_y_ratio = sum(($gcp_dist_y_ratio_1,$gcp_dist_y_ratio_2))/2;
