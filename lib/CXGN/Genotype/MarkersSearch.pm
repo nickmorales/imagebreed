@@ -104,13 +104,15 @@ sub search {
     my $tissue_sample_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'tissue_sample', 'stock_type')->cvterm_id();
     my $tissue_sample_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'tissue_sample_of', 'stock_relationship')->cvterm_id();
 
+    my @where_marker_count_clause = ("nd_protocolprop.type_id=$vcf_map_details_cvterm_id");
+
     #protocol_id_list is required
-    my $protocol_where;
     if ($protocol_id_list && scalar(@$protocol_id_list)>0) {
         my $protocol_sql = join ("," , @$protocol_id_list);
-        $protocol_where = "nd_protocolprop.nd_protocol_id in ($protocol_sql)";
+        my $protocol_where = "nd_protocolprop.nd_protocol_id in ($protocol_sql)";
+        push @where_clause, $protocol_where;
+        push @where_marker_count_clause, $protocol_where;
     }
-    push @where_clause, $protocol_where;
 
     if ($marker_name_list && scalar(@$marker_name_list)>0) {
         foreach (@$marker_name_list) {
@@ -158,7 +160,8 @@ sub search {
         push @results, $marker_obj;
     }
 
-    my $count_q = "SELECT jsonb_array_length(value->'marker_names') FROM nd_protocolprop WHERE $protocol_where;";
+    my $where_marker_count_clause = " WHERE " . (join (" AND " , @where_marker_count_clause));
+    my $count_q = "SELECT jsonb_array_length(value->'marker_names') FROM nd_protocolprop $where_marker_count_clause;";
     my $count_h = $schema->storage->dbh()->prepare($count_q);
     $count_h->execute();
     my ($total_marker_count) = $count_h->fetchrow_array();
