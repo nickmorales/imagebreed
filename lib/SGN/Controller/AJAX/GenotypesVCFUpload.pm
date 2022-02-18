@@ -660,32 +660,43 @@ sub upload_genotype_verify_POST : Args(0) {
             $c->detach();
         }
 
-        my $observation_unit_uniquenames = $parsed_data->{observation_unit_uniquenames};
-        my $genotype_info = $parsed_data->{genotypes_info};
+        my $grm_info = $parsed_data->{genotypes_info};
+        my $observation_unit_names_all = $parsed_data->{observation_unit_uniquenames};
 
-        my @protocol_id_list;
-        push @protocol_id_list, $protocol_id;
-        my $genotypes_search = CXGN::Genotype::Search->new({
-        	bcs_schema=>$schema,
-        	people_schema=>$people_schema,
-        	protocol_id_list=>\@protocol_id_list,
-        });
-        my $result = $genotypes_search->get_pcr_genotype_info();
-        my $protocol_marker_names = $result->{'marker_names'};
-        my $previous_protocol_marker_names = decode_json $protocol_marker_names;
-
-        my %protocolprop_info;
-        $protocolprop_info{'sample_observation_unit_type_name'} = 'accession';
-        $protocolprop_info{'marker_names'} = $previous_protocol_marker_names;
-
-        $store_args->{genotype_info} = $genotype_info;
-        $store_args->{observation_unit_uniquenames} = $observation_unit_uniquenames;
-        $store_args->{protocol_info} = \%protocolprop_info;
-        $store_args->{observation_unit_type_name} = 'accession';
-        $store_args->{genotyping_data_type} = 'ssr';
+        my $store_args = {
+            bcs_schema=>$schema,
+            metadata_schema=>$metadata_schema,
+            phenome_schema=>$phenome_schema,
+            observation_unit_type_name=>$obs_type,
+            project_id=>$project_id,
+            protocol_id=>$protocol_id,
+            genotyping_facility=>$genotyping_facility, #projectprop
+            breeding_program_id=>$breeding_program_id, #project_rel
+            project_year=>$year, #projectprop
+            project_location_id=>$location_id, #ndexperiment and projectprop
+            project_name=>$project_name, #project_attr
+            project_description=>$description, #project_attr
+            protocol_name=>$protocol_name,
+            protocol_description=>$protocol_description,
+            organism_id=>$organism_id,
+            igd_numbers_included=>$include_igd_numbers,
+            lab_numbers_included=>$include_lab_numbers,
+            user_id=>$user_id,
+            archived_filename=>$archived_filename_with_path,
+            archived_file_type=>'genotype_vcf', #can be 'genotype_vcf' or 'genotype_dosage' to disntiguish genotyprop between old dosage only format and more info vcf format
+            temp_file_sql_copy=>$temp_file_sql_copy,
+            genotyping_data_type=>'GRM',
+            observation_unit_uniquenames=>$observation_unit_names_all,
+            protocol_info=>{
+                reference_genome_name => $reference_genome_name,
+                species_name => $organism_species
+            },
+            genotype_info=>$grm_info
+        };
 
         my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new($store_args);
         my $verified_errors = $store_genotypes->validate();
+        # print STDERR Dumper $verified_errors;
         if (scalar(@{$verified_errors->{error_messages}}) > 0){
             my $error_string = join ', ', @{$verified_errors->{error_messages}};
             $c->stash->{rest} = { error => "There exist errors in your file. $error_string", missing_stocks => $verified_errors->{missing_stocks} };
