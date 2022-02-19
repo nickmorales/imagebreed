@@ -326,6 +326,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 drone_run_name => $new_drone_run_name,
                 drone_run_id => $selected_drone_run_id,
                 field_trial_id => $selected_trial_id,
+                trial_location_id => $trial_location_id
             };
             push @selected_drone_run_ids, $selected_drone_run_id;
 
@@ -349,10 +350,14 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
         foreach my $selected_trial_id (@selected_trial_ids) {
             my $new_drone_run_name = $new_drone_run_names[$iterator];
 
+            my $trial = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $selected_trial_id });
+            my $trial_location_id = $trial->get_location()->[0];
+
             push @selected_drone_run_infos, {
                 drone_run_name => $new_drone_run_name,
                 drone_run_id => $selected_drone_run_id,
                 field_trial_id => $selected_trial_id,
+                trial_location_id => $trial_location_id
             };
             push @selected_drone_run_ids, $selected_drone_run_id;
 
@@ -361,6 +366,11 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
     }
     print STDERR Dumper \@selected_drone_run_infos;
     my $selected_drone_run_ids_string = join '_', @selected_drone_run_ids;
+
+    my @nd_experiment_project_ids;
+    foreach (@selected_drone_run_ids) {
+        push @nd_experiment_project_ids, {project_id => $_};
+    }
 
     my $drone_run_band_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
     my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
@@ -378,6 +388,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
     my $output_path;
     my $alignment_output_path;
     my $cmd;
+
+    my $computation_location_id = $schema->resultset("NaturalDiversity::NdGeolocation")->search({description=>'[Computation]'})->first->nd_geolocation_id();
 
     my $image_types_allowed = CXGN::DroneImagery::ImageTypes::get_all_drone_run_band_image_types()->{hash_ref};
     my %seen_image_types_upload;
@@ -607,6 +619,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $drone_run_name = $selected_drone_run_obj->{drone_run_name};
                 my $drone_run_id = $selected_drone_run_obj->{drone_run_id};
                 my $field_trial_id = $selected_drone_run_obj->{field_trial_id};
+                my $trial_location_id = $selected_drone_run_obj->{trial_location_id};
 
                 my $drone_run_band_name = $drone_run_name."_".$drone_run_band_type;
 
@@ -631,6 +644,60 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
 
                 $iterator++;
             }
+        }
+
+        my $report_file = $c->req->upload('drone_run_band_stitched_ortho_report');
+        if ($report_file) {
+            my $upload_original_name = $report_file->filename();
+            my $upload_tempfile = $report_file->tempname;
+            my $time = DateTime->now();
+            my $timestamp = $time->ymd()."_".$time->hms();
+
+            my $uploader = CXGN::UploadFile->new({
+                tempfile => $upload_tempfile,
+                subdirectory => "drone_imagery_upload",
+                archive_path => $c->config->{archive_path},
+                archive_filename => $upload_original_name,
+                timestamp => $timestamp,
+                user_id => $user_id,
+                user_role => $user_role
+            });
+            my $archived_filename_with_path = $uploader->archive();
+            my $md5 = $uploader->get_md5($archived_filename_with_path);
+            if (!$archived_filename_with_path) {
+                $c->stash->{message} = "Could not save Report file $upload_original_name in archive.";
+                $c->stash->{template} = 'generic_message.mas';
+                return;
+            }
+            unlink $upload_tempfile;
+            print STDERR "Archived User Provided Ortho Report: $archived_filename_with_path\n";
+
+            my $nd_experiment_type_name = 'drone_run_experiment_stitched_report';
+            my $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, $nd_experiment_type_name, 'experiment_type')->cvterm_id();
+            my $experiment = $schema->resultset('NaturalDiversity::NdExperiment')->create({
+                nd_geolocation_id => $computation_location_id,
+                type_id => $nd_experiment_type_id,
+                nd_experiment_projects => \@nd_experiment_project_ids,
+            });
+            my $nd_experiment_id = $experiment->nd_experiment_id();
+
+            my $md_row = $metadata_schema->resultset("MdMetadata")->create({create_person_id => $user_id});
+            my $upload_file = CXGN::UploadFile->new();
+            my $md5_save = $upload_file->get_md5($archived_filename_with_path);
+            my $md5checksum = $md5_save->hexdigest();
+            my $file_row = $metadata_schema->resultset("MdFiles")->create({
+                basename => basename($archived_filename_with_path),
+                dirname => dirname($archived_filename_with_path),
+                filetype => $nd_experiment_type_name,
+                md5checksum => $md5checksum,
+                metadata_id => $md_row->metadata_id(),
+            });
+            my $file_id = $file_row->file_id();
+
+            my $experiment_files = $phenome_schema->resultset("NdExperimentMdFiles")->create({
+                nd_experiment_id => $nd_experiment_id,
+                file_id => $file_id,
+            });
         }
 
         if (scalar(@return_drone_run_band_project_ids) > 0 && scalar(@return_drone_run_band_project_ids) == scalar(@new_drone_run_bands)*scalar(@new_drone_run_names)) {
@@ -739,7 +806,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
         $odm_check_prop->update();
 
         my @stitched_bands;
-        my %raw_image_bands;
+        my @stitched_result_files;
         eval {
             if ($new_drone_run_camera_info eq 'micasense_5') {
                 my $upload_panel_original_name = $upload_panel_file->filename();
@@ -783,7 +850,21 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_b3 = "$image_path_remaining/odm_orthophoto/b3.png";
                 my $odm_b4 = "$image_path_remaining/odm_orthophoto/b4.png";
                 my $odm_b5 = "$image_path_remaining/odm_orthophoto/b5.png";
+
                 my $odm_final_orthophoto = "$image_path_remaining/odm_orthophoto/odm_orthophoto.tif";
+                my $odm_final_point_cloud = "$image_path_remaining/odm_filterpoints/point_cloud.ply";
+                my $odm_final_report = "$image_path_remaining/odm_report/report.pdf";
+                my $odm_final_report_stats = "$image_path_remaining/odm_report/stats.json";
+                my $odm_final_report_shots = "$image_path_remaining/odm_report/shots.geojson";
+                my $odm_final_sfm_reconstruction = "$image_path_remaining/opensfm/reconstruction.json";
+
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_image', $odm_final_orthophoto];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud', $odm_final_point_cloud];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_report', $odm_final_report];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_stats', $odm_final_report_stats];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_shots', $odm_final_report_shots];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_reconstruction', $odm_final_sfm_reconstruction];
+
                 my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImage.py --image_path $odm_final_orthophoto --outfile_path_b1 $odm_b1 --outfile_path_b2 $odm_b2 --outfile_path_b3 $odm_b3 --outfile_path_b4 $odm_b4 --outfile_path_b5 $odm_b5 $odm_radiometric_calibration_open";
                 print STDERR $odm_cmd."\n";
                 my $odm_open_status = system($odm_cmd);
@@ -889,6 +970,18 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_status = system($odm_command);
 
                 my $odm_rgb_orthophoto = "$image_path_remaining/odm_orthophoto/odm_orthophoto.tif";
+                my $odm_final_point_cloud = "$image_path_remaining/odm_filterpoints/point_cloud.ply";
+                my $odm_final_report = "$image_path_remaining/odm_report/report.pdf";
+                my $odm_final_report_stats = "$image_path_remaining/odm_report/stats.json";
+                my $odm_final_report_shots = "$image_path_remaining/odm_report/shots.geojson";
+                my $odm_final_sfm_reconstruction = "$image_path_remaining/opensfm/reconstruction.json";
+
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_image', $odm_rgb_orthophoto];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud', $odm_final_point_cloud];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_report', $odm_final_report];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_stats', $odm_final_report_stats];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_shots', $odm_final_report_shots];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_reconstruction', $odm_final_sfm_reconstruction];
 
                 my @odm_rgb_image_size = imgsize($odm_rgb_orthophoto);
                 my $odm_rgb_image_width = $odm_rgb_image_size[0];
@@ -1029,6 +1122,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                     my $drone_run_name = $selected_drone_run_obj->{drone_run_name};
                     my $drone_run_id = $selected_drone_run_obj->{drone_run_id};
                     my $field_trial_id = $selected_drone_run_obj->{field_trial_id};
+                    my $trial_location_id = $selected_drone_run_obj->{trial_location_id};
 
                     my $drone_run_band_name = $drone_run_name."_".$drone_run_band_type;
 
@@ -1059,6 +1153,37 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
 
                     $iterator++;
                 }
+            }
+
+            foreach (@stitched_result_files) {
+                my $nd_experiment_type_name = $_->[0];
+                my $file_name = $_->[1];
+
+                my $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, $nd_experiment_type_name, 'experiment_type')->cvterm_id();
+                my $experiment = $schema->resultset('NaturalDiversity::NdExperiment')->create({
+                    nd_geolocation_id => $computation_location_id,
+                    type_id => $nd_experiment_type_id,
+                    nd_experiment_projects => \@nd_experiment_project_ids,
+                });
+                my $nd_experiment_id = $experiment->nd_experiment_id();
+
+                my $md_row = $metadata_schema->resultset("MdMetadata")->create({create_person_id => $user_id});
+                my $upload_file = CXGN::UploadFile->new();
+                my $md5 = $upload_file->get_md5($file_name);
+                my $md5checksum = $md5->hexdigest();
+                my $file_row = $metadata_schema->resultset("MdFiles")->create({
+                    basename => basename($file_name),
+                    dirname => dirname($file_name),
+                    filetype => $nd_experiment_type_name,
+                    md5checksum => $md5checksum,
+                    metadata_id => $md_row->metadata_id(),
+                });
+                my $file_id = $file_row->file_id();
+
+                my $experiment_files = $phenome_schema->resultset("NdExperimentMdFiles")->create({
+                    nd_experiment_id => $nd_experiment_id,
+                    file_id => $file_id,
+                });
             }
         };
         if ($@) {
