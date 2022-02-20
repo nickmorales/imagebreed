@@ -141,7 +141,7 @@ my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new(
     igd_numbers_included=>0,
     lab_numbers_included=>0,
     archived_filename => $archived_file,
-    archived_file_type => 'genotype_vcf'  #can be 'genotype_vcf' or 'genotype_dosage'
+    archived_file_type => 'genotype_vcf'  #can be 'genotype_vcf' or 'genotype_dosage' or 'ssr'
 );
 my $verified_errors = $store_genotypes->validate();
 $store_genotypes->store_metadata();
@@ -179,7 +179,7 @@ my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new(
     igd_numbers_included=>0,
     lab_numbers_included=>0,
     archived_filename => $archived_file,
-    archived_file_type => 'genotype_vcf'  #can be 'genotype_vcf' or 'genotype_dosage'
+    archived_file_type => 'genotype_vcf'  #can be 'genotype_vcf' or 'genotype_dosage' or 'ssr'
 );
 my $verified_errors = $store_genotypes->validate();
 $store_genotypes->store_metadata();
@@ -210,7 +210,7 @@ my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new(
     igd_numbers_included=>0,
     lab_numbers_included=>0,
     archived_filename => $archived_file,
-    archived_file_type => 'genotype_vcf'  #can be 'genotype_vcf' or 'genotype_dosage'
+    archived_file_type => 'genotype_vcf'  #can be 'genotype_vcf' or 'genotype_dosage' or 'ssr'
 );
 my $verified_errors = $store_genotypes->validate();
 $store_genotypes->store_metadata();
@@ -237,7 +237,7 @@ $return = $store_genotypes->store_genotypeprop_table();
     igd_numbers_included=>0,
     lab_numbers_included=>0,
     archived_filename => $archived_file,
-    archived_file_type => 'genotype_vcf'  #can be 'genotype_vcf' or 'genotype_dosage'
+    archived_file_type => 'genotype_vcf'  #can be 'genotype_vcf' or 'genotype_dosage' or 'ssr'
 );
  my $verified_errors = $store_genotypes->validate();
  $store_genotypes->store_metadata();
@@ -390,7 +390,7 @@ has 'archived_filename' => (
     required => 0,
 );
 
-has 'archived_file_type' => ( #can be 'genotype_vcf' or 'genotype_dosage' to disntiguish genotyprop between old dosage only format and more info vcf format
+has 'archived_file_type' => ( #can be 'genotype_vcf' or 'genotype_dosage' to disntiguish genotyprop between old dosage only format and more info vcf format.  or 'ssr'
     isa => 'Str',
     is => 'rw',
     required => 0,
@@ -553,8 +553,8 @@ sub validate {
     my @warning_messages;
 
     #to disntiguish genotyprop between old dosage only format and more info vcf format
-    if ($self->archived_file_type && $self->archived_file_type ne 'genotype_vcf' && $self->archived_file_type ne 'genotype_dosage'){
-        push @error_messages, 'Archived filetype must be either genotype_vcf or genotype_dosage';
+    if ($self->archived_file_type && $self->archived_file_type ne 'genotype_vcf' && $self->archived_file_type ne 'genotype_dosage' && $self->archived_file_type ne 'ssr'){
+        push @error_messages, 'Archived filetype must be either genotype_vcf or genotype_dosage or ssr';
         return {error_messages => \@error_messages};
     }
 
@@ -578,13 +578,15 @@ sub validate {
     my $pcr_marker_genotypeprop_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'pcr_marker_genotyping', 'genotype_property')->cvterm_id();
     $self->pcr_marker_genotyping_type_id($pcr_marker_genotypeprop_cvterm_id);
 
-    my $snp_genotypingprop_cvterm_id;
-    if ($self->archived_file_type eq 'genotype_vcf'){
-        $snp_genotypingprop_cvterm_id = $snp_vcf_cvterm_id;
-    } elsif ($self->archived_file_type eq 'genotype_dosage'){
-        $snp_genotypingprop_cvterm_id = $snp_genotype_id;
+    if ($genotyping_data_type ne 'ssr') {
+        my $snp_genotypingprop_cvterm_id;
+        if ($self->archived_file_type eq 'genotype_vcf'){
+            $snp_genotypingprop_cvterm_id = $snp_vcf_cvterm_id;
+        } elsif ($self->archived_file_type eq 'genotype_dosage'){
+            $snp_genotypingprop_cvterm_id = $snp_genotype_id;
+        }
+        $self->snp_genotypingprop_cvterm_id($snp_genotypingprop_cvterm_id);
     }
-    $self->snp_genotypingprop_cvterm_id($snp_genotypingprop_cvterm_id);
 
     #remove extra numbers, such as igd after : symbol
     my @observation_unit_uniquenames_stripped;

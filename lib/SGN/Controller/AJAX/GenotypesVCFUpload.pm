@@ -599,26 +599,13 @@ sub upload_genotype_verify_POST : Args(0) {
 
         my $observation_unit_uniquenames = $parsed_data->{observation_unit_uniquenames};
         my $genotype_info = $parsed_data->{genotypes_info};
-
-        my @protocol_id_list;
-        push @protocol_id_list, $protocol_id;
-        my $genotypes_search = CXGN::Genotype::Search->new({
-        	bcs_schema=>$schema,
-        	people_schema=>$people_schema,
-        	protocol_id_list=>\@protocol_id_list,
-        });
-        my $result = $genotypes_search->get_pcr_genotype_info();
-        my $protocol_marker_names = $result->{'marker_names'};
-        my $previous_protocol_marker_names = decode_json $protocol_marker_names;
-
-        my %protocolprop_info;
-        $protocolprop_info{'sample_observation_unit_type_name'} = 'accession';
-        $protocolprop_info{'marker_names'} = $previous_protocol_marker_names;
+        my $protocolprop_info = $parsed_data->{protocol_info};
+        $protocolprop_info->{sample_observation_unit_type_name} = $obs_type;
 
         $store_args->{genotype_info} = $genotype_info;
         $store_args->{observation_unit_uniquenames} = $observation_unit_uniquenames;
-        $store_args->{protocol_info} = \%protocolprop_info;
-        $store_args->{observation_unit_type_name} = 'accession';
+        $store_args->{protocol_info} = $protocolprop_info;
+        $store_args->{observation_unit_type_name} = $obs_type;
         $store_args->{genotyping_data_type} = 'ssr';
 
         my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new($store_args);
@@ -634,6 +621,33 @@ sub upload_genotype_verify_POST : Args(0) {
             if (!$accept_warnings){
                 $c->stash->{rest} = { warning => $warning_string, previous_genotypes_exist => $verified_errors->{previous_genotypes_exist} };
                 $c->detach();
+            }
+        }
+
+        if ($protocol_id) {
+            my $genotypes_search = CXGN::Genotype::Search->new({
+                bcs_schema=>$schema,
+                people_schema=>$people_schema,
+                protocol_id_list=>[$protocol_id],
+            });
+            my $result = $genotypes_search->get_pcr_genotype_info();
+            my $protocol_marker_names = $result->{'marker_names'};
+            my $previous_protocol_marker_names = decode_json $protocol_marker_names;
+            my %previous_marker_map = map {$_ => 1} @$previous_protocol_marker_names;
+
+            my @protocol_match_errors;
+            foreach (@{$protocolprop_info->{marker_names}}) {
+                if (!exists($previous_marker_map{$_})) {
+                    push @protocol_match_errors, "Marker $_ does not exist in the previously loaded protocol";
+                }
+            }
+
+            if (scalar(@protocol_match_errors) > 0){
+                my $warning_string = join ', ', @protocol_match_errors;
+                if (!$accept_warnings){
+                    $c->stash->{rest} = { warning => $warning_string };
+                    $c->detach();
+                }
             }
         }
 

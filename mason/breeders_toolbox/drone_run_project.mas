@@ -53,6 +53,8 @@ $drone_run_date => undef
 
 <& /page/detail_page_2_col_section.mas, info_section_collapsed => 0, trial_id => $trial_id, info_section_title => "<h4 style='display:inline'>Imaging Event Details</h4>", info_section_subtitle => 'View basic information about the imaging event project.', buttons_html => '<button class="btn btn-primary btn-sm" id="edit_drone_run_details" style="margin:3px">Edit Imaging Event Details</button>', icon_class => "glyphicon glyphicon-dashboard", info_section_id => "drone_run_project_details", trial_name => $trial_name, trial_description => $trial_description, identifier_prefix => $identifier_prefix, drone_run_date=>$drone_run_date &>
 
+<& /page/detail_page_2_col_section.mas, info_section_collapsed => 1, trial_id => $trial_id, info_section_title => "<h4 style='display:inline'>Report Files</h4>", info_section_subtitle => 'View report information about the orthomosaic stitching.', buttons_html => '', icon_class => "glyphicon glyphicon-folder-open", info_section_id => "drone_run_project_report_files" &>
+
 % my $data_agreement_link = '<button class="btn btn-sm btn-primary" disabled style="margin:3px">Add/edit data agreement</button>';
 % if ($user_can_modify) { $data_agreement_link = '<button class="btn btn-sm btn-primary" style="margin:3px" id="add_data_agreement">Add/edit data agreement</button>'; }
 
