@@ -694,7 +694,6 @@ sub verify_seedlot_accessions_crosses {
 
 #CLASS METHOD
 sub get_transactions {
-    my $class = shift;
     my $schema = shift;
     my $seedlot_id = shift;
     my $transaction_id = shift;
