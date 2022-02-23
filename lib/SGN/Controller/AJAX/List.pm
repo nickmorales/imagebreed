@@ -14,6 +14,15 @@ use CXGN::List::Desynonymize;
 use CXGN::Cross;
 use JSON;
 
+use File::Slurp qw | read_file |;
+use File::Temp 'tempfile';
+use File::Basename;
+use File::Copy;
+use utf8;
+
+
+
+
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
 __PACKAGE__->config(
@@ -1158,7 +1167,7 @@ sub seedlot_list_details :Path('/ajax/list/seedlot_details') :Args(1) {
             quality => $seedlot_obj->quality()
         }
     }
-    # print STDERR "SEEDLOT DETAILS =".Dumper(\@seedlot_details)."\n";
+#    print STDERR "SEEDLOT DETAILS =".Dumper(\@seedlot_details)."\n";
     $c->stash->{rest} = {data => \@seedlot_details};
 
 }
@@ -1171,7 +1180,7 @@ sub download_list_details : Path('/list/download_details') {
     my $dbh = $c->dbc->dbh;
 
     my $list_id = $c->req->param("list_id");
-
+    print STDERR "DOWNLOAD LIST ID =".Dumper($list_id)."\n";
     my $list = CXGN::List->new( { dbh=>$dbh, list_id=>$list_id });
     my $list_name = $list->name();
     my $seedlots = $list->elements();
@@ -1196,8 +1205,13 @@ sub download_list_details : Path('/list/download_details') {
             seedlot_id => $id
         );
 
+        my $seedlot_name = $seedlot_obj->uniquename();
         my $accessions = $seedlot_obj->accession();
         my $crosses = $seedlot_obj->cross();
+        my $box_name = $seedlot_obj->box_name();
+        my $current_count = $seedlot_obj->get_current_count_property();
+        my $current_weight = $seedlot_obj->get_current_weight_property();
+        my $seedlot_quality = $seedlot_obj->quality();
 
         if ($accessions) {
             $content_name = $accessions->[1];
@@ -1208,9 +1222,9 @@ sub download_list_details : Path('/list/download_details') {
             $content_type = 'cross';
         }
 
-        push @seedlot_details, "$seedlot_obj->uniquename()\t$content_name\t$content_type\t$seedlot_obj->box_name()\t$seedlot_obj->get_current_count_property()\t$seedlot_obj->get_current_weight_property()\t$seedlot_obj->quality()\n";
+        push @seedlot_details, "$seedlot_name\t$content_name\t$content_type\t$box_name\t$current_count\t$current_weight\t$seedlot_quality\n";
     }
-
+    print STDERR "DOWNLOAD LIST DETAILS =".Dumper(\@seedlot_details)."\n";
     my $dl_token = $c->req->param("list_details_download_token") || "no_token";
     my $dl_cookie = "download".$dl_token;
     print STDERR "Token is: $dl_token\n";
