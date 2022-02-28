@@ -72,6 +72,7 @@ sub trial : Chained('/') PathPart('ajax/breeders/trial') CaptureArgs(1) {
     my $cxgn_project_type_obj = $c->stash->{trial}->get_cxgn_project_type();
     my $cxgn_project_type = $cxgn_project_type_obj->{cxgn_project_type};
 
+    print STDERR Dumper $cxgn_project_type;
     if ($cxgn_project_type ne 'drone_run_project' && $cxgn_project_type ne 'drone_run_band_project') {
         try {
             my %param = ( schema => $bcs_schema, trial_id => $trial_id );
