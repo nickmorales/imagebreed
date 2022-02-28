@@ -841,7 +841,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_radiometric_calibration = $new_drone_run_band_stitching_odm_radiocalibration ? '--radiometric-calibration camera' : '';
                 my $odm_radiometric_calibration_open = $new_drone_run_band_stitching_odm_radiocalibration ? '--odm_radiocalibrated True' : '';
 
-                my $odm_command = 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v '.$image_path_remaining_host.':/datasets/code opendronemap/odm --project-path /datasets --rerun-all --orthophoto-resolution 1 --dsm --dtm '.$odm_radiometric_calibration.' > '.$temp_file_docker_log;
+                my $odm_command = 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v '.$image_path_remaining_host.':/datasets/code opendronemap/odm --project-path /datasets --orthophoto-resolution 1 --dsm --dtm '.$odm_radiometric_calibration.' > '.$temp_file_docker_log;
                 print STDERR $odm_command."\n";
                 my $odm_status = system($odm_command);
 
@@ -860,10 +860,10 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
 
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_image', $odm_final_orthophoto];
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud', $odm_final_point_cloud];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_report', $odm_final_report];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_stats', $odm_final_report_stats];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_shots', $odm_final_report_shots];
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_reconstruction', $odm_final_sfm_reconstruction];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_shots', $odm_final_report_shots];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_stats', $odm_final_report_stats];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_report', $odm_final_report];
 
                 my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImage.py --image_path $odm_final_orthophoto --outfile_path_b1 $odm_b1 --outfile_path_b2 $odm_b2 --outfile_path_b3 $odm_b3 --outfile_path_b4 $odm_b4 --outfile_path_b5 $odm_b5 $odm_radiometric_calibration_open";
                 print STDERR $odm_cmd."\n";
@@ -965,7 +965,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 );
             }
             elsif ($new_drone_run_camera_info eq 'ccd_color' || $new_drone_run_camera_info eq 'cmos_color') {
-                my $odm_command = 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v '.$image_path_remaining_host.':/datasets/code opendronemap/odm --project-path /datasets --rerun-all --orthophoto-resolution 1 --dsm --dtm > '.$temp_file_docker_log;
+                my $odm_command = 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v '.$image_path_remaining_host.':/datasets/code opendronemap/odm --project-path /datasets --orthophoto-resolution 1 --dsm --dtm > '.$temp_file_docker_log;
                 print STDERR $odm_command."\n";
                 my $odm_status = system($odm_command);
 
@@ -978,10 +978,10 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
 
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_image', $odm_rgb_orthophoto];
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud', $odm_final_point_cloud];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_report', $odm_final_report];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_stats', $odm_final_report_stats];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_shots', $odm_final_report_shots];
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_reconstruction', $odm_final_sfm_reconstruction];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_shots', $odm_final_report_shots];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_stats', $odm_final_report_stats];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_report', $odm_final_report];
 
                 my @odm_rgb_image_size = imgsize($odm_rgb_orthophoto);
                 my $odm_rgb_image_width = $odm_rgb_image_size[0];
