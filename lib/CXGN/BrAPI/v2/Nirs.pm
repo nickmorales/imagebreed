@@ -243,42 +243,34 @@ if (! defined($stock_id_arrayref)) {
 			push @stock_uniquenames, $stock_uniquename;
 		}
 
-				my $q = "SELECT nd_experiment_protocol.nd_experiment_id FROM nd_protocol JOIN nd_experiment_protocol ON nd_protocol.nd_protocol_id = nd_experiment_protocol.nd_protocol_id JOIN nd_experiment_stock ON nd_experiment_protocol.nd_experiment_id=nd_experiment_stock.nd_experiment_id WHERE nd_protocol.nd_protocol_id=? AND stock_id=?;";
-				my $h = $self->bcs_schema->storage()->dbh()->prepare($q);
-				$h->execute($nd_protocol_id,$_);
+				my $q2 = "SELECT nd_experiment_protocol.nd_experiment_id FROM nd_protocol JOIN nd_experiment_protocol ON nd_protocol.nd_protocol_id = nd_experiment_protocol.nd_protocol_id JOIN nd_experiment_stock ON nd_experiment_protocol.nd_experiment_id=nd_experiment_stock.nd_experiment_id WHERE nd_protocol.nd_protocol_id=? AND stock_id=?;";
+				my $h2 = $self->bcs_schema->storage()->dbh()->prepare($q2);
+				$h2->execute($nd_protocol_id,$_);
 				my @nirs_nd_experiment_ids;
-				while (my ($nirs_nd_experiment_id) = $h->fetchrow_array()) {
+				while (my ($nirs_nd_experiment_id) = $h2->fetchrow_array()) {
 					push @nirs_nd_experiment_ids, $nirs_nd_experiment_id;
 				}
 
-				my $q = "SELECT project_id FROM nd_experiment_project WHERE nd_experiment_id=?;";
-				my $h = $self->bcs_schema->storage()->dbh()->prepare($q);
-				$h->execute($nirs_nd_experiment_ids[0]);
+				my $q3 = "SELECT project_id FROM nd_experiment_project WHERE nd_experiment_id=?;";
+				my $h3 = $self->bcs_schema->storage()->dbh()->prepare($q3);
+				$h3->execute($nirs_nd_experiment_ids[0]);
 				my @nirs_project_ids;
-				while (my ($nirs_project_id) = $h->fetchrow_array()) {
+				while (my ($nirs_project_id) = $h3->fetchrow_array()) {
 					push @nirs_project_ids, $nirs_project_id;
 				}
 
-				my $q = "SELECT project_id FROM nd_experiment_project WHERE nd_experiment_id=?;";
-				my $h = $self->bcs_schema->storage()->dbh()->prepare($q);
-				$h->execute($nirs_nd_experiment_ids[0]);
-				my @nirs_project_ids;
-				while (my ($nirs_project_id) = $h->fetchrow_array()) {
-					push @nirs_project_ids, $nirs_project_id;
-				}
-
-				my $q = "SELECT value FROM nd_protocol JOIN nd_experiment_protocol ON nd_protocol.nd_protocol_id = nd_experiment_protocol.nd_protocol_id JOIN nd_experiment_stock ON nd_experiment_protocol.nd_experiment_id=nd_experiment_stock.nd_experiment_id JOIN stockprop ON nd_experiment_stock.stock_id=stockprop.stock_id WHERE nd_protocol.nd_protocol_id = ? and stockprop.type_id = ? and stockprop.stock_id = ?;";
-				my $h = $self->bcs_schema->storage()->dbh()->prepare($q);
-				$h->execute($nd_protocol_id,$high_dim_tissue_cvterm_id,$_);
+				my $q4 = "SELECT value FROM nd_protocol JOIN nd_experiment_protocol ON nd_protocol.nd_protocol_id = nd_experiment_protocol.nd_protocol_id JOIN nd_experiment_stock ON nd_experiment_protocol.nd_experiment_id=nd_experiment_stock.nd_experiment_id JOIN stockprop ON nd_experiment_stock.stock_id=stockprop.stock_id WHERE nd_protocol.nd_protocol_id = ? and stockprop.type_id = ? and stockprop.stock_id = ?;";
+				my $h4 = $self->bcs_schema->storage()->dbh()->prepare($q4);
+				$h4->execute($nd_protocol_id,$high_dim_tissue_cvterm_id,$_);
 				my @stock_tissue_types;
-				while (my ($stock_tissue_type) = $h->fetchrow_array()) {
+				while (my ($stock_tissue_type) = $h4->fetchrow_array()) {
 					push @stock_tissue_types, $stock_tissue_type;
 				}
 
 if (defined($trial_id)) {
 
 #		print STDERR Dumper @nirs_nd_experiment_ids;
-		if (@nirs_project_ids[0] == @$trial_id[0]) {
+		if ($nirs_project_ids[0] == @$trial_id[0]) {
 			my @current_row_values;
 			# ordered keys was only included for verifying consistent order
 			#my @ordered_keys;
@@ -302,7 +294,7 @@ if (defined($trial_id)) {
 				sampleDbId=>$_,
 #				nd_experiment_id=>$nirs_nd_experiment_ids[0],
 				studyDbId=>$nirs_project_ids[0],
-				tissue_type=>@stock_tissue_types[0],
+				tissue_type=>$stock_tissue_types[0],
 				# ordered keys was only included for verifying consistent order
 	#			labels=>\@ordered_keys,
 				row=>\@current_row_values,
@@ -332,7 +324,7 @@ if (defined($trial_id)) {
 			sampleDbId=>$_,
 #				nd_experiment_id=>$nirs_nd_experiment_ids[0],
 			studyDbId=>$nirs_project_ids[0],
-			tissue_type=>@stock_tissue_types[0],
+			tissue_type=>$stock_tissue_types[0],
 			# ordered keys was only included for verifying consistent order
 #			labels=>\@ordered_keys,
 			row=>\@current_row_values,
@@ -390,7 +382,7 @@ sub nirs_detail {
 		plant_list=>undef
 	});
 	my ($data_matrix, $identifier_metadata, $identifier_names) = $phenotypes_search->search();
-	my $example_stock = @nirs_stock_ids[0];
+	my $example_stock = $nirs_stock_ids[0];
 	my %data_matrix = %$data_matrix;
 	push @data, {
 		device_type=>$data_matrix{$example_stock}->{device_type},
