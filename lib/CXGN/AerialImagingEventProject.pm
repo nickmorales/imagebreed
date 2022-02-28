@@ -208,13 +208,16 @@ sub get_aerial_imaging_event_report_file_metadata {
     my $drone_run_experiment_odm_stitched_stats_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'drone_run_experiment_odm_stitched_stats', 'experiment_type')->cvterm_id();
     my $drone_run_experiment_odm_stitched_shots_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'drone_run_experiment_odm_stitched_shots', 'experiment_type')->cvterm_id();
     my $drone_run_experiment_odm_stitched_reconstruction_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'drone_run_experiment_odm_stitched_reconstruction', 'experiment_type')->cvterm_id();
+    my $drone_run_experiment_odm_stitched_dsm_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'drone_run_experiment_odm_stitched_dsm', 'experiment_type')->cvterm_id();
+    my $drone_run_experiment_odm_stitched_dtm_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'drone_run_experiment_odm_stitched_dtm', 'experiment_type')->cvterm_id();
+    my $drone_run_experiment_odm_stitched_dsm_dtm_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'drone_run_experiment_odm_stitched_dsm_minus_dtm', 'experiment_type')->cvterm_id();
 
     my @file_array;
     my %file_info;
     my $q = "SELECT a.file_id, m.create_date, p.sp_person_id, p.username, a.basename, a.dirname, a.filetype
         FROM metadata.md_files AS a
         JOIN phenome.nd_experiment_md_files AS b ON(a.file_id = b.file_id)
-        JOIN nd_experiment ON(b.nd_experiment_id = nd_experiment.nd_experiment_id AND nd_experiment.type_id IN ($drone_run_experiment_stitched_report_type_id,$drone_run_experiment_odm_stitched_image_type_id,$drone_run_experiment_odm_stitched_point_cloud_type_id,$drone_run_experiment_odm_stitched_report_type_id,$drone_run_experiment_odm_stitched_stats_type_id,$drone_run_experiment_odm_stitched_shots_type_id,$drone_run_experiment_odm_stitched_reconstruction_type_id))
+        JOIN nd_experiment ON(b.nd_experiment_id = nd_experiment.nd_experiment_id AND nd_experiment.type_id IN ($drone_run_experiment_stitched_report_type_id,$drone_run_experiment_odm_stitched_image_type_id,$drone_run_experiment_odm_stitched_point_cloud_type_id,$drone_run_experiment_odm_stitched_report_type_id,$drone_run_experiment_odm_stitched_stats_type_id,$drone_run_experiment_odm_stitched_shots_type_id,$drone_run_experiment_odm_stitched_reconstruction_type_id,$drone_run_experiment_odm_stitched_dsm_type_id,$drone_run_experiment_odm_stitched_dtm_type_id,$drone_run_experiment_odm_stitched_dsm_dtm_type_id))
         JOIN nd_experiment_project ON(nd_experiment_project.nd_experiment_id = nd_experiment.nd_experiment_id)
         LEFT JOIN metadata.md_metadata as m using(metadata_id)
         LEFT JOIN sgn_people.sp_person as p ON (p.sp_person_id=m.create_person_id)

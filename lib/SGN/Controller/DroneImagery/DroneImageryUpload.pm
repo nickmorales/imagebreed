@@ -858,13 +858,6 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_final_report_shots = "$image_path_remaining/odm_report/shots.geojson";
                 my $odm_final_sfm_reconstruction = "$image_path_remaining/opensfm/reconstruction.json";
 
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_image', $odm_final_orthophoto];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud', $odm_final_point_cloud];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_reconstruction', $odm_final_sfm_reconstruction];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_shots', $odm_final_report_shots];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_stats', $odm_final_report_stats];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_report', $odm_final_report];
-
                 my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImage.py --image_path $odm_final_orthophoto --outfile_path_b1 $odm_b1 --outfile_path_b2 $odm_b2 --outfile_path_b3 $odm_b3 --outfile_path_b4 $odm_b4 --outfile_path_b5 $odm_b5 $odm_radiometric_calibration_open";
                 print STDERR $odm_cmd."\n";
                 my $odm_open_status = system($odm_cmd);
@@ -925,6 +918,18 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 #     return;
                 # }
 
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_image', $odm_final_orthophoto];
+
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_dsm', $odm_dsm_png];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_dtm', $odm_dtm_png];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_dsm_minus_dtm', $odm_subtract_png];
+
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud', $odm_final_point_cloud];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_reconstruction', $odm_final_sfm_reconstruction];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_shots', $odm_final_report_shots];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_stats', $odm_final_report_stats];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_report', $odm_final_report];
+
                 my @geoparams_coordinates;
                 my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
                 my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
@@ -976,13 +981,6 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_final_report_shots = "$image_path_remaining/odm_report/shots.geojson";
                 my $odm_final_sfm_reconstruction = "$image_path_remaining/opensfm/reconstruction.json";
 
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_image', $odm_rgb_orthophoto];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud', $odm_final_point_cloud];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_reconstruction', $odm_final_sfm_reconstruction];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_shots', $odm_final_report_shots];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_stats', $odm_final_report_stats];
-                push @stitched_result_files, ['drone_run_experiment_odm_stitched_report', $odm_final_report];
-
                 my @odm_rgb_image_size = imgsize($odm_rgb_orthophoto);
                 my $odm_rgb_image_width = $odm_rgb_image_size[0];
                 my $odm_rgb_image_length = $odm_rgb_image_size[1];
@@ -1007,6 +1005,18 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 #     $c->stash->{template} = 'generic_message.mas';
                 #     return;
                 # }
+
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_image', $odm_rgb_orthophoto];
+
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_dsm', $odm_dsm_png];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_dtm', $odm_dtm_png];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_dsm_minus_dtm', $odm_subtract_png];
+
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud', $odm_final_point_cloud];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_reconstruction', $odm_final_sfm_reconstruction];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_shots', $odm_final_report_shots];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_stats', $odm_final_report_stats];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_report', $odm_final_report];
 
                 my @geoparams_coordinates;
                 my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
