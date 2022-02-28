@@ -918,6 +918,12 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 #     return;
                 # }
 
+                my $odm_point_cloud_obj = "$image_path_remaining/odm_filterpoints/point_cloud.obj";
+                my $odm_point_cloud_pcd = "$image_path_remaining/odm_filterpoints/point_cloud.pcd";
+                my $odm_ply_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/Open3DConvertPLY.py --input_ply_path $odm_final_point_cloud --output_obj_path $odm_point_cloud_obj --output_pcd_path $odm_point_cloud_pcd ";
+                print STDERR $odm_ply_cmd."\n";
+                my $odm_ply_status = system($odm_ply_cmd);
+
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_image', $odm_final_orthophoto];
 
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_dsm', $odm_dsm_png];
@@ -925,6 +931,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_dsm_minus_dtm', $odm_subtract_png];
 
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud', $odm_final_point_cloud];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud_obj', $odm_point_cloud_obj];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud_pcd', $odm_point_cloud_pcd];
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_reconstruction', $odm_final_sfm_reconstruction];
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_shots', $odm_final_report_shots];
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_stats', $odm_final_report_stats];
@@ -1006,6 +1014,12 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 #     return;
                 # }
 
+                my $odm_point_cloud_obj = "$image_path_remaining/odm_filterpoints/point_cloud.obj";
+                my $odm_point_cloud_pcd = "$image_path_remaining/odm_filterpoints/point_cloud.pcd";
+                my $odm_ply_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/Open3DConvertPLY.py --input_ply_path $odm_final_point_cloud --output_obj_path $odm_point_cloud_obj --output_pcd_path $odm_point_cloud_pcd ";
+                print STDERR $odm_ply_cmd."\n";
+                my $odm_ply_status = system($odm_ply_cmd);
+
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_image', $odm_rgb_orthophoto];
 
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_dsm', $odm_dsm_png];
@@ -1013,6 +1027,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_dsm_minus_dtm', $odm_subtract_png];
 
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud', $odm_final_point_cloud];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud_obj', $odm_point_cloud_obj];
+                push @stitched_result_files, ['drone_run_experiment_odm_stitched_point_cloud_pcd', $odm_point_cloud_pcd];
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_reconstruction', $odm_final_sfm_reconstruction];
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_shots', $odm_final_report_shots];
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_stats', $odm_final_report_stats];

@@ -67,6 +67,8 @@ sub patch {
             'drone_run_experiment_odm_stitched_dsm',
             'drone_run_experiment_odm_stitched_dtm',
             'drone_run_experiment_odm_stitched_dsm_minus_dtm',
+            'drone_run_experiment_odm_stitched_point_cloud_obj',
+            'drone_run_experiment_odm_stitched_point_cloud_pcd',
         ]
     };
 
