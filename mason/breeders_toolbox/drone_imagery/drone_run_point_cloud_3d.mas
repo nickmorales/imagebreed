@@ -2,7 +2,7 @@
 $trial_id
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form' ] &>
+<& /util/import_javascript.mas, classes => ['three'], entries => [ 'threeGLTFLoader' ]  &>
 
 
 <script>
@@ -18,6 +18,40 @@ jQuery(document).ready(function() {
             },
             success: function(response){
                 console.log(response);
+                console.log(jsMod);
+
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+                const renderer = new THREE.WebGLRenderer();
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                document.body.appendChild( renderer.domElement );
+
+                const loader = jsMod['threeGLTFLoader'].loader;
+
+                // load a resource
+                loader.load(
+                	// resource URL
+                	response.drone_run_experiment_odm_stitched_point_cloud_obj,
+                	// called when the resource is loaded
+                	function ( mesh ) {
+
+                		scene.add( mesh );
+
+                	},
+                	// called when loading is in progresses
+                	function ( xhr ) {
+
+                		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+                	},
+                	// called when loading has errors
+                	function ( error ) {
+
+                		console.log( 'An error happened' );
+
+                	}
+                );
 
             },
             error: function(response){
