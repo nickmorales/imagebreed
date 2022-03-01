@@ -96,6 +96,16 @@ print STDERR Dumper $result_mica;
 print STDERR Dumper $total_count_mica;
 is($total_count_mica, 6);
 
+
+my $odm1_trial = CXGN::Trial->new({
+    bcs_schema => $schema,
+    trial_id => $NewMicasenseUnstitchedDroneRunProject_project_id
+});
+my $odm1_report_data = $odm1_trial->get_aerial_imaging_event_report_file_metadata();
+my $odm1_report_file_count = scalar(@$odm1_report_data);
+print STDERR Dumper $odm1_report_data;
+is($odm1_report_file_count, 13);
+
 #Testing upload of RGB unstitched raw captures.
 my $rgbrawimageszipfile = "/home/production/public/static_content/imagebreed/ExampleColorAerialDroneFlightRawCaptures.zip";
 $ua = LWP::UserAgent->new;
@@ -137,6 +147,15 @@ my ($result_rgb, $total_count_rgb) = $images_search_rgb->search();
 print STDERR Dumper $result_rgb;
 print STDERR Dumper $total_count_rgb;
 is($total_count_rgb, 2);
+
+my $odm2_trial = CXGN::Trial->new({
+    bcs_schema => $schema,
+    trial_id => $NewRGBUnstitchedDroneRunProject_project_id
+});
+my $odm2_report_data = $odm2_trial->get_aerial_imaging_event_report_file_metadata();
+my $odm2_report_file_count = scalar(@$odm2_report_data);
+print STDERR Dumper $odm2_report_data;
+is($odm2_report_file_count, 13);
 
 }
 
