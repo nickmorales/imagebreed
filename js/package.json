@@ -4,11 +4,11 @@
   "description": "node package containing all importable CXGN/SGN JavaScript files.",
   "main": "webpack.config.js",
   "scripts": {
-    "reset": "export npm_config_cache=/tmp/npm/cache; npm config set engine-strict true; rm -r build/ || true && npm install .",
-    "build": "export npm_config_cache=/tmp/npm/cache; npm run reset && webpack --config build.webpack.config.js",
-    "build-watch": "export npm_config_cache=/tmp/npm/cache; npm run reset && webpack --config build.webpack.config.js -w",
-    "reset-test": "export npm_config_cache=/tmp/npm/cache; npm config set engine-strict true; rm -r build_test/ || true && npm install .",
-    "build-test": "export npm_config_cache=/tmp/npm/cache; npm run reset-test && webpack --config test.webpack.config.js"
+    "reset": "npm config set engine-strict true; rm -r build/ || true && npm install .",
+    "build": "npm run reset && webpack --config build.webpack.config.js",
+    "build-watch": "npm run reset && webpack --config build.webpack.config.js -w",
+    "reset-test": "npm config set engine-strict true; rm -r build_test/ || true && npm install .",
+    "build-test": "npm run reset-test && webpack --config test.webpack.config.js"
   },
   "private": true,
   "author": "",
