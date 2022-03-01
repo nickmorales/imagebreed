@@ -25,6 +25,8 @@ use URI::Encode qw(uri_encode uri_decode);
 use File::Basename qw | basename dirname|;
 use File::Slurp qw(write_file);
 use File::Temp 'tempfile';
+use File::Spec::Functions;
+use File::Copy;
 use CXGN::Calendar;
 use Image::Size;
 use Text::CSV;
@@ -15108,6 +15110,51 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
         imaging_events_spreadsheet_rows => \@imaging_events_spreadsheet_rows,
         images_file_names_return => \@images_file_names_return,
         geojson_file_names_return => \@geojson_file_names_return
+    };
+}
+
+sub drone_imagery_point_cloud_3d : Path('/api/drone_imagery/point_cloud_3d') : ActionClass('REST') { }
+sub drone_imagery_point_cloud_3d_POST : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    print STDERR Dumper $c->req->params();
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
+    my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+    my $drone_run_project_id = decode_json $c->req->param('drone_run_project_id');
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+
+    my $output_dir = $c->tempfiles_subdir('/drone_imagery_point_clouds_display_dir');
+
+    my $point_cloud_ply_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_experiment_odm_stitched_point_cloud', 'experiment_type')->cvterm_id();
+    my $point_cloud_obj_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_experiment_odm_stitched_point_cloud_obj', 'experiment_type')->cvterm_id();
+    my $point_cloud_pcd_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_experiment_odm_stitched_point_cloud_pcd', 'experiment_type')->cvterm_id();
+
+    my $q = "SELECT m.dirname, m.basename, cvterm.name
+        FROM metadata.md_files AS m
+        JOIN phenome.nd_experiment_md_files AS b ON(m.file_id=b.file_id)
+        JOIN nd_experiment AS c ON(c.nd_experiment_id=b.nd_experiment_id AND c.type_id IN ($point_cloud_ply_type_id,$point_cloud_obj_type_id,$point_cloud_pcd_type_id))
+        JOIN nd_experiment_project ON(nd_experiment_project.nd_experiment_id=c.nd_experiment_id)
+        JOIN cvterm ON(c.type_id=cvterm.cvterm_id)
+        WHERE project_id=?;";
+
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute($drone_run_project_id);
+
+    my %return;
+    while (my ($dirname, $basename, $type_name) = $h->fetchrow_array()) {
+        my $file_name = catfile($dirname, $basename);
+
+        my $temp_file = $c->tempfile( TEMPLATE => 'drone_imagery_point_clouds_display_dir/fileXXXX');
+        my $temp_file_path = $c->config->{basepath}."/".$temp_file;
+
+        copy($file_name, $temp_file_path);
+
+        $return{$type_name} = $temp_file;
+    }
+    $c->stash->{rest} = {
+        success => 1,
+        point_cloud_files => \%return
     };
 }
 

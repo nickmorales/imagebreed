@@ -55,6 +55,8 @@ $drone_run_date => undef
 
 <& /page/detail_page_2_col_section.mas, info_section_collapsed => 1, trial_id => $trial_id, info_section_title => "<h4 style='display:inline'>Report Files</h4>", info_section_subtitle => 'View report information about the orthomosaic stitching.', buttons_html => '', icon_class => "glyphicon glyphicon-folder-open", info_section_id => "drone_run_project_report_files" &>
 
+<& /page/detail_page_2_col_section.mas, info_section_collapsed => 1, trial_id => $trial_id, info_section_title => "<h4 style='display:inline'>3D Point Cloud Visualization</h4>", info_section_subtitle => 'View 3D point cloud from ODM orthomosaic stitching.', buttons_html => '', icon_class => "glyphicon glyphicon-map-marker", info_section_id => "drone_run_project_point_cloud_3d" &>
+
 % my $data_agreement_link = '<button class="btn btn-sm btn-primary" disabled style="margin:3px">Add/edit data agreement</button>';
 % if ($user_can_modify) { $data_agreement_link = '<button class="btn btn-sm btn-primary" style="margin:3px" id="add_data_agreement">Add/edit data agreement</button>'; }
 

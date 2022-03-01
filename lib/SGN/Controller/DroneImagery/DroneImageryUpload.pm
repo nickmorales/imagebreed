@@ -107,8 +107,6 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
     my $new_drone_run_camera_info = $c->req->param('drone_image_upload_camera_info');
     my $new_drone_run_band_numbers = $c->req->param('drone_run_band_number');
     my $new_drone_run_band_stitching = $c->req->param('drone_image_upload_drone_run_band_stitching');
-    my $new_drone_run_band_stitching_odm_more_images = 'No';
-    my $new_drone_run_band_stitching_odm_current_image_count = 0;
     my $new_drone_run_band_stitching_odm_radiocalibration = $c->req->param('drone_image_upload_drone_run_band_stitching_odm_radiocalibration') eq "Yes" ? 1 : 0;
 
     if (!$new_drone_run_camera_info) {
@@ -776,7 +774,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
             $example_archived_filename_with_path_odm_img = $archived_filename_with_path_odm_img;
         }
 
-        my $current_odm_image_count = $new_drone_run_band_stitching_odm_current_image_count+scalar(@$image_paths);
+        my $current_odm_image_count = scalar(@$image_paths);
         if ($current_odm_image_count < 25) {
             $c->stash->{message} = "Upload more than $current_odm_image_count images! Atleast 25 are required for OpenDroneMap to stitch.";
             $c->stash->{template} = 'generic_message.mas';
