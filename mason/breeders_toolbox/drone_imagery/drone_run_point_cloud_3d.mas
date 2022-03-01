@@ -2,8 +2,6 @@
 $trial_id
 </%args>
 
-<& /util/import_javascript.mas, classes => ['three'], entries => [ 'threeGLTFLoader' ]  &>
-
 
 <script>
 jQuery(document).ready(function() {
