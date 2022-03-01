@@ -1,5 +1,5 @@
 import "../legacy/three.js";
-import * from "../modules/GLTFLoader.js";
+import "../modules/GLTFLoader.js";
 
 const loader = new GLTFLoader();
 export loader;
