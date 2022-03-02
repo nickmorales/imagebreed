@@ -1,0 +1,32 @@
+<%args>
+$trial_id
+</%args>
+
+
+
+<!--svg width="3000" height="3000"></svg-->
+
+<script>
+jQuery(document).ready(function() {
+
+    jQuery('#drone_run_project_point_cloud_3d_onswitch').one("click", function(){
+
+        jQuery.ajax({
+            url : '/api/drone_imagery/point_cloud_3d',
+            type : 'POST',
+            data : {
+                'drone_run_project_id':<% $trial_id %>,
+            },
+            success: function(response){
+                console.log(response);
+                alert('This is not working yet! You can download the point_cloud.ply from the Report Files section above and view the 3D cloud in Meshlab!');
+            },
+            error: function(response){
+                alert('Error retrieving point cloud 3D!');
+            }
+        });
+
+    });
+
+});
+</script>

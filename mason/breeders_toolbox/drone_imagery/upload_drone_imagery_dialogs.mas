@@ -21,7 +21,7 @@
                         <ul>
                             <li>Your field trial must already be in the database before you can upload images for it. Please go to <a href="/breeders/trials">Manage->Field Trials</a> if it is not.</li>
                             <li><b>For Raw Image Captures</b>: If you have raw aerial images (.TIFF, .JPG, .PNG) that have not been stitched into an orthophotomosaic image of the whole field, your raw images should be uploaded using a zipfile (.zip). Include at least 25 images in the zipfile. OpenDroneMap will be used to stitch the orthophotos and digital surface maps (DSM). OpenDroneMap works for color RGB images and for MicaSense 5-channel multi-spectral images.</li>
-                            <li><b>For Orthophotomosaics</b>: If you already have orthophotomosaic image(s) of your entire field from external software, you can upload those images. Upload orthomosaics as .TIFF, .PNG, or .JPG images. Do not upload GeoTIFFs, instead upload reflectance raster images (.TIFF, .PNG, or .JPG). Orthophotomosaic images for multi-spectral cameras are expected to be perfectly super-imposable for all spectra.</li>
+                            <li><b>For Orthophotomosaics</b>: If you already have orthophotomosaic image(s) of your entire field from external software, you can upload those images. Upload orthomosaics as .TIFF, .PNG, or .JPG images. Orthophotomosaic images for multi-spectral cameras are expected to be perfectly super-imposable for all spectra.</li>
                         </ul>
                         <hr>
                         <p><b>Example Data:</b> <a href="https://imagebreed.org/static_content/imagebreed/AlfalfaExample35MeterMicasenseAerialDroneFlightRawCaptures.zip" download>MicaSense 5 Band Raw Captures (Unstitched TIFF image-captures) (Upload zipfile to ImageBreed and let OpenDroneMap stitch orthophotos and DSM.)</a></p>
@@ -118,9 +118,9 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_image_upload_camera_info" name="drone_image_upload_camera_info">
                                         <option value="">Select One</option>
-                                        <option value="micasense_5">Micasense 5 Bands</option>
-                                        <option value="ccd_color">CCD Sensor Color Image</option>
-                                        <option value="cmos_color">CMOS Sensor Color Image</option>
+                                        <option value="micasense_5">Micasense 5-Channel Camera</option>
+                                        <option value="ccd_color">RGB Color Camera</option>
+                                        <!--option value="cmos_color">CMOS Sensor Color Image</option-->
                                         <option value="interpolated_elevation">Interpolated Elevation Image</option>
                                         <option value="em38_interpolated_ch1.0m">EM38 Interpolated CH1.0m Image</option>
                                         <option value="em38_interpolated_ch0.5m">EM38 Interpolated CH0.5m Image</option>
@@ -174,7 +174,7 @@
                         <div class="well">
                             <center><h4>Uploading already stitched orthophotomosaics or complete images of experimental field</h4></center>
                             <ul>
-                                <li>You can choose to upload orthophotomosaic images (PNG, TIFF) created using external software (Pix4d, Agisoft, etc). Do not upload GeoTIFFs, instead upload reflectance raster images (.TIFF, .PNG, or .JPG).</li>
+                                <li>You can choose to upload orthophotomosaic images (PNG, TIFF) created using external software (Pix4d, Agisoft, etc).</li>
                                 <li>You can upload any image (PNG, TIFF, JPEG) which covers the entire experimental field, for example, interpolated soil data for altitude or electrical conductance EC measurements. Another example is for images from a phenotyping facility, greenhouse, or growth chamber.</li>
                                 <li>Up to seven distinct spectral band images can be uploaded.</li>
                                 <li>Images should be perfectly super-imposable for all spectra in an imaging event.</li>
@@ -466,6 +466,15 @@
                             </div>
                         </div>
 
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>If you used Pix4d, look into "/1_initial/report/report.pdf".<br/>If you used ODM, look into "/odm_report/report.pdf"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_one" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
                         <center>
                             <button class="btn btn-primary" name="upload_drone_imagery_select_images_one" id="upload_drone_imagery_select_images_one">Go To Next Step</button>
                         </center>
@@ -602,6 +611,16 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>If you used Pix4d, look into "/1_initial/report/report.pdf".<br/>If you used ODM, look into "/odm_report/report.pdf"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_two" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
                         <center>
                             <button class="btn btn-primary" name="upload_drone_imagery_select_images_two" id="upload_drone_imagery_select_images_two">Go To Next Step</button>
                         </center>
@@ -777,6 +796,16 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>If you used Pix4d, look into "/1_initial/report/report.pdf".<br/>If you used ODM, look into "/odm_report/report.pdf"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_three" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
                         <center>
                             <button class="btn btn-primary" name="upload_drone_imagery_select_images_three" id="upload_drone_imagery_select_images_three">Go To Next Step</button>
                         </center>
@@ -992,6 +1021,16 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>If you used Pix4d, look into "/1_initial/report/report.pdf".<br/>If you used ODM, look into "/odm_report/report.pdf"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_four" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
                         <center>
                             <button class="btn btn-primary" name="upload_drone_imagery_select_images_four" id="upload_drone_imagery_select_images_four">Go To Next Step</button>
                         </center>
@@ -1247,6 +1286,16 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>If you used Pix4d, look into "/1_initial/report/report.pdf".<br/>If you used ODM, look into "/odm_report/report.pdf"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_five" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
                         <center>
                             <button class="btn btn-primary" name="upload_drone_imagery_select_images_five" id="upload_drone_imagery_select_images_five">Go To Next Step</button>
                         </center>
@@ -1542,6 +1591,16 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>If you used Pix4d, look into "/1_initial/report/report.pdf".<br/>If you used ODM, look into "/odm_report/report.pdf"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_six" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
                         <center>
                             <button class="btn btn-primary" name="upload_drone_imagery_select_images_six" id="upload_drone_imagery_select_images_six">Go To Next Step</button>
                         </center>
@@ -1877,6 +1936,16 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>If you used Pix4d, look into "/1_initial/report/report.pdf".<br/>If you used ODM, look into "/odm_report/report.pdf"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_seven" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
                         <center>
                             <button class="btn btn-primary" name="upload_drone_imagery_select_images_seven" id="upload_drone_imagery_select_images_seven">Go To Next Step</button>
                         </center>
@@ -2252,6 +2321,16 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>If you used Pix4d, look into "/1_initial/report/report.pdf".<br/>If you used ODM, look into "/odm_report/report.pdf"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_eight" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
                         <center>
                             <button class="btn btn-primary" name="upload_drone_imagery_select_images_eight" id="upload_drone_imagery_select_images_eight">Go To Next Step</button>
                         </center>

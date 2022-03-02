@@ -105,9 +105,12 @@ my $parser = CXGN::Genotype::ParseUpload->new({
 $parser->load_plugin('SSRExcel');
 my $parsed_data = $parser->parse();
 ok($parsed_data, "Check if parse validate excel file works");
+print STDERR Dumper $parsed_data;
 
 my $observation_unit_uniquenames = $parsed_data->{observation_unit_uniquenames};
 my $genotype_info = $parsed_data->{genotypes_info};
+my $protocolprop_info = $parsed_data->{protocol_info};
+$protocolprop_info->{sample_observation_unit_type_name} = 'accession';
 
 my $temp_file_sql_copy = "/tmp/temp_file_sql_copy";
 
@@ -128,17 +131,11 @@ my $store_args = {
     archived_file_type=>'ssr',
     genotyping_data_type=>'ssr',
     organism_id => $organism_id,
-    temp_file_sql_copy=>$temp_file_sql_copy
-
+    temp_file_sql_copy=>$temp_file_sql_copy,
+    genotype_info => $genotype_info,
+    protocol_info => $protocolprop_info,
+    observation_unit_uniquenames => $observation_unit_uniquenames
 };
-
-$store_args->{genotype_info} = $genotype_info;
-$store_args->{observation_unit_uniquenames} = $observation_unit_uniquenames;
-
-my %protocolprop_info;
-$protocolprop_info{'sample_observation_unit_type_name'} = 'accession';
-$store_args->{protocol_info} = \%protocolprop_info;
-
 my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new($store_args);
 
 ok($store_genotypes->validate());

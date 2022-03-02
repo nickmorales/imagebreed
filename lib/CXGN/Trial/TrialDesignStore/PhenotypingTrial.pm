@@ -3,6 +3,7 @@ package CXGN::Trial::TrialDesignStore::PhenotypingTrial;
 
 use Moose;
 use Try::Tiny;
+use JSON::XS;
 
 extends 'CXGN::Trial::TrialDesignStore::AbstractTrial';
 

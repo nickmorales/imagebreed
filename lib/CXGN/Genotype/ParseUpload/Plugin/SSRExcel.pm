@@ -122,6 +122,7 @@ sub _parse_with_plugin {
 
     my %sample_marker_hash;
     my @sample_names;
+    my %seen_marker_names;
     for my $row (2 .. $row_max){
         my $sample_name;
 
@@ -138,13 +139,18 @@ sub _parse_with_plugin {
                 my $marker_name = $worksheet->get_cell(0,$column)->value();
                 my $product_size = $worksheet->get_cell(1,$column)->value();
                 $sample_marker_hash{$sample_name}{$marker_name}{$product_size} = $worksheet->get_cell($row,$column)->value();
+                $seen_marker_names{$marker_name}++;
             }
         }
     }
+    my @marker_names = sort keys %seen_marker_names;
 
     my %parsed_data = (
         genotypes_info => \%sample_marker_hash,
-        observation_unit_uniquenames => \@sample_names
+        observation_unit_uniquenames => \@sample_names,
+        protocol_info => {
+            marker_names => \@marker_names
+        }
     );
 
     $self->_set_parsed_data(\%parsed_data);

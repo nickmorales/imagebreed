@@ -1,0 +1,28 @@
+<%args>
+$trial_id
+</%args>
+
+
+<table class="table table-bordered" id="imaging_event_report_files_datatables" alt="">
+</table>
+
+<script>
+jQuery(document).ready(function() {
+
+    jQuery('#drone_run_project_report_files_onswitch').one("click", function(){
+
+        jQuery('#imaging_event_report_files_datatables').DataTable({
+            'ajax': { 'url': '/ajax/breeders/trial/<% $trial_id %>/aerial_imaging_event_report_files' },
+            columns: [
+                { title: "Filename", "data": null, "render": function ( data, type, row ) { return row[4]; } },
+                { title: "Date Uploaded", "data": null, "render": function ( data, type, row ) { return row[1]; } },
+                { title: "Uploaded By", "data": null, "render": function ( data, type, row ) { return '<a href="/solpeople/profile/'+row[2]+'">'+row[3]+'</a>'; } },
+                { title: "File Type", "data": null, "render": function ( data, type, row ) { return row[6]; } },
+                { title: "Options", "data": null, "render": function ( data, type, row ) { return '<a href="/breeders/phenotyping/download/'+row[0]+'">Download</a>'; } },
+            ]
+        });
+
+    });
+
+});
+</script>

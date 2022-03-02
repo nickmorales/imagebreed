@@ -65,22 +65,28 @@ sub trial : Chained('/') PathPart('ajax/breeders/trial') CaptureArgs(1) {
     });
 
     if (!$c->stash->{trial}) {
-	$c->stash->{rest} = { error => "The specified trial with id $trial_id does not exist" };
-	return;
+        $c->stash->{rest} = { error => "The specified trial with id $trial_id does not exist" };
+        return;
     }
 
-    try {
-        my %param = ( schema => $bcs_schema, trial_id => $trial_id );
-        if ($c->stash->{trial}->get_design_type() eq 'genotyping_plate'){
-            $param{experiment_type} = 'genotyping_layout';
-        } else {
-            $param{experiment_type} = 'field_layout';
+    my $cxgn_project_type_obj = $c->stash->{trial}->get_cxgn_project_type();
+    my $cxgn_project_type = $cxgn_project_type_obj->{cxgn_project_type};
+
+    print STDERR Dumper $cxgn_project_type;
+    if ($cxgn_project_type ne 'drone_run_project' && $cxgn_project_type ne 'drone_run_band_project') {
+        try {
+            my %param = ( schema => $bcs_schema, trial_id => $trial_id );
+            if ($c->stash->{trial}->get_design_type() eq 'genotyping_plate'){
+                $param{experiment_type} = 'genotyping_layout';
+            } else {
+                $param{experiment_type} = 'field_layout';
+            }
+            $c->stash->{trial_layout} = CXGN::Trial::TrialLayout->new(\%param);
+            # print STDERR "Trial Layout: ".Dumper($c->stash->{trial_layout})."\n";
         }
-        $c->stash->{trial_layout} = CXGN::Trial::TrialLayout->new(\%param);
-	# print STDERR "Trial Layout: ".Dumper($c->stash->{trial_layout})."\n";
-    }
-    catch {
-        print STDERR "Trial Layout for $trial_id does not exist. @_\n";
+        catch {
+            print STDERR "Trial Layout for $trial_id does not exist. @_\n";
+        }
     }
 
 }
@@ -2140,6 +2146,16 @@ sub trial_phenotype_metadata : Chained('trial') PathPart('phenotype_metadata') A
 
     my $trial = $c->stash->{trial};
     my $data = $trial->get_phenotype_metadata();
+
+    $c->stash->{rest} = { data => $data };
+}
+
+sub trial_aerial_imaging_event_report_files : Chained('trial') PathPart('aerial_imaging_event_report_files') Args(0) {
+    my $self = shift;
+    my $c = shift;
+
+    my $trial = $c->stash->{trial};
+    my $data = $trial->get_aerial_imaging_event_report_file_metadata();
 
     $c->stash->{rest} = { data => $data };
 }

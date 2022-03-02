@@ -20,6 +20,20 @@ experiment_type	analysis_experiment	For saving results in analysis trials	06/04/
 experiment_type	analysis_model_experiment	For saving results in analysis models	06/04/2020	lam87nm529	00125
 experiment_type	analytics_protocol_experiment	For saving results of analytics protocols	01/22/2021	nm529	00136
 experiment_type	drone_run_experiment	For saving drone run experiment	07/20/2020	nm529	00126
+experiment_type	drone_run_experiment_stitched_report	For saving drone run experiment user uploaded stitched report	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_image	For saving drone run experiment ODM stitched image	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_report	For saving drone run experiment ODM stitched report	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_point_cloud	For saving drone run experiment ODM stitched point cloud (.ply)	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_point_cloud_obj	For saving drone run experiment ODM stitched point cloud (.obj)	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_point_cloud_pcd	For saving drone run experiment ODM stitched point cloud (.pcd)	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_point_cloud_gltf	For saving drone run experiment ODM stitched point cloud (.gltf)	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_point_cloud_csv	For saving drone run experiment ODM stitched point cloud (.csv)	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_stats	For saving drone run experiment ODM stitched stats JSON	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_shots	For saving drone run experiment ODM stitched stats GEOJSON	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_reconstruction	For saving drone run experiment ODM stitched reconstruction	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_dsm	For saving drone run experiment ODM stitched reconstruction	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_dtm	For saving drone run experiment ODM stitched reconstruction	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_odm_stitched_dsm_minus_dtm	For saving drone run experiment ODM stitched reconstruction	02/19/2022	nm529	00158
 experiment_type	field_trial_drone_runs_in_same_orthophoto	For linking drone runs that are in the same imaging event 	01/11/22	nm529	00154
 experiment_type	sampling_layout	For saving sampling trials	11/25/2020	nm529	00132
 genotype_property	igd number

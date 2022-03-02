@@ -108,6 +108,7 @@ ok($message_hash->{project_id});
 ok($message_hash->{nd_protocol_id});
 
 my $protocol_id = $message_hash->{nd_protocol_id};
+print STDERR Dumper $message_hash;
 
 #adding genotype data using same protocol as before to different project
 $ua = LWP::UserAgent->new;
