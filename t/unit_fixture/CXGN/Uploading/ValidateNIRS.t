@@ -85,6 +85,8 @@ is(scalar(@{$message_hash->{success}}), 8);
 is($message_hash->{success}->[6], 'All values in your file have been successfully processed!<br><br>15 NIRS profiles stored<br><br>');
 my $nirs_protocol_id = $message_hash->{nd_protocol_id};
 
+my $dry_matter_trait_id = $f->bcs_schema()->resultset("Cv::Cvterm")->find({name => 'dry matter content'})->cvterm_id();
+
 my $ds = CXGN::Dataset->new( people_schema => $f->people_schema(), schema => $f->bcs_schema());
 $ds->plots([
     $f->bcs_schema()->resultset("Stock::Stock")->find({uniquename => 'test_trial21'})->stock_id(),
@@ -98,6 +100,9 @@ $ds->plots([
     $f->bcs_schema()->resultset("Stock::Stock")->find({uniquename => 'test_trial29'})->stock_id(),
     $f->bcs_schema()->resultset("Stock::Stock")->find({uniquename => 'test_trial210'})->stock_id(),
     $f->bcs_schema()->resultset("Stock::Stock")->find({uniquename => 'test_trial211'})->stock_id()
+]);
+$ds->traits([
+    $dry_matter_trait_id
 ]);
 $ds->name("nirs_dataset_test");
 $ds->description("test nirs description");
@@ -184,5 +189,33 @@ $message = $response->decoded_content;
 $message_hash = decode_json $message;
 print STDERR Dumper $message_hash;
 ok($message_hash->{download_file_link});
+
+$ua = LWP::UserAgent->new;
+$response = $ua->post(
+        'http://localhost:3010/ajax/Nirs/generate_results',
+        Content_Type => 'form-data',
+        Content => [
+            train_dataset_id => $sp_dataset_id,
+            trait_id => $dry_matter_trait_id,
+            "format"=>"SCIO",
+            "cv"=>"random",
+            "algorithm"=>"pls",
+            "niter"=>10,
+            "tune"=>10,
+            "preprocessing"=0,
+            "rf"=>0,
+            "sgn_session_id"=>$sgn_session_id,
+        ]
+    );
+
+#print STDERR Dumper $response;
+ok($response->is_success);
+$message = $response->decoded_content;
+$message_hash = decode_json $message;
+print STDERR Dumper $message_hash;
+ok($message_hash->{model_properties});
+ok($message_hash->{model_file});
+ok($message_hash->{training_data_file});
+ok($message_hash->{performance_output});
 
 done_testing();

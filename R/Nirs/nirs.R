@@ -121,8 +121,8 @@ if(args[10]=="TRUE"){ # SAVE MODEL WITHOUT CV.SCHEME
                             trial3 = NULL
                             )
   }
-  results.df <- sm.output[[1]]
-  saveRDS(sm.output[[2]], file = args[11]) # args[11] = model save location with .Rds in filename
+  results.df <- sm.output$best.model.stats
+  saveRDS(sm.output$best.model, file = args[11]) # args[11] = model save location with .Rds in filename
 
 } else{ # DON'T SAVE MODEL
   if(is.null(cv.scheme)){
