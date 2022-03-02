@@ -11579,7 +11579,7 @@ sub drone_imagery_plot_polygon_spreadsheet_parse_POST : Args(0) {
 
         my $plot_name = $field_trial_designs{$trial_name}->{$plot_number}->{plot_name};
         $assigned_plot_polygons{$plot_name} = $polygons->{$polygon_number};
-        $polygon_to_plot_name{$polygon_number} = $plot_name;
+        $polygon_to_plot_name{$trial_name}->{$polygon_number} = $plot_name;
     }
     # print STDERR Dumper \%assigned_plot_polygons;
 
