@@ -60,8 +60,9 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
     my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
     my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
     my $geoparam_coordinates_plot_polygons_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_plot_polygons', 'project_property')->cvterm_id();
+    my $odm_process_running_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_opendronemap_process_running', 'project_property')->cvterm_id();
 
-    my $drone_run_q = "SELECT drone_run_band_project.project_id, drone_run_band_project.name, drone_run_band_project.description, drone_run_project.project_id, drone_run_project.name, drone_run_project.description, field_trial.project_id, field_trial.name, field_trial.description, drone_run_band_type.value, drone_run_date.value, drone_run_type.value, drone_run_averaged_temperature_gdd.value, drone_run_averaged_precipitation_sum.value, drone_run_related_time_cvterm_json.value, drone_run_indicator.value, drone_run_phenotypes_indicator.value, drone_run_processed.value, drone_run_processed_extended.value, drone_run_processed_vi.value, drone_run_is_raw_images.value, drone_run_ground_control_points.value, drone_run_camera_rig.value, drone_run_base_date.value, drone_run_band_geoparam_coordinates.value, drone_run_band_geoparam_coordinate_type.value, drone_run_band_geoparam_polygons.value
+    my $drone_run_q = "SELECT drone_run_band_project.project_id, drone_run_band_project.name, drone_run_band_project.description, drone_run_project.project_id, drone_run_project.name, drone_run_project.description, field_trial.project_id, field_trial.name, field_trial.description, drone_run_band_type.value, drone_run_date.value, drone_run_type.value, drone_run_averaged_temperature_gdd.value, drone_run_averaged_precipitation_sum.value, drone_run_related_time_cvterm_json.value, drone_run_indicator.value, drone_run_phenotypes_indicator.value, drone_run_processed.value, drone_run_processed_extended.value, drone_run_processed_vi.value, drone_run_is_raw_images.value, drone_run_ground_control_points.value, drone_run_camera_rig.value, drone_run_base_date.value, drone_run_band_geoparam_coordinates.value, drone_run_band_geoparam_coordinate_type.value, drone_run_band_geoparam_polygons.value, drone_run_odm_indicator.value
         FROM project AS drone_run_band_project
         JOIN projectprop AS drone_run_band_type ON(drone_run_band_project.project_id=drone_run_band_type.project_id AND drone_run_band_type.type_id=$drone_run_band_type_cvterm_id)
         LEFT JOIN projectprop AS drone_run_band_geoparam_coordinates ON(drone_run_band_project.project_id=drone_run_band_geoparam_coordinates.project_id AND drone_run_band_geoparam_coordinates.type_id=$geoparam_coordinates_cvterm_id)
@@ -81,6 +82,7 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
         LEFT JOIN projectprop AS drone_run_processed_extended ON(drone_run_processed_extended.project_id = drone_run_project.project_id AND drone_run_processed_extended.type_id = $processed_extended_cvterm_id)
         LEFT JOIN projectprop AS drone_run_processed_vi ON(drone_run_processed_vi.project_id = drone_run_project.project_id AND drone_run_processed_vi.type_id = $processed_vi_cvterm_id)
         LEFT JOIN projectprop AS drone_run_processed ON(drone_run_processed.project_id = drone_run_project.project_id AND drone_run_processed.type_id = $processed_cvterm_id)
+        LEFT JOIN projectprop AS drone_run_odm_indicator ON(drone_run_odm_indicator.project_id = drone_run_project.project_id AND drone_run_odm_indicator.type_id = $odm_process_running_cvterm_id)
         LEFT JOIN projectprop AS drone_run_camera_rig ON(drone_run_camera_rig.project_id = drone_run_project.project_id AND drone_run_camera_rig.type_id = $drone_run_camera_rig_cvterm_id)
         LEFT JOIN projectprop AS drone_run_base_date ON(drone_run_base_date.project_id = drone_run_project.project_id AND drone_run_base_date.type_id = $drone_run_base_date_cvterm_id)
         JOIN project_relationship AS field_trial_rel ON (drone_run_project.project_id = field_trial_rel.subject_project_id AND field_trial_rel.type_id=$drone_run_field_trial_project_relationship_type_id_cvterm_id)
@@ -92,9 +94,12 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
 
     my %unique_drone_runs;
     my %unique_drone_run_dates;
+    my %processing_field_trials_drone_runs_indicator;
+    my %processing_pheno_field_trials_drone_runs_indicator;
+    my %processing_odm_field_trials_drone_runs_indicator;
     my $epoch_seconds = 0;
     my %trial_id_hash;
-    while( my ($drone_run_band_project_id, $drone_run_band_project_name, $drone_run_band_project_desc, $drone_run_project_id, $drone_run_project_name, $drone_run_project_desc, $field_trial_project_id, $field_trial_project_name, $field_trial_project_desc, $drone_run_band_project_type, $drone_run_date, $drone_run_type, $drone_run_averaged_temperature_gdd, $drone_run_averaged_precipitation_sum, $drone_run_related_time_cvterm_json, $drone_run_indicator, $drone_run_phenotypes_indicator, $drone_run_processed, $drone_run_processed_extended, $drone_run_processed_vi, $drone_run_is_raw_images, $drone_run_ground_control_points_json, $drone_run_camera_rig, $drone_run_base_date, $drone_run_band_geoparam_coordinates, $drone_run_band_geoparam_coordinates_type, $drone_run_band_geoparam_polygons) = $h->fetchrow_array()) {
+    while( my ($drone_run_band_project_id, $drone_run_band_project_name, $drone_run_band_project_desc, $drone_run_project_id, $drone_run_project_name, $drone_run_project_desc, $field_trial_project_id, $field_trial_project_name, $field_trial_project_desc, $drone_run_band_project_type, $drone_run_date, $drone_run_type, $drone_run_averaged_temperature_gdd, $drone_run_averaged_precipitation_sum, $drone_run_related_time_cvterm_json, $drone_run_indicator, $drone_run_phenotypes_indicator, $drone_run_processed, $drone_run_processed_extended, $drone_run_processed_vi, $drone_run_is_raw_images, $drone_run_ground_control_points_json, $drone_run_camera_rig, $drone_run_base_date, $drone_run_band_geoparam_coordinates, $drone_run_band_geoparam_coordinates_type, $drone_run_band_geoparam_polygons, $drone_run_odm_indicator) = $h->fetchrow_array()) {
         my $drone_run_date_formatted = $drone_run_date ? $calendar_funcs->display_start_date($drone_run_date) : '';
 
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{bands}->{$drone_run_band_project_id}->{drone_run_band_project_name} = $drone_run_band_project_name;
@@ -114,6 +119,7 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{drone_run_processed_minimal_vi} = $drone_run_processed_vi;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{drone_run_processed_extended} = $drone_run_processed_extended;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{drone_run_phenotypes_indicator} = $drone_run_phenotypes_indicator;
+        $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{drone_run_odm_indicator} = $drone_run_odm_indicator;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{drone_run_project_description} = $drone_run_project_desc;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{drone_run_averaged_temperature_gdd} = $drone_run_averaged_temperature_gdd;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{drone_run_averaged_precipitation_sum} = $drone_run_averaged_precipitation_sum;
@@ -123,6 +129,16 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{drone_run_ground_control_points} = $drone_run_ground_control_points_json ? decode_json $drone_run_ground_control_points_json : undef;
 
         $trial_id_hash{$field_trial_project_name} = $field_trial_project_id;
+
+        if ($drone_run_indicator) {
+            $processing_field_trials_drone_runs_indicator{$field_trial_project_name}->{$drone_run_project_id}++;
+        }
+        if ($drone_run_phenotypes_indicator) {
+            $processing_pheno_field_trials_drone_runs_indicator{$field_trial_project_name}->{$drone_run_project_id}++;
+        }
+        if ($drone_run_odm_indicator) {
+            $processing_odm_field_trials_drone_runs_indicator{$field_trial_project_name}->{$drone_run_project_id}++;
+        }
 
         if ($drone_run_date_formatted) {
             my $date_obj = Time::Piece->strptime($drone_run_date_formatted, "%Y-%B-%d %H:%M:%S");
@@ -138,7 +154,19 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
     foreach my $trial_name (sort keys %unique_drone_runs) {
         my %unique_drone_runs_k = %{$unique_drone_runs{$trial_name}};
 
-        my $drone_run_html = '<div class="panel-group" id="drone_runs_trial_accordion_table_wrapper_'.$trial_id_hash{$trial_name}.'" ><div class="panel panel-default"><div class="panel-heading"><div class="row"><div class="col-sm-10"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_runs_trial_accordion_table_wrapper_'.$trial_id_hash{$trial_name}.'" href="#drone_runs_trial_accordion_table_wrapper_one_'.$trial_id_hash{$trial_name}.'" >Field Trial: '.$trial_name.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.scalar(keys %unique_drone_runs_k).' Imaging Events)</a></h4></div><div class="col-sm-2"><button class="btn btn-sm btn-default" name="drone_runs_trial_view_timeseries" data-field_trial_name='.$trial_name.' data-field_trial_id='.$trial_id_hash{$trial_name}.'>View TimeSeries</button></div></div></div><div id="drone_runs_trial_accordion_table_wrapper_one_'.$trial_id_hash{$trial_name}.'" class="panel-collapse collapse"><div class="panel-body">';
+        my $drone_run_html = '<div class="panel-group" id="drone_runs_trial_accordion_table_wrapper_'.$trial_id_hash{$trial_name}.'" ><div class="panel panel-default"><div class="panel-heading"><div class="row"><div class="col-sm-10"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_runs_trial_accordion_table_wrapper_'.$trial_id_hash{$trial_name}.'" href="#drone_runs_trial_accordion_table_wrapper_one_'.$trial_id_hash{$trial_name}.'" >Field Trial: '.$trial_name.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.scalar(keys %unique_drone_runs_k).' Imaging Events)</a>';
+
+        if (exists($processing_field_trials_drone_runs_indicator{$trial_name})) {
+            $drone_run_html .= '&nbsp;&nbsp;&nbsp;&nbsp;<small>(Processing: <b>'.scalar(keys %{$processing_field_trials_drone_runs_indicator{$trial_name}}).'</b><span class="glyphicon glyphicon-hourglass"></span>)</small>';
+        }
+        if (exists($processing_pheno_field_trials_drone_runs_indicator{$trial_name})) {
+            $drone_run_html .= '&nbsp;&nbsp;&nbsp;&nbsp;<small>(Saving Phenotypes: <b>'.scalar(keys %{$processing_pheno_field_trials_drone_runs_indicator{$trial_name}}).'</b><span class="glyphicon glyphicon-hourglass"></span>)</small>';
+        }
+        if (exists($processing_odm_field_trials_drone_runs_indicator{$trial_name})) {
+            $drone_run_html .= '&nbsp;&nbsp;&nbsp;&nbsp;<small>(Running ODM: <b>'.scalar(keys %{$processing_odm_field_trials_drone_runs_indicator{$trial_name}}).'</b><span class="glyphicon glyphicon-hourglass"></span>)</small>';
+        }
+
+        $drone_run_html .= '</h4></div><div class="col-sm-2"><button class="btn btn-sm btn-default" name="drone_runs_trial_view_timeseries" data-field_trial_name='.$trial_name.' data-field_trial_id='.$trial_id_hash{$trial_name}.'>View TimeSeries</button></div></div></div><div id="drone_runs_trial_accordion_table_wrapper_one_'.$trial_id_hash{$trial_name}.'" class="panel-collapse collapse"><div class="panel-body">';
 
         foreach my $epoch_seconds (sort keys %{$unique_drone_run_dates{$trial_name}}) {
             my $k = $unique_drone_run_dates{$trial_name}->{$epoch_seconds};
@@ -160,7 +188,19 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
                 }
             }
 
-            $drone_run_html .= '<div class="panel-group" id="drone_run_band_accordion_drone_run_wrapper_'.$k.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_run_band_accordion_drone_run_wrapper_'.$k.'" href="#drone_run_band_accordion_drone_run_wrapper_one_'.$k.'" >'.$v->{drone_run_project_name}.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp'.$drone_run_date.'</a></h4></div><div id="drone_run_band_accordion_drone_run_wrapper_one_'.$k.'" class="panel-collapse collapse"><div class="panel-body">';
+            $drone_run_html .= '<div class="panel-group" id="drone_run_band_accordion_drone_run_wrapper_'.$k.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_run_band_accordion_drone_run_wrapper_'.$k.'" href="#drone_run_band_accordion_drone_run_wrapper_one_'.$k.'" >'.$v->{drone_run_project_name}.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp'.$drone_run_date;
+
+            if (exists($processing_field_trials_drone_runs_indicator{$trial_name}->{$k})) {
+                $drone_run_html .= '&nbsp;&nbsp;&nbsp;&nbsp;<small>(Processing: <span class="glyphicon glyphicon-hourglass"></span>)</small>';
+            }
+            if (exists($processing_pheno_field_trials_drone_runs_indicator{$trial_name}->{$k})) {
+                $drone_run_html .= '&nbsp;&nbsp;&nbsp;&nbsp;<small>(Saving Phenotypes: <span class="glyphicon glyphicon-hourglass"></span>)</small>';
+            }
+            if (exists($processing_odm_field_trials_drone_runs_indicator{$trial_name}->{$k})) {
+                $drone_run_html .= '&nbsp;&nbsp;&nbsp;&nbsp;<small>(Running ODM: <span class="glyphicon glyphicon-hourglass"></span>)</small>';
+            }
+
+            $drone_run_html .= '</a></h4></div><div id="drone_run_band_accordion_drone_run_wrapper_one_'.$k.'" class="panel-collapse collapse"><div class="panel-body">';
 
             $drone_run_html .= '<div class="well well-sm">';
 
