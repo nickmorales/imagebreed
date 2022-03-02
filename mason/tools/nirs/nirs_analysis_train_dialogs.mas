@@ -86,17 +86,16 @@
                 <&| /util/workflow.mas:step, title=> "Model Settings" &>
                     <& /page/page_title.mas, title=>"Select parameters for spectral modeling" &>
 
-                    <center>
+                    <!--center>
                     <button class="btn btn-info" id="nirs_analysis_training_dataset_info">More Info</button>
                     </center>
-                    <hr>
+                    <hr-->
 
                     <div class="form-horizontal">
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Spectrometer format: </label>
-                            <div class="col-sm-9" >
-
-                                <select class="form-control input-sm" id="nirs_analysis_training_format_select">
+                            <label class="col-sm-5 control-label">Spectrometer format: </label>
+                            <div class="col-sm-7" >
+                                <select class="form-control" id="nirs_analysis_training_format_select">
                                     <option value="">Select spectrometer format</option>
                                     <option selected value="SCIO">SCIO</option>
                                     <option value="QST">QST</option>
@@ -112,52 +111,51 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Cross-validation methods: </label>
-                            <div class="col-sm-9" >
-
-                                <select class="form-control input-sm" id="nirs_analysis_training_cv_select">
+                            <label class="col-sm-5 control-label">Cross-validation methods: </label>
+                            <div class="col-sm-7" >
+                                <select class="form-control" id="nirs_analysis_training_cv_select">
                                     <option value="">Select cross-validation</option>
                                     <option selected value="random">Random</option>
                                     <option value="stratified">Stratified</option>
-                                    <option value="CV1">CV1</option>
+                                    <!--option value="CV1">CV1</option>
                                     <option value="CV2">CV2</option>
                                     <option value="CV0">CV0</option>
-                                    <option value="CV00">CV00</option>
+                                    <option value="CV00">CV00</option-->
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Algorithm: </label>
-                            <div class="col-sm-9" >
+                            <label class="col-sm-5 control-label">Algorithm: </label>
+                            <div class="col-sm-7" >
                                 <select class="form-control" id="nirs_analysis_training_nirs_model_algorithm">
                                     <option value="pls">PLSR</option>
                                     <option value="rf">Random Forest</option>
-                                    <option value="svmLinear">SVM with Linear Kernel</option>
-                                    <option value="svmRadial">SVM with Radial Kernel</option>
+                                    <!--option value="svmLinear">SVM with Linear Kernel</option>
+                                    <option value="svmRadial">SVM with Radial Kernel</option-->
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Number of sampling iterations: </label>
-                            <div class="col-sm-9" >
+                            <label class="col-sm-5 control-label">Number of sampling iterations: </label>
+                            <div class="col-sm-7" >
                                 <input class="form-control" type="number" id="nirs_analysis_training_niter_select" name="niter_select" min="1" max="100" step="1" value="10">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Tuning length: </label>
-                            <div class="col-sm-9" >
+                            <label class="col-sm-5 control-label">Tuning length: </label>
+                            <div class="col-sm-7" >
                                 <input class="form-control" type="number" id="nirs_analysis_training_tuneLength_select" name="tuneLength_select" min="1" max="30" step="1" value="10">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Include preprocessing?: </label>
-                            <div class="col-sm-9" >
+                            <label class="col-sm-5 control-label">Include preprocessing? (Requires many samples): </label>
+                            <div class="col-sm-7" >
                                 <input type="checkbox" id="nirs_analysis_training_preprocessing_select" name="preprocessing_select" >
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">Show random forest variable importance? (Note this may take a long time to run): </label>
-                            <div class="col-sm-9" >
+                            <label class="col-sm-5 control-label">Show random forest variable importance? (Note this may take a long time to run): </label>
+                            <div class="col-sm-7" >
                                 <input type="checkbox" id="nirs_analysis_training_rf_var_imp_select" name="rf_var_imp_select" >
                             </div>
                         </div>
@@ -316,6 +314,11 @@ jQuery(document).ready(function(){
         nirs_analysis_training_rf_var_imp_select = 0;
         if (jQuery('#nirs_analysis_training_rf_var_imp_select').is(":checked")) {
             nirs_analysis_training_rf_var_imp_select = 1;
+        }
+
+        if (nirs_analysis_training_nirs_model_algorithm == 'rf' && nirs_analysis_training_tuneLength_select > 5) {
+            alert('Please select a tune length less than 5 if you use Random Forest!');
+            return false;
         }
 
         jQuery.ajax({

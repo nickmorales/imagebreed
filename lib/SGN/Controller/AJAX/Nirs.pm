@@ -398,8 +398,7 @@ sub generate_results_POST : Args(0) {
     }
 
     my $performance_output = '';
-    open(my $fh, '<', $output_table_filepath)
-        or die "Could not open file '$output_table_filepath' $!";
+    open(my $fh, '<', $output_table_filepath) or die "Could not open file '$output_table_filepath' $!";
 
         print STDERR "Opened $output_table_filepath\n";
         while(my $l = <$fh>) {
