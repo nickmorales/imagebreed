@@ -125,6 +125,9 @@ $analytics_protocol_properties => {}
 $analytics_protocol_result_summary => {}
 $analytics_protocol_charts => []
 
+#Specific to manage private companies page
+$private_companies => []
+
 </%args>
 
 <& /util/import_javascript.mas,
@@ -465,6 +468,11 @@ $analytics_protocol_charts => []
 % if ($info_section_id eq 'marker_set_summary_section'){
                                 <& /breeders_toolbox/markers/marker_set_summary.mas &>
 % } #End marker_set_summary_section
+
+
+% if ($info_section_id eq 'private_company_manage_user_list'){
+                                <& /breeders_toolbox/private_companies/private_company_manage_user_list.mas, private_companies => $private_companies &>
+% } #End private_company_manage_user_list
 
 % if (!$info_section_id){
                                 <p>No section specified! Main content goes here!</p>

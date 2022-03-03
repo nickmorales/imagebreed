@@ -24,6 +24,7 @@ use CXGN::Genotype::Search;
 use JSON::XS;
 use CXGN::Trial;
 use CXGN::Login;
+use CXGN::PrivateCompany;
 
 BEGIN { extends 'Catalyst::Controller'; }
 
@@ -32,10 +33,8 @@ sub manage_breeding_programs : Path("/breeders/manage_programs") :Args(0) {
     my $c = shift;
 
     if (!$c->user()) {
-
-	# redirect to login page
-	$c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-	return;
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
     }
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
@@ -48,8 +47,24 @@ sub manage_breeding_programs : Path("/breeders/manage_programs") :Args(0) {
     $c->stash->{user} = $c->user();
 
     $c->stash->{template} = '/breeders_toolbox/breeding_programs.mas';
+}
 
+sub manage_private_groups : Path("/breeders/private_groups") :Args(0) {
+    my $self = shift;
+    my $c = shift;
 
+    if (!$c->user()) {
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
+    }
+    my $sp_person_id = $c->user()->get_object()->get_sp_person_id();
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+    my $private_companies_array = $private_companies->get_private_companies($sp_person_id);
+
+    $c->stash->{private_companies} = $private_companies_array;
+    $c->stash->{template} = '/breeders_toolbox/manage_private_companies.mas';
 }
 
 sub manage_trials : Path("/breeders/trials") Args(0) {
