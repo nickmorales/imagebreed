@@ -9,18 +9,20 @@ $check_vendor_role
 
 <& /page/page_title.mas, title => "Catalog" &>
 
-% if ($check_vendor_role == 1) {
     <&| /page/info_section.mas, title => 'Manage Catalog', collapsible=>1, collapsed=>0 &>
         <div class = "well well-sm">
             <div class = "panel panel-default">
                 <div class = "panel-body">
+%  if ($check_vendor_role == 1) {
                     <button id="upload_catalog_items_button" class="btn btn-primary">Upload Catalog Items</button>
                     <button id="add_catalog_item_button" class="btn btn-primary">Add a Catalog Item</button>
+%  } else {
+                    <p>Only users with a Vendor role can add Catalog items in the database.</p>
+%  }
                 </div>
             </div>
         </div>
     </&>
-% }
 
 <&| /page/info_section.mas, title => 'Catalog Items', collapsible=>1, collapsed=>0 &>
     <div class = "well well-sm">
@@ -40,7 +42,7 @@ $check_vendor_role
             </div>
         </div>
         <td>
-            <a href="/order/stocks/view"><p>Go to Manage Order Page</p></a>
+            <a href="/order/stocks/view"><button class="btn btn-primary btn-sm">Go to Manage Order Page</button></a>
         </td>
     </div>
 </&>

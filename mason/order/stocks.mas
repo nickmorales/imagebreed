@@ -6,14 +6,11 @@ $check_vendor_role
 
 <& /util/import_javascript.mas, classes => [ 'jquery', 'jquery/dataTables', 'CXGN.BreedersToolbox.HTMLSelect.js', 'CXGN.List' ] &>
 
-<&| /page/page_title.mas, title => "Your Orders" &>
+<& /page/page_title.mas, title => "Your Orders" &>
 
-</&>
-<td>
-    <a href="/catalog/view"><p>Go to Catalog Page</p></a>
-</td>
+<a href="/catalog/view"><button class="btn btn-primary btn-sm">Go to Catalog Page</button></a>
+<hr>
 
-<br/>
 % if ($check_vendor_role == 1) {
     <&| /page/info_section.mas, title => 'Manage Current Orders', collapsible=>1, collapsed=>0 &>
         <div class = "well well-sm">
