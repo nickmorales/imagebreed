@@ -115,24 +115,25 @@ sub trial_autocomplete : Local : ActionClass('REST') { }
 
 sub trial_autocomplete_GET :Args(0) {
     my ($self, $c) = @_;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
     my $term = $c->req->param('term');
-
-    print STDERR "Term: $term\n";
     $term =~ s/(^\s+|\s+)$//g;
     $term =~ s/\s+/ /g;
 
-    my $trial_design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($c->dbic_schema("Bio::Chado::Schema"), "design", "project_property")->cvterm_id();
+    my $trial_search = CXGN::Trial::Search->new({
+        bcs_schema=>$schema,
+        trial_name_list=>[$term],
+        field_trials_only=>1
+    });
+    my ($result, $total_count) = $trial_search->search();
+
     my @response_list;
-    my $q = "select distinct(name) from project join projectprop using(project_id) where project.name ilike ? and projectprop.type_id = ? ORDER BY name";
-    my $sth = $c->dbc->dbh->prepare($q);
-    $sth->execute('%'.$term.'%', $trial_design_cvterm_id);
-    while (my ($project_name) = $sth->fetchrow_array) {
-        push @response_list, $project_name;
+    foreach (@$result) {
+        push @response_list, $_->{trial_name};
     }
     #print STDERR Dumper \@response_list;
 
-    print STDERR "Returning...\n";
     $c->stash->{rest} = \@response_list;
 }
 
