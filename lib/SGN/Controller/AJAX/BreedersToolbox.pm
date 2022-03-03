@@ -23,18 +23,7 @@ __PACKAGE__->config(
     default   => 'application/json',
     stash_key => 'rest',
     map       => { 'application/json' => 'JSON' },
-   );
-
-sub get_breeding_programs : Path('/ajax/breeders/all_programs') Args(0) {
-    my $self = shift;
-    my $c = shift;
-
-    my $po = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") });
-
-    my $breeding_programs = $po->get_breeding_programs();
-
-    $c->stash->{rest} = $breeding_programs;
-}
+);
 
 sub new_breeding_program :Path('/breeders/program/new') Args(0) {
     my $self = shift;

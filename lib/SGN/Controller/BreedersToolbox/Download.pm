@@ -1281,54 +1281,6 @@ sub trial_download_log {
     }
 }
 
-
-sub download_sequencing_facility_spreadsheet : Path( '/breeders/genotyping/spreadsheet') Args(1) {
-    my $self = shift;
-    my $c = shift;
-    my $trial_id = shift;
-
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
-    my $t = CXGN::Trial->new( { bcs_schema => $schema, trial_id => $trial_id });
-
-    #my $layout = $t->get_layout()->get_design();
-
-    $c->tempfiles_subdir("data_export"); # make sure the dir exists
-    my ($fh, $tempfile) = $c->tempfile(TEMPLATE=>"data_export/trial_".$trial_id."_XXXXX");
-
-    my $file_path = $c->config->{basepath}."/".$tempfile.".xls";
-    move($tempfile, $file_path);
-
-    my $td = CXGN::Trial::Download->new( {
-	bcs_schema => $schema,
-	trial_id => $trial_id,
-	format => "IGDFacilitySpreadsheet",
-        filename => $file_path,
-	user_id => $c->user->get_object()->get_sp_person_id(),
-	trial_download_logfile => $c->config->{trial_download_logfile},
-    }
-    );
-
-    $td->download();
-
-    my $file_name = basename($file_path);
-    $c->res->content_type('Application/xls');
-    $c->res->header('Content-Disposition', qq[attachment; filename="$file_name"]);
-
-
-
-    ####my $output = read_file($file_path, binmode=>':raw');
-    my $output = "";
-    open(my $F, "< :encoding(UTF-8)", $file_path) || die "Can't open file $file_path for reading.";
-    while (<$F>) {
-	$output .= $_;
-    }
-    close($F);
-
-
-    close($fh);
-    $c->res->body($output);
-}
-
 sub wellsort {
     my $row_a = substr($a, 0, 1);
     my $row_b = substr($b, 0, 1);

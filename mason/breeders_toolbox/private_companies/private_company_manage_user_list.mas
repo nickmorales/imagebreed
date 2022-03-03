@@ -25,7 +25,6 @@ $private_companies => []
                     <thead>
                         <tr>
                             <th>Username</th>
-                            <th>Last Access</th>
                             <th>Access</th>
 %  if ($_->[17] eq 'curator_access') {
                             <th>Options</th>
@@ -36,8 +35,7 @@ $private_companies => []
 %  foreach my $a (@{$_->[18]}) {
                         <tr>
                             <td><% $a->[1] %></td>
-                            <td><% $a->[4] %></td>
-                            <td><% $a->[6] %></td>
+                            <td><% $a->[5] %></td>
 %  if ($_->[17] eq 'curator_access') {
                             <td></td>
 %  }

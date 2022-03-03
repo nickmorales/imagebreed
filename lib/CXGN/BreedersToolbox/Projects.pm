@@ -28,15 +28,22 @@ sub trial_exists {
 
 sub get_breeding_programs {
     my $self = shift;
+    my $sp_person_id = shift;
 
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $self->schema } );
+    my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($sp_person_id, 0);
+    my $company_ids_sql = join ',', @$private_companies_ids;
 
     my $breeding_program_cvterm_id = $self->get_breeding_program_cvterm_id();
-
-    my $rs = $self->schema->resultset('Project::Project')->search( { 'projectprops.type_id'=>$breeding_program_cvterm_id }, { join => 'projectprops' }  );
-
+    my $q = "SELECT project.project_id, project.name, project.description
+        FROM project
+        JOIN projectprop ON(project.project_id=projectprop.project_id AND projectprop.type_id=$breeding_program_cvterm_id)
+        WHERE project.is_private='f' OR (project.is_private='t' AND project.private_company_id IN ($company_ids_sql));";
+    my $h = $self->schema->storage->dbh()->prepare($q);
+    $h->execute();
     my @projects;
-    while (my $row = $rs->next()) {
-	push @projects, [ $row->project_id, $row->name, $row->description ];
+    while (my($project_id, $name, $description) = $h->fetchrow_array()) {
+        push @projects, [$project_id, $name, $description];
     }
 
     return \@projects;

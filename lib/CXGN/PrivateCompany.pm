@@ -136,21 +136,36 @@ sub BUILD {
     return $self;
 }
 
-sub get_private_companies {
+sub get_users_private_companies {
     my $self = shift;
     my $sp_person_id = shift;
+    my $include_members = shift;
 
     my $default_company_type_id = SGN::Model::Cvterm->get_cvterm_row($self->schema, 'default_access', 'company_type')->cvterm_id();
+    my $private_company_type_id = SGN::Model::Cvterm->get_cvterm_row($self->schema, 'private_access', 'company_type')->cvterm_id();
 
-    my $q = "SELECT private_company.private_company_id, private_company.name, private_company.description, private_company.contact_email, private_company.contact_person_first_name, private_company.contact_person_last_name, private_company.contact_person_phone, private_company.address_street, private_company.address_street_2, private_company.address_state, private_company.city, private_company.address_zipcode, private_company.address_country, private_company.create_date, private_company_type.cvterm_id, private_company_type.name, user_type.cvterm_id, user_type.name
-        FROM sgn_people.private_company AS private_company
-        JOIN sgn_people.private_company_sp_person AS p ON(private_company.private_company_id=p.private_company_id)
-        JOIN cvterm AS private_company_type ON(private_company.type_id=private_company_type.cvterm_id)
-        JOIN cvterm AS user_type ON(p.type_id=user_type.cvterm_id)
-        WHERE p.sp_person_id=? AND p.is_private='f' AND private_company_type.cvterm_id=?;";
-    my $h = $self->schema->storage->dbh()->prepare($q);
+    my $q;
+    my $h;
+    if ($sp_person_id) {
+        $q = "SELECT private_company.private_company_id, private_company.name, private_company.description, private_company.contact_email, private_company.contact_person_first_name, private_company.contact_person_last_name, private_company.contact_person_phone, private_company.address_street, private_company.address_street_2, private_company.address_state, private_company.city, private_company.address_zipcode, private_company.address_country, private_company.create_date, private_company_type.cvterm_id, private_company_type.name, user_type.cvterm_id, user_type.name
+            FROM sgn_people.private_company AS private_company
+            JOIN sgn_people.private_company_sp_person AS p ON(private_company.private_company_id=p.private_company_id)
+            JOIN cvterm AS private_company_type ON(private_company.type_id=private_company_type.cvterm_id)
+            JOIN cvterm AS user_type ON(p.type_id=user_type.cvterm_id)
+            WHERE p.sp_person_id=? AND p.is_private='f' AND private_company_type.cvterm_id IN(?,?);";
+        $h = $self->schema->storage->dbh()->prepare($q);
+        $h->execute($sp_person_id,$default_company_type_id,$private_company_type_id);
+    }
+    else {
+        $q = "SELECT private_company.private_company_id, private_company.name, private_company.description, private_company.contact_email, private_company.contact_person_first_name, private_company.contact_person_last_name, private_company.contact_person_phone, private_company.address_street, private_company.address_street_2, private_company.address_state, private_company.city, private_company.address_zipcode, private_company.address_country, private_company.create_date, private_company_type.cvterm_id, private_company_type.name
+            FROM sgn_people.private_company AS private_company
+            JOIN cvterm AS private_company_type ON(private_company.type_id=private_company_type.cvterm_id)
+            WHERE private_company_type.cvterm_id IN(?);";
+        $h = $self->schema->storage->dbh()->prepare($q);
+        $h->execute($default_company_type_id);
+    }
 
-    my $q2 = "SELECT p.sp_person_id, p.username, p.first_name, p.last_name, p.last_access_time, user_type.cvterm_id, user_type.name
+    my $q2 = "SELECT p.sp_person_id, p.username, p.first_name, p.last_name, user_type.cvterm_id, user_type.name
         FROM sgn_people.private_company AS private_company
         JOIN sgn_people.private_company_sp_person AS sp ON(private_company.private_company_id=sp.private_company_id)
         JOIN cvterm AS private_company_type ON(private_company.type_id=private_company_type.cvterm_id)
@@ -158,21 +173,24 @@ sub get_private_companies {
         JOIN sgn_people.sp_person AS p ON(p.sp_person_id=sp.sp_person_id)
         WHERE private_company.private_company_id=? AND sp.is_private='f';";
     my $h2 = $self->schema->storage->dbh()->prepare($q2);
-    $h->execute($sp_person_id,$default_company_type_id);
 
     my @private_companies;
+    my @private_companies_ids;
     while (my ($private_company_id, $name, $description, $email, $first_name, $last_name, $phone, $address, $address2, $state, $city, $zipcode, $country, $create_date, $company_type_id, $company_type_name, $user_type_id, $user_type_name) = $h->fetchrow_array()){
 
         my @members;
-        $h2->execute($private_company_id);
-        while (my ($sp_person_id, $sp_username, $sp_first_name, $sp_last_name, $sp_last_access, $sp_user_type_id, $sp_user_type_name) = $h2->fetchrow_array()){
-            push @members, [$sp_person_id, $sp_username, $sp_first_name, $sp_last_name, $sp_last_access, $sp_user_type_id, $sp_user_type_name];
+        if ($include_members) {
+            $h2->execute($private_company_id);
+            while (my ($sp_person_id, $sp_username, $sp_first_name, $sp_last_name, $sp_user_type_id, $sp_user_type_name) = $h2->fetchrow_array()){
+                push @members, [$sp_person_id, $sp_username, $sp_first_name, $sp_last_name, $sp_user_type_id, $sp_user_type_name];
+            }
         }
 
         push @private_companies, [$private_company_id, $name, $description, $email, $first_name, $last_name, $phone, $address, $address2, $state, $city, $zipcode, $country, $create_date, $company_type_id, $company_type_name, $user_type_id, $user_type_name, \@members];
+        push @private_companies_ids, $private_company_id;
     }
     # print STDERR Dumper \@private_companies;
-    return \@private_companies;
+    return (\@private_companies, \@private_companies_ids);
 }
 
 1;
