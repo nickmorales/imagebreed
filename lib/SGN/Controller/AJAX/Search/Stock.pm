@@ -8,6 +8,9 @@ BEGIN { extends 'Catalyst::Controller::REST' }
 use Data::Dumper;
 use JSON;
 use CXGN::Stock::Search;
+use CXGN::PrivateCompany;
+use CXGN::Login;
+use CXGN::People::Person;
 
 __PACKAGE__->config(
     default   => 'application/json',
@@ -24,7 +27,33 @@ sub stock_search :Path('/ajax/search/stocks') Args(0) {
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $params = $c->req->params() || {};
-    #print STDERR Dumper $params;
+    # print STDERR Dumper $params;
+
+    my $session_id = $c->req->param("sgn_session_id");
+
+    my $user_id;
+    my $user_role;
+    my $user_name;
+    if ($session_id){
+        my $dbh = $c->dbc->dbh;
+        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+        if (!$user_info[0]){
+            $c->stash->{rest} = {error=>'You must be logged in to search stocks!'};
+            $c->detach();
+        }
+        $user_id = $user_info[0];
+        $user_role = $user_info[1];
+        my $p = CXGN::People::Person->new($dbh, $user_id);
+        $user_name = $p->get_username;
+    } else{
+        if (!$c->user){
+            $c->stash->{rest} = {error=>'You must be logged in to search stocks!'};
+            $c->detach();
+        }
+        $user_id = $c->user()->get_object()->get_sp_person_id();
+        $user_name = $c->user()->get_object()->get_username();
+        $user_role = $c->user->get_object->get_user_type();
+    }
 
     my $owner_first_name;
     my $owner_last_name;
@@ -60,6 +89,15 @@ sub stock_search :Path('/ajax/search/stocks') Args(0) {
     #print STDERR Dumper $stockprop_columns_view;
     #print STDERR Dumper $stockprop_columns_view_array;
 
+    my $private_company_ids_array = $params->{private_company_ids} ? decode_json $params->{private_company_ids} : [];
+
+    if (scalar(@$private_company_ids_array)==0) {
+        my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+        my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($user_id, 0);
+        $private_company_ids_array = $private_companies_ids;
+    }
+    # print STDERR Dumper $private_company_ids_array;
+
     my $stock_search = CXGN::Stock::Search->new({
         bcs_schema=>$schema,
         people_schema=>$people_schema,
@@ -79,6 +117,7 @@ sub stock_search :Path('/ajax/search/stocks') Args(0) {
         year_list=>$params->{year} ? [$params->{year}] : undef,
         stockprops_values=>$stockprops_values,
         stockprop_columns_view=>$stockprop_columns_view,
+        private_company_ids_list=>$private_company_ids_array,
         limit=>$limit,
         offset=>$offset,
         minimal_info=>$params->{minimal_info},

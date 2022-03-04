@@ -22,6 +22,7 @@ my $stock_search = CXGN::Stock::Search->new({
     stock_type_name=>$stock_type_name,
     owner_first_name=>$owner_first_name,
     owner_last_name=>$owner_last_name,
+    private_company_ids_list=>$private_companies_ids,
     trait_cvterm_name_list=>\@trait_cvterm_name_list,
     minimum_phenotype_value=>$minimum_phenotype_value,
     maximum_phenotype_value=>$maximum_phenotype_value,
@@ -188,6 +189,11 @@ has 'trial_id_list' => (
     is => 'rw',
 );
 
+has 'private_company_ids_list' => (
+    isa => 'ArrayRef[Int]|Undef',
+    is => 'rw',
+);
+
 has 'breeding_program_id_list' => (
     isa => 'ArrayRef[Int]|Undef',
     is => 'rw',
@@ -263,6 +269,7 @@ sub search {
     my @location_name_array = $self->location_name_list ? @{$self->location_name_list} : ();
     my @year_array = $self->year_list ? @{$self->year_list} : ();
     my @program_id_array = $self->breeding_program_id_list ? @{$self->breeding_program_id_list} : ();
+    my @private_company_id_array = $self->private_company_ids_list ? @{$self->private_company_ids_list} : ();
     my @genus_array = $self->genus_list ? @{$self->genus_list} : ();
     my @species_array = $self->species_list ? @{$self->species_list} : ();
     my @crop_name_array = $self->crop_name_list ? @{$self->crop_name_list} : ();
@@ -561,6 +568,9 @@ sub search {
             push @sql_and_conditions, "stock.stock_id in (0)";
         }
     }
+
+    my $private_company_ids_sql = join ',', @private_company_id_array;
+    push @sql_and_conditions, "stock.private_company_id IN ($private_company_ids_sql)";
 
     my $limit_offset = '';
     if (defined($limit) && defined($offset)) {
