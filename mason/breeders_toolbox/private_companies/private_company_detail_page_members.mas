@@ -22,12 +22,47 @@ $company_sp_person_access_cvterm_name
             <td><% $_->[1] %></td>
             <td><% $_->[5] %></td>
 %  if ($company_sp_person_access_cvterm_name eq 'curator_access') {
-            <td><p name="private_company_member_sp_person_id" data-sp_person_id=<% $_->[0] %> class="text-danger" title="Remove">X</p></td>
+            <td>
+                <span class="glyphicon glyphicon-remove-circle text-danger" name="private_company_member_remove_sp_person_id" data-sp_person_id=<% $_->[0] %> title="Remove"></span>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="glyphicon glyphicon-list-alt text-success" name="private_company_member_edit_access_sp_person_id" data-sp_person_id=<% $_->[0] %> title="Change Access"></span>
+            </td>
 %  }
         </tr>
 %  }
     </tbody>
 </table>
+
+<div class="modal fade" id="company_members_edit_dialog" name="company_members_edit_dialog" tabindex="-1" role="dialog" aria-labelledby="editCompanyMembersDialog" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="editCompanyMembersDialog">Edit Member Access to Company</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <div class="form-horizontal">
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Access Type: </label>
+                    <div class="col-sm-8" >
+                        <select class="form-control" id="edit_company_member_access_type" name="edit_company_member_access_type">
+                            <option value="user_access">User Access (Can view and download data)</option>
+                            <option value="submitter_access">Submitter Access (Can view, download, upload, and edit data)</option>
+                            <option value="curator_access">Curator Access (Can view, download, upload, edit, and delete data)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" name="edit_company_member_submit" id="edit_company_member_submit">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 
@@ -35,7 +70,7 @@ jQuery(document).ready(function() {
 
     jQuery('#private_company_members_table').DataTable();
 
-    jQuery('p[name="private_company_member_sp_person_id"]').click(function(){
+    jQuery('span[name="private_company_member_remove_sp_person_id"]').click(function(){
         var sp_person_id = jQuery(this).data('sp_person_id');
 
         if(confirm('Are you sure you want to remove this member from the company?')) {
@@ -48,6 +83,44 @@ jQuery(document).ready(function() {
                 data: {
                     'remove_sp_person_id' : sp_person_id,
                     'private_company_id':<% $company_id %>
+                },
+                success: function(response) {
+                    jQuery("#working_modal").modal("hide");
+                    if (response.error) {
+                        alert(response.error);
+                    }
+                    else {
+                        alert("Successfully removed company member");
+                        location.reload();
+                    }
+                },
+                error: function(response) {
+                    jQuery("#working_modal").modal("hide");
+                    alert("An error occurred removing company member");
+                },
+            });
+        }
+    });
+
+    var edit_sp_person_id;
+    jQuery('span[name="private_company_member_edit_access_sp_person_id"]').click(function(){
+        jQuery('#company_members_edit_dialog').modal('show');
+        edit_sp_person_id = jQuery(this).data('sp_person_id');
+    });
+
+    jQuery('#edit_company_member_submit').click(function() {
+
+        if(confirm('Are you sure you want to change this members access to company data?')) {
+            jQuery.ajax({
+                url: '/ajax/private_company/edit_company_member',
+                type: 'POST',
+                beforeSend: function() {
+                    jQuery("#working_modal").modal("show");
+                },
+                data: {
+                    'edit_sp_person_id' : edit_sp_person_id,
+                    'private_company_id':<% $company_id %>,
+                    'access_type':jQuery('#edit_company_member_access_type').val()
                 },
                 success: function(response) {
                     jQuery("#working_modal").modal("hide");

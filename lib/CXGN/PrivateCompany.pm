@@ -498,4 +498,40 @@ sub remove_private_company_member {
     return {success => 1};
 }
 
+sub edit_private_company_member {
+    my $self = shift;
+    my $edit_sp_person = shift;
+    my $private_company_id = $self->private_company_id();
+    my $edit_sp_person_id = $edit_sp_person->[0];
+    my $edit_access_type = $edit_sp_person->[1];
+    if (!$edit_sp_person_id) {
+        return {error => "No member person given!"};
+    }
+
+    if ($self->sp_person_access_cvterm_name ne 'curator_access') {
+        return {error => "Curator access is required to add members to a company!"};
+    }
+
+    my $company_user_type_id = SGN::Model::Cvterm->get_cvterm_row($self->schema, $edit_access_type, 'company_person_type')->cvterm_id();
+
+    my $q0 = "SELECT p.private_company_sp_person_id, user_type.cvterm_id, user_type.name
+        FROM sgn_people.private_company AS private_company
+        JOIN sgn_people.private_company_sp_person AS p ON(private_company.private_company_id=p.private_company_id)
+        JOIN cvterm AS user_type ON(p.type_id=user_type.cvterm_id)
+        WHERE private_company.private_company_id=? AND p.sp_person_id=?;";
+    my $h0 = $self->schema->storage->dbh()->prepare($q0);
+    $h0->execute($private_company_id,$edit_sp_person_id);
+    my ($private_company_sp_person_id, $user_access_type_id, $user_access_type_name) = $h0->fetchrow_array();
+
+    if ($user_access_type_name eq 'curator_access') {
+        return {error => "Cannot edit curators access to a company!"};
+    }
+
+    my $q = "UPDATE sgn_people.private_company_sp_person SET type_id=? WHERE private_company_id=? AND sp_person_id=?;";
+    my $h = $self->schema->storage->dbh()->prepare($q);
+    $h->execute($company_user_type_id,$private_company_id,$edit_sp_person_id);
+
+    return {success => 1};
+}
+
 1;

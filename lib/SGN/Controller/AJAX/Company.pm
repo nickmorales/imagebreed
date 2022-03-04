@@ -140,4 +140,27 @@ sub remove_company_member_POST : Args(0) {
     $c->stash->{rest} = $return;
 }
 
+sub edit_company_member : Path('/ajax/private_company/edit_company_member') : ActionClass('REST') { }
+sub edit_company_member_POST : Args(0) {
+    my ($self, $c) = @_;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    # print STDERR Dumper $c->req->params();
+
+    if (!$c->user()) {
+        $c->stash->{rest} = {error => 'Please login to edit a company member!' };
+        return;
+    }
+    my $sp_person_id = $c->user()->get_object()->get_sp_person_id();
+
+    my $private_company = CXGN::PrivateCompany->new({
+        schema=> $schema,
+        sp_person_id => $sp_person_id,
+        is_storing_or_editing => 1,
+        private_company_id => $c->req->param('private_company_id'),
+    });
+    my $return = $private_company->edit_private_company_member([$c->req->param('edit_sp_person_id'), $c->req->param('access_type')]);
+
+    $c->stash->{rest} = $return;
+}
+
 1;
