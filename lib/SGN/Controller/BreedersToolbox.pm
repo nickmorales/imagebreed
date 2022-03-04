@@ -49,7 +49,7 @@ sub manage_breeding_programs : Path("/breeders/manage_programs") :Args(0) {
     $c->stash->{template} = '/breeders_toolbox/breeding_programs.mas';
 }
 
-sub manage_private_groups : Path("/breeders/private_groups") :Args(0) {
+sub manage_private_companies : Path("/breeders/companies") :Args(0) {
     my $self = shift;
     my $c = shift;
 

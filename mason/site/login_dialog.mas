@@ -158,7 +158,13 @@ $goto_url => '/'
                                     </div>
 % if ( $join_breeding_programs ) {
                                     <div class="form-group">
-                                        <label class="col-sm-3 control-label">Breeding Program(s): </label>
+                                        <label class="col-sm-3 control-label">Join Public Companies(s): </label>
+                                        <div class="col-sm-9">
+                                            <div id="private_companies_div"></div>
+                                      </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">Join Public Breeding Program(s): </label>
                                         <div class="col-sm-9">
                                             <div id="breeding_programs_div"></div>
                                       </div>
@@ -274,6 +280,7 @@ jQuery(document).ready( function() {
     });
     jQuery("#site_login_new_user_dialog").on('shown.bs.modal', function() {
         get_select_box('breeding_programs', 'breeding_programs_div', { 'name': 'breeding_programs', 'id': 'breeding_programs', 'default': -1, 'multiple': 1 });
+        get_select_box('private_companies', 'private_companies_div', { 'name': 'private_companies', 'id': 'private_companies', 'default': -1, 'multiple': 1 });
     });
 
     jQuery('#new_account_form').submit(function(event) {

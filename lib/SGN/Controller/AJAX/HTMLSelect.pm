@@ -39,6 +39,7 @@ use Image::Size;
 use Math::Round;
 use URI::Encode qw(uri_encode uri_decode);
 use Array::Utils qw(:all);
+use CXGN::PrivateCompany;
 
 BEGIN { extends 'Catalyst::Controller::REST' };
 
@@ -80,7 +81,12 @@ sub get_breeding_program_select : Path('/ajax/html/select/breeding_programs') Ar
     my $name = $c->req->param("name") || "breeding_program_select";
     my $empty = $c->req->param("empty") || "";
 
-    my $breeding_programs = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } )->get_breeding_programs();
+    my $sp_person_id;
+    if ($c->user()) {
+        $sp_person_id = $c->user()->get_object()->get_sp_person_id();
+    }
+
+    my $breeding_programs = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } )->get_breeding_programs($sp_person_id);
 
     my $default = $c->req->param("default") || @$breeding_programs[0]->[0];
     if ($empty) { unshift @$breeding_programs, [ "", "Please select a program" ]; }
@@ -89,6 +95,38 @@ sub get_breeding_program_select : Path('/ajax/html/select/breeding_programs') Ar
       name => $name,
       id => $id,
       choices => $breeding_programs,
+#      selected => $default
+    );
+    $c->stash->{rest} = { select => $html };
+}
+
+sub get_private_companies_select : Path('/ajax/html/select/private_companies') Args(0) {
+    my $self = shift;
+    my $c = shift;
+
+    my $id = $c->req->param("id") || "private_companies_select";
+    my $name = $c->req->param("name") || "private_companies_select";
+    my $empty = $c->req->param("empty") || "";
+
+    my $sp_person_id;
+    if ($c->user()) {
+        $sp_person_id = $c->user()->get_object()->get_sp_person_id();
+    }
+
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $c->dbic_schema("Bio::Chado::Schema") } );
+    my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($sp_person_id, 0);
+
+    my @private_companies;
+    foreach (@$private_companies_array) {
+        push @private_companies, [$_->[0], $_->[1]];
+    }
+    my $default = $c->req->param("default") || $private_companies[0]->[0];
+    if ($empty) { unshift @private_companies, [ "", "Please select a program" ]; }
+
+    my $html = simple_selectbox_html(
+      name => $name,
+      id => $id,
+      choices => \@private_companies,
 #      selected => $default
     );
     $c->stash->{rest} = { select => $html };

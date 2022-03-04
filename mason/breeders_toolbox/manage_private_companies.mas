@@ -3,9 +3,9 @@
 $private_companies
 </%args>
 
-<& /page/page_title.mas, title=>"Manage Private Groups" &>
+<& /page/page_title.mas, title=>"Manage Companies" &>
 
-<& /page/detail_page_2_col_section.mas, info_section_collapsed => 0, info_section_title => "<h4 style='display:inline'>Your Private Groups</h4>", info_section_subtitle => 'View private groups that you belong to', buttons_html => '', icon_class => "glyphicon glyphicon-dashboard", info_section_id => "private_company_manage_user_list", private_companies => $private_companies &>
+<& /page/detail_page_2_col_section.mas, info_section_collapsed => 0, info_section_title => "<h4 style='display:inline'>Your Companies</h4>", info_section_subtitle => 'View companies that you belong to', buttons_html => '', icon_class => "glyphicon glyphicon-dashboard", info_section_id => "private_company_manage_user_list", private_companies => $private_companies &>
 
 <script>
 
