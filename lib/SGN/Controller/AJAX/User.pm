@@ -63,14 +63,17 @@ sub new_account :Path('/ajax/user/new') Args(0) {
 
     print STDERR "Adding new account...\n";
     if ($c->config->{is_mirror}) {
-	$c->stash->{template} = '/system_message.mas';
-	$c->stash->{message} = "This site is a mirror site and does not support adding users. Please go to the main site to create an account.";
-	return;
+        $c->stash->{template} = '/system_message.mas';
+        $c->stash->{message} = "This site is a mirror site and does not support adding users. Please go to the main site to create an account.";
+        return;
     }
 
+    my ($first_name, $last_name, $username, $password, $confirm_password, $email_address, $organization, $breeding_program_ids, $private_company_ids)
+	= map { $c->req->params->{$_} } (qw|first_name last_name username password confirm_password email_address organization breeding_programs private_companies|);
 
-    my ($first_name, $last_name, $username, $password, $confirm_password, $email_address, $organization, $breeding_program_ids)
-	= map { $c->req->params->{$_} } (qw|first_name last_name username password confirm_password email_address organization breeding_programs|);
+    if ($private_company_ids && ref($private_company_ids) ne 'ARRAY') {
+        $private_company_ids = [$private_company_ids];
+    }
 
     # Set organization from breeding programs, if provided
     if ($breeding_program_ids && ref($breeding_program_ids) ne 'ARRAY') {
@@ -179,6 +182,14 @@ sub new_account :Path('/ajax/user/new') Args(0) {
                 my $add_role = $person_roles->add_sp_person_role($person_id, $role_id);
             }
         }
+
+        my $default_company_user_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'user_access', 'company_person_type')->cvterm_id();
+
+        my $q = "INSERT INTO sgn_people.private_company_sp_person (private_company_id, sp_person_id, type_id) VALUES (?,?,?);";
+        my $h = $schema->storage->dbh()->prepare($q);
+        foreach (@$private_company_ids) {
+            $h->execute($_, $person_id, $default_company_user_type_id);
+        }
     }
 
     my $host = $c->config->{main_production_site_url};
@@ -197,7 +208,7 @@ $host/user/confirm?username=$username&confirm_code=$confirm_code
 Thank you,
 $project_name Team
 
-Please do *NOT* reply to this message. If you have any trouble confirming your 
+Please do *NOT* reply to this message. If you have any trouble confirming your
 email address or have any other questions, please use the contact form instead:
 $host/contact/form
 
