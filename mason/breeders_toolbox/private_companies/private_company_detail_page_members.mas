@@ -1,0 +1,72 @@
+<%args>
+$company_id
+$company_members => []
+$company_sp_person_access_cvterm_id
+$company_sp_person_access_cvterm_name
+</%args>
+
+
+<table class="table table-bordered table-hover" id="private_company_members_table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Access</th>
+%  if ($company_sp_person_access_cvterm_name eq 'curator_access') {
+            <th>Options</th>
+%  }
+        </tr>
+    </thead>
+    <tbody>
+%  foreach (@$company_members) {
+        <tr>
+            <td><% $_->[1] %></td>
+            <td><% $_->[5] %></td>
+%  if ($company_sp_person_access_cvterm_name eq 'curator_access') {
+            <td><p name="private_company_member_sp_person_id" data-sp_person_id=<% $_->[0] %> class="text-danger" title="Remove">X</p></td>
+%  }
+        </tr>
+%  }
+    </tbody>
+</table>
+
+<script>
+
+jQuery(document).ready(function() {
+
+    jQuery('#private_company_members_table').DataTable();
+
+    jQuery('p[name="private_company_member_sp_person_id"]').click(function(){
+        var sp_person_id = jQuery(this).data('sp_person_id');
+
+        if(confirm('Are you sure you want to remove this member from the company?')) {
+            jQuery.ajax({
+                url: '/ajax/private_company/remove_company_member',
+                type: 'POST',
+                beforeSend: function() {
+                    jQuery("#working_modal").modal("show");
+                },
+                data: {
+                    'remove_sp_person_id' : sp_person_id,
+                    'private_company_id':<% $company_id %>
+                },
+                success: function(response) {
+                    jQuery("#working_modal").modal("hide");
+                    if (response.error) {
+                        alert(response.error);
+                    }
+                    else {
+                        alert("Successfully removed company member");
+                        location.reload();
+                    }
+                },
+                error: function(response) {
+                    jQuery("#working_modal").modal("hide");
+                    alert("An error occurred removing company member");
+                },
+            });
+        }
+    });
+
+});
+
+</script>

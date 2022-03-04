@@ -5,11 +5,230 @@ $private_companies
 
 <& /page/page_title.mas, title=>"Manage Companies" &>
 
-<& /page/detail_page_2_col_section.mas, info_section_collapsed => 0, info_section_title => "<h4 style='display:inline'>Your Companies</h4>", info_section_subtitle => 'View companies that you belong to', buttons_html => '', icon_class => "glyphicon glyphicon-dashboard", info_section_id => "private_company_manage_user_list", private_companies => $private_companies &>
+<& /page/detail_page_2_col_section.mas, info_section_collapsed => 0, info_section_title => "<h4 style='display:inline'>Your Companies</h4>", info_section_subtitle => 'View companies that you belong to', buttons_html => '<button class="btn btn-primary btn-sm" id="private_company_add_company" style="margin:3px">Add Company</button>', icon_class => "glyphicon glyphicon-dashboard", info_section_id => "private_company_manage_user_list", private_companies => $private_companies &>
+
+<div class="modal fade" id="add_company_dialog" name="add_company_dialog" tabindex="-1" role="dialog" aria-labelledby="addCompanyDialog" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="addCompanyDialog">Add Company</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <div class="form-horizontal">
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Company Name: </label>
+                    <div class="col-sm-8" >
+                        <input class='form-control' type='text' id="add_company_name" placeholder="Your company name">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Company Description: </label>
+                    <div class="col-sm-8" >
+                        <input class='form-control' type='text' id="add_company_desc" placeholder="Your company description">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Contact Email: </label>
+                    <div class="col-sm-8" >
+                        <input class='form-control' type='text' id="add_company_contact_email">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Contact First Name: </label>
+                    <div class="col-sm-8" >
+                        <input class='form-control' type='text' id="add_company_contact_first_name">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Contact Last Name: </label>
+                    <div class="col-sm-8" >
+                        <input class='form-control' type='text' id="add_company_contact_last_name">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Contact Phone Number: </label>
+                    <div class="col-sm-8" >
+                        <input class='form-control' type='text' id="add_company_contact_phone">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Street Address: </label>
+                    <div class="col-sm-8" >
+                        <input class='form-control' type='text' id="add_company_street_address">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Apartment/Unit/Building Address: </label>
+                    <div class="col-sm-8" >
+                        <input class='form-control' type='text' id="add_company_street_address_2" placeholder="Optional (e.g. Unit 100)">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">State: </label>
+                    <div class="col-sm-8" >
+                        <input class='form-control' type='text' id="add_company_state">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">City: </label>
+                    <div class="col-sm-8" >
+                        <input class='form-control' type='text' id="add_company_city">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Zipcode: </label>
+                    <div class="col-sm-8" >
+                        <input class='form-control' type='text' id="add_company_zipcode">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Country: </label>
+                    <div class="col-sm-8" >
+                        <input class='form-control' type='text' id="add_company_country">
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Company Access Type: </label>
+                    <div class="col-sm-8" >
+                        <select class="form-control" id="add_company_access_type" name="add_company_access_type">
+                            <option value="default_access">Make All Data Public</option>
+%  if ($c->config->{subscription_model}) {
+                            <option value="" disabled>Make Private (Do this on the company detail page afterward. Subscription is Required)</option>
+%  } else {
+                            <option value="private_access">Make All Data Private (Subscription not Required)</option>
+%  }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" name="new_company_submit" id="new_company_submit">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 
 jQuery(document).ready(function() {
+
+    jQuery('#private_company_add_company').click(function(){
+        jQuery('#add_company_dialog').modal('show');
+    });
+
+    jQuery('#new_company_submit').click(function(){
+        var name = jQuery('#add_company_name').val();
+        if (name == '') {
+            alert('Please give a company name!');
+            return false;
+        }
+
+        var description = jQuery('#add_company_desc').val();
+        if (description == '') {
+            alert('Please give a company description!');
+            return false;
+        }
+
+        var contact_email = jQuery('#add_company_contact_email').val();
+        if (contact_email == '') {
+            alert('Please give a company contact email!');
+            return false;
+        }
+
+        var contact_first_name = jQuery('#add_company_contact_first_name').val();
+        if (contact_first_name == '') {
+            alert('Please give a company contact first name!');
+            return false;
+        }
+
+        var contact_last_name = jQuery('#add_company_contact_last_name').val();
+        if (contact_last_name == '') {
+            alert('Please give a company contact last name!');
+            return false;
+        }
+
+        var contact_phone = jQuery('#add_company_contact_phone').val();
+        if (contact_phone == '') {
+            alert('Please give a company contact phone number!');
+            return false;
+        }
+
+        var address_street = jQuery('#add_company_street_address').val();
+        if (address_street == '') {
+            alert('Please give a company street address!');
+            return false;
+        }
+
+        var address_street_2 = jQuery('#add_company_street_address_2').val();
+
+        var address_state = jQuery('#add_company_state').val();
+        if (address_state == '') {
+            alert('Please give a company address state!');
+            return false;
+        }
+
+        var address_city = jQuery('#add_company_city').val();
+        if (address_city == '') {
+            alert('Please give a company address city!');
+            return false;
+        }
+
+        var address_zipcode = jQuery('#add_company_zipcode').val();
+        if (address_zipcode == '') {
+            alert('Please give a company address zipcode!');
+            return false;
+        }
+
+        var address_country = jQuery('#add_company_country').val();
+        if (address_country == '') {
+            alert('Please give a company address country!');
+            return false;
+        }
+
+        var company_access_type = jQuery('#add_company_access_type').val();
+
+        jQuery.ajax({
+            url: '/ajax/private_company/create_company',
+            type: 'POST',
+            beforeSend: function() {
+                jQuery("#working_modal").modal("show");
+            },
+            data: {
+                'name' : name,
+                'description' : description,
+                'contact_email' : contact_email,
+                'contact_first_name' : contact_first_name,
+                'contact_last_name' : contact_last_name,
+                'contact_phone' : contact_phone,
+                'address_street' : address_street,
+                'address_street_2' : address_street_2,
+                'address_state' : address_state,
+                'address_city' : address_city,
+                'address_zipcode' : address_zipcode,
+                'address_country' : address_country,
+                'company_access_type' : company_access_type,
+            },
+            success: function(response) {
+                jQuery("#working_modal").modal("hide");
+                if (response.error) {
+                    alert(response.error);
+                }
+                else {
+                    alert("Successfully created company!");
+                    location.reload();
+                }
+            },
+            error: function(response) {
+                jQuery("#working_modal").modal("hide");
+                alert("An error occurred creating new company");
+            },
+        });
+    });
 
 });
 

@@ -10,40 +10,15 @@ $private_companies => []
             <th>Description</th>
             <th>Create Date</th>
             <th>Your Access</th>
-            <th>Members</th>
         </tr>
     </thead>
     <tbody>
 %  foreach (@$private_companies) {
         <tr>
-            <td><% $_->[1] %></td>
+            <td><a href="/company/<% $_->[0] %>"><% $_->[1] %></a></td>
             <td><% $_->[2] %></td>
             <td><% $_->[13] %></td>
             <td><% $_->[17] %></td>
-            <td>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Access</th>
-%  if ($_->[17] eq 'curator_access') {
-                            <th>Options</th>
-%  }
-                        </tr>
-                    </thead>
-                    <tbody>
-%  foreach my $a (@{$_->[18]}) {
-                        <tr>
-                            <td><% $a->[1] %></td>
-                            <td><% $a->[5] %></td>
-%  if ($_->[17] eq 'curator_access') {
-                            <td></td>
-%  }
-                        </tr>
-%  }
-                    </tbody>
-                </table>
-            </td>
         </tr>
 %  }
     </tbody>

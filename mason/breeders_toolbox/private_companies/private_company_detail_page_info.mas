@@ -1,0 +1,42 @@
+<%args>
+$company_id => undef
+$company_name => undef
+$company_description => undef
+$company_contact_email => undef
+$company_contact_first_name => undef
+$company_contact_last_name => undef
+$company_contact_phone => undef
+$company_address_street => undef
+$company_address_street_2 => undef
+$company_address_state => undef
+$company_address_city => undef
+$company_address_zipcode => undef
+$company_address_country => undef
+$company_create_date => undef
+$company_type_cvterm_id => undef
+$company_type_cvterm_name => undef
+$company_sp_person_access_cvterm_id => undef
+$company_sp_person_access_cvterm_name => undef
+</%args>
+
+
+<table class="table table-bordered table-hover">
+    <tr><td><b>Company Name</b><td><% $company_name %></td></tr>
+    <tr><td><b>Description</b><td><% $company_description %></td></tr>
+    <tr><td><b>Contact Email</b><td><% $company_contact_email %></td></tr>
+    <tr><td><b>Contact First Name</b><td><% $company_contact_first_name %></td></tr>
+    <tr><td><b>Contact Last Name</b><td><% $company_contact_last_name %></td></tr>
+    <tr><td><b>Contact Phone</b><td><% $company_contact_phone %></td></tr>
+    <tr><td><b>Address</b><td><% $company_address_street %> <% $company_address_street_2 %> <% $company_address_city %> <% $company_address_state %> <% $company_address_zipcode %> <% $company_address_country %></td></tr>
+    <tr><td><b>Create Date</b><td><% $company_create_date %></td></tr>
+    <tr><td><b>Company Access</b><td><% $company_type_cvterm_name %></td></tr>
+    <tr><td><b>Your Access in Company</b><td><b><% $company_sp_person_access_cvterm_name %></b></td></tr>
+</table>
+
+<script>
+
+jQuery(document).ready(function() {
+
+});
+
+</script>

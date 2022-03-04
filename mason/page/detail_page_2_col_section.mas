@@ -128,6 +128,27 @@ $analytics_protocol_charts => []
 #Specific to manage private companies page
 $private_companies => []
 
+#Specific to manage private company detail page
+$company_id => undef
+$company_name => undef
+$company_description => undef
+$company_contact_email => undef
+$company_contact_first_name => undef
+$company_contact_last_name => undef
+$company_contact_phone => undef
+$company_address_street => undef
+$company_address_street_2 => undef
+$company_address_state => undef
+$company_address_city => undef
+$company_address_zipcode => undef
+$company_address_country => undef
+$company_create_date => undef
+$company_type_cvterm_id => undef
+$company_type_cvterm_name => undef
+$company_sp_person_access_cvterm_id => undef
+$company_sp_person_access_cvterm_name => undef
+$company_members => []
+
 </%args>
 
 <& /util/import_javascript.mas,
@@ -473,6 +494,12 @@ $private_companies => []
 % if ($info_section_id eq 'private_company_manage_user_list'){
                                 <& /breeders_toolbox/private_companies/private_company_manage_user_list.mas, private_companies => $private_companies &>
 % } #End private_company_manage_user_list
+% if ($info_section_id eq 'private_company_detail_page_info'){
+                                <& /breeders_toolbox/private_companies/private_company_detail_page_info.mas, company_id => $company_id, company_name => $company_name, company_description => $company_description, company_contact_email => $company_contact_email, company_contact_first_name => $company_contact_first_name, company_contact_last_name => $company_contact_last_name, company_contact_phone => $company_contact_phone, company_address_street => $company_address_street, company_address_street_2 => $company_address_street_2, company_address_state => $company_address_state, company_address_city => $company_address_city, company_address_zipcode => $company_address_zipcode, company_address_country => $company_address_country, company_create_date => $company_create_date, company_type_cvterm_id => $company_type_cvterm_id, company_type_cvterm_name => $company_type_cvterm_name, company_sp_person_access_cvterm_id => $company_sp_person_access_cvterm_id, company_sp_person_access_cvterm_name => $company_sp_person_access_cvterm_name &>
+% } #End private_company_detail_page_info
+% if ($info_section_id eq 'private_company_detail_page_members'){
+                                <& /breeders_toolbox/private_companies/private_company_detail_page_members.mas, company_id => $company_id, company_name => $company_name, company_members => $company_members, company_sp_person_access_cvterm_id => $company_sp_person_access_cvterm_id, company_sp_person_access_cvterm_name => $company_sp_person_access_cvterm_name &>
+% } #End private_company_detail_page_members
 
 % if (!$info_section_id){
                                 <p>No section specified! Main content goes here!</p>
