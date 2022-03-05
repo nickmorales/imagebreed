@@ -1,15 +1,10 @@
 <%args>
 $stock_id
 $type_name
-$stockref => {}
 $stockprops
 $edit_privs
 $editable_stock_props
 $editor_link
-$source_dbs => {}
-$new_locus_link => ''
-$locus_add_uri
-$allele_div
 $is_owner
 </%args>
 

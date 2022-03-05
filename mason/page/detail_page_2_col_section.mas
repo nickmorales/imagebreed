@@ -53,24 +53,16 @@ $trial_owner => undef
 
 #Specific to stock detail page
 $type_name => undef
-$stockref => {}
 $stockprops => undef
 $edit_privs => undef
 $editable_stock_props => undef
 $editor_link => undef
-$source_dbs => {}
-$locus_add_uri => undef
-$new_locus_link => undef
-$allele_div => undef
 $is_owner => undef
 $map_html => undef
 $has_pedigree => undef
 $image_ids => undef
 $related_image_ids => undef
 $dbh => undef
-$trait_ontology_db_name => undef
-$pubs => undef
-$cvterm_add_uri => undef
 $referer => undef
 
 #Specific to genotyping protocol detail page
@@ -234,7 +226,7 @@ $company_members => []
 % } #End trial_data_agreement_section
 
 % if ($info_section_id eq 'stock_additional_info_section'){
-                                <& /stock/additional_info_section.mas, stock_id => $stock_id, type_name => $type_name, stockprops => $stockprops, edit_privs => $edit_privs, editable_stock_props => $editable_stock_props, editor_link => $editor_link, source_dbs => $source_dbs, locus_add_uri => $locus_add_uri, allele_div => $allele_div, is_owner => $is_owner &>
+                                <& /stock/additional_info_section.mas, stock_id => $stock_id, type_name => $type_name, stockprops => $stockprops, edit_privs => $edit_privs, editable_stock_props => $editable_stock_props, editor_link => $editor_link, is_owner => $is_owner &>
 % } #End stock_additional_info_section
 % if ($info_section_id eq 'stock_trials_section'){
                                 <& /stock/trials.mas, stock_id => $stock_id &>
@@ -269,29 +261,6 @@ $company_members => []
 % if ($info_section_id eq 'stock_sequencing_status_section'){
                                 <& /stock/sequencing_status.mas, stock_id => $stock_id &>
 % } #End stock requencing status section
-% if ($info_section_id eq 'stock_literature_annotation_section'){
-                                <&| /page/info_section.mas, title=>"Literature annotation (".scalar( @$pubs ).")" , id=>"publications" , collapsible=>1, collapsed=>1 &>
-
-
-% foreach my $publication ( @$pubs  ) {
-  <& /chado/publication.mas, pub=>$publication &>
-    <br >
-% }
-
-                                </&>
-
-                                <&| /page/info_section.mas, id   => 'stock_ontology', title=>"Ontology annotation (" . $stockref->{ontology_count} . ")" &>
-                                    <& /ontology/associate_ontology.mas,
-                                    trait_db_name => $trait_ontology_db_name,
-                                    object_id     => $stock_id ,
-                                    object_name   => "stock",
-                                    cvterm_add_uri=> $cvterm_add_uri,
-                                    ontology_url  => "/stock/$stock_id/ontologies/",
-                                    reference_uri => "/stock/$stock_id/references/",
-                                    evidence_with_uri => "/stock/$stock_id/evidences/",
-                                    show_form     => $is_owner  &>
-                                </&>
-% } #End stock_literature_annotation_section
 % if ($info_section_id eq 'stock_jbrowse_section'){
                                 <p id="jbrowse_check">[loading...]</p>
 % } #End stock_jbrowse_section

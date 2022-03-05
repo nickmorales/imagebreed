@@ -1452,19 +1452,6 @@ sub generate_genotype_matrix : Path('/phenome/genotype/matrix/generate') :Args(1
 
 }
 
-sub _stock_project_phenotypes {
-    my ($self, $schema, $bcs_stock) = @_;
-
-    return {} unless $bcs_stock;
-    my $rs =  $schema->resultset("Stock::Stock")->stock_phenotypes_rs($bcs_stock);
-    my %project_hashref;
-    while ( my $r = $rs->next) {
-	my $project_desc = $r->get_column('project_description');
-	push @{ $project_hashref{ $project_desc }}, $r;
-    }
-    return \%project_hashref;
-}
-
 =head2 action get_stock_trials()
 
  Usage:        /stock/<stock_id>/datatables/trials

@@ -250,8 +250,6 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
     if ( $stock && ($curator || $person_id && ( grep /^$person_id$/, @$owner_ids ) ) ) {
         $is_owner = 1;
     }
-    my $dbxrefs = $self->_dbxrefs($stock);
-    my $pubs = $self->_stock_pubs($stock);
     my $image_ids = $self->_stock_images($stock, $type);
     my $related_image_ids = $self->_related_stock_images($stock, $type);
     my $cview_tmp_dir = $c->tempfiles_subdir('cview');
@@ -269,7 +267,6 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
 ################
     $c->stash(
         template => '/stock/index.mas',
-
         stockref => {
             action    => $action,
             stock_id  => $stock_id ,
@@ -285,8 +282,6 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
             owners    => $owner_ids,
             editor_info => $editor_info,
             props     => $props,
-            dbxrefs   => $dbxrefs,
-            pubs      => $pubs,
             members_phenotypes => $c->stash->{members_phenotypes},
             direct_phenotypes  => $c->stash->{direct_phenotypes},
             has_qtl_data   => $c->stash->{has_qtl_data},
@@ -295,19 +290,14 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
             image_ids      => $image_ids,
             related_image_ids => $related_image_ids,
             allele_count   => $c->stash->{allele_count},
-            ontology_count => $c->stash->{ontology_count},
-	    has_pedigree => $c->stash->{has_pedigree},
-	    has_descendants => $c->stash->{has_descendants},
-            trait_ontology_db_name => $c->get_conf('trait_ontology_db_name'),
-	    editable_stock_props   => $editable_stockprops,
+            has_pedigree => $c->stash->{has_pedigree},
+            editable_stock_props   => $editable_stockprops,
 
         },
-        locus_add_uri  => $c->uri_for( '/ajax/stock/associate_locus' ),
-        cvterm_add_uri => $c->uri_for( '/ajax/stock/associate_ontology'),
-	barcode_tempdir  => $barcode_tempdir,
-	barcode_tempuri   => $barcode_tempuri,
-	identifier_prefix => $c->config->{identifier_prefix},
-        );
+        barcode_tempdir  => $barcode_tempdir,
+        barcode_tempuri   => $barcode_tempuri,
+        identifier_prefix => $c->config->{identifier_prefix},
+    );
 }
 
 
@@ -591,23 +581,6 @@ sub search_stock : Private {
     }
 }
 
-#add the stockcvterms to the stash. Props are a hashref of lists.
-sub get_stock_cvterms : Private {
-    my ( $self, $c ) = @_;
-    my $stock = $c->stash->{stock};
-    my $stock_cvterms = $stock ? $self->_stock_cvterms($stock, $c) : undef;
-    $c->stash->{stock_cvterms} = $stock_cvterms;
-}
-
-sub get_stock_allele_ids : Private {
-    my ( $self, $c ) = @_;
-    my $stock = $c->stash->{stock};
-    my $allele_ids = $stock ? $self->_stock_allele_ids($stock) : undef;
-    $c->stash->{allele_ids} = $allele_ids;
-    my $count = $allele_ids ? scalar( @$allele_ids ) : undef;
-    $c->stash->{allele_count} = $count ;
-}
-
 sub get_stock_owner_ids : Private {
     my ( $self, $c ) = @_;
     my $stock = $c->stash->{stock};
@@ -622,52 +595,10 @@ sub get_stock_has_pedigree : Private {
     $c->stash->{has_pedigree} = $has_pedigree;
 }
 
-sub get_stock_has_descendants : Private {
-    my ( $self, $c ) = @_;
-    my $stock = $c->stash->{stock};
-    my $has_descendants = $stock ? $self->_stock_has_descendants($stock) : undef;
-    $c->stash->{has_descendants} = $has_descendants;
-}
-
 sub get_stock_extended_info : Private {
     my ( $self, $c ) = @_;
-    $c->forward('get_stock_cvterms');
-
-    $c->forward('get_stock_allele_ids');
     $c->forward('get_stock_owner_ids');
     $c->forward('get_stock_has_pedigree');
-    $c->forward('get_stock_has_descendants');
-
-    # look up the stock again, this time prefetching a lot of data about its related stocks
-    $c->stash->{stock_row} = $self->schema->resultset('Stock::Stock')
-                                  ->find({ stock_id => $c->stash->{stock_row}->stock_id },
-                                         { prefetch => {
-                                             'stock_relationship_objects' => [ { 'subject' => 'type' }, 'type'],
-                                           },
-                                         },
-                                        );
-
-    my $stock = $c->stash->{stock};
-
-    #add the stock_dbxrefs to the stash. Dbxrefs are hashref of lists.
-    # keys are db-names , values are lists of Bio::Chado::Schema::General::Dbxref objects
-    my $dbxrefs  = $stock ?  $self->_stock_dbxrefs($stock) : undef ;
-    $c->stash->{stock_dbxrefs} = $dbxrefs;
-
-    my $cvterms  = $stock ?  $self->_stock_cvterms($stock, $c) : undef ;
-    $c->stash->{stock_cvterms} = $cvterms;
-    my $stock_rs = ( $c->stash->{stock_row})->search_related('stock_relationship_subjects')
-	->search_related('subject');
-
-    my $direct_phenotypes  = $stock ? $self->_stock_project_phenotypes($self->schema->resultset("Stock::Stock")->search_rs({ stock_id => $c->stash->{stock_row}->stock_id } ) ) : undef;
-    $c->stash->{direct_phenotypes} = $direct_phenotypes;
-
-    my ($members_phenotypes, $has_members_genotypes)  = (undef, undef); #$stock ? $self->_stock_members_phenotypes( $c->stash->{stock_row} ) : undef;
-    $c->stash->{members_phenotypes} = $members_phenotypes;
-
-    my $stock_type;
-    $stock_type = $stock->get_object_row->type->name if $stock->get_object_row;
-    if ( ( grep { /^$stock_type/ } ('f2 population', 'backcross population') ) &&  $members_phenotypes && $has_members_genotypes ) { $c->stash->{has_qtl_data} = 1 ; }
 }
 
 ############## HELPER METHODS ######################3
@@ -686,137 +617,6 @@ sub _stockprops {
     return $properties;
 }
 
-
-sub _dbxrefs {
-    my ($self,$stock) = @_;
-    my $bcs_stock = $stock->get_object_row;
-    my $dbxrefs ;
-    if ($bcs_stock) {
-        my $stock_dbxrefs = $bcs_stock->search_related("stock_dbxrefs");
-        while ( my $sdbxref =  $stock_dbxrefs->next ) {
-            my $url = $sdbxref->dbxref->db->urlprefix . $sdbxref->dbxref->db->url;
-            my $accession = $sdbxref->dbxref->accession;
-            $url = $url ? qq |<a href = "$url/$accession">$accession</a>| : $accession ;
-            push @{ $dbxrefs->{$sdbxref->dbxref->db->name} } , $sdbxref->dbxref;
-        }
-    }
-    return $dbxrefs;
-}
-
-# this sub gets all phenotypes measured directly on this stock and
-# stores it in a hashref as { project_name => [ BCS::Phenotype::Phenotype, ... ]
-
-sub _stock_project_phenotypes {
-    my ($self, $bcs_stock) = @_;
-
-    return {} unless $bcs_stock;
-    my $rs =  $self->schema->resultset("Stock::Stock")->stock_phenotypes_rs($bcs_stock);
-    my %project_hashref;
-    while ( my $r = $rs->next) {
-	my $project_desc = $r->get_column('project_description');
-	push @{ $project_hashref{ $project_desc }}, $r;
-    }
-    return \%project_hashref;
-}
-
-# this sub gets all phenotypes measured on all subjects of this stock.
-# Subjects are in stock_relationship
-sub _stock_members_phenotypes {
-    my ($self, $bcs_stock) = @_;
-    return unless $bcs_stock;
-    my %phenotypes;
-    my ($has_members_genotypes) = $bcs_stock->result_source->schema->storage->dbh->selectrow_array( <<'', undef, $bcs_stock->stock_id );
-
-    # now we have rs of stock_relationship objects. We need to find
-    # the phenotypes of their related subjects
-    my $subjects = $bcs_stock->search_related('stock_relationship_objects')
-                             ->search_related('subject');
-    my $subject_phenotypes = $self->_stock_project_phenotypes($subjects );
-    return ( $subject_phenotypes, $has_members_genotypes );
-}
-
-###########
-# this sub gets all genotypes measured directly on this stock and
-# stores it in a hashref as { project_name => [ BCS::Genotype::Genotype, ... ]
-
-sub _stock_project_genotypes {
-    my ($self, $bcs_stock) = @_;
-    return {} unless $bcs_stock;
-
-    # hash of experiment_id => project(s) desc
-    my %project_descriptions =
-        map { $_->nd_experiment_id => join( ', ', map $_->project->description, $_->nd_experiment_projects ) }
-        $bcs_stock->search_related('nd_experiment_stocks')
-                  ->search_related('nd_experiment',
-                                   {},
-                                   { prefetch => { 'nd_experiment_projects' => 'project' } },
-                                   );
-    my $experiments = $bcs_stock->search_related('nd_experiment_stocks')
-                                ->search_related('nd_experiment',
-                                                 {},
-                                                 { prefetch => { nd_experiment_genotypes => 'genotype' } },
-                                                );
-    my %genotypes;
-    my $project_desc;
-
-    while (my $exp = $experiments->next) {
-        # there should be one project linked to the experiment ?
-        my @gen = map $_->genotype, $exp->nd_experiment_genotypes;
-        $project_desc = $project_descriptions{ $exp->nd_experiment_id };
-	#or die "no project found for exp ".$exp->nd_experiment_id;
-	push @{ $genotypes{ $project_desc }}, @gen if scalar(@gen);
-    }
-    return \%genotypes;
-}
-
-##############
-
-sub _stock_dbxrefs {
-    my ($self,$stock) = @_;
-    my $bcs_stock = $stock->get_object_row;
-    # hash of arrays. Keys are db names , values are lists of StockDbxref objects
-    my $sdbxrefs ;
-    if ($bcs_stock) {
-        my $stock_dbxrefs = $bcs_stock->search_related("stock_dbxrefs");
-        while ( my $sdbxref =  $stock_dbxrefs->next ) {
-            push @{ $sdbxrefs->{$sdbxref->dbxref->db->name} } , $sdbxref;
-        }
-    }
-    return $sdbxrefs;
-}
-
-sub _stock_cvterms {
-    my ($self,$stock, $c) = @_;
-    my $bcs_stock = $stock->get_object_row;
-    # hash of arrays. Keys are db names , values are lists of StockCvterm objects
-    my $scvterms ;
-    my $count;
-    if ($bcs_stock) {
-        my $stock_cvterms = $bcs_stock->search_related("stock_cvterms");
-        while ( my $scvterm =  $stock_cvterms->next ) {
-            $count++;
-            push @{ $scvterms->{$scvterm->cvterm->dbxref->db->name} } , $scvterm;
-        }
-    }
-    $c->stash->{ontology_count} = $count ;
-    return $scvterms;
-}
-
-# each stock may be linked with publications, each publication may have several dbxrefs
-sub _stock_pubs {
-    my ($self, $stock) = @_;
-    my $bcs_stock = $stock->get_object_row;
-    my @pubs ;
-    if ($bcs_stock) {
-        my $stock_pubs = $bcs_stock->search_related("stock_pubs");
-        while (my $spub = $stock_pubs->next ) {
-            my $pub_id = $spub->pub_id;
-	    my $cxgn_pub = CXGN::Chado::Publication->new( $self->schema->storage->dbh(), $pub_id);
-	    push @pubs, $cxgn_pub;
-	}
-    }
-    return \@pubs;
-}
 
 sub _stock_images {
     my ($self, $stock) = @_;
@@ -891,27 +691,6 @@ sub _stock_has_pedigree {
   }
 }
 
-sub _stock_has_descendants {
-  my ($self, $stock) = @_;
-  my $bcs_stock = $stock->get_object_row;
-  my $cvterm_female_parent = SGN::Model::Cvterm->get_cvterm_row($self->schema,'female_parent', 'stock_relationship');
-
-  my $cvterm_male_parent = SGN::Model::Cvterm->get_cvterm_row($self->schema, 'male_parent', 'stock_relationship');
-
-  my $descendant_relationships = $bcs_stock->search_related("stock_relationship_subjects",undef,{ prefetch => ['type','object'] });
-  if ($descendant_relationships) {
-      return $descendant_relationships->count();
- # while (my $descendant_relationship = $descendant_relationships->next) {
- #      my $descendant_stock_id = $descendant_relationship->object_id();
- #      #if ($descendant_stock_id && (($descendant_relationship->type_id() == $cvterm_female_parent->cvterm_id()) || ($descendant_relationship->type_id() == $cvterm_male_parent->cvterm_id()))) {
- #      if ($descendant_stock_id) {
- # 	return 1;
-      } else {
-	return 0;
-      }
-   # }
-  #}
-}
 
 sub _validate_pair {
     my ($self,$c,$key,$value) = @_;
