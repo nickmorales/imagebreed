@@ -19,6 +19,8 @@ sub search {
     my $page_size = $self->page_size;
     my $page = $self->page;
     my $status = $self->status;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
     my @data_files;
 
     my $crop_names_arrayref = $params->{commonCropName} || ($params->{commonCropNames} || ());
@@ -89,7 +91,9 @@ sub search {
         stockprop_columns_view=>{'accession number'=>1, 'PUI'=>1, 'seed source'=>1, 'institute code'=>1, 'institute name'=>1, 'biological status of accession code'=>1, 'country of origin'=>1, 'type of germplasm storage code'=>1, 'acquisition date'=>1, 'ncbi_taxonomy_id'=>1},
         limit=>$limit,
         offset=>$offset,
-        display_pedigree=>1
+        display_pedigree=>1,
+        sp_person_id => $sp_person_id,
+        subscription_model => $subscription_model
     });
     my ($result, $total_count) = $stock_search->search();
 
@@ -144,6 +148,8 @@ sub germplasm_detail {
     my $self = shift;
     my $stock_id = shift;
     my $status = $self->status;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
     my @data_files;
 
     my $verify_id = $self->bcs_schema->resultset('Stock::Stock')->find({stock_id=>$stock_id});
@@ -161,6 +167,8 @@ sub germplasm_detail {
         stock_type_id=>$accession_cvterm_id,
         display_pedigree=>1,
         stockprop_columns_view=>{'accession number'=>1, 'PUI'=>1, 'seed source'=>1, 'institute code'=>1, 'institute name'=>1, 'biological status of accession code'=>1, 'country of origin'=>1, 'type of germplasm storage code'=>1, 'acquisition date'=>1, 'ncbi_taxonomy_id'=>1},
+        sp_person_id => $sp_person_id,
+        subscription_model => $subscription_model
     });
     my ($result, $total_count) = $stock_search->search();
 
@@ -262,7 +270,7 @@ sub germplasm_pedigree {
             INNER JOIN stock AS female_parent ON (stock_relationship1.subject_id = female_parent.stock_id) AND stock_relationship1.type_id = ?
             INNER JOIN stock AS progeny ON (stock_relationship1.object_id = progeny.stock_id) AND progeny.type_id = ?
             LEFT JOIN stock_relationship AS stock_relationship2 ON (progeny.stock_id = stock_relationship2.object_id) AND stock_relationship2.type_id = ?
-            LEFT JOIN stock AS male_parent ON (stock_relationship2.subject_id = male_parent.stock_id) "; 
+            LEFT JOIN stock AS male_parent ON (stock_relationship2.subject_id = male_parent.stock_id) ";
 
         my $h;
 
@@ -312,12 +320,12 @@ sub germplasm_pedigree {
             my $family_name_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "family_name", "stock_type")->cvterm_id();
             my $project_year_cvterm_id =  SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'project year', 'project_property')->cvterm_id();
 
-            my $q = "SELECT project.project_id, project.name, project.description, stock.stock_id, stock.uniquename, year.value 
+            my $q = "SELECT project.project_id, project.name, project.description, stock.stock_id, stock.uniquename, year.value
                 FROM nd_experiment_stock
                 JOIN nd_experiment ON (nd_experiment_stock.nd_experiment_id = nd_experiment.nd_experiment_id) AND nd_experiment.type_id = ?
                 JOIN nd_experiment_project ON (nd_experiment_project.nd_experiment_id = nd_experiment.nd_experiment_id)
                 JOIN project ON (nd_experiment_project.project_id = project.project_id)
-                LEFT JOIN projectprop AS year ON (project.project_id=year.project_id) 
+                LEFT JOIN projectprop AS year ON (project.project_id=year.project_id)
                 LEFT JOIN stock_relationship ON (nd_experiment_stock.stock_id = stock_relationship.subject_id) AND stock_relationship.type_id = ?
                 LEFT JOIN stock ON (stock_relationship.object_id = stock.stock_id) AND stock.type_id = ?
                 WHERE nd_experiment_stock.stock_id = ? AND year.type_id = ?";
@@ -325,7 +333,7 @@ sub germplasm_pedigree {
             my $h = $self->bcs_schema->storage->dbh()->prepare($q);
             $h->execute($cross_experiment_type_id, $cross_member_of_type_id, $family_name_type_id, $stock_id, $project_year_cvterm_id);
 
-            
+
             while (my ($crossing_experiment_id, $crossing_experiment_name, $description, $family_id, $family_name, $year) = $h->fetchrow_array()){
                 push @membership_info, [$crossing_experiment_id, $crossing_experiment_name, $description, $family_id, $family_name, $year]
             }

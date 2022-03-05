@@ -23,6 +23,7 @@ __PACKAGE__->config(
 sub list_seedlots :Path('/ajax/breeders/seedlots') :Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $params = $c->req->params() || {};
     my $seedlot_name = $params->{seedlot_name} || '';
@@ -73,7 +74,9 @@ sub list_seedlots :Path('/ajax/breeders/seedlots') :Args(0) {
         undef,
         $quality,
         $only_good_quality,
-        $box_name
+        $box_name,
+        $user_id,
+        $c->config->{subscription_model}
     );
     my @seedlots;
     foreach my $sl (@$list) {
@@ -1136,6 +1139,37 @@ sub add_seedlot_transaction :Chained('seedlot_base') :PathPart('transaction/add'
     my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'stockprop', 'concurrent', $c->config->{basepath});
 
     $c->stash->{rest} = { success => 1, transaction_id => $transaction_id };
+}
+
+sub _check_user_login {
+    my $c = shift;
+    my $user_id;
+    my $user_name;
+    my $user_role;
+    my $session_id = $c->req->param("sgn_session_id");
+
+    if ($session_id){
+        my $dbh = $c->dbc->dbh;
+        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+        if (!$user_info[0]){
+            $c->stash->{rest} = {error=>'You must be logged in!'};
+            $c->detach();
+        }
+        $user_id = $user_info[0];
+        $user_role = $user_info[1];
+        my $p = CXGN::People::Person->new($dbh, $user_id);
+        $user_name = $p->get_username;
+    } else{
+        if (!$c->user){
+            $c->stash->{rest} = {error=>'You must be logged in!'};
+            $c->detach();
+        }
+        $user_id = $c->user()->get_object()->get_sp_person_id();
+        $user_name = $c->user()->get_object()->get_username();
+        $user_role = $c->user->get_object->get_user_type();
+    }
+
+    return ($user_id, $user_name, $user_role);
 }
 
 1;

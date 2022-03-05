@@ -8,11 +8,17 @@ BEGIN { extends 'Catalyst::Controller'; }
 use CXGN::Stock::Seedlot;
 use Data::Dumper;
 use JSON::XS;
+use URI::FromHash 'uri';
 
 sub seedlots :Path('/breeders/seedlots') :Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+
+    if (!$c->user()) {
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
+    }
 
     $c->stash->{preferred_species} = $c->config->{preferred_species};
     $c->stash->{timestamp} = localtime;

@@ -14,6 +14,8 @@ sub search {
     my $status = $self->status;
     my $phenome_schema = $self->phenome_schema();
     my $people_schema = $self->people_schema();
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
 
     my $seedlot_name = $params->{seedLotName} || '';
     my $seedlot_id = $params->{seedLotDbId} || '';
@@ -53,7 +55,9 @@ sub search {
         1,
         $minimum_weight,
         $seedlot_id,
-        $accession_id
+        $accession_id,
+        $sp_person_id,
+        $subscription_model
     );
 
     foreach (@$list){
@@ -253,6 +257,8 @@ sub store_seedlots {
     my $page_size = $self->page_size;
     my $status = $self->status;
     my $page = $self->page;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
 
     my $schema = $self->bcs_schema;
     my $phenome_schema = $self->phenome_schema();
@@ -408,6 +414,8 @@ sub store_seedlots {
         '',
         $seedlot_ids,
         '',
+        $sp_person_id,
+        $subscription_model
     );
 
     foreach (@$list){

@@ -21,6 +21,8 @@ sub search {
     my $page_size = $self->page_size;
     my $page = $self->page;
     my $status = $self->status;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
     my @data_files;
 
     my $crop_names_arrayref = $params->{commonCropName} || ($params->{commonCropNames} || ());
@@ -113,7 +115,9 @@ sub search {
         trial_name_list=>$study_names,
         limit=>$limit,
         offset=>$offset,
-        display_pedigree=>1
+        display_pedigree=>1,
+        sp_person_id => $sp_person_id,
+        subscription_model => $subscription_model
     });
     my ($result, $total_count) = $stock_search->search();
 
@@ -473,6 +477,8 @@ sub germplasm_mcpd {
     my $status = $self->status;
     my $page_size = $self->page_size;
     my $page = $self->page;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
 
     my $schema = $self->bcs_schema();
         my $accession_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'accession', 'stock_type')->cvterm_id();
@@ -485,7 +491,9 @@ sub germplasm_mcpd {
         stock_id_list=>[$stock_id],
         stock_type_id=>$accession_type_cvterm_id,
         stockprop_columns_view=>{'accession number'=>1, 'PUI'=>1, 'seed source'=>1, 'institute code'=>1, 'institute name'=>1, 'biological status of accession code'=>1, 'country of origin'=>1, 'type of germplasm storage code'=>1, 'acquisition date'=>1, 'ncbi_taxonomy_id'=>1},
-        display_pedigree=>1
+        display_pedigree=>1,
+        sp_person_id => $sp_person_id,
+        subscription_model => $subscription_model
     });
 
     my ($result, $total_count) = $stock_search->search();
@@ -957,6 +965,8 @@ sub _simple_search {
     my $self = shift;
     my $germplasm_ids_arrayref = shift;
     my $germplasm_names_arrayref = shift;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
 
     my $accession_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'accession', 'stock_type')->cvterm_id();
 
@@ -977,7 +987,9 @@ sub _simple_search {
         stock_id_list=>$germplasm_ids_arrayref,
         stock_type_id=>$accession_type_cvterm_id,
         stockprop_columns_view=>{'accession number'=>1, 'PUI'=>1, 'seed source'=>1, 'institute code'=>1, 'institute name'=>1, 'biological status of accession code'=>1, 'country of origin'=>1, 'type of germplasm storage code'=>1, 'acquisition date'=>1, 'ncbi_taxonomy_id'=>1},
-        display_pedigree=>1
+        display_pedigree=>1,
+        sp_person_id => $sp_person_id,
+        subscription_model => $subscription_model
     });
     my ($result, $total_count) = $stock_search->search();
 

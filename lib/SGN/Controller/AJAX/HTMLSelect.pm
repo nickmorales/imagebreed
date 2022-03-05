@@ -40,6 +40,7 @@ use Math::Round;
 use URI::Encode qw(uri_encode uri_decode);
 use Array::Utils qw(:all);
 use CXGN::PrivateCompany;
+use CXGN::Login;
 
 BEGIN { extends 'Catalyst::Controller::REST' };
 
@@ -604,6 +605,7 @@ sub get_label_data_source_select : Path('/ajax/html/select/label_data_sources') 
 sub get_stocks_select : Path('/ajax/html/select/stocks') Args(0) {
 	my $self = shift;
 	my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
 	my $params = _clean_inputs($c->req->params);
     my $names_as_select = $params->{names_as_select}->[0] || 0;
 
@@ -645,7 +647,9 @@ sub get_stocks_select : Path('/ajax/html/select/stocks') Args(0) {
 		limit=>$params->{limit}->[0],
 		offset=>$params->{offset}->[0],
 		minimal_info=>1,
-        display_pedigree=>0
+        display_pedigree=>0,
+        sp_person_id=>$user_id,
+        subscription_model=>$c->config->{subscription_model}
 	});
 	my ($result, $records_total) = $stock_search->search();
 	#print STDERR Dumper $result;
@@ -681,6 +685,8 @@ sub get_stocks_select : Path('/ajax/html/select/stocks') Args(0) {
 sub get_seedlots_select : Path('/ajax/html/select/seedlots') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+
     my $accessions = $c->req->param('seedlot_content_accession_name') ? [$c->req->param('seedlot_content_accession_name')] : [];
     my $crosses = $c->req->param('seedlot_content_cross_name') ? [$c->req->param('seedlot_content_cross_name')] : [];
 #    my $offset = $c->req->param('seedlot_offset') ? $c->req->param('seedlot_offset') : '';
@@ -703,7 +709,9 @@ sub get_seedlots_select : Path('/ajax/html/select/seedlots') Args(0) {
         $accessions,
         $crosses,
         1,
-        undef
+        undef,
+        $user_id,
+        $c->config->{subscription_model}
     );
     my @seedlots;
     foreach my $sl (@$list) {
@@ -2224,5 +2232,35 @@ sub _clean_inputs {
 	return $params;
 }
 
+sub _check_user_login {
+    my $c = shift;
+    my $user_id;
+    my $user_name;
+    my $user_role;
+    my $session_id = $c->req->param("sgn_session_id");
+
+    if ($session_id){
+        my $dbh = $c->dbc->dbh;
+        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+        if (!$user_info[0]){
+            $c->stash->{rest} = {error=>'You must be logged in!'};
+            $c->detach();
+        }
+        $user_id = $user_info[0];
+        $user_role = $user_info[1];
+        my $p = CXGN::People::Person->new($dbh, $user_id);
+        $user_name = $p->get_username;
+    } else{
+        if (!$c->user){
+            $c->stash->{rest} = {error=>'You must be logged in!'};
+            $c->detach();
+        }
+        $user_id = $c->user()->get_object()->get_sp_person_id();
+        $user_name = $c->user()->get_object()->get_username();
+        $user_role = $c->user->get_object->get_user_type();
+    }
+
+    return ($user_id, $user_name, $user_role);
+}
 
 1;

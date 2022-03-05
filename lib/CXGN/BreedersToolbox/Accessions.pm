@@ -129,6 +129,8 @@ sub get_possible_seedlots {
     my $schema = $self->schema();
     my $phenome_schema = $self->phenome_schema();
     my $people_schema = $self->people_schema();
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
 
     my $accessions;
     my $crosses;
@@ -152,7 +154,9 @@ sub get_possible_seedlots {
         $accessions,
         $crosses,
         1,
-        undef
+        undef,
+        $sp_person_id,
+        $subscription_model
     );
 
     my %seedlot_hash;

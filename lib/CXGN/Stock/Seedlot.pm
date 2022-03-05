@@ -308,6 +308,8 @@ sub list_seedlots {
     my $quality = shift;
     my $only_good_quality = shift;
     my $box_name = shift;
+    my $sp_person_id = shift;
+    my $subscription_model = shift;
 
     select(STDERR);
     $| = 1;
@@ -434,7 +436,9 @@ sub list_seedlots {
         stock_type_id=>$type_id,
         stockprop_columns_view=>{'current_count'=>1, 'current_weight_gram'=>1, 'organization'=>1, 'location_code'=>1, 'seedlot_quality'=>1},
         minimal_info=>1,  #for only returning stock_id and uniquenames
-        display_pedigree=>0 #to calculate and display pedigree
+        display_pedigree=>0, #to calculate and display pedigree,
+        sp_person_id => $sp_person_id,
+        subscription_model => $subscription_model
     });
     my ($stocksearch_result, $records_stock_total) = $stock_search->search();
 
