@@ -240,7 +240,7 @@ jQuery(document).ready(function ($) {
 
     function add_accessions(full_info, species_names) {
         console.log(full_info);
-        $.ajax({
+        jQuery.ajax({
             type: 'POST',
             url: '/ajax/accession_list/add',
             dataType: "json",
@@ -275,7 +275,7 @@ jQuery(document).ready(function ($) {
     function verify_species_name() {
         var speciesName = $("#species_name_input").val();
         validSpecies = 0;
-        $.ajax({
+        jQuery.ajax({
             type: 'GET',
             url: '/organism/verify_name',
             dataType: "json",
@@ -297,15 +297,16 @@ jQuery(document).ready(function ($) {
         });
     }
 
-    $('#species_name_input').focusout(function () {
+    jQuery('#species_name_input').focusout(function () {
         verify_species_name();
     });
 
-    $('#review_absent_accessions_submit').click(function () {
+    jQuery('#review_absent_accessions_submit').click(function () {
         if (fullParsedData == undefined){
-            var speciesName = $("#species_name_input").val();
-            var populationName = $("#population_name_input").val();
-            var organizationName = $("#organization_name_input").val();
+            var speciesName = jQuery("#species_name_input").val();
+            var populationName = jQuery("#population_name_input").val();
+            var organizationName = jQuery("#organization_name_input").val();
+            var private_company_id = jQuery("#add_accessions_list_private_company_select").val();
             var accessionsToAdd = accessionList;
             if (!speciesName) {
                 alert("Species name required");
@@ -325,19 +326,20 @@ jQuery(document).ready(function ($) {
                     'germplasmName':accessionsToAdd[i],
                     'organizationName':organizationName,
                     'populationName':populationName,
+                    'private_company_id':private_company_id
                 });
                 speciesNames.push(speciesName);
             }
         }
         add_accessions(infoToAdd, speciesNames);
-        $('#review_absent_dialog').modal("hide");
+        jQuery('#review_absent_dialog').modal("hide");
         //window.location.href='/breeders/accessions';
     });
 
-    $('#new_accessions_submit').click(function () {
+    jQuery('#new_accessions_submit').click(function () {
         var selected_tab = jQuery('#add_new_accessions_tab_select .active').text()
         if (selected_tab == 'Using Lists'){
-            accession_list_id = $('#list_div_list_select').val();
+            accession_list_id = jQuery('#list_div_list_select').val();
             fullParsedData = undefined;
             verify_accession_list(accession_list_id);
         } else if (selected_tab == 'Uploading a File'){
@@ -349,7 +351,7 @@ jQuery(document).ready(function ($) {
             }
             jQuery("#upload_new_accessions_form").submit();
         }
-        $('#add_accessions_dialog').modal("hide");
+        jQuery('#add_accessions_dialog').modal("hide");
     });
 
     jQuery('#upload_new_accessions_form').iframePostForm({
@@ -362,10 +364,10 @@ jQuery(document).ready(function ($) {
             }
         },
         complete: function (r) {
-	    //alert("DONE WITH UPLOAD "+r);
-	    var clean_r = r.replace('<pre>', '');
-	    clean_r = clean_r.replace('</pre>', '');
-	    response = JSON.parse(clean_r); //decodeURIComponent(clean_r));
+            //alert("DONE WITH UPLOAD "+r);
+            var clean_r = r.replace('<pre>', '');
+            clean_r = clean_r.replace('</pre>', '');
+            response = JSON.parse(clean_r); //decodeURIComponent(clean_r));
             console.log(response);
             jQuery('#working_modal').modal("hide");
 
@@ -385,7 +387,7 @@ jQuery(document).ready(function ($) {
         }
     });
 
-    $('[name="add_accessions_link"]').click(function () {
+    jQuery('[name="add_accessions_link"]').click(function () {
         var list = new CXGN.List();
         accessionList;
         accession_list_id;
@@ -396,29 +398,29 @@ jQuery(document).ready(function ($) {
         accessionListFound;
         speciesNames;
         doFuzzySearch;
-        $('#add_accessions_dialog').modal("show");
-        $('#review_found_matches_dialog').modal("hide");
-        $('#review_fuzzy_matches_dialog').modal("hide");
-        $('#review_absent_dialog').modal("hide");
-        $("#list_div").html(list.listSelect("list_div", ["accessions"], undefined, undefined, undefined));
+        jQuery('#add_accessions_dialog').modal("show");
+        jQuery('#review_found_matches_dialog').modal("hide");
+        jQuery('#review_fuzzy_matches_dialog').modal("hide");
+        jQuery('#review_absent_dialog').modal("hide");
+        jQuery("#list_div").html(list.listSelect("list_div", ["accessions"], undefined, undefined, undefined));
     });
 
     jQuery('#accessions_upload_spreadsheet_format_info').click(function(){
         jQuery('#accessions_upload_spreadsheet_format_modal').modal("show");
     });
 
-    $('body').on('hidden.bs.modal', '.modal', function () {
-        $(this).removeData('bs.modal');
+    jQuery('body').on('hidden.bs.modal', '.modal', function () {
+        jQuery(this).removeData('bs.modal');
     });
 
-	$(document).on('change', 'select[name="fuzzy_option"]', function() {
-		var value = $(this).val();
-		if ($('#add_accession_fuzzy_option_all').is(":checked")){
-			$('select[name="fuzzy_option"] option[value='+value+']').attr('selected','selected');
+	jQuery(document).on('change', 'select[name="fuzzy_option"]', function() {
+		var value = jQuery(this).val();
+		if (jQuery('#add_accession_fuzzy_option_all').is(":checked")){
+			jQuery('select[name="fuzzy_option"] option[value='+value+']').attr('selected','selected');
 		}
 	});
 
-    $('#review_fuzzy_matches_download').click(function(){
+    jQuery('#review_fuzzy_matches_download').click(function(){
         console.log(fuzzyResponse);
         openWindowWithPost(JSON.stringify(fuzzyResponse));
         //window.open('/ajax/accession_list/fuzzy_download?fuzzy_response='+JSON.stringify(fuzzyResponse));
@@ -501,7 +503,6 @@ function review_verification_results(doFuzzySearch, verifyResponse, accession_li
         jQuery('#found_accessions_table').DataTable({});
 
         accessionList = verifyResponse.absent;
-
     }
 
     if (verifyResponse.fuzzy.length > 0 && doFuzzySearch) {

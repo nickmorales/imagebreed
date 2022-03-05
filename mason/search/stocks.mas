@@ -312,7 +312,7 @@ var stock_table;
 
 jQuery(document).ready(function () {
 
-    get_select_box('private_companies', 'stock_search_companies_div', { 'name': 'stock_search_companies_select', 'id': 'stock_search_companies_select', 'multiple': 1 });
+    get_select_box('private_companies', 'stock_search_companies_div', { 'name': 'stock_search_companies_select', 'id': 'stock_search_companies_select', 'multiple':1, 'multiple_select_all':1 });
 
      jQuery("#person").autocomplete({
         source: '<% $sp_person_autocomplete_uri %>'

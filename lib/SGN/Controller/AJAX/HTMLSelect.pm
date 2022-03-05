@@ -104,10 +104,12 @@ sub get_breeding_program_select : Path('/ajax/html/select/breeding_programs') Ar
 sub get_private_companies_select : Path('/ajax/html/select/private_companies') Args(0) {
     my $self = shift;
     my $c = shift;
+    # print STDERR Dumper $c->req->params();
 
     my $id = $c->req->param("id") || "private_companies_select";
     my $name = $c->req->param("name") || "private_companies_select";
     my $empty = $c->req->param("empty") || "";
+    my $small = $c->req->param("small");
 
     my $sp_person_id;
     if ($c->user()) {
@@ -128,6 +130,9 @@ sub get_private_companies_select : Path('/ajax/html/select/private_companies') A
       name => $name,
       id => $id,
       choices => \@private_companies,
+      small => $small,
+      multiple => $c->req->param('multiple'),
+      multiple_select_all => $c->req->param('multiple_select_all'),
 #      selected => $default
     );
     $c->stash->{rest} = { select => $html };

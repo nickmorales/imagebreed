@@ -16,6 +16,7 @@ use CXGN::Tools::Text qw/commify_number/;
 
 use CXGN::MasonFactory;
 use CXGN::Scrap;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -483,6 +484,7 @@ EOH
 sub simple_selectbox_html {
     my %params = @_;
     my $retstring;
+    # print STDERR Dumper \%params;
 
     $params{choices} && ref( $params{choices} ) eq 'ARRAY'
       or confess "'choices' option must be an arrayref";
@@ -500,8 +502,9 @@ sub simple_selectbox_html {
     $params{params} ||= '';
     $params{name}   ||= '';
     my $data_related = $params{data_related} ? "data-related=".$params{data_related} : '';
+    my $small = $params{small} ? "input-sm" : '';
     my $size = $params{size};
-    $retstring = qq!<select class="form-control" $id $data_related $params{multiple} $params{params} name="$params{name}"!;
+    $retstring = qq!<select class="form-control $small" $id $data_related $params{multiple} $params{params} name="$params{name}"!;
     if ($size) {
         $retstring .= qq!size="$params{size}"!;
     }
@@ -521,28 +524,31 @@ sub simple_selectbox_html {
             $retstring .= qq{<optgroup label="$_">};
         }
         else {
-	    my @selected = ();
-	    my $selected = '';
+            my @selected = ();
+            my $selected = '';
 
             my ( $name, $text ) = ref $_ ? @$_ : ( $_, $_ );
 
-	    if (defined($params{selected}) && !ref($params{selected})) {
-		@selected = ( $params{selected} );
-	    }
-	    elsif (ref($params{selected})) {
-		@selected = @{$params{selected}};
+            if (defined($params{selected}) && !ref($params{selected})) {
+                @selected = ( $params{selected} );
+            }
+            elsif (ref($params{selected})) {
+                @selected = @{$params{selected}};
+            }
 
+            foreach my $s (@selected) {
+                if (($params{multiple} && $params{multiple_select_all}) || (defined($s) && ($s eq $name)) ) {
+                    $selected = ' selected="selected" ';
+                    last();
+                }
+            }
 
-	    }
+            if ($params{multiple} && $params{multiple_select_all}) {
+                $selected = ' selected="selected" ';
+            }
 
-	    foreach my $s (@selected) {
-		if (defined($s) && ($s eq $name)) {
-		    $selected = ' selected="selected" ';
-		    last();
-		}
-	    }
-	    $retstring .= qq{<option title="$text" value="$name"$selected $params{selected_params}>$text</option>};
-	}
+            $retstring .= qq{<option title="$text" value="$name"$selected $params{selected_params}>$text</option>};
+        }
     }
     $retstring .= qq{</optgroup>} if $in_group;
     $retstring .= "</select>\n";

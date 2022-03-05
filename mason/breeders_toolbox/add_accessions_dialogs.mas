@@ -37,6 +37,11 @@ $editable_stock_props_definitions
                             </div>
                         </div>
                         <div class="form-group">
+                            <label class="col-sm-4 control-label">Choose Your Company: </label>
+                            <div class="col-sm-8" id="add_accessions_list_private_company_div" name="add_accessions_list_private_company_div">
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <label class="col-sm-4 control-label"></label>
                             <div class="col-sm-8">
                                 <button name="lists_link" class="btn btn-info btn-sm" style="margin:6px 0px 0px 0px" type="button" >Manage Lists</button>
@@ -47,7 +52,7 @@ $editable_stock_props_definitions
                             <div class="col-sm-8">
 % if ( $user_role eq 'curator' ) {
                                 <input type="checkbox" id="fuzzy_check" name="fuzzy_check" checked></input>
-% } else { 
+% } else {
                                 <input type="checkbox" id="fuzzy_check" name="fuzzy_check" checked disabled></input>
 % }
                                 <br/>
@@ -289,3 +294,13 @@ $editable_stock_props_definitions
   height: 100px;
 }
 </style>
+
+<script>
+
+jQuery(document).ready(function () {
+
+    get_select_box('private_companies', 'add_accessions_list_private_company_div', { 'name': 'add_accessions_list_private_company_select', 'id': 'add_accessions_list_private_company_select', 'small':1 });
+
+});
+
+</script>

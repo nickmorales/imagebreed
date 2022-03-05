@@ -479,6 +479,17 @@ has 'subjects' => (
     is => 'rw',
 );
 
+has 'private_company_id' => (
+    isa => 'Maybe[Int]',
+    is => 'rw',
+);
+
+has 'private_company_is_private' => (
+    isa => 'Bool',
+    is => 'rw',
+    default => 0
+);
+
 sub BUILD {
     my $self = shift;
 
@@ -594,15 +605,24 @@ sub store {
         print STDERR "Storing Stock ".localtime."\n";
         if (!$exists) {
 
-            my $new_row = $self->schema()->resultset("Stock::Stock")->create({
-                name => $self->name(),
+            my $q = "INSERT INTO stock (name, uniquename, description, type_id, organism_id, is_obsolete, private_company_id, is_private) VALUES (?,?,?,?,?,?,?,?);";
+            my $h = $self->schema->storage->dbh()->prepare($q);
+            $h->execute(
+                $self->name(),
+                $self->uniquename(),
+                $self->description(),
+                $self->type_id(),
+                $self->organism_id(),
+                $self->is_obsolete(),
+                $self->private_company_id(),
+                $self->private_company_is_private()
+            );
+
+            my $new_row_rs = $self->schema()->resultset("Stock::Stock")->search({
                 uniquename => $self->uniquename(),
-                description => $self->description(),
-                type_id => $self->type_id(),
-                organism_id => $self->organism_id(),
-                is_obsolete => $self->is_obsolete(),
+                organism_id => $self->organism_id()
             });
-            $new_row->insert();
+            my $new_row = $new_row_rs->first();
 
             my $id = $new_row->stock_id();
             $self->stock_id($id);
