@@ -108,7 +108,10 @@ sub get_private_companies_select : Path('/ajax/html/select/private_companies') A
     my $id = $c->req->param("id") || "private_companies_select";
     my $name = $c->req->param("name") || "private_companies_select";
     my $empty = $c->req->param("empty") || "";
-    my $small = $c->req->param("small");
+    my $small = $c->req->param("small") || "";
+    my $selected = $c->req->param("selected") || "";
+    my $multiple = $c->req->param('multiple') || "";
+    my $multiple_select_all = $c->req->param('multiple_select_all') || "";
 
     my $sp_person_id;
     if ($c->user()) {
@@ -122,17 +125,16 @@ sub get_private_companies_select : Path('/ajax/html/select/private_companies') A
     foreach (@$private_companies_array) {
         push @private_companies, [$_->[0], $_->[1]];
     }
-    my $default = $c->req->param("default") || $private_companies[0]->[0];
     if ($empty) { unshift @private_companies, [ "", "Please select a program" ]; }
 
     my $html = simple_selectbox_html(
-      name => $name,
-      id => $id,
-      choices => \@private_companies,
-      small => $small,
-      multiple => $c->req->param('multiple'),
-      multiple_select_all => $c->req->param('multiple_select_all'),
-#      selected => $default
+        name => $name,
+        id => $id,
+        choices => \@private_companies,
+        small => $small,
+        selected => $selected,
+        multiple => $multiple,
+        multiple_select_all => $multiple_select_all
     );
     $c->stash->{rest} = { select => $html };
 }

@@ -537,7 +537,7 @@ sub simple_selectbox_html {
             }
 
             foreach my $s (@selected) {
-                if (($params{multiple} && $params{multiple_select_all}) || (defined($s) && ($s eq $name)) ) {
+                if (defined($s) && ($s eq $name) ) {
                     $selected = ' selected="selected" ';
                     last();
                 }

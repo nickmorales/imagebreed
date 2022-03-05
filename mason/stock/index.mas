@@ -199,9 +199,23 @@ my $jbrowse_url = $jbrowse_path . "%2Faccessions%2F" . $stock_id . "&tracks=DNA%
                     </div>
                 </div>
                 <div class="form-group form-group-sm">
+                    <label class="col-sm-4 control-label">Is Private: </label>
+                    <div class="col-sm-8">
+                        <select class="form-control" id="edit_stock_details_is_private">
+%  if ($stock_is_private eq 'True') {
+                            <option value='0'>False</option>
+                            <option value='1' selected>True</option>
+%  } else {
+                            <option value='0' selected>False</option>
+                            <option value='1'>True</option>
+%  }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group form-group-sm">
                     <label class="col-sm-4 control-label">Company: </label>
                     <div class="col-sm-8">
-                        <input class="form-control" type="text" id="edit_stock_details_company" value="<% $stock->private_company_name %>" />
+                        <div id="edit_stock_details_company_div"></div>
                     </div>
                 </div>
             </div>
@@ -301,6 +315,8 @@ my $jbrowse_url = $jbrowse_path . "%2Faccessions%2F" . $stock_id . "&tracks=DNA%
 <script>
     jQuery(document).ready(function() {
         stock_detail_page_init_dialogs();
+
+        get_select_box('private_companies', 'edit_stock_details_company_div', { 'name': 'edit_stock_details_company_select', 'id': 'edit_stock_details_company_select', 'selected':'<% $stock->private_company_id %>', 'multiple':0 });
 
         jQuery("#edit_stock_details_species").autocomplete({
            source: '/organism/autocomplete'
