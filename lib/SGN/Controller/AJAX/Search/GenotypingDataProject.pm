@@ -51,6 +51,7 @@ sub genotyping_data_project_search_GET : Args(0) {
           [
             "<a href=\"/breeders_toolbox/trial/$_->{trial_id}\">$_->{trial_name}</a>",
             $_->{description},
+            "<a href=\"/company/$_->{private_company_id}\">$_->{private_company_name}</a>",
             "<a href=\"/breeders/program/$_->{breeding_program_id}\">$_->{breeding_program_name}</a>",
             $folder_string,
             $_->{year},
