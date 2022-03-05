@@ -233,6 +233,7 @@ sub verify_accessions_file_POST : Args(0) {
     }
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $private_company_id = $c->req->param('add_accessions_file_private_company_select');
     my $upload = $c->req->upload('new_accessions_upload_file');
     my $do_fuzzy_search = $user_role eq 'curator' && !$c->req->param('fuzzy_check_upload_accessions') ? 0 : 1;
 
@@ -298,6 +299,7 @@ sub verify_accessions_file_POST : Args(0) {
     my @accession_names;
     my %full_accessions;
     while (my ($k,$val) = each %$full_data){
+        $val->{private_company_id} = $private_company_id;
         push @accession_names, $val->{germplasmName};
         $full_accessions{$val->{germplasmName}} = $val;
     }
