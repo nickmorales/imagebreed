@@ -32,7 +32,7 @@
 
                         <&| /util/workflow.mas:step, title=> "Sampling Level" &>
                             <& /page/page_title.mas, title=>"At which level do you plan to keep track of your sampling?" &>
-                            
+
                             <input type="radio" name="tissue_sample_help_select_level" value="accession">&nbsp;&nbsp;&nbsp;Accession Level: The sample is not from a field trial entity and only the accession name is known.<br/>
                             <input type="radio" name="tissue_sample_help_select_level" value="plot">&nbsp;&nbsp;&nbsp;Plot Level: Each plot in the field has a unique identifier, ideally with a barcode label.<br/>
                             <input type="radio" name="tissue_sample_help_select_level" value="plant">&nbsp;&nbsp;&nbsp;Plant Level: Each plant in the field has a unique identifier, ideally with a barcode label.<br/>
@@ -62,6 +62,7 @@
                                                         <th>Select</th>
                                                         <th>Trial name</th>
                                                         <th>Description</th>
+                                                        <th>Company</th>
                                                         <th>Breeding program</th>
                                                         <th>Folder</th>
                                                         <th>Year</th>
