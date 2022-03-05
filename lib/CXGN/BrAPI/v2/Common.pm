@@ -25,53 +25,64 @@ package CXGN::BrAPI::v2::Common;
  Lukas Mueller <lam87@cornell.edu>
 =cut
 
- use Moose;
+use Moose;
 
- has 'bcs_schema' => (
+has 'bcs_schema' => (
     isa => 'Bio::Chado::Schema',
     is => 'rw',
     required => 1,
-    );
+);
 
- has 'metadata_schema' => (
+has 'metadata_schema' => (
     isa => 'CXGN::Metadata::Schema',
     is => 'rw',
     required => 1,
-    );
+);
 
- has 'phenome_schema' => (
+has 'phenome_schema' => (
     isa => 'CXGN::Phenome::Schema',
     is => 'rw',
     required => 1,
-    );
+);
 
- has 'people_schema' => (
+has 'people_schema' => (
     isa => 'CXGN::People::Schema',
     is => 'rw',
     required => 1,
-    );
- 
- has 'context' => (
-   is => 'rw',
-   required => 1,
 );
 
- has 'page_size' => (
+has 'context' => (
+    is => 'rw',
+    required => 1,
+);
+
+has 'subscription_model' => (
+    isa => 'Bool',
+    is => 'rw',
+    required => 1
+);
+
+has 'sp_person_id' => (
+    isa => 'Int',
+    is => 'rw',
+);
+
+has 'page_size' => (
     isa => 'Int',
     is => 'rw',
     required => 1,
-    );
+);
 
- has 'page' => (
+has 'page' => (
     isa => 'Int',
     is => 'rw',
     required => 1,
-    );
+);
 
- has 'status' => (
+has 'status' => (
     isa => 'ArrayRef[Maybe[HashRef]]',
     is => 'rw',
     required => 1,
-    );
+);
 
- 1;
+1;

@@ -15,6 +15,8 @@ sub search {
     my $self = shift;
     my $inputs = shift;
     my $c = $self->context;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
     my $page_size = $self->page_size;
     my $page = $self->page;
     my $status = $self->status;
@@ -45,9 +47,11 @@ sub search {
     if (scalar @trial_ids == 0){
         my $trial_search = CXGN::Trial::Search->new({
             bcs_schema=>$self->bcs_schema,
-            trial_design_list=>['genotype_data_project']
+            trial_design_list=>['genotype_data_project'],
+            sp_person_id=>$sp_person_id,
+            subscription_model=>$subscription_model
         });
-        my ($data, $total_count) = $trial_search->search(); 
+        my ($data, $total_count) = $trial_search->search();
 
         foreach (@$data){
             push @trial_ids, $_->{trial_id};
@@ -69,7 +73,7 @@ sub search {
         protocol_id_list=>\@protocol_ids,
     });
     my $file_handle = $genotypes_search->get_cached_file_search_json($c->config->{cluster_shared_tempdir}, 0);
-    
+
     my $start_index = $page*$page_size;
     my $end_index = $page*$page_size + $page_size - 1;
     my $counter = 0;
@@ -116,9 +120,9 @@ sub search {
     }
 
     %result = ( data=>\@data,
-                expandHomozygotes=>undef, 
-                sepPhased=>undef, 
-                sepUnphased=>undef, 
+                expandHomozygotes=>undef,
+                sepPhased=>undef,
+                sepUnphased=>undef,
                 unknownString=>undef);
 
     my $pagination = CXGN::BrAPI::Pagination->pagination_response($counter,$page_size,$page);

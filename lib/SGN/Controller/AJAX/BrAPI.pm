@@ -77,10 +77,135 @@ sub serialize_image {
 	return $json_text;
 }
 
+=head2 /brapi/v1/token
+
+ Usage: For logging a user in and loggin a user out through the API
+ Desc:
+
+For Logging In
+POST Request:
+{
+ "grant_type" : "password", //(optional, text, `password`) ... The grant type, only allowed value is password, but can be ignored
+ "username" : "user38", // (required, text, `thepoweruser`) ... The username
+ "password" : "secretpw", // (optional, text, `mylittlesecret`) ... The password
+ "client_id" : "blabla" // (optional, text, `blabla`) ... The client id, currently ignored.
+}
+
+POST Response:
+ {
+   "metadata": {
+     "pagination": {},
+     "status": {},
+     "datafiles": []
+   },
+   "userDisplayName": "John Smith",
+   "access_token": "R6gKDBRxM4HLj6eGi4u5HkQjYoIBTPfvtZzUD8TUzg4",
+   "expires_in": "The lifetime in seconds of the access token"
+ }
+
+For Logging out
+DELETE Request:
+
+{
+    "access_token" : "R6gKDBRxM4HLj6eGi4u5HkQjYoIBTPfvtZzUD8TUzg4" // (optional, text, `R6gKDBRxM4HLj6eGi4u5HkQjYoIBTPfvtZzUD8TUzg4`) ... The user access token. Default: current user token.
+}
+
+DELETE Response:
+{
+    "metadata": {
+            "pagination" : {},
+            "status" : { "message" : "User has been logged out successfully."},
+            "datafiles": []
+        }
+    "result" : {}
+}
+
+=cut
+
+sub authenticate_v1_token :Path('/brapi/v1/token') Args(0) : ActionClass('REST') { }
+
+sub authenticate_v1_token_DELETE {
+	my $self = shift;
+	my $c = shift;
+	process_authenticate_token_delete($self, $c);
+}
+
+sub authenticate_v1_token_GET {
+    my $self = shift;
+    my $c = shift;
+    process_authenticate_token($self,$c);
+}
+
+sub authenticate_v1_token_POST {
+	my $self = shift;
+	my $c = shift;
+	process_authenticate_token($self,$c);
+}
+
+sub authenticate_v2_token :Path('/brapi/v2/token') Args(0) : ActionClass('REST') { }
+
+sub authenticate_v2_token_DELETE {
+	my $self = shift;
+	my $c = shift;
+	process_authenticate_token_delete($self, $c);
+}
+
+sub authenticate_v2_token_GET {
+    my $self = shift;
+    my $c = shift;
+    process_authenticate_token($self,$c);
+}
+
+sub authenticate_v2_token_POST {
+	my $self = shift;
+	my $c = shift;
+	process_authenticate_token($self,$c);
+}
+
+sub process_authenticate_token {
+	my $self = shift;
+	my $c = shift;
+    _process_clean_inputs($c);
+	my $clean_inputs = $c->stash->{clean_inputs};
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+
+    my $authenticate = CXGN::BrAPI::v2::Authentication->new({bcs_schema => $bcs_schema});
+	my $brapi_package_result = $authenticate->login(
+		$clean_inputs->{grant_type}->[0],
+		$clean_inputs->{password}->[0],
+		$clean_inputs->{username}->[0],
+		$clean_inputs->{client_id}->[0],
+	);
+
+	my $status = $brapi_package_result->{status};
+	my $pagination = $brapi_package_result->{pagination};
+	my $result = $brapi_package_result->{result};
+	my $datafiles = $brapi_package_result->{datafiles};
+
+	my %metadata = (pagination=>$pagination, status=>$status, datafiles=>$datafiles);
+	my %response = (metadata=>\%metadata, access_token=>$result->{access_token}, userDisplayName=>$result->{userDisplayName}, expires_in=>$CXGN::Login::LOGIN_TIMEOUT);
+	$c->stash->{rest} = \%response;
+    $c->detach();
+}
+
+sub process_authenticate_token_delete {
+    my $self = shift;
+    my $c = shift;
+    _process_clean_inputs($c);
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $authenticate = CXGN::BrAPI::v2::Authentication->new({bcs_schema => $bcs_schema});
+	my $brapi_package_result = $authenticate->logout();
+	_standard_response_construction($c, $brapi_package_result);
+}
+
 sub brapi : Chained('/') PathPart('brapi') CaptureArgs(1) {
 	my $self = shift;
 	my $c = shift;
 	my $version = shift;
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+	my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
+	my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+	my $people_schema = $c->dbic_schema("CXGN::People::Schema");
 	my @status;
 
 	my $page = $c->req->param("page") || 0;
@@ -108,16 +233,23 @@ sub brapi : Chained('/') PathPart('brapi') CaptureArgs(1) {
 		$page_size = $current_page_size || $page_size || $DEFAULT_PAGE_SIZE;
         $session_token = $current_sesion_token || $session_token;
 	}
-	my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-	my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
-	my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-	my $people_schema = $c->dbic_schema("CXGN::People::Schema");
+    $c->stash->{session_token} = $session_token;
+
 	push @status, { 'INFO' => "BrAPI base call found with page=$page, pageSize=$page_size" };
+
+	my $brapi_require_login = $c->config->{brapi_require_login};
+	my $subscription_model = $c->config->{subscription_model};
+	if ($subscription_model) {
+		$brapi_require_login = 1;
+	}
+	my ($auth, $user_id, $user_type, $user_pref, $expired) = _authenticate_user($c, $brapi_require_login);
 
 	my $brapi = CXGN::BrAPI->new({
 		version => $version,
 		brapi_module_inst => {
 			context => $c,
+			sp_person_id => $user_id,
+            subscription_model => $subscription_model,
 			bcs_schema => $bcs_schema,
 			metadata_schema => $metadata_schema,
 			phenome_schema => $phenome_schema,
@@ -133,9 +265,13 @@ sub brapi : Chained('/') PathPart('brapi') CaptureArgs(1) {
 	$c->response->headers->header( "Access-Control-Allow-Origin" => '*' );
 	$c->response->headers->header( "Access-Control-Allow-Methods" => "POST, GET, PUT, DELETE" );
 	$c->response->headers->header( 'Access-Control-Allow-Headers' => 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range,Authorization');
-	$c->stash->{session_token} = $session_token;
 
-	if (defined $c->request->data){
+	_process_clean_inputs($c);
+}
+
+sub _process_clean_inputs {
+    my $c = shift;
+    if (defined $c->request->data){
         # All POST requests accept for search methods require a json array body
 		if ($c->request->method eq "POST" && index($c->request->env->{REQUEST_URI}, "search") == -1){
 			if (ref $c->request->data ne 'ARRAY') {
@@ -309,97 +445,6 @@ sub _standard_response_construction {
 	$c->detach;
 }
 
-=head2 /brapi/v1/token
-
- Usage: For logging a user in and loggin a user out through the API
- Desc:
-
-For Logging In
-POST Request:
-{
- "grant_type" : "password", //(optional, text, `password`) ... The grant type, only allowed value is password, but can be ignored
- "username" : "user38", // (required, text, `thepoweruser`) ... The username
- "password" : "secretpw", // (optional, text, `mylittlesecret`) ... The password
- "client_id" : "blabla" // (optional, text, `blabla`) ... The client id, currently ignored.
-}
-
-POST Response:
- {
-   "metadata": {
-     "pagination": {},
-     "status": {},
-     "datafiles": []
-   },
-   "userDisplayName": "John Smith",
-   "access_token": "R6gKDBRxM4HLj6eGi4u5HkQjYoIBTPfvtZzUD8TUzg4",
-   "expires_in": "The lifetime in seconds of the access token"
- }
-
-For Logging out
-DELETE Request:
-
-{
-    "access_token" : "R6gKDBRxM4HLj6eGi4u5HkQjYoIBTPfvtZzUD8TUzg4" // (optional, text, `R6gKDBRxM4HLj6eGi4u5HkQjYoIBTPfvtZzUD8TUzg4`) ... The user access token. Default: current user token.
-}
-
-DELETE Response:
-{
-    "metadata": {
-            "pagination" : {},
-            "status" : { "message" : "User has been logged out successfully."},
-            "datafiles": []
-        }
-    "result" : {}
-}
-
-=cut
-
-sub authenticate_token : Chained('brapi') PathPart('token') Args(0) : ActionClass('REST') { }
-
-sub authenticate_token_DELETE {
-	my $self = shift;
-	my $c = shift;
-	my $brapi = $self->brapi_module;
-	my $brapi_module = $brapi->brapi_wrapper('Authentication');
-	my $brapi_package_result = $brapi_module->logout();
-	_standard_response_construction($c, $brapi_package_result);
-}
-
-sub authenticate_token_GET {
-    my $self = shift;
-    my $c = shift;
-    process_authenticate_token($self,$c);
-}
-
-sub authenticate_token_POST {
-	my $self = shift;
-	my $c = shift;
-	process_authenticate_token($self,$c);
-}
-
-sub process_authenticate_token {
-	my $self = shift;
-	my $c = shift;
-	my $clean_inputs = $c->stash->{clean_inputs};
-	my $brapi = $self->brapi_module;
-	my $brapi_module = $brapi->brapi_wrapper('Authentication');
-	my $brapi_package_result = $brapi_module->login(
-		$clean_inputs->{grant_type}->[0],
-		$clean_inputs->{password}->[0],
-		$clean_inputs->{username}->[0],
-		$clean_inputs->{client_id}->[0],
-	);
-
-	my $status = $brapi_package_result->{status};
-	my $pagination = $brapi_package_result->{pagination};
-	my $result = $brapi_package_result->{result};
-	my $datafiles = $brapi_package_result->{datafiles};
-
-	my %metadata = (pagination=>$pagination, status=>$status, datafiles=>$datafiles);
-	my %response = (metadata=>\%metadata, access_token=>$result->{access_token}, userDisplayName=>$result->{userDisplayName}, expires_in=>$CXGN::Login::LOGIN_TIMEOUT);
-	$c->stash->{rest} = \%response;
-    $c->detach();
-}
 
 =head2 /brapi/v1/calls
 
@@ -2208,8 +2253,7 @@ sub studies_info_GET {
     my $brapi_package_result = $brapi_module->detail(
         $c->stash->{study_id},
         $c->config->{main_production_site_url},
-        $c->config->{supportedCrop},
-        $user_id
+        $c->config->{supportedCrop}
     );
     _standard_response_construction($c, $brapi_package_result);
 }

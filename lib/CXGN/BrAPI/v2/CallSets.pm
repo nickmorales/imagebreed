@@ -18,6 +18,8 @@ sub search {
     my $page_size = $self->page_size;
     my $page = $self->page;
     my $status = $self->status;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
     my $sample_ids = $inputs->{sampleDbId} || ($inputs->{sampleDbIds} || ());
     my $sample_names = $inputs->{sampleName} || ($inputs->{sampleNames} || ());
     my $variantset_ids = $inputs->{variantSetDbId} || ($inputs->{variantSetDbIds} || ());
@@ -33,10 +35,10 @@ sub search {
     my @callset_names;
 
     if ($callset_names){
-        push @callset_names, @{$callset_names};      
+        push @callset_names, @{$callset_names};
     }
     if ($sample_names){
-        push @callset_names, @{$sample_names};      
+        push @callset_names, @{$sample_names};
     }
     if ($study_ids){
         push @trial_ids, @{$study_ids};
@@ -58,9 +60,11 @@ sub search {
     if (scalar @trial_ids == 0){
         my $trial_search = CXGN::Trial::Search->new({
             bcs_schema=>$self->bcs_schema,
-            trial_design_list=>['genotype_data_project']
+            trial_design_list=>['genotype_data_project'],
+            sp_person_id => $sp_person_id,
+            subscription_model => $subscription_model
         });
-        my ($data, $total_count) = $trial_search->search(); 
+        my ($data, $total_count) = $trial_search->search();
 
         foreach (@$data){
             push @trial_ids, $_->{trial_id};
@@ -90,7 +94,7 @@ sub search {
 
     open my $fh, "<&", $file_handle or die "Can't open output file: $!";
     my $header_line = <$fh>;
-    
+
     while( <$fh> ) {
         my $gt = decode_json $_;
 
@@ -103,7 +107,7 @@ sub search {
         if ($passes_search){
 
             if (! exists($geno{$gt->{stock_id}})){
-                @variantsets = (); 
+                @variantsets = ();
                 @studies = ();
             }
             my $variantset = $gt->{genotypingDataProjectDbId} . "p" . $gt->{analysisMethodDbId};
@@ -180,7 +184,7 @@ sub detail {
     my @studies;
 
     while( <$fh> ) {
-        my $gt = decode_json $_;     
+        my $gt = decode_json $_;
 
         if (! exists($geno{$gt->{stock_id}})){
             @variantsets = ();
@@ -305,9 +309,9 @@ sub calls {
     if (!$data_format || $data_format eq 'json' ){
 
         %result = ( data=>\@scores,
-            expandHomozygotes=>undef, 
-            sepPhased=>undef, 
-            sepUnphased=>undef, 
+            expandHomozygotes=>undef,
+            sepPhased=>undef,
+            sepUnphased=>undef,
             unknownString=>undef);
 
     } elsif ($data_format eq 'tsv' || $data_format eq 'csv' || $data_format eq 'xls') {

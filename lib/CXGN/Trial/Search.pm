@@ -59,6 +59,11 @@ has 'program_id_list' => (
     is => 'rw',
 );
 
+has 'private_company_ids_list' => (
+    isa => 'ArrayRef[Int]|Undef',
+    is => 'rw',
+);
+
 has 'location_list' => (
     isa => 'ArrayRef[Str]|Undef',
     is => 'rw',
@@ -157,6 +162,12 @@ has 'offset' => (
     is => 'rw'
 );
 
+has 'subscription_model' => (
+    isa => 'Bool',
+    is => 'rw',
+    required => 1
+);
+
 has 'sp_person_id' => (
     isa => 'Int|Undef',
     is => 'rw'
@@ -167,6 +178,7 @@ sub search {
     my $schema = $self->bcs_schema();
     my $program_list = $self->program_list;
     my $program_id_list = $self->program_id_list;
+    my $private_company_ids_list = $self->private_company_ids_list || [];
     my $location_list = $self->location_list;
     my $location_id_list = $self->location_id_list;
     my $year_list = $self->year_list;
@@ -328,29 +340,26 @@ sub search {
             JOIN phenotype USING(phenotype_id) ";
     }
 
+    if (scalar(@$private_company_ids_list)==0 && $sp_person_id) {
+        my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+        my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($sp_person_id, 0);
+        $private_company_ids_list = $private_companies_ids;
+    }
+    if ($self->subscription_model && scalar(@$private_company_ids_list) == 0) {
+        die "Trial Search cannot be done without knowing private company ids when subscription_model is set in the conf! Provide sp_person_id to CXGN::Trial::Search\n";
+    }
+    if (scalar(@$private_company_ids_list)>0) {
+        my $private_company_ids_sql = join ',', @$private_company_ids_list;
+        push @where_clause, "study.private_company_id IN ($private_company_ids_sql)";
+    }
+
     my $where_clause = scalar(@where_clause)>0 ? " WHERE " . (join (" AND " , @where_clause)) : '';
 
-
-    my $private_company_join = '';
-    my @private_company_where = ("study.is_private='f'");
-    if ($sp_person_id) {
-        $private_company_join = ' JOIN sgn_people.private_company AS private_company ON(private_company.private_company_id=study.private_company_id)
-        JOIN sgn_people.private_company_sp_person AS private_company_sp_person ON(private_company_sp_person.private_company_id=private_company.private_company_id) ';
-
-        push @private_company_where, "private_company_sp_person.sp_person_id=$sp_person_id";
-    }
-    my $private_company_where_clause = " ( " . (join(" OR ", @private_company_where)) . " ) ";
-    if ($where_clause) {
-        $where_clause .= " AND ".$private_company_where_clause;
-    }
-    else {
-        $where_clause .= " WHERE ".$private_company_where_clause;
-    }
-
-    my $q = "SELECT study.name, study.project_id, study.description, folder.name, folder.project_id, folder.description, trial_type_name.cvterm_id, trial_type_name.name, projectprop.value as trial_type_value, year.value, location.value, breeding_program.name, breeding_program.project_id, breeding_program.description, harvest_date.value, planting_date.value, design.value, genotyping_facility.value, genotyping_facility_submitted.value, genotyping_facility_status.value, genotyping_plate_format.value, genotyping_plate_sample_type.value, genotyping_facility_plate_id.value, sampling_facility.value, sampling_facility_sample_type.value, project_additional_info.value, count(study.project_id) OVER() AS full_count
+    my $q = "SELECT study.name, study.project_id, study.description, folder.name, folder.project_id, folder.description, trial_type_name.cvterm_id, trial_type_name.name, projectprop.value as trial_type_value, year.value, location.value, breeding_program.name, breeding_program.project_id, breeding_program.description, harvest_date.value, planting_date.value, design.value, genotyping_facility.value, genotyping_facility_submitted.value, genotyping_facility_status.value, genotyping_plate_format.value, genotyping_plate_sample_type.value, genotyping_facility_plate_id.value, sampling_facility.value, sampling_facility_sample_type.value, project_additional_info.value, company.private_company_id, company.name, company.description, count(study.project_id) OVER() AS full_count
         FROM project AS study
         JOIN project_relationship AS bp_rel ON(study.project_id=bp_rel.subject_project_id AND bp_rel.type_id=$breeding_program_trial_relationship_id)
         JOIN project AS breeding_program ON(bp_rel.object_project_id=breeding_program.project_id)
+        JOIN sgn_people.private_company as company ON(study.private_company_id=company.private_company_id)
         LEFT JOIN project_relationship AS folder_rel ON(study.project_id=folder_rel.subject_project_id AND folder_rel.type_id=$trial_folder_cvterm_id)
         LEFT JOIN project AS folder ON(folder_rel.object_project_id=folder.project_id)
         LEFT JOIN projectprop ON(study.project_id=projectprop.project_id AND projectprop.type_id IN ($trial_types_sql))
@@ -371,11 +380,10 @@ sub search {
         LEFT JOIN projectprop AS sampling_facility ON(study.project_id=sampling_facility.project_id AND sampling_facility.type_id=$sampling_facility_cvterm_id)
         LEFT JOIN projectprop AS sampling_facility_sample_type ON(study.project_id=sampling_facility_sample_type.project_id AND sampling_facility_sample_type.type_id=$sampling_facility_sample_type_cvterm_id)
         LEFT JOIN projectprop AS project_additional_info ON(study.project_id=project_additional_info.project_id AND project_additional_info.type_id=$additional_info_cvterm_id)
-        $private_company_join
         $accession_join
         $trait_join
         $where_clause
-        GROUP BY(study.name, study.project_id, study.description, folder.name, folder.project_id, folder.description, trial_type_name.cvterm_id, trial_type_name.name, projectprop.value, year.value, location.value, breeding_program.name, breeding_program.project_id, breeding_program.description, harvest_date.value, planting_date.value, design.value, genotyping_facility.value, genotyping_facility_submitted.value, genotyping_facility_status.value, genotyping_plate_format.value, genotyping_plate_sample_type.value, genotyping_facility_plate_id.value, sampling_facility.value, sampling_facility_sample_type.value, project_additional_info.value)
+        GROUP BY(study.name, study.project_id, study.description, folder.name, folder.project_id, folder.description, trial_type_name.cvterm_id, trial_type_name.name, projectprop.value, year.value, location.value, breeding_program.name, breeding_program.project_id, breeding_program.description, harvest_date.value, planting_date.value, design.value, genotyping_facility.value, genotyping_facility_submitted.value, genotyping_facility_status.value, genotyping_plate_format.value, genotyping_plate_sample_type.value, genotyping_facility_plate_id.value, sampling_facility.value, sampling_facility_sample_type.value, project_additional_info.value, company.private_company_id, company.name, company.description)
         ORDER BY study.name;";
 
     print STDERR Dumper $q;
@@ -385,7 +393,7 @@ sub search {
     my @result;
     my $total_count = 0;
     my $subtract_count = 0;
-    while (my ($study_name, $study_id, $study_description, $folder_name, $folder_id, $folder_description, $trial_type_id, $trial_type_name, $trial_type_value, $year, $location_id, $breeding_program_name, $breeding_program_id, $breeding_program_description, $harvest_date, $planting_date, $design, $genotyping_facility, $genotyping_facility_submitted, $genotyping_facility_status, $genotyping_plate_format, $genotyping_plate_sample_type, $genotyping_facility_plate_id, $sampling_facility, $sampling_facility_sample_type, $project_additional_info, $full_count) = $h->fetchrow_array()) {
+    while (my ($study_name, $study_id, $study_description, $folder_name, $folder_id, $folder_description, $trial_type_id, $trial_type_name, $trial_type_value, $year, $location_id, $breeding_program_name, $breeding_program_id, $breeding_program_description, $harvest_date, $planting_date, $design, $genotyping_facility, $genotyping_facility_submitted, $genotyping_facility_status, $genotyping_plate_format, $genotyping_plate_sample_type, $genotyping_facility_plate_id, $sampling_facility, $sampling_facility_sample_type, $project_additional_info, $private_company_id, $private_company_name, $private_company_desc, $full_count) = $h->fetchrow_array()) {
         my $location_name = $location_id ? $locations{$location_id} : '';
         my $project_harvest_date = $harvest_date ? $calendar_funcs->display_start_date($harvest_date) : '';
         my $project_planting_date = $planting_date ? $calendar_funcs->display_start_date($planting_date) : '';
@@ -434,7 +442,10 @@ sub search {
             genotyping_facility_plate_id  => $genotyping_facility_plate_id,
             sampling_facility             => $sampling_facility,
             sampling_trial_sample_type    => $sampling_facility_sample_type,
-            additional_info               => $project_additional_info ? decode_json($project_additional_info) : undef
+            additional_info               => $project_additional_info ? decode_json($project_additional_info) : undef,
+            private_company_id            => $private_company_id,
+            private_company_name          => $private_company_name,
+            private_company_desc          => $private_company_desc,
         };
         $total_count = $full_count;
     }

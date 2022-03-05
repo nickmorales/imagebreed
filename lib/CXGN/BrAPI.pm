@@ -2,7 +2,6 @@ package CXGN::BrAPI;
 
 use Moose;
 use Data::Dumper;
-use CXGN::BrAPI::v1::Authentication;
 use CXGN::BrAPI::v1::Calls;
 use CXGN::BrAPI::v1::Crops;
 use CXGN::BrAPI::v1::ObservationVariables;

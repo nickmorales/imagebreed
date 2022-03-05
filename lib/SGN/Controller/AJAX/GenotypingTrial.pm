@@ -101,6 +101,7 @@ sub generate_genotype_trial_POST : Args(0) {
 sub parse_genotype_trial_file : Path('/ajax/breeders/parsegenotypetrial') : ActionClass('REST') { }
 sub parse_genotype_trial_file_POST : Args(0) {
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $chado_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
@@ -164,37 +165,6 @@ sub parse_genotype_trial_file_POST : Args(0) {
         print STDERR "File name must not have spaces or slashes.\n";
         $c->stash->{rest} = {error => "Uploaded file name must not contain spaces or slashes." };
         return;
-    }
-
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload genotyping plate!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload a genotyping plate!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
-
-    if ($user_role ne 'curator' && $user_role ne 'submitter') {
-        $c->stash->{rest} = {error =>  "You have insufficient privileges to upload a genotyping plate." };
-        $c->detach();
     }
 
     ## Store uploaded temporary file in archive
@@ -275,37 +245,7 @@ sub store_genotype_trial : Path('/ajax/breeders/storegenotypetrial') ActionClass
 sub store_genotype_trial_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload genotyping plate!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload a genotyping plate!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
-
-    if ($user_role ne 'curator' && $user_role ne 'submitter') {
-        $c->stash->{rest} = {error =>  "You have insufficient privileges to upload a genotyping plate." };
-        $c->detach();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $plate_info = decode_json $c->req->param("plate_data");
@@ -464,9 +404,13 @@ sub get_genotyping_data_projects_GET : Args(0) {
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $checkbox_select_name = $c->req->param('select_checkbox_name');
 
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+
     my $trial_search = CXGN::Trial::Search->new({
         bcs_schema=>$bcs_schema,
-        trial_design_list=>['genotype_data_project', 'pcr_genotype_data_project']
+        trial_design_list=>['genotype_data_project', 'pcr_genotype_data_project'],
+        sp_person_id => $user_id,
+        subscription_model => $c->config->{subscription_model}
     });
     my ($data, $total_count) = $trial_search->search();
     my @result;
@@ -610,6 +554,44 @@ sub store_plate_order_POST : Args(0) {
         order_id => $order_id
     };
 
+}
+
+sub _check_user_login {
+    my $c = shift;
+    my $check_priv = shift;
+    my $user_id;
+    my $user_name;
+    my $user_role;
+    my $session_id = $c->req->param("sgn_session_id");
+
+    if ($session_id){
+        my $dbh = $c->dbc->dbh;
+        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+        if (!$user_info[0]){
+            $c->stash->{rest} = {error=>'You must be logged in!'};
+            $c->detach();
+        }
+        $user_id = $user_info[0];
+        $user_role = $user_info[1];
+        my $p = CXGN::People::Person->new($dbh, $user_id);
+        $user_name = $p->get_username;
+    } else{
+        if (!$c->user){
+            $c->stash->{rest} = {error=>'You must be logged in!'};
+            $c->detach();
+        }
+        $user_id = $c->user()->get_object()->get_sp_person_id();
+        $user_name = $c->user()->get_object()->get_username();
+        $user_role = $c->user->get_object->get_user_type();
+    }
+
+    if ($check_priv) {
+        if ($user_role ne 'curator' && $user_role ne 'submitter') {
+            $c->stash->{rest} = {error =>  "You have insufficient privileges!." };
+            $c->detach();
+        }
+    }
+    return ($user_id, $user_name, $user_role);
 }
 
 1;

@@ -12,8 +12,9 @@ sub search {
     my $self = shift;
     my $params = shift;
     my $c = shift;
-
     my $status = $self->status;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
 
     my $crossing_ids = $params->{crossingProjectDbId} || undef;
     my $reference_ids_arrayref = $params->{externalReferenceID} || ();
@@ -35,10 +36,12 @@ sub search {
     }
 
     my $trial_search = CXGN::Trial::Search->new({
-        bcs_schema=>$self->bcs_schema ,
+        bcs_schema=>$self->bcs_schema,
         trial_id_list=>$crossing_ids,
         limit => $page_size,
         offset => $page_size*$page,
+        sp_person_id => $sp_person_id,
+        subscription_model => $subscription_model
         # field_trials_only => 1
     });
     my ($data, $total_count) = $trial_search->search();
@@ -86,12 +89,16 @@ sub _get_detail {
     my $status = $self->status;
     my $page_size = $self->page_size;
     my $page = $self->page;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
     my $counter = 0;
     my %result;
 
     my $trial_search = CXGN::Trial::Search->new({
         bcs_schema=>$self->bcs_schema ,
         trial_id_list=>[$crossingproj_id],
+        sp_person_id => $sp_person_id,
+        subscription_model => $subscription_model
     });
     my ($data, $total_count) = $trial_search->search();
 

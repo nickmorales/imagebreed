@@ -84,6 +84,7 @@ use SGN::Model::Cvterm;
 use CXGN::Stock;
 use CXGN::Chado::Stock;
 use CXGN::Chado::Organism;
+use CXGN::PrivateCompany;
 use JSON;
 use utf8;
 use Encode;
@@ -247,6 +248,17 @@ has 'display_pedigree' => (
 	default => 0
 );
 
+has 'subscription_model' => (
+    isa => 'Bool',
+    is => 'rw',
+    required => 1
+);
+
+has 'sp_person_id' => (
+    isa => 'Int|Undef',
+    is => 'rw'
+);
+
 sub search {
     my $self = shift;
     print STDERR "CXGN::Stock::Search search start\n";
@@ -276,6 +288,7 @@ sub search {
     my @stock_ids_array = $self->stock_id_list ? @{$self->stock_id_list} : ();
     my $limit = $self->limit;
     my $offset = $self->offset;
+    my $sp_person_id = $self->sp_person_id;
 
     unless ($matchtype eq 'exactly') { #trim whitespace from both ends unless exact search was specified
         $any_name =~ s/^\s+|\s+$//g;
@@ -569,8 +582,18 @@ sub search {
         }
     }
 
-    my $private_company_ids_sql = join ',', @private_company_id_array;
-    push @sql_and_conditions, "stock.private_company_id IN ($private_company_ids_sql)";
+    if (scalar(@private_company_id_array)==0 && $sp_person_id) {
+        my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+        my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($sp_person_id, 0);
+        @private_company_id_array = @$private_companies_ids;
+    }
+    if ($self->subscription_model && scalar(@private_company_id_array) == 0) {
+        die "Stock Search cannot be done without knowing private company ids when subscription_model is set in the conf! Provide sp_person_id to CXGN::Stock::Search\n";
+    }
+    if (scalar(@private_company_id_array) > 0) {
+        my $private_company_ids_sql = join ',', @private_company_id_array;
+        push @sql_and_conditions, "stock.private_company_id IN ($private_company_ids_sql)";
+    }
 
     my $limit_offset = '';
     if (defined($limit) && defined($offset)) {
@@ -583,7 +606,7 @@ sub search {
     }
     my $where_clause = join ' AND ', @sql_and_conditions;
 
-    my $stock_search_q = "SELECT stock.stock_id, stock.uniquename, stock.name, stock.type_id, stock_type.name, stock.organism_id, organism.species, organism.common_name, organism.genus, count(stock.stock_id) OVER()
+    my $stock_search_q = "SELECT stock.stock_id, stock.uniquename, stock.name, stock.type_id, stock_type.name, stock.organism_id, organism.species, organism.common_name, organism.genus, company.private_company_id, company.name, company.description, count(stock.stock_id) OVER()
         FROM stock
         $stock_join
         $nd_experment_phenotype_join
@@ -591,8 +614,9 @@ sub search {
         JOIN cvterm AS stock_type ON(stock.type_id = stock_type.cvterm_id)
         LEFT JOIN organism ON(stock.organism_id = organism.organism_id)
         LEFT JOIN stockprop ON(stock.stock_id = stockprop.stock_id)
+        JOIN sgn_people.private_company as company ON(stock.private_company_id=company.private_company_id)
         WHERE $where_clause
-        GROUP BY stock.stock_id, stock.uniquename, stock.name, stock.type_id, stock_type.name, stock.organism_id, organism.species, organism.common_name, organism.genus
+        GROUP BY stock.stock_id, stock.uniquename, stock.name, stock.type_id, stock_type.name, stock.organism_id, organism.species, organism.common_name, organism.genus, company.private_company_id, company.name, company.description
         ORDER BY stock.name
         $limit_offset;";
     print STDERR $stock_search_q."\n";
@@ -609,7 +633,7 @@ sub search {
     my @result;
     my %result_hash;
     my @result_stock_ids;
-    while (my ($stock_id, $uniquename, $stock_name, $type_id, $type, $organism_id, $species, $common_name, $genus, $result_count) = $stock_search_h->fetchrow_array()) {
+    while (my ($stock_id, $uniquename, $stock_name, $type_id, $type, $organism_id, $species, $common_name, $genus, $private_company_id, $private_company_name, $private_company_desc, $result_count) = $stock_search_h->fetchrow_array()) {
         $records_total = $result_count;
         push @result_stock_ids, $stock_id;
         if (!$self->minimal_info){
@@ -633,6 +657,9 @@ sub search {
                 # subtaxa=>$stock_object->get_subtaxa,
                 # subtaxaAuthority=>$stock_object->get_subtaxa_authority,
                 # donors=>$stock_object->donors,
+                private_company_id => $private_company_id,
+                private_company_name => $private_company_name,
+                private_company_desc => $private_company_desc,
             };
         } else {
             $result_hash{$stock_id} = {

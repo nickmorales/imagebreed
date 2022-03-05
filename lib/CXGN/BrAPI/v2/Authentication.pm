@@ -4,8 +4,13 @@ use Moose;
 use Data::Dumper;
 use CXGN::BrAPI::Pagination;
 use CXGN::BrAPI::JSONResponse;
+use CXGN::Login;
 
-extends 'CXGN::BrAPI::v2::Common';
+has 'bcs_schema' => (
+    isa => 'Bio::Chado::Schema',
+    is => 'rw',
+    required => 1,
+);
 
 sub login {
 	my $self = shift;
@@ -13,7 +18,7 @@ sub login {
 	my $password = shift;
 	my $username = shift;
 	my $client_id = shift;
-	my $status = $self->status;
+	my $status = [];
 
 	if ($client_id){
 		push @$status, { 'warning' => 'Parameter client_id not supported. Please use a username and password.' };
@@ -58,7 +63,7 @@ sub login {
 sub logout {
 	my $self = shift;
 	my $login_controller = CXGN::Login->new($self->bcs_schema->storage->dbh);
-	my $status = $self->status;
+	my $status = [];
 	$login_controller->logout_user();
 	my $pagination = CXGN::BrAPI::Pagination->pagination_response(0,1,0);
 	my %result;

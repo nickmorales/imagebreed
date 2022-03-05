@@ -45,7 +45,7 @@ sub search {
 
     my $marker_search = CXGN::Marker::SearchBrAPI->new({
         bcs_schema => $schema,
-        protocol_id_list => \@protocol_ids, 
+        protocol_id_list => \@protocol_ids,
         project_id_list => \@trial_ids,
         marker_name_list => $marker_ids,
         #protocolprop_marker_hash_select=>['name', 'chrom', 'pos', 'alt', 'ref'] Use default which is all marker info
@@ -164,6 +164,8 @@ sub calls {
     my $page_size = $self->page_size;
     my $page = $self->page;
     my $status = $self->status;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
     my $sep_phased = $inputs->{sep_phased};
     my $sep_unphased = $inputs->{sep_unphased};
     my $unknown_string = $inputs->{unknown_string};
@@ -177,9 +179,11 @@ sub calls {
 
     my $trial_search = CXGN::Trial::Search->new({
         bcs_schema=>$self->bcs_schema,
-        trial_design_list=>['genotype_data_project']
+        trial_design_list=>['genotype_data_project'],
+        sp_person_id => $sp_person_id,
+        subscription_model => $subscription_model
     });
-    my ($data, $total_count) = $trial_search->search(); 
+    my ($data, $total_count) = $trial_search->search();
 
     foreach (@$data){
         push @trial_ids, $_->{trial_id};
@@ -244,9 +248,9 @@ sub calls {
     }
 
     %result = ( data=>\@data,
-                expandHomozygotes=>undef, 
-                sepPhased=>undef, 
-                sepUnphased=>undef, 
+                expandHomozygotes=>undef,
+                sepPhased=>undef,
+                sepUnphased=>undef,
                 unknownString=>undef);
 
 

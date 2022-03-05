@@ -6,6 +6,7 @@ use Data::Dumper;
 use CXGN::Trial;
 use CXGN::Trial::Search;
 use JSON;
+use CXGN::PrivateCompany;
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
@@ -18,6 +19,8 @@ __PACKAGE__->config(
 sub search : Path('/ajax/search/trials') Args(0) {
     my $self = shift;
     my $c    = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my @location_ids;
     my $location_id = $c->req->param('location_id');
@@ -29,14 +32,22 @@ sub search : Path('/ajax/search/trials') Args(0) {
     my $checkbox_select_name = $c->req->param('select_checkbox_name');
     my $field_trials_only = $c->req->param('field_trials_only') || 1;
     my $trial_design_list = $c->req->param('trial_design') ? [$c->req->param('trial_design')] : [];
+    my $private_company_ids_array = $c->req->param('private_company_ids') ? $c->req->param('private_company_ids') : [];
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    if (scalar(@$private_company_ids_array)==0) {
+        my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+        my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($user_id, 0);
+        $private_company_ids_array = $private_companies_ids;
+    }
 
     my $trial_search = CXGN::Trial::Search->new({
         bcs_schema=>$schema,
         location_id_list=>\@location_ids,
         field_trials_only=>$field_trials_only,
-        trial_design_list=>$trial_design_list
+        trial_design_list=>$trial_design_list,
+        private_company_ids_list=>$private_company_ids_array,
+        sp_person_id=>$user_id,
+        subscription_model=>$c->config->{subscription_model}
     });
     my ($data, $total_count) = $trial_search->search();
     my @result;
@@ -54,6 +65,7 @@ sub search : Path('/ajax/search/trials') Args(0) {
         push @res, (
             "<a href=\"/breeders_toolbox/trial/$_->{trial_id}\">$_->{trial_name}</a>",
             $_->{description},
+            "<a href=\"/company/$_->{private_company_id}\">$_->{private_company_name}</a>",
             "<a href=\"/breeders/program/$_->{breeding_program_id}\">$_->{breeding_program_name}</a>",
             $folder_string,
             $_->{year},
@@ -70,3 +82,36 @@ sub search : Path('/ajax/search/trials') Args(0) {
 
     $c->stash->{rest} = { data => \@result };
 }
+
+sub _check_user_login {
+    my $c = shift;
+    my $user_id;
+    my $user_name;
+    my $user_role;
+    my $session_id = $c->req->param("sgn_session_id");
+
+    if ($session_id){
+        my $dbh = $c->dbc->dbh;
+        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+        if (!$user_info[0]){
+            $c->stash->{rest} = {error=>'You must be logged in!'};
+            $c->detach();
+        }
+        $user_id = $user_info[0];
+        $user_role = $user_info[1];
+        my $p = CXGN::People::Person->new($dbh, $user_id);
+        $user_name = $p->get_username;
+    } else{
+        if (!$c->user){
+            $c->stash->{rest} = {error=>'You must be logged in!'};
+            $c->detach();
+        }
+        $user_id = $c->user()->get_object()->get_sp_person_id();
+        $user_name = $c->user()->get_object()->get_username();
+        $user_role = $c->user->get_object->get_user_type();
+    }
+
+    return ($user_id, $user_name, $user_role);
+}
+
+1;

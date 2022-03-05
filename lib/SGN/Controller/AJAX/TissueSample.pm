@@ -33,10 +33,13 @@ sub tissue_sample_field_trials_GET : Args(0) {
     my $self = shift;
     my $c = shift;
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $trial_search = CXGN::Trial::Search->new({
         bcs_schema=>$bcs_schema,
         trial_has_tissue_samples=>1,
+        sp_person_id=>$user_id,
+        subscription_model=>$c->config->{subscription_model}
     });
     my ($data, $total_count) = $trial_search->search();
     my @result;
@@ -73,10 +76,13 @@ sub tissue_sample_genotyping_trials_GET : Args(0) {
     my $self = shift;
     my $c = shift;
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $trial_search = CXGN::Trial::Search->new({
         bcs_schema=>$bcs_schema,
-        trial_design_list=>['genotyping_plate']
+        trial_design_list=>['genotyping_plate'],
+        sp_person_id=>$user_id,
+        subscription_model=>$c->config->{subscription_model}
     });
     my ($data, $total_count) = $trial_search->search();
     my @result;
@@ -110,10 +116,13 @@ sub tissue_sample_sampling_trials_GET : Args(0) {
     my $self = shift;
     my $c = shift;
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $trial_search = CXGN::Trial::Search->new({
         bcs_schema=>$bcs_schema,
-        trial_design_list=>['sampling_trial']
+        trial_design_list=>['sampling_trial'],
+        sp_person_id=>$user_id,
+        subscription_model=>$c->config->{subscription_model}
     });
     my ($data, $total_count) = $trial_search->search();
     my @result;
@@ -138,6 +147,37 @@ sub tissue_sample_sampling_trials_GET : Args(0) {
     #print STDERR Dumper \@result;
 
     $c->stash->{rest} = { data => \@result };
+}
+
+sub _check_user_login {
+    my $c = shift;
+    my $user_id;
+    my $user_name;
+    my $user_role;
+    my $session_id = $c->req->param("sgn_session_id");
+
+    if ($session_id){
+        my $dbh = $c->dbc->dbh;
+        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+        if (!$user_info[0]){
+            $c->stash->{rest} = {error=>'You must be logged in!'};
+            $c->detach();
+        }
+        $user_id = $user_info[0];
+        $user_role = $user_info[1];
+        my $p = CXGN::People::Person->new($dbh, $user_id);
+        $user_name = $p->get_username;
+    } else{
+        if (!$c->user){
+            $c->stash->{rest} = {error=>'You must be logged in!'};
+            $c->detach();
+        }
+        $user_id = $c->user()->get_object()->get_sp_person_id();
+        $user_name = $c->user()->get_object()->get_username();
+        $user_role = $c->user->get_object->get_user_type();
+    }
+
+    return ($user_id, $user_name, $user_role);
 }
 
 1;

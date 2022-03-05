@@ -85,6 +85,8 @@ sub search {
     my $page = $self->page;
     my $status = $self->status;
     my $schema = $self->bcs_schema;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
     my $supported_crop = $c->config->{"supportedCrop"};
 
     my @program_dbids = $search_params->{programDbIds} ? @{$search_params->{programDbIds}} : ();
@@ -107,7 +109,6 @@ sub search {
     my $active = $search_params->{active} || undef;
     my $sortBy = $search_params->{sortBy} || undef;
     my $sortOrder = $search_params->{sortOrder} || undef;
-    my $sp_person_id = $search_params->{sp_person_id} || undef;
 
     if (scalar(@crop)>0 && !grep { lc($_) eq lc($supported_crop) } @crop ){
     	return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('commonCropName not found!'));
@@ -127,6 +128,7 @@ sub search {
         $page,
         $supported_crop,
         $sp_person_id,
+        $subscription_model,
         \@study_dbids,
         \@location_names,
         \@location_ids,
@@ -155,10 +157,11 @@ sub detail {
 	my $study_id = shift;
     my $main_production_site_url = shift;
 	my $supported_crop = shift;
-    my $sp_person_id = shift;
 	my $page_size = $self->page_size;
 	my $page = $self->page;
 	my $status = $self->status;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
 
 	my ($data_out,$total_count) = _search(
         $self,
@@ -167,6 +170,7 @@ sub detail {
         $page,
         $supported_crop,
         $sp_person_id,
+        $subscription_model,
         [$study_id]
     );
 
@@ -198,6 +202,8 @@ sub store {
     my $page_size = $self->page_size;
 	my $page = $self->page;
 	my $status = $self->status;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
 
     my @study_dbids;
 
@@ -262,7 +268,9 @@ sub store {
 			bcs_schema => $schema,
 			metadata_schema => $metadata_schema,
 			phenome_schema => $phenome_schema,
-			trial_name_list => [$trial_name]
+			trial_name_list => [$trial_name],
+            sp_person_id => $sp_person_id,
+            subscription_model => $subscription_model
 		});
 		my ($data, $total_count) = $trial_name_exists->search();
 		if ($total_count > 0) {
@@ -366,7 +374,8 @@ sub store {
             $page_size,
             $page,
             $supported_crop,
-            $user_id,
+            $sp_person_id,
+            $subscription_model,
             \@study_dbids
         );
 	}
@@ -397,6 +406,8 @@ sub update {
 	my $page_size = $self->page_size;
 	my $page = $self->page;
 	my $status = $self->status;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
 
 	my $dbh = $self->bcs_schema()->storage()->dbh();
     my $person = CXGN::People::Person->new($dbh, $user_id);
@@ -487,7 +498,9 @@ sub update {
 	        bcs_schema => $schema,
 	        metadata_schema => $metadata_schema,
 	        phenome_schema => $phenome_schema,
-	        trial_name_list => [$study_name]
+	        trial_name_list => [$study_name],
+            sp_person_id => $sp_person_id,
+            subscription_model => $subscription_model
 	    });
 	    my ($data, $total_count) = $trial_name_exists->search();
 
@@ -543,7 +556,8 @@ sub update {
         $page_size,
         $page,
         $supported_crop,
-        $user_id,
+        $sp_person_id,
+        $subscription_model,
         [$trial_id]
     );
 
@@ -560,6 +574,7 @@ sub _search {
 	my $page = shift;
 	my $supported_crop = shift;
     my $sp_person_id = shift;
+    my $subscription_model = shift;
 	my $study_dbids = shift;
 	my $location_names = shift;
 	my $location_ids = shift;
@@ -602,7 +617,8 @@ sub _search {
         sort_by => $sort_by,
         order_by => $sort_order,
         field_trials_only => 1,
-        sp_person_id => $sp_person_id
+        sp_person_id => $sp_person_id,
+        subscription_model => $subscription_model
     });
     my ($data, $total_count) = $trial_search->search();
     #print STDERR Dumper $data;
@@ -613,6 +629,9 @@ sub _search {
         my $additional_info = {
 			programDbId => qq|$_->{breeding_program_id}|,
 			programName => $_->{breeding_program_name},
+            companyDbId => qq|$_->{private_company_id}|,
+            companyName => qq|$_->{private_company_name}|,
+
 		};
 		# Join the additional info with the existing additional info
 		if ($_->{additional_info}) {

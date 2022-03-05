@@ -121,7 +121,9 @@ sub stock_search :Path('/ajax/search/stocks') Args(0) {
         limit=>$limit,
         offset=>$offset,
         minimal_info=>$params->{minimal_info},
-        display_pedigree=>0
+        display_pedigree=>0,
+        sp_person_id=>$user_id,
+        subscription_model=>$c->config->{subscription_model}
     });
     my ($result, $records_total) = $stock_search->search();
 
@@ -130,7 +132,7 @@ sub stock_search :Path('/ajax/search/stocks') Args(0) {
         $draw =~ s/\D//g; # cast to int
     }
 
-    #print STDERR Dumper $result;
+    # print STDERR Dumper $result;
     my @return;
     foreach (@$result){
         if (!$params->{minimal_info}){
@@ -138,6 +140,8 @@ sub stock_search :Path('/ajax/search/stocks') Args(0) {
             my $uniquename = $_->{uniquename};
             my $type = $_->{stock_type};
             my $organism = $_->{species};
+            my $private_company_id = $_->{private_company_id};
+            my $private_company_name = $_->{private_company_name};
             my $synonym_string = join ',', @{$_->{synonyms}};
             my @owners = @{$_->{owners}};
             my @owners_html;
@@ -148,13 +152,13 @@ sub stock_search :Path('/ajax/search/stocks') Args(0) {
 
             my @return_row;
             if ($type eq "cross"){
-                @return_row = ( "<a href=\"/cross/$stock_id\">$uniquename</a>", $type, $organism, $synonym_string, $owners_string );
+                @return_row = ( "<a href=\"/cross/$stock_id\">$uniquename</a>", "<a href=\"/company/$private_company_id\">$private_company_name</a>", $type, $organism, $synonym_string, $owners_string );
             }  elsif ($type eq "family_name"){
-                @return_row = ( "<a href=\"/family/$stock_id\">$uniquename</a>", $type, $organism, $synonym_string, $owners_string );
+                @return_row = ( "<a href=\"/family/$stock_id\">$uniquename</a>", "<a href=\"/company/$private_company_id\">$private_company_name</a>", $type, $organism, $synonym_string, $owners_string );
             } elsif ($type eq "seedlot"){
-                @return_row = ( "<a href=\"/breeders/seedlot/$stock_id\">$uniquename</a>", $type, $organism, $synonym_string, $owners_string );
+                @return_row = ( "<a href=\"/breeders/seedlot/$stock_id\">$uniquename</a>", "<a href=\"/company/$private_company_id\">$private_company_name</a>", $type, $organism, $synonym_string, $owners_string );
             } else {
-                @return_row = ( "<a href=\"/stock/$stock_id/view\">$uniquename</a>", $type, $organism, $synonym_string, $owners_string );
+                @return_row = ( "<a href=\"/stock/$stock_id/view\">$uniquename</a>", "<a href=\"/company/$private_company_id\">$private_company_name</a>", $type, $organism, $synonym_string, $owners_string );
             }
             foreach my $property (@$stockprop_columns_view_array){
                 push @return_row, $_->{$property};

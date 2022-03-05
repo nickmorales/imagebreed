@@ -23,6 +23,8 @@ my $schema = $f->bcs_schema;
 
 my $trial_search = CXGN::Trial::Search->new({
     bcs_schema=>$schema,
+    sp_person_id=>41,
+    subscription_model=>$f->config->{subscription_model}
 });
 my ($result, $total_count) = $trial_search->search();
 print STDERR "ALL TRIAL =".Dumper($result)."\n";
@@ -213,6 +215,8 @@ $trial_search = CXGN::Trial::Search->new({
     bcs_schema=>$schema,
     location_list=>['test_location'],
     program_list=>['test'],
+    sp_person_id=>41,
+    subscription_model=>$f->config->{subscription_model}
 });
 ($result, $total_count) = $trial_search->search();
 print STDERR "SELECTED TRIAL =".Dumper($result)."\n";

@@ -20,6 +20,8 @@ sub search {
     my $page_size = $self->page_size;
     my $page = $self->page;
     my $status = $self->status;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
     my $variantset_ids = $inputs->{variantSetDbId} || ($inputs->{variantSetDbIds} || ());
     my $study_ids = $inputs->{studyDbId} || ($inputs->{studyDbIds} || ());
     my $study_names = $inputs->{studyName} || ($inputs->{studyNames} || ());
@@ -46,15 +48,17 @@ sub search {
     if (scalar @trial_ids == 0){
         my $trial_search = CXGN::Trial::Search->new({
             bcs_schema=>$self->bcs_schema,
-            trial_design_list=>['genotype_data_project']
+            trial_design_list=>['genotype_data_project'],
+            sp_person_id => $sp_person_id,
+            subscription_model => $subscription_model
         });
-        my ($data, $total_count) = $trial_search->search(); 
+        my ($data, $total_count) = $trial_search->search();
 
         foreach (@$data){
             push @trial_ids, $_->{trial_id};
         }
     }
-    
+
     my $genotype_search = CXGN::Genotype::Search->new({
             bcs_schema=>$self->bcs_schema,
             people_schema => $self->people_schema(),
@@ -88,7 +92,7 @@ sub search {
                     type=>undef,
                     updated=>undef,
                 };
-                
+
                 push( @{ $variant_sets { $set_id  }{'analysisIds'} {$gt->{analysisMethodDbId}} }, 1 );
                 push( @{ $variant_sets { $set_id  }{'markerCount'}}, $gt->{resultCount} );
                 push( @{ $variant_sets { $set_id  }{'analysis'}  }, @analysis);
@@ -104,12 +108,12 @@ sub search {
     my $start_index = $page*$page_size;
     my $end_index = $page*$page_size + $page_size - 1;
     my $counter = 0;
-    
+
     foreach my $id (keys %variant_sets){
 
         if ($counter >= $start_index && $counter <= $end_index) {
-            my @availableFormats; 
-     
+            my @availableFormats;
+
             push @availableFormats,{
                 dataFormat => "json",
                 fileFormat => "json",
@@ -120,8 +124,8 @@ sub search {
                 analysis =>$variant_sets{$id} {'analysis'},
                 availableFormats => \@availableFormats,
                 callSetCount => scalar @{$variant_sets{$id}{'genotypes'}},
-                referenceSetDbId => keys %{ $variant_sets{$id} {'analysisIds'} },          
-                studyDbId => qq|$variant_sets{$id}{'dataProject'}|,          
+                referenceSetDbId => keys %{ $variant_sets{$id} {'analysisIds'} },
+                studyDbId => qq|$variant_sets{$id}{'dataProject'}|,
                 variantCount => _sum($variant_sets{$id}{'markerCount'}),
                 variantSetDbId => qq|$id|,
                 variantSetName => $variant_sets{$id} {'name'},
@@ -137,7 +141,7 @@ sub search {
 }
 
 
-sub detail { 
+sub detail {
     my $self = shift;
     my $inputs = shift;
     my $c = $self->context;
@@ -186,7 +190,7 @@ sub detail {
                 type=>undef,
                 updated=>undef,
             };
-            
+
             push( @{ $variant_sets { $set_id  }{'analysisIds'} {$gt->{analysisMethodDbId}} }, 1 );
             push( @{ $variant_sets { $set_id  }{'markerCount'}}, $gt->{resultCount} );
             push( @{ $variant_sets { $set_id  }{'analysis'}  }, @analysis);
@@ -198,9 +202,9 @@ sub detail {
     }
 
     foreach my $id (keys %variant_sets){
- 
-        my @availableFormats; 
- 
+
+        my @availableFormats;
+
         push @availableFormats,{
             dataFormat => "json",
             fileFormat => "json",
@@ -211,8 +215,8 @@ sub detail {
             analysis =>$variant_sets{$id} {'analysis'},
             availableFormats => \@availableFormats,
             callSetCount => scalar @{$variant_sets{$id}{'genotypes'}},
-            referenceSetDbId => keys %{ $variant_sets{$id} {'analysisIds'} },          
-            studyDbId => qq|$variant_sets{$id}{'dataProject'}|,          
+            referenceSetDbId => keys %{ $variant_sets{$id} {'analysisIds'} },
+            studyDbId => qq|$variant_sets{$id}{'dataProject'}|,
             variantCount => _sum($variant_sets{$id}{'markerCount'}),
             variantSetDbId => qq|$id|,
             variantSetName => $variant_sets{$id} {'name'},
@@ -271,14 +275,14 @@ sub callsets {
             my $gt = decode_json $_;
             my @analysis;
             my @availableFormats;
-            
+
             push @data, {
                 additionalInfo=>{},
                 callSetDbId=> qq|$gt->{stock_id}|,
                 callSetName=> qq|$gt->{stock_name}|,
                 created=>undef,
                 sampleDbId=>qq|$gt->{stock_id}|,
-                studyDbId=>qq|$gt->{genotypingDataProjectDbId}|, 
+                studyDbId=>qq|$gt->{genotypingDataProjectDbId}|,
                 updated=>undef,
                 variantSetDbIds => [ $gt->{genotypingDataProjectDbId}. "p". $gt->{analysisMethodDbId} ],
             };
@@ -310,7 +314,7 @@ sub calls {
     if ($sep_phased || $sep_unphased || $expand_homozygotes || $unknown_string){
         push @$status, { 'error' => 'The following parameters are not implemented: expandHomozygotes, unknownString, sepPhased, sepUnphased' };
     }
-    
+
     my @trial_ids;
     my @protocol_ids;
     if ( $variantset_id){
@@ -378,9 +382,9 @@ sub calls {
     }
 
     %result = ( data=>\@data,
-                expandHomozygotes=>undef, 
-                sepPhased=>undef, 
-                sepUnphased=>undef, 
+                expandHomozygotes=>undef,
+                sepPhased=>undef,
+                sepUnphased=>undef,
                 unknownString=>undef);
 
 
@@ -412,7 +416,7 @@ sub variants {
 
     my $marker_search = CXGN::Marker::SearchBrAPI->new({
         bcs_schema => $schema,
-        protocol_id_list => \@protocol_ids, 
+        protocol_id_list => \@protocol_ids,
         project_id_list => \@trial_ids,
         marker_name_list => $marker_ids,
         offset=>$page_size*$page,
@@ -471,6 +475,8 @@ sub extract {
     my $page_size = $self->page_size;
     my $page = $self->page;
     my $status = $self->status;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
     my $variantset_ids = $inputs->{variantSetDbId} || ($inputs->{variantSetDbIds} || ());
     my $study_ids = $inputs->{studyDbId} || ($inputs->{studyDbIds} || ());
     my $study_names = $inputs->{studyName} || ($inputs->{studyNames} || ());
@@ -498,9 +504,11 @@ sub extract {
     if (scalar @trial_ids == 0){
         my $trial_search = CXGN::Trial::Search->new({
             bcs_schema=>$self->bcs_schema,
-            trial_design_list=>['genotype_data_project']
+            trial_design_list=>['genotype_data_project'],
+            sp_person_id => $sp_person_id,
+            subscription_model => $subscription_model
         });
-        my ($data, $total_count) = $trial_search->search(); 
+        my ($data, $total_count) = $trial_search->search();
 
         foreach (@$data){
             push @trial_ids, $_->{trial_id};
@@ -540,7 +548,7 @@ sub extract {
                     type=>undef,
                     updated=>undef,
                 };
-                
+
                 push( @{ $variant_sets { $set_id  }{'analysisIds'} {$gt->{analysisMethodDbId}} }, 1 );
                 push( @{ $variant_sets { $set_id  }{'markerCount'}}, $gt->{resultCount} );
                 push( @{ $variant_sets { $set_id  }{'analysis'}  }, @analysis);
@@ -556,12 +564,12 @@ sub extract {
     my $start_index = $page*$page_size;
     my $end_index = $page*$page_size + $page_size - 1;
     my $counter = 0;
-    
+
     foreach my $id (keys %variant_sets){
 
         if ($counter >= $start_index && $counter <= $end_index) {
-            my @availableFormats; 
-     
+            my @availableFormats;
+
             push @availableFormats,{
                 dataFormat => "json",
                 fileFormat => "json",
@@ -572,8 +580,8 @@ sub extract {
                 analysis =>$variant_sets{$id} {'analysis'},
                 availableFormats => \@availableFormats,
                 callSetCount => scalar @{$variant_sets{$id}{'genotypes'}},
-                referenceSetDbId => keys %{ $variant_sets{$id} {'analysisIds'} },           
-                studyDbId => qq|$variant_sets{$id}{'dataProject'}|,          
+                referenceSetDbId => keys %{ $variant_sets{$id} {'analysisIds'} },
+                studyDbId => qq|$variant_sets{$id}{'dataProject'}|,
                 variantCount => _sum($variant_sets{$id}{'markerCount'}),
                 variantSetDbId => qq|$id|,
                 variantSetName => $variant_sets{$id} {'name'},

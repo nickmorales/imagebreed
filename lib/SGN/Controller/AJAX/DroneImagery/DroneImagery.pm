@@ -124,7 +124,9 @@ sub drone_imagery_analysis_query_POST : Args(0) {
         my @trial_names = split ',', $trial_name_list;
         my $trial_search = CXGN::Trial::Search->new({
             bcs_schema=>$schema,
-            trial_name_list=>\@trial_names
+            trial_name_list=>\@trial_names,
+            sp_person_id => $user_id,
+            subscription_model => $c->config->{subscription_model}
         });
         my ($result, $total_count) = $trial_search->search();
         foreach (@$result) {

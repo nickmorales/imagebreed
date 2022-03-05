@@ -151,6 +151,8 @@ sub search_results {
     my $page = $self->page;
     my $status = $self->status;
     my $schema = $self->bcs_schema;
+    my $sp_person_id = $self->sp_person_id;
+    my $subscription_model = $self->subscription_model;
 
     my @program_dbids = $search_params->{programDbIds} ? @{$search_params->{programDbIds}} : ();
     my @program_names = $search_params->{programNames} ? @{$search_params->{programNames}} : ();
@@ -171,7 +173,6 @@ sub search_results {
     my $active = $search_params->{active};
     my $sortBy = $search_params->{sortBy};
     my $sortOrder = $search_params->{sortOrder};
-    my $sp_person_id = $search_params->{sp_person_id};
 
     #$self->bcs_schema->storage->debug(1);
     my $trial_search = CXGN::Trial::Search->new({
@@ -193,7 +194,8 @@ sub search_results {
         limit => $page_size,
         offset => $page_size*$page,
         field_trials_only => 1,
-        sp_person_id => $sp_person_id
+        sp_person_id => $sp_person_id,
+        subscription_model => $subscription_model
     });
     my ($data, $total_count) = $trial_search->search();
     #print STDERR Dumper $data;
