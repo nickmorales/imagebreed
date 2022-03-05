@@ -66,18 +66,15 @@ sub add_stockprop_POST {
     my ( $self, $c ) = @_;
     my $response;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    if (!$c->user()) {
-	$c->stash->{rest} = { error => "Log in required for adding stock properties." }; return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
-    if (  any { $_ eq 'curator' || $_ eq 'submitter' || $_ eq 'sequencer' } $c->user->roles() ) {
-        my $req = $c->req;
-        my $stock_id = $c->req->param('stock_id');
-        my $prop  = $c->req->param('prop');
-        $prop =~ s/^\s+|\s+$//g; #trim whitespace from both ends
-        my $prop_type = $c->req->param('prop_type');
+    my $req = $c->req;
+    my $stock_id = $c->req->param('stock_id');
+    my $prop  = $c->req->param('prop');
+    $prop =~ s/^\s+|\s+$//g; #trim whitespace from both ends
+    my $prop_type = $c->req->param('prop_type');
 
-	my $stock = $schema->resultset("Stock::Stock")->find( { stock_id => $stock_id } );
+    my $stock = $schema->resultset("Stock::Stock")->find( { stock_id => $stock_id } );
 
     if ($stock && $prop && $prop_type) {
 
@@ -115,8 +112,8 @@ sub add_stockprop_POST {
                 schema=>$schema,
                 stock_id=>$stock_id,
                 is_saving=>1,
-                sp_person_id => $c->user()->get_object()->get_sp_person_id(),
-                user_name => $c->user()->get_object()->get_username(),
+                sp_person_id => $user_id,
+                user_name => $user_name,
                 modification_note => "Added property: $prop_type = $prop"
             });
             my $added_stock_id = $stock->store();
@@ -130,10 +127,7 @@ sub add_stockprop_POST {
             $c->stash->{rest} = { error => "Failed: $_" }
         };
     } else {
-	    $c->stash->{rest} = { error => "Cannot associate prop $prop_type: $prop with stock $stock_id " };
-	}
-    } else {
-	$c->stash->{rest} = { error => 'user does not have a curator/sequencer/submitter account' };
+        $c->stash->{rest} = { error => "Cannot associate prop $prop_type: $prop with stock $stock_id " };
     }
     #$c->stash->{rest} = { message => 'success' };
 }
@@ -191,10 +185,8 @@ sub delete_stockprop_GET {
     my $self = shift;
     my $c = shift;
     my $stockprop_id = $c->req->param("stockprop_id");
-    if (! any { $_ eq 'curator' || $_ eq 'submitter' || $_ eq 'sequencer' } $c->user->roles() ) {
-	$c->stash->{rest} = { error => 'Log in required for deletion of stock properties.' };
-	return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $spr = $schema->resultset("Stock::Stockprop")->find( { stockprop_id => $stockprop_id });
     if (! $spr) {
@@ -282,41 +274,6 @@ sub associate_locus_GET :Args(0) {
     }
 }
 
-sub display_alleles : Chained('/stock/get_stock') :PathPart('alleles') : ActionClass('REST') { }
-
-sub display_alleles_GET  {
-    my ($self, $c) = @_;
-
-    $c->forward('/stock/get_stock_allele_ids');
-
-    my $stock = $c->stash->{stock};
-    my $allele_ids = $c->stash->{allele_ids};
-    my $dbh = $c->dbc->dbh;
-    my @allele_data;
-    my $hashref;
-    foreach my $allele_id (@$allele_ids) {
-        my $allele = CXGN::Phenome::Allele->new($dbh, $allele_id);
-        my $phenotype        = $allele->get_allele_phenotype();
-        my $allele_link  = qq|<a href="/phenome/allele.pl?allele_id=$allele_id">$phenotype </a>|;
-        my $locus_id = $allele->get_locus_id;
-        my $locus_name = $allele->get_locus_name;
-        my $locus_link = qq|<a href="/phenome/locus_display.pl?locus_id=$locus_id">$locus_name </a>|;
-        push @allele_data,
-        [
-         (
-          $locus_link,
-          $allele->get_allele_name,
-          $allele_link
-         )
-        ];
-    }
-    $hashref->{html} = @allele_data ?
-        columnar_table_html(
-            headings     =>  [ "Locus name", "Allele symbol", "Phenotype" ],
-            data         => \@allele_data,
-        )  : undef ;
-    $c->stash->{rest} = $hashref;
-}
 
 ##############
 
@@ -328,7 +285,7 @@ sub display_ontologies_GET  {
     $c->forward('/stock/get_stock_cvterms');
     my $schema = $c->dbic_schema("Bio::Chado::Schema", 'sgn_chado');
     my $stock = $c->stash->{stock};
-    my $stock_id = $stock->get_stock_id;
+    my $stock_id = $stock->stock_id;
     my $trait_db_name => $c->get_conf('trait_ontology_db_name');
     my $trait_cvterms = $c->stash->{stock_cvterms}->{$trait_db_name};
     my $po_cvterms = $c->stash->{stock_cvterms}->{PO} ;
@@ -635,7 +592,7 @@ sub references_GET :Args(0) {
               JOIN public.dbxref USING (dbxref_id)
               WHERE stock_id= ?";
     my $sth = $c->dbc->dbh->prepare($q);
-    $sth->execute($stock->get_stock_id);
+    $sth->execute($stock->stock_id);
     my $response_hash={};
     while (my ($dbxref_id, $pub_id, $accession, $title) = $sth->fetchrow_array) {
         $response_hash->{$accession . ": " . $title} = $pub_id ;
@@ -891,6 +848,10 @@ sub stock_autocomplete : Local : ActionClass('REST') { }
 
 sub stock_autocomplete_GET :Args(0) {
     my ($self, $c) = @_;
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $people_schema = $c->dbic_schema('CXGN::People::Schema');
+    my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
 
     my $term = $c->req->param('term');
     my $stock_type_id = $c->req->param('stock_type_id');
@@ -898,19 +859,23 @@ sub stock_autocomplete_GET :Args(0) {
     $term =~ s/(^\s+|\s+)$//g;
     $term =~ s/\s+/ /g;
 
-    my $stock_type_where = '';
-    if ($stock_type_id){
-        $stock_type_where = " AND type_id = $stock_type_id ";
-    }
+    my $stock_search = CXGN::Stock::Search->new({
+        bcs_schema=>$schema,
+        people_schema=>$people_schema,
+        phenome_schema=>$phenome_schema,
+        subscription_model=>$c->config->{subscription_model},
+        match_name=>$term,
+        stock_type_id=>$stock_type_id,
+        minimal_info=>1,
+        sp_person_id=>$user_id,
+        limit=>100
+    });
+    my ($result, $records_total) = $stock_search->search();
 
     my @response_list;
-    my $q = "select distinct(uniquename) from stock where uniquename ilike ? $stock_type_where ORDER BY stock.uniquename LIMIT 100";
-    my $sth = $c->dbc->dbh->prepare($q);
-    $sth->execute('%'.$term.'%');
-    while (my ($stock_name) = $sth->fetchrow_array) {
-	push @response_list, $stock_name;
+    foreach (@$result) {
+        push @response_list, $_->{uniquename};
     }
-
     #print STDERR "stock_autocomplete RESPONSELIST = ".join ", ", @response_list;
 
     $c->stash->{rest} = \@response_list;
@@ -1311,18 +1276,13 @@ sub remove_stock_parent : Local : ActionClass('REST') { }
 
 sub remove_parent_GET : Path('/ajax/stock/parent/remove') Args(0) {
     my ($self, $c) = @_;
-
     my $stock_id = $c->req->param("stock_id");
     my $parent_id = $c->req->param("parent_id");
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     if (!$stock_id || ! $parent_id) {
-	$c->stash->{rest} = { error => "No stock and parent specified" };
-	return;
-    }
-
-    if (! ($c->user && ($c->user->check_roles('curator') || $c->user->check_roles('submitter'))))  {
-	$c->stash->{rest} = { error => "Log in is required, or insufficent privileges, for removing parents" };
-	return;
+        $c->stash->{rest} = { error => "No stock and parent specified" };
+        return;
     }
 
     my $q = $c->dbic_schema("Bio::Chado::Schema")->resultset("Stock::StockRelationship")->find( { object_id => $stock_id, subject_id=> $parent_id });
@@ -1355,19 +1315,8 @@ sub add_stock_parent : Local : ActionClass('REST') { }
 
 sub add_stock_parent_GET :Args(0) {
     my ($self, $c) = @_;
-
     print STDERR "Add_stock_parent function...\n";
-    if (!$c->user()) {
-	print STDERR "User not logged in... not associating stocks.\n";
-	$c->stash->{rest} = {error => "You need to be logged in to add pedigree information." };
-	return;
-    }
-
-    if (!any { $_ eq "curator" || $_ eq "submitter" } ($c->user()->roles)  ) {
-	print STDERR "User does not have sufficient privileges.\n";
-	$c->stash->{rest} = {error =>  "you have insufficient privileges to add pedigree information." };
-	return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $stock_id = $c->req->param('stock_id');
     my $parent_name = $c->req->param('parent_name');
@@ -1471,7 +1420,7 @@ sub get_stock_trials :Chained('/stock/get_stock') PathPart('datatables/trials') 
 
     my @formatted_trials;
     foreach my $t (@trials) {
-	push @formatted_trials, [ '<a href="/breeders/trial/'.$t->[0].'">'.$t->[1].'</a>', $t->[3], '<a href="javascript:show_stock_trial_detail('.$c->stash->{stock}->get_stock_id().', \''.$c->stash->{stock}->get_name().'\' ,'.$t->[0].',\''.$t->[1].'\')">Details</a>' ];
+	push @formatted_trials, [ '<a href="/breeders/trial/'.$t->[0].'">'.$t->[1].'</a>', $t->[3], '<a href="javascript:show_stock_trial_detail('.$c->stash->{stock}->stock_id().', \''.$c->stash->{stock}->name().'\' ,'.$t->[0].',\''.$t->[1].'\')">Details</a>' ];
     }
     $c->stash->{rest} = { data => \@formatted_trials };
 }
@@ -1495,35 +1444,8 @@ sub get_shared_trials_POST :Args(1) {
     $c->stash->{rest} = { error => "Nothing here, it's a POST.." } ;
 }
 sub get_shared_trials_GET :Args(1) {
-
     my $self = shift;
     my $c = shift;
-
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else {
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
 
     my @stock_ids = $c->request->param( 'stock_ids[]' );
     my $stock_string = join ",", map { "'$_'" } (@stock_ids);
@@ -1631,7 +1553,7 @@ sub get_phenotypes_by_stock_and_trial :Chained('/stock/get_stock') PathPart('dat
     my $self = shift;
     my $c = shift;
     my $trial_id = shift;
-    my $stock_type = $c->stash->{stock}->get_type()->name();
+    my $stock_type = $c->stash->{stock}->type()->name();
 
     my $q;
     if ($stock_type eq 'accession'){
@@ -1654,7 +1576,7 @@ sub get_phenotypes_by_stock_and_trial :Chained('/stock/get_stock') PathPart('dat
     }
 
     my $h = $c->dbc->dbh->prepare($q);
-    $h->execute($trial_id, $c->stash->{stock}->get_stock_id());
+    $h->execute($trial_id, $c->stash->{stock}->stock_id());
 
     my @phenotypes;
     while (my ($stock_id, $stock_name, $cvterm_id, $cvterm_name, $avg, $stddev, $count) = $h->fetchrow_array()) {
@@ -1670,7 +1592,7 @@ sub get_pedigree_string :Chained('/stock/get_stock') PathPart('pedigree') Args(0
 
     my $stock = CXGN::Stock->new(
         schema => $c->dbic_schema("Bio::Chado::Schema"),
-        stock_id => $c->stash->{stock}->get_stock_id()
+        stock_id => $c->stash->{stock}->stock_id()
     );
     my $parents = $stock->get_pedigree_string($level);
     print STDERR "Parents are: ".Dumper($parents)."\n";
@@ -1683,8 +1605,8 @@ sub get_pedigree_string_ :Chained('/stock/get_stock') PathPart('pedigreestring')
     my $self = shift;
     my $c = shift;
     my $level = $c->req->param("level");
-    my $stock_id = $c->stash->{stock}->get_stock_id();
-    my $stock_name = $c->stash->{stock}->get_name();
+    my $stock_id = $c->stash->{stock}->stock_id();
+    my $stock_name = $c->stash->{stock}->name();
 
     my $pedigree_string;
 
@@ -1994,14 +1916,7 @@ sub stock_obsolete : Path('/stock/obsolete') : ActionClass('REST') { }
 sub stock_obsolete_GET {
     my ( $self, $c ) = @_;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    if (!$c->user()) {
-        $c->stash->{rest} = { error => "Log in required for making stock obsolete." }; return;
-    }
-
-    if ( !any { $_ eq 'curator' || $_ eq 'submitter' || $_ eq 'sequencer' } $c->user->roles() ) {
-        $c->stash->{rest} = { error => 'user does not have a curator/sequencer/submitter account' };
-        $c->detach();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $stock_id = $c->req->param('stock_id');
     my $is_obsolete  = $c->req->param('is_obsolete');
@@ -2015,8 +1930,8 @@ sub stock_obsolete_GET {
                 schema=>$schema,
                 stock_id=>$stock_id,
                 is_saving=>1,
-                sp_person_id => $c->user()->get_object()->get_sp_person_id(),
-                user_name => $c->user()->get_object()->get_username(),
+                sp_person_id => $user_id,
+                user_name => $user_name,
                 modification_note => "Obsolete at ".localtime,
                 is_obsolete => $is_obsolete
             });
@@ -2058,5 +1973,39 @@ sub get_accessions_with_pedigree_GET {
     $c->stash->{rest} = { data => \@accessions_with_pedigree };
 }
 
+sub _check_user_login {
+    my $c = shift;
+    my $check_priv = shift;
+
+    my $user_id;
+    my $user_name;
+    my $user_role;
+    my $session_id = $c->req->param("sgn_session_id");
+    if ($session_id){
+        my $dbh = $c->dbc->dbh;
+        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+        if (!$user_info[0]){
+            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+            $c->detach();
+        }
+        $user_id = $user_info[0];
+        $user_role = $user_info[1];
+        my $p = CXGN::People::Person->new($dbh, $user_id);
+        $user_name = $p->get_username;
+    } else {
+        if (!$c->user){
+            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+            $c->detach();
+        }
+        $user_id = $c->user()->get_object()->get_sp_person_id();
+        $user_name = $c->user()->get_object()->get_username();
+        $user_role = $c->user->get_object->get_user_type();
+    }
+    if ($check_priv && $user_role ne 'curator' && $user_role ne 'submitter' && $user_role ne 'sequencer') {
+        $c->stash->{rest} = {error=>'You must be logged in and have privileges to do this!'};
+        $c->detach();
+    }
+    return ($user_id, $user_name, $user_role);
+}
 
 1;

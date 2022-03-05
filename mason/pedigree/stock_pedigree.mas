@@ -30,9 +30,6 @@ $stock_id
 </%args>
 
 <style>
-.ui-autocomplete {
-    z-index: 2147483647;
-}
 #pdgv-wrap{
     position: relative;
 }

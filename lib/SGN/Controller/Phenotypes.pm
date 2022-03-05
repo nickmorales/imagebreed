@@ -17,7 +17,6 @@ use File::Temp qw / tempfile /;
 use File::Slurp;
 use JSON::Any;
 
-use CXGN::Chado::Stock;
 use SGN::View::Stock qw/stock_link stock_organisms stock_types/;
 
 

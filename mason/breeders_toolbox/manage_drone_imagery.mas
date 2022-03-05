@@ -5,8 +5,6 @@
 <& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch', 'd3.d3v4Min.js', "opencv.opencv" ] &>
 
 <style>
-.ui-autocomplete { z-index:2147483647; }
-
 .straightLine, .hrLine{
   position: absolute;
   background-color: red;

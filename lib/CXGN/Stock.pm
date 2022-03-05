@@ -484,7 +484,12 @@ has 'private_company_id' => (
     is => 'rw',
 );
 
-has 'private_company_is_private' => (
+has 'private_company_name' => (
+    isa => 'Maybe[Str]',
+    is => 'rw',
+);
+
+has 'private_company_stock_is_private' => (
     isa => 'Bool',
     is => 'rw',
     default => 0
@@ -510,6 +515,26 @@ sub BUILD {
         $self->is_obsolete($stock->is_obsolete);
         $self->organization_name($self->_retrieve_stockprop('organization'));
         $self->_retrieve_populations();
+
+        my $q = "SELECT private_company_id, sgn_people.private_company.name, is_private
+            FROM stock
+            JOIN sgn_people.private_company USING(private_company_id)
+            WHERE stock_id=?;";
+        my $h = $self->schema->storage->dbh()->prepare($q);
+        $h->execute($self->stock_id);
+        my ($private_company_id, $private_company_name, $is_private) = $h->fetchrow_array();
+        $self->private_company_id($private_company_id);
+        $self->private_company_name($private_company_name);
+        $self->private_company_stock_is_private($is_private);
+
+        my $organism_rs = $self->schema->resultset("Organism::Organism")->search({ organism_id=>$stock->organism_id });
+        my $organism = $organism_rs->first();
+        $self->organism($organism);
+        $self->organism_abbreviation($organism->abbreviation);
+        $self->genus($organism->genus);
+        $self->species($organism->species);
+        $self->organism_common_name($organism->common_name);
+        $self->organism_comment($organism->comment);
     }
 
 
@@ -615,7 +640,7 @@ sub store {
                 $self->organism_id(),
                 $self->is_obsolete(),
                 $self->private_company_id(),
-                $self->private_company_is_private()
+                $self->private_company_stock_is_private()
             );
 
             my $new_row_rs = $self->schema()->resultset("Stock::Stock")->search({

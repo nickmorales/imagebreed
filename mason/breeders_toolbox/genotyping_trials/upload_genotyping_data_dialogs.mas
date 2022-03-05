@@ -874,12 +874,6 @@ $facilities
 </div>
 
 
-<style>
-
-.ui-autocomplete { z-index:2147483647; }
-
-</style>
-
 <script>
 jQuery(document).ready(function(){
 

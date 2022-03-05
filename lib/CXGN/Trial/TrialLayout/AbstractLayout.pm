@@ -12,8 +12,6 @@ use Data::Dumper;
 use CXGN::Stock::StockLookup;
 use CXGN::Location::LocationLookup;
 use SGN::Model::Cvterm;
-use CXGN::Chado::Stock;
-
 
 has 'schema' => (
     is       => 'rw',

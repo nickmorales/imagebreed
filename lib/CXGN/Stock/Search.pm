@@ -10,6 +10,7 @@ my $stock_search = CXGN::Stock::Search->new({
     bcs_schema=>$schema,
     people_schema=>$people_schema,
     phenome_schema=>$phenome_schema,
+    subscription_model=>$subscription_model,
     match_type=>$match_type,
     match_name=>$match_name,
     uniquename_list=>\@uniquename_list,
@@ -35,8 +36,9 @@ my $stock_search = CXGN::Stock::Search->new({
     stockprop_columns_view=>\%stockprop_columns_view,
     limit=>$limit,
     offset=>$offset,
-    minimal_info=>o  #for only returning stock_id and uniquenames
-    display_pedigree=>1 #to calculate and display pedigree
+    minimal_info=>0  #for only returning stock_id and uniquenames
+    display_pedigree=>1 #to calculate and display pedigree,
+    sp_person_id=>$sp_person_id
 });
 my ($result, $records_total) = $stock_search->search();
 
@@ -82,7 +84,6 @@ use Try::Tiny;
 use Data::Dumper;
 use SGN::Model::Cvterm;
 use CXGN::Stock;
-use CXGN::Chado::Stock;
 use CXGN::Chado::Organism;
 use CXGN::PrivateCompany;
 use JSON;

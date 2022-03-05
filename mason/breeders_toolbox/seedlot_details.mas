@@ -17,12 +17,6 @@ $owners_string => undef
 
 <& /util/import_javascript.mas, classes => [ 'bootstrap_min.js', 'jquery.iframe-post-form','CXGN.List','CXGN.BreedersToolbox.Accessions', 'CXGN.BreedersToolbox.UploadPedigrees', 'jquery', 'jquery.dataTables' ] &>
 
-<style>
-.ui-autocomplete {
-    z-index: 5000;
-}
-</style>
-
 <& /page/page_title.mas, title => 'Seedlot '.$uniquename &>
 
 <&| /page/info_section.mas, title=>"Details",  collapsible => 1, collapsed=>0, subtitle=>"[<a id='edit_seedlot_details_link' >Edit Seedlot Details</a>]" &>
@@ -496,7 +490,7 @@ $owners_string => undef
                 to_new_seedlot_timestamp = jQuery('#transaction_new_seedlot_timestamp').val();
                 to_new_seedlot_description = jQuery('#transaction_new_seedlot_description').val();
                 to_new_seedlot_quality = jQuery('#transaction_new_seedlot_quality').val();
-  
+
                 if (to_new_seedlot_accession_name == '' && to_new_seedlot_cross_name == '') {
                     alert("Please provide an accession name or a cross unique id as the content of the seedlot."); return;
                 }

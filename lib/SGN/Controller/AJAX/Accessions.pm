@@ -482,7 +482,7 @@ sub add_accession_list_POST : Args(0) {
                     user_name => $user_name,
                     modification_note => 'Bulk load of accession information',
                     private_company_id => $_->{private_company_id},
-                    private_company_is_private => $private_company_access_is_private{$_->{private_company_id}}
+                    private_company_stock_is_private => $private_company_access_is_private{$_->{private_company_id}}
                 });
                 my $added_stock_id = $stock->store();
                 push @added_stocks, $added_stock_id;

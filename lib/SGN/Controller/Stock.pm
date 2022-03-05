@@ -187,20 +187,21 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
     ###Check if a stock page can be printed###
 
     my $stock = $c->stash->{stock};
-    my $stock_id = $stock ? $stock->get_stock_id : undef ;
-    my $stock_type = $stock->get_object_row ? $stock->get_object_row->type->name : undef ;
+    my $stock_row = $c->stash->{stock_row};
+    my $stock_id = $stock ? $stock->stock_id : undef ;
+    my $stock_type = $stock_row ? $stock_row->type->name : undef ;
     my $type = 1 if $stock_type && !$stock_type=~ m/population/;
     # print message if stock_id is not valid
     unless ( ( $stock_id =~ m /^\d+$/ ) || ($action eq 'new' && !$stock_id) ) {
         $c->throw_404( "No stock/accession exists for that identifier." );
     }
-    unless ( $stock->get_object_row || !$stock_id && $action && $action eq 'new' ) {
+    unless ( $stock_row || !$stock_id && $action && $action eq 'new' ) {
         $c->throw_404( "No stock/accession exists for that identifier." );
     }
 
     print STDERR "Checkpoint 2: Elapsed ".(time() - $time)."\n";
 
-    my $props = $self->_stockprops($stock);
+    my $props = $self->_stockprops($stock_row);
     # print message if the stock is visible only to certain user roles
     my @logged_user_roles = $logged_user->roles if $logged_user;
     my @prop_roles = @{ $props->{visible_to_role} } if  ref($props->{visible_to_role} );
@@ -225,7 +226,7 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
     print STDERR "Checkpoint 3: Elapsed ".(time() - $time)."\n";
 
     # print message if the stock is obsolete
-    my $obsolete = $stock->get_is_obsolete();
+    my $obsolete = $stock->is_obsolete();
     if ( $obsolete  && !$curator ) {
         #$c->throw(is_client_error => 0,
         #          title             => 'Obsolete stock',
@@ -254,9 +255,6 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
     my $related_image_ids = $self->_related_stock_images($stock, $type);
     my $cview_tmp_dir = $c->tempfiles_subdir('cview');
 
-    my $barcode_tempuri  = $c->tempfiles_subdir('image');
-    my $barcode_tempdir = $c->get_conf('basepath')."/$barcode_tempuri";
-
     my $editable_stockprops = $c->get_conf('editable_stock_props');
     $editable_stockprops .= ",PUI,organization";
     if ($c->stash->{stock_row} && $c->stash->{stock_row}->type && $c->stash->{stock_row}->type->name() ne 'accession') {
@@ -268,7 +266,6 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
     $c->stash(
         template => '/stock/index.mas',
         stockref => {
-            action    => $action,
             stock_id  => $stock_id ,
             user      => $user_role,
             curator   => $curator,
@@ -292,10 +289,7 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
             allele_count   => $c->stash->{allele_count},
             has_pedigree => $c->stash->{has_pedigree},
             editable_stock_props   => $editable_stockprops,
-
         },
-        barcode_tempdir  => $barcode_tempdir,
-        barcode_tempuri   => $barcode_tempuri,
         identifier_prefix => $c->config->{identifier_prefix},
     );
 }
@@ -507,7 +501,7 @@ sub get_stock : Chained('/')  PathPart('stock')  CaptureArgs(1) {
     my ($self, $c, $stock_id) = @_;
 
     $c->stash->{stock_id}  = $stock_id;
-    $c->stash->{stock}     = CXGN::Chado::Stock->new($self->schema, $stock_id);
+    $c->stash->{stock}     = CXGN::Stock->new({schema=>$self->schema, stock_id=>$stock_id});
     $c->stash->{stock_row} = $self->schema->resultset('Stock::Stock')
                                   ->find({ stock_id => $stock_id });
 }
@@ -583,14 +577,14 @@ sub search_stock : Private {
 
 sub get_stock_owner_ids : Private {
     my ( $self, $c ) = @_;
-    my $stock = $c->stash->{stock};
+    my $stock = $c->stash->{stock_row};
     my $owner_ids = $stock ? $self->_stock_owner_ids($stock) : undef;
     $c->stash->{owner_ids} = $owner_ids;
 }
 
 sub get_stock_has_pedigree : Private {
     my ( $self, $c ) = @_;
-    my $stock = $c->stash->{stock};
+    my $stock = $c->stash->{stock_row};
     my $has_pedigree = $stock ? $self->_stock_has_pedigree($stock) : undef;
     $c->stash->{has_pedigree} = $has_pedigree;
 }
@@ -604,9 +598,8 @@ sub get_stock_extended_info : Private {
 ############## HELPER METHODS ######################3
 
 sub _stockprops {
-    my ($self,$stock) = @_;
+    my ($self,$bcs_stock) = @_;
 
-    my $bcs_stock = $stock->get_object_row();
     my $properties ;
     if ($bcs_stock) {
         my $stockprops = $bcs_stock->search_related("stockprops");
@@ -623,7 +616,7 @@ sub _stock_images {
     my @ids;
     my $q = "select distinct image_id, cvterm.name, stock_image.display_order FROM phenome.stock_image JOIN stock USING(stock_id) JOIN cvterm ON(type_id=cvterm_id) WHERE stock_id = ? ORDER BY stock_image.display_order ASC";
     my $h = $self->schema->storage->dbh()->prepare($q);
-    $h->execute($stock->get_stock_id);
+    $h->execute($stock->stock_id);
     while (my ($image_id, $stock_type) = $h->fetchrow_array()){
         push @ids, [$image_id, $stock_type];
     }
@@ -635,29 +628,19 @@ sub _related_stock_images {
     my @ids;
     my $q = "select distinct image_id, cvterm.name FROM phenome.stock_image JOIN stock USING(stock_id) JOIN cvterm ON(type_id=cvterm_id) WHERE stock_id IN (SELECT subject_id FROM stock_relationship WHERE object_id = ? ) OR stock_id IN (SELECT object_id FROM stock_relationship WHERE subject_id = ? )";
     my $h = $self->schema->storage->dbh()->prepare($q);
-    $h->execute($stock->get_stock_id, $stock->get_stock_id);
+    $h->execute($stock->stock_id, $stock->stock_id);
     while (my ($image_id, $stock_type) = $h->fetchrow_array()){
         push @ids, [$image_id, $stock_type];
     }
     return \@ids;
 }
 
-sub _stock_allele_ids {
-    my ($self, $stock) = @_;
-    my $ids = $stock->get_schema->storage->dbh->selectcol_arrayref
-	( "SELECT allele_id FROM phenome.stock_allele WHERE stock_id=? ",
-	  undef,
-	  $stock->get_stock_id
-        );
-    return $ids;
-}
-
 sub _stock_owner_ids {
     my ($self,$stock) = @_;
-    my $ids = $stock->get_schema->storage->dbh->selectcol_arrayref
+    my $ids = $self->schema->storage->dbh->selectcol_arrayref
         ("SELECT sp_person_id FROM phenome.stock_owner WHERE stock_id = ? ",
          undef,
-         $stock->get_stock_id
+         $stock->stock_id
         );
     return $ids;
 }
@@ -666,8 +649,8 @@ sub _stock_editor_info {
     my ($self,$stock) = @_;
     my @owner_info;
     my $q = "SELECT sp_person_id, md_metadata.create_date, md_metadata.modification_note FROM phenome.stock_owner JOIN metadata.md_metadata USING(metadata_id) WHERE stock_id = ? ";
-    my $h = $stock->get_schema->storage->dbh()->prepare($q);
-    $h->execute($stock->get_stock_id);
+    my $h = $self->schema->storage->dbh()->prepare($q);
+    $h->execute($stock->stock_id);
     while (my ($sp_person_id, $timestamp, $modification_note) = $h->fetchrow_array){
         push @owner_info, [$sp_person_id, $timestamp, $modification_note];
     }
@@ -675,8 +658,7 @@ sub _stock_editor_info {
 }
 
 sub _stock_has_pedigree {
-  my ($self, $stock) = @_;
-  my $bcs_stock = $stock->get_object_row;
+  my ($self, $bcs_stock) = @_;
   my $cvterm_female_parent = SGN::Model::Cvterm->get_cvterm_row($self->schema, 'female_parent', 'stock_relationship');
 
   my $cvterm_male_parent = SGN::Model::Cvterm->get_cvterm_row($self->schema, 'male_parent', 'stock_relationship');

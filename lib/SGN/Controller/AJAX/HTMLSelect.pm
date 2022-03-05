@@ -30,7 +30,6 @@ use CXGN::Onto;
 use CXGN::List;
 use CXGN::Trial::Folder;
 use SGN::Model::Cvterm;
-use CXGN::Chado::Stock;
 use CXGN::Stock::Search;
 use CXGN::Stock::Seedlot;
 use CXGN::Dataset;

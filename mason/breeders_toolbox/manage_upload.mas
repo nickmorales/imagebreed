@@ -15,12 +15,6 @@ $design_types => ()
 
 <& /page/page_title.mas, title=>"Upload Data" &>
 
-<style>
-.ui-autocomplete {
-    z-index: 5000;
-}
-</style>
-
 <div class="container-fluid">
 
 <div class="well well-sm">

@@ -14,7 +14,6 @@ use Test::WWW::Mechanize;
 use Data::Dumper;
 use JSON;
 use URI::Encode qw(uri_encode uri_decode);
-use CXGN::Chado::Stock;
 use LWP::UserAgent;
 use CXGN::List;
 use CXGN::Stock::Accession;

@@ -118,7 +118,6 @@ If there are errors, $trial_errors is a HashRef like:
 # use CXGN::Location::LocationLookup;
 # use Data::Dumper;
 # use SGN::Model::Cvterm;
-# use CXGN::Chado::Stock;
 # use JSON;
 
 use CXGN::Trial::TrialLayoutFactory;
@@ -155,7 +154,7 @@ sub new {
     my $factory = CXGN::Trial::TrialLayoutFactory->new();
 
     my $object = $factory->create( $args );
-    
+
     return $object;
 
 }

@@ -12,13 +12,7 @@ $user_role => undef
 
 <& /page/page_title.mas, title=>"Available Seedlots" &>
 
-<style>
-.ui-autocomplete {
-    z-index: 5000;
-}
-</style>
-
-  <& /util/import_javascript.mas, classes => [ 'bootstrap_min.js', 'jquery.iframe-post-form','CXGN.List','CXGN.BreedersToolbox.Accessions', 'CXGN.BreedersToolbox.UploadPedigrees', 'jquery', 'jquery.dataTables', 'CXGN.BreedersToolbox.Crosses', 'jqueryui' ] &>
+<& /util/import_javascript.mas, classes => [ 'bootstrap_min.js', 'jquery.iframe-post-form','CXGN.List','CXGN.BreedersToolbox.Accessions', 'CXGN.BreedersToolbox.UploadPedigrees', 'jquery', 'jquery.dataTables', 'CXGN.BreedersToolbox.Crosses', 'jqueryui' ] &>
 
 <&| /page/info_section.mas, title=>"About Seedlots",  collapsible => 1, collapsed=>1 &>
     <div class="well well-sm">

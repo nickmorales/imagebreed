@@ -13,7 +13,6 @@ use Test::WWW::Mechanize;
 use Data::Dumper;
 use JSON;
 use URI::Encode qw(uri_encode uri_decode);
-use CXGN::Chado::Stock;
 use CXGN::Trial;
 local $Data::Dumper::Indent = 0;
 
