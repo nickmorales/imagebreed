@@ -1973,6 +1973,52 @@ sub get_accessions_with_pedigree_GET {
     $c->stash->{rest} = { data => \@accessions_with_pedigree };
 }
 
+sub stock_edit_details : Local : ActionClass('REST') { }
+sub stock_edit_details_POST :Args(0) {
+    my ($self, $c) = @_;
+    # print STDERR Dumper $c->req->params();
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my $stock_id = $c->req->param('stock_id');
+    my $private_company_id = $c->req->param('private_company_id');
+    my $uniquename = $c->req->param('uniquename');
+    my $description = $c->req->param('description');
+    my $species = $c->req->param('species');
+    my $is_private = $c->req->param('is_private') eq 'True' ? 1 : 0;
+
+    my $stock = CXGN::Stock->new({
+        schema => $schema,
+        phenome_schema => $phenome_schema,
+        stock_id => $stock_id
+    });
+    my $original_private_company_id = $stock->private_company_id();
+
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+    my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($user_id, 0);
+    my %private_companies_hash = map {$_=>1} @$private_companies_ids;
+
+    if (!exists($private_companies_hash{$original_private_company_id})) {
+        $c->stash->{rest} = {error => "You are not in the company that owns this stock!"};
+        $c->detach();
+    }
+
+    my $stock_store = CXGN::Stock->new({
+        schema => $schema,
+        is_saving => 1,
+        phenome_schema => $phenome_schema,
+        stock_id => $stock_id,
+        species => $species,
+        private_company_id => $private_company_id,
+        private_company_stock_is_private => $is_private,
+        uniquename => $uniquename,
+        description => $description
+    });
+    my $return = $stock_store->store();
+
+    $c->stash->{rest} = $return;
+}
+
 sub _check_user_login {
     my $c = shift;
     my $check_priv = shift;

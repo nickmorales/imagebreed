@@ -688,10 +688,20 @@ sub store {
             #DO NOT INSERT POPULATION RELATIONSHIP FROM THE STOCK STORE FUNCTION
             $self->_update_population_relationship();
         }
+        if ($self->private_company_id) {
+            my $q = "UPDATE stock SET private_company_id=? WHERE stock_id=?;";
+            my $h = $self->schema->storage->dbh()->prepare($q);
+            $h->execute($self->private_company_id, $self->stock_id());
+        }
+        if (defined($self->private_company_stock_is_private)) {
+            my $q = "UPDATE stock SET is_private=? WHERE stock_id=?;";
+            my $h = $self->schema->storage->dbh()->prepare($q);
+            $h->execute($self->private_company_stock_is_private, $self->stock_id());
+        }
     }
     $self->associate_owner($self->sp_person_id, $self->sp_person_id, $self->user_name, $self->modification_note);
 
-    return $self->stock_id();
+    return {stock_id => $self->stock_id()};
 }
 
 ########################

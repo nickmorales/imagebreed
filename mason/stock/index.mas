@@ -203,11 +203,11 @@ my $jbrowse_url = $jbrowse_path . "%2Faccessions%2F" . $stock_id . "&tracks=DNA%
                     <div class="col-sm-8">
                         <select class="form-control" id="edit_stock_details_is_private">
 %  if ($stock_is_private eq 'True') {
-                            <option value='0'>False</option>
-                            <option value='1' selected>True</option>
+                            <option value='False'>False</option>
+                            <option value='True' selected>True</option>
 %  } else {
-                            <option value='0' selected>False</option>
-                            <option value='1'>True</option>
+                            <option value='False' selected>False</option>
+                            <option value='True'>True</option>
 %  }
                         </select>
                     </div>
@@ -360,6 +360,54 @@ my $jbrowse_url = $jbrowse_path . "%2Faccessions%2F" . $stock_id . "&tracks=DNA%
 
         jQuery('#stock_detail_edit_button').click(function(){
             jQuery('#edit_stock_details_dialog').modal('show');
+        });
+
+        jQuery('#edit_stock_details_submit').click(function(){
+            var uniquename = jQuery('#edit_stock_details_uniquename').val();
+            var description = jQuery('#edit_stock_details_desc').val();
+            var species = jQuery('#edit_stock_details_species').val();
+            var is_private = jQuery('#edit_stock_details_is_private').val();
+            var private_company_id = jQuery('#edit_stock_details_company_select').val();
+
+            if (uniquename == '') {
+                alert('Please give a unique name!');
+                return false;
+            }
+            if (species == '') {
+                alert('Please give an organism species!');
+                return false;
+            }
+
+            jQuery.ajax({
+                url: '/ajax/stock/stock_edit_details',
+                type: 'POST',
+                beforeSend: function() {
+                    jQuery("#working_modal").modal("show");
+                },
+                data: {
+                    'stock_id':<% $stock_id %>,
+                    'private_company_id':private_company_id,
+                    'uniquename':uniquename,
+                    'description':description,
+                    'species':species,
+                    'is_private':is_private
+                },
+                success: function(response) {
+                    jQuery("#working_modal").modal("hide");
+                    console.log(response);
+                    if (response.error) {
+                        alert(response.error);
+                    }
+                    else {
+                        alert("Successfully edited details!");
+                        location.reload();
+                    }
+                },
+                error: function(response) {
+                    jQuery("#working_modal").modal("hide");
+                    alert("An error occurred editing details!");
+                },
+            });
         });
     });
 </script>
