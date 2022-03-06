@@ -6,7 +6,7 @@ backend for the sgn_people schema
 
 =head1 DESCRIPTION
 
-REST interface for searching people, getting user data, etc. 
+REST interface for searching people, getting user data, etc.
 
 =head1 AUTHOR
 
@@ -102,6 +102,26 @@ sub add_person_role_GET : Args(0) {
     $c->stash->{rest} = {success=>1};
 }
 
+sub remove_person_role : Path('/ajax/people/remove_person_role') : ActionClass('REST') { }
+sub remove_person_role_POST : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $user = $c->user();
+    if (!$user){
+        $c->stash->{rest} = {error=>'You must be logged in first!'};
+        $c->detach;
+    }
+    if (!$user->check_roles("curator")) {
+        $c->stash->{rest} = {error=>'You must be logged in with the correct role!'};
+        $c->detach;
+    }
+    my $sp_person_id = $c->req->param('sp_person_id');
+    my $sp_role_name = $c->req->param('sp_role_name');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $person_roles = CXGN::People::Roles->new({ bcs_schema=>$schema });
+    my $add_role = $person_roles->remove_sp_person_role($sp_person_id, $sp_role_name);
+    $c->stash->{rest} = {success=>1};
+}
+
 ###
 1;
-

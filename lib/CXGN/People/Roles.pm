@@ -83,6 +83,22 @@ sub add_sp_person_role {
 	return;
 }
 
+sub remove_sp_person_role {
+    my $self = shift;
+    my $sp_person_id = shift;
+    my $sp_role_name = shift;
+
+    my $q = "SELECT sp_role_id FROM sgn_people.sp_roles where name=?;";
+    my $sth = $self->bcs_schema->storage->dbh->prepare($q);
+    $sth->execute($sp_role_name);
+    my ($sp_role_id) = $sth->fetchrow_array();
+
+    my $q1 = "DELETE FROM sgn_people.sp_person_roles WHERE sp_person_id=? AND sp_role_id=?;";
+    my $sth1 = $self->bcs_schema->storage->dbh->prepare($q1);
+    $sth1->execute($sp_person_id, $sp_role_id);
+    return;
+}
+
 sub get_sp_persons {
 	my $self = shift;
 	my $dbh = $self->bcs_schema->storage->dbh;

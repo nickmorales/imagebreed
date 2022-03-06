@@ -186,6 +186,7 @@ sub manage_roles : Path("/breeders/manage_roles") Args(0) {
     my $ascii_chars = 1;
     my $breeding_programs = $person_roles->get_breeding_program_roles($ascii_chars);
 
+    # print STDERR Dumper $breeding_programs;
     $c->stash->{roles} = $breeding_programs;
     $c->stash->{template} = '/breeders_toolbox/manage_roles.mas';
 }

@@ -25,8 +25,6 @@ $company_name
 $company_project_is_private
 </%args>
 
-%  my $project_is_private = $company_project_is_private ? 'True' : 'False';
-
 <div class="row">
     <div class="col-sm-8">
 
@@ -183,7 +181,7 @@ $company_project_is_private
                 <td><b>Is Private to Company </b></td>
                 <td>
                     <span id="copmany_project_is_private">
-                        <% $project_is_private %>
+                        <% $company_project_is_private %>
                     </span>
                 </td>
             </tr>

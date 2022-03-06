@@ -106,14 +106,11 @@ sub delete_trial_data_GET : Chained('trial') PathPart('delete') Args(1) {
     my $self = shift;
     my $c = shift;
     my $datatype = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-
-    if ($self->privileges_denied($c)) {
-        $c->stash->{rest} = { error => "You have insufficient access privileges to delete trial data." };
-        return;
-    }
 
     my $error = "";
 
@@ -209,75 +206,67 @@ sub trial_details_GET   {
 sub trial_details_POST  {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
+    my $trial_id = $c->stash->{trial_id};
+    my $trial = $c->stash->{trial};
     my @categories = $c->req->param("categories[]");
 
     my $details = {};
     foreach my $category (@categories) {
-      $details->{$category} = $c->req->param("details[$category]");
+        $details->{$category} = $c->req->param("details[$category]");
     }
 
     if (!%{$details}) {
-      $c->stash->{rest} = { error => "No values were edited, so no changes could be made for this trial's details." };
-      return;
+        $c->stash->{rest} = { error => "No values were edited, so no changes could be made for this trial's details." };
+        return;
     }
     else {
-    print STDERR "Here are the deets: " . Dumper($details) . "\n";
+        print STDERR "Here are the deets: " . Dumper($details) . "\n";
     }
 
-    #check privileges
-    print STDERR " curator status = ".$c->user()->check_roles('curator')." and submitter status = ".$c->user()->check_roles('submitter')."\n";
-    if (!($c->user()->check_roles('curator') || $c->user()->check_roles('submitter'))) {
-      $c->stash->{rest} = { error => 'You do not have the required privileges to edit trial details, trial details can only be edited by accounts with submitter or curator privileges' };
-      return;
+    my $original_private_company_id = $trial->private_company_id();
+
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $c->stash->{schema} } );
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
+
+    if (!exists($allowed_private_company_ids_hash->{$original_private_company_id})) {
+        $c->stash->{rest} = {error => "You are not in the company that owns this stock!"};
+        $c->detach();
+    }
+    elsif ($allowed_private_company_access_hash->{$original_private_company_id} ne 'curator_access' && $allowed_private_company_access_hash->{$original_private_company_id} ne 'submitter_access') {
+        $c->stash->{rest} = {error =>  "You do not have submitter or curator access in this company and cannot edit these details!" };
+        return;
     }
 
-    my $trial_id = $c->stash->{trial_id};
-    my $trial = $c->stash->{trial};
     my $program_object = CXGN::BreedersToolbox::Projects->new( { schema => $c->stash->{schema} });
     my $program_ref = $program_object->get_breeding_programs_by_trial($trial_id);
 
     my $program_array = @$program_ref[0];
     my $breeding_program_name = @$program_array[1];
-    my @user_roles = $c->user->roles();
-    my %has_roles = ();
-    map { $has_roles{$_} = 1; } @user_roles;
-
-    print STDERR "my user roles = @user_roles and trial breeding program = $breeding_program_name \n";
-
-    # policy: curators can change without breeding program association
-    # submitters can change if they are associated with the breeding program
-    # users cannot change
-
-    if (! ( (exists($has_roles{$breeding_program_name}) && exists($has_roles{submitter})) || exists($has_roles{curator}))) {
-
-#    if (!exists($has_roles{$breeding_program_name})) {
-      $c->stash->{rest} = { error => "You need to be either a curator, or a submitter associated with breeding program $breeding_program_name to change the details of this trial." };
-      return;
-    }
 
     # set each new detail that is defined
     #print STDERR Dumper $details;
     eval {
-      if ($details->{name}) { $trial->set_name($details->{name}); }
-      if ($details->{breeding_program}) { $trial->set_breeding_program($details->{breeding_program}); }
-      if ($details->{location}) { $trial->set_location($details->{location}); }
-      if ($details->{year}) { $trial->set_year($details->{year}); }
-      if ($details->{type}) { $trial->set_project_type($details->{type}); }
-      if ($details->{planting_date}) {
-        if ($details->{planting_date} eq 'remove') { $trial->remove_planting_date($trial->get_planting_date()); }
-        else { $trial->set_planting_date($details->{planting_date}); }
-      }
-      if ($details->{harvest_date}) {
-        if ($details->{harvest_date} eq 'remove') { $trial->remove_harvest_date($trial->get_harvest_date()); }
-        else { $trial->set_harvest_date($details->{harvest_date}); }
-      }
-      if ($details->{description}) { $trial->set_description($details->{description}); }
-      if ($details->{field_size}) { $trial->set_field_size($details->{field_size}); }
-      if ($details->{plot_width}) { $trial->set_plot_width($details->{plot_width}); }
-      if ($details->{plot_length}) { $trial->set_plot_length($details->{plot_length}); }
-      if ($details->{plan_to_genotype}) { $trial->set_field_trial_is_planned_to_be_genotyped($details->{plan_to_genotype}); }
-      if ($details->{plan_to_cross}) { $trial->set_field_trial_is_planned_to_cross($details->{plan_to_cross}); }
+        if ($details->{name}) { $trial->set_name($details->{name}); }
+        if ($details->{breeding_program}) { $trial->set_breeding_program($details->{breeding_program}); }
+        if ($details->{location}) { $trial->set_location($details->{location}); }
+        if ($details->{year}) { $trial->set_year($details->{year}); }
+        if ($details->{type}) { $trial->set_project_type($details->{type}); }
+        if ($details->{planting_date}) {
+            if ($details->{planting_date} eq 'remove') { $trial->remove_planting_date($trial->get_planting_date()); }
+            else { $trial->set_planting_date($details->{planting_date}); }
+        }
+        if ($details->{harvest_date}) {
+            if ($details->{harvest_date} eq 'remove') { $trial->remove_harvest_date($trial->get_harvest_date()); }
+            else { $trial->set_harvest_date($details->{harvest_date}); }
+        }
+        if ($details->{description}) { $trial->set_description($details->{description}); }
+        if ($details->{field_size}) { $trial->set_field_size($details->{field_size}); }
+        if ($details->{plot_width}) { $trial->set_plot_width($details->{plot_width}); }
+        if ($details->{plot_length}) { $trial->set_plot_length($details->{plot_length}); }
+        if ($details->{plan_to_genotype}) { $trial->set_field_trial_is_planned_to_be_genotyped($details->{plan_to_genotype}); }
+        if ($details->{plan_to_cross}) { $trial->set_field_trial_is_planned_to_cross($details->{plan_to_cross}); }
     };
 
     if ($details->{plate_format}) { $trial->set_genotyping_plate_format($details->{plate_format}); }
@@ -288,10 +277,10 @@ sub trial_details_POST  {
     if ($details->{raw_data_link}) { $trial->set_raw_data_link($details->{raw_data_link}); }
 
     if ($@) {
-	    $c->stash->{rest} = { error => "An error occurred setting the new trial details: $@" };
+        $c->stash->{rest} = { error => "An error occurred setting the new trial details: $@" };
     }
     else {
-	    $c->stash->{rest} = { success => 1 };
+        $c->stash->{rest} = { success => 1 };
     }
 }
 
@@ -307,15 +296,10 @@ sub traits_assayed : Chained('trial') PathPart('traits_assayed') Args(0) {
 sub trait_phenotypes : Chained('trial') PathPart('trait_phenotypes') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+
     #get userinfo from db
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
-    my $user = $c->user();
-    if (! $c->user) {
-      $c->stash->{rest} = {
-        status => "not logged in"
-      };
-      return;
-    }
     my $display = $c->req->param('display');
     my $trait = $c->req->param('trait');
     my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
@@ -492,11 +476,7 @@ sub trait_histogram : Chained('trial') PathPart('trait_histogram') Args(1) {
 sub get_trial_folder :Chained('trial') PathPart('folder') Args(0) {
     my $self = shift;
     my $c = shift;
-
-    if (!($c->user()->check_roles('curator') || $c->user()->check_roles('submitter'))) {
-	$c->stash->{rest} = { error => 'You do not have the required privileges to edit the trial type of this trial.' };
-	return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $project_parent = $c->stash->{trial}->get_folder();
 
@@ -561,31 +541,7 @@ sub trial_seedlots : Chained('trial') PathPart('seedlots') Args(0) {
 sub trial_used_seedlots_upload : Chained('trial') PathPart('upload_used_seedlots') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this seedlot info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this seedlot info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_used_seedlot_file');
@@ -675,31 +631,7 @@ sub trial_used_seedlots_upload : Chained('trial') PathPart('upload_used_seedlots
 sub trial_upload_plants : Chained('trial') PathPart('upload_plants') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this plants info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this plants info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_plants_file');
@@ -784,31 +716,7 @@ sub trial_upload_plants : Chained('trial') PathPart('upload_plants') Args(0) {
 sub trial_upload_plants_subplot : Chained('trial') PathPart('upload_plants_subplot') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this plants info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this plants info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_plants_subplot_file');
@@ -893,31 +801,7 @@ sub trial_upload_plants_subplot : Chained('trial') PathPart('upload_plants_subpl
 sub trial_upload_subplots : Chained('trial') PathPart('upload_subplots') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this subplots info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this subplots info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_subplots_file');
@@ -1002,31 +886,7 @@ sub trial_upload_subplots : Chained('trial') PathPart('upload_subplots') Args(0)
 sub trial_upload_plants_with_index_number : Chained('trial') PathPart('upload_plants_with_plant_index_number') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this plant info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this plant info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_plants_with_index_number_file');
@@ -1112,31 +972,7 @@ sub trial_upload_plants_with_index_number : Chained('trial') PathPart('upload_pl
 sub trial_upload_plants_subplot_with_index_number : Chained('trial') PathPart('upload_plants_subplot_with_plant_index_number') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this plant info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this plant info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_plants_subplot_with_index_number_file');
@@ -1222,31 +1058,7 @@ sub trial_upload_plants_subplot_with_index_number : Chained('trial') PathPart('u
 sub trial_upload_subplots_with_index_number : Chained('trial') PathPart('upload_subplots_with_subplot_index_number') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this subplot info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this subplot info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_subplots_with_index_number_file');
@@ -1332,31 +1144,7 @@ sub trial_upload_subplots_with_index_number : Chained('trial') PathPart('upload_
 sub trial_upload_plants_with_number_of_plants : Chained('trial') PathPart('upload_plants_with_number_of_plants') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this plant info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this plant info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_plants_with_number_of_plants_file');
@@ -1442,31 +1230,7 @@ sub trial_upload_plants_with_number_of_plants : Chained('trial') PathPart('uploa
 sub trial_upload_plants_subplot_with_number_of_plants : Chained('trial') PathPart('upload_plants_subplot_with_number_of_plants') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this plant info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this plant info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_plants_subplot_with_number_of_plants_file');
@@ -1552,31 +1316,7 @@ sub trial_upload_plants_subplot_with_number_of_plants : Chained('trial') PathPar
 sub trial_upload_subplots_with_number_of_subplots : Chained('trial') PathPart('upload_subplots_with_number_of_subplots') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this subplot info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this subplot info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_subplots_with_number_of_subplots_file');
@@ -1662,31 +1402,7 @@ sub trial_upload_subplots_with_number_of_subplots : Chained('trial') PathPart('u
 sub trial_plot_gps_upload : Chained('trial') PathPart('upload_plot_gps') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this seedlot info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this seedlot info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
@@ -1806,33 +1522,10 @@ sub trial_plot_gps_upload : Chained('trial') PathPart('upload_plot_gps') Args(0)
 sub trial_change_plot_accessions_upload : Chained('trial') PathPart('change_plot_accessions_using_file') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
     my $trial_id = $c->stash->{trial_id};
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this seedlot info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this seedlot info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
 
     my $upload = $c->req->upload('trial_design_change_accessions_file');
     my $subdirectory = "trial_change_plot_accessions_upload";
@@ -1952,31 +1645,7 @@ sub trial_change_plot_accessions_upload : Chained('trial') PathPart('change_plot
 sub trial_additional_file_upload : Chained('trial') PathPart('upload_additional_file') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload additional trials to a file!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload additional files to a trial!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $upload = $c->req->upload('trial_upload_additional_file');
     my $subdirectory = "trial_additional_file_upload";
@@ -2015,11 +1684,7 @@ sub trial_additional_file_upload : Chained('trial') PathPart('upload_additional_
 sub get_trial_additional_file_uploaded : Chained('trial') PathPart('get_uploaded_additional_file') Args(0) {
     my $self = shift;
     my $c = shift;
-
-    if (!$c->user){
-        $c->stash->{rest} = {error=>'You must be logged in to see uploaded additional files!'};
-        $c->detach();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
 
     my $files = $c->stash->{trial}->get_additional_uploaded_files();
     $c->stash->{rest} = {success=>1, files=>$files};
@@ -2175,11 +1840,7 @@ sub trial_treatments : Chained('trial') PathPart('treatments') Args(0) {
 sub trial_add_treatment : Chained('trial') PathPart('add_treatment') Args(0) {
     my $self = shift;
     my $c = shift;
-
-    if (!$c->user()){
-        $c->stash->{rest} = {error => "You must be logged in to add a treatment"};
-        $c->detach();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
     my $trial_id = $c->stash->{trial_id};
@@ -2205,7 +1866,7 @@ sub trial_add_treatment : Chained('trial') PathPart('add_treatment') Args(0) {
         new_treatment_date => $new_treatment_date,
         new_treatment_year => $new_treatment_year,
         new_treatment_type => $new_treatment_type,
-        operator => $c->user()->get_object()->get_username()
+        operator => $user_name
 	});
     my $error = $trial_design_store->store();
     if ($error){
@@ -2397,26 +2058,22 @@ sub trial_completion_phenotype_section : Chained('trial') PathPart('trial_comple
 }
 
 sub delete_field_coord : Path('/ajax/phenotype/delete_field_coords') Args(0) {
-  my $self = shift;
-	my $c = shift;
-	my $trial_id = $c->req->param('trial_id');
+    my $self = shift;
+    my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
-  my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $trial_id = $c->req->param('trial_id');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema');
 
-  if ($self->privileges_denied($c)) {
-    $c->stash->{rest} = { error => "You have insufficient access privileges to update this map." };
-    return;
-  }
-
-  my $fieldmap = CXGN::Trial::FieldMap->new({
-    bcs_schema => $schema,
-    trial_id => $trial_id,
-  });
-  my $delete_return_error = $fieldmap->delete_fieldmap();
-  if ($delete_return_error) {
-    $c->stash->{rest} = { error => $delete_return_error };
-    return;
-  }
+    my $fieldmap = CXGN::Trial::FieldMap->new({
+        bcs_schema => $schema,
+        trial_id => $trial_id,
+    });
+    my $delete_return_error = $fieldmap->delete_fieldmap();
+    if ($delete_return_error) {
+        $c->stash->{rest} = { error => $delete_return_error };
+        return;
+    }
 
     my $dbh = $c->dbc->dbh();
     my $bs = CXGN::BreederSearch->new( { dbh=>$dbh, dbname=>$c->config->{dbname}, } );
@@ -2428,48 +2085,47 @@ sub delete_field_coord : Path('/ajax/phenotype/delete_field_coords') Args(0) {
 }
 
 sub replace_trial_stock : Chained('trial') PathPart('replace_stock') Args(0) {
-  my $self = shift;
-  my $c = shift;
-  my $schema = $c->dbic_schema('Bio::Chado::Schema');
-  my $old_stock_id = $c->req->param('old_stock_id');
-  my $new_stock = $c->req->param('new_stock');
-  my $trial_stock_type = $c->req->param('trial_stock_type');
-  my $trial_id = $c->stash->{trial_id};
+    my $self = shift;
+    my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
-  if ($self->privileges_denied($c)) {
-    $c->stash->{rest} = { error => "You have insufficient access privileges to edit this map." };
-    return;
-  }
+    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $old_stock_id = $c->req->param('old_stock_id');
+    my $new_stock = $c->req->param('new_stock');
+    my $trial_stock_type = $c->req->param('trial_stock_type');
+    my $trial_id = $c->stash->{trial_id};
 
-  if (!$new_stock){
-    $c->stash->{rest} = { error => "Provide new stock name." };
-    return;
-  }
+    if (!$new_stock){
+        $c->stash->{rest} = { error => "Provide new stock name." };
+        return;
+    }
 
-  my $replace_stock_fieldmap = CXGN::Trial::FieldMap->new({
-    bcs_schema => $schema,
-    trial_id => $trial_id,
-    trial_stock_type => $trial_stock_type,
-  });
+    my $replace_stock_fieldmap = CXGN::Trial::FieldMap->new({
+        bcs_schema => $schema,
+        trial_id => $trial_id,
+        trial_stock_type => $trial_stock_type,
+    });
 
-  my $return_error = $replace_stock_fieldmap->update_fieldmap_precheck();
-     if ($return_error) {
-       $c->stash->{rest} = { error => $return_error };
-       return;
-     }
+    my $return_error = $replace_stock_fieldmap->update_fieldmap_precheck();
+    if ($return_error) {
+        $c->stash->{rest} = { error => $return_error };
+        return;
+    }
 
-  my $replace_return_error = $replace_stock_fieldmap->replace_trial_stock_fieldMap($new_stock, $old_stock_id);
-  if ($replace_return_error) {
-    $c->stash->{rest} = { error => $replace_return_error };
-    return;
-  }
+    my $replace_return_error = $replace_stock_fieldmap->replace_trial_stock_fieldMap($new_stock, $old_stock_id);
+    if ($replace_return_error) {
+        $c->stash->{rest} = { error => $replace_return_error };
+        return;
+    }
 
-  $c->stash->{rest} = { success => 1};
+    $c->stash->{rest} = { success => 1};
 }
 
 sub replace_plot_accession : Chained('trial') PathPart('replace_plot_accessions') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
     my $old_accession = $c->req->param('old_accession');
     my $new_accession = $c->req->param('new_accession');
@@ -2478,16 +2134,6 @@ sub replace_plot_accession : Chained('trial') PathPart('replace_plot_accessions'
     my $new_plot_name = $c->req->param('new_plot_name');
     my $override = $c->req->param('override');
     my $trial_id = $c->stash->{trial_id};
-
-    if (!$c->user){
-        $c->stash->{rest} = {error=>'You must be logged in to change a plot accession!'};
-        return;
-    }
-
-    if ($self->privileges_denied($c)) {
-        $c->stash->{rest} = { error => "You have insufficient access privileges to edit this map." };
-        return;
-    }
 
     if (!$new_accession) {
         $c->stash->{rest} = { error => "Provide new accession name." };
@@ -2501,16 +2147,10 @@ sub replace_plot_accession : Chained('trial') PathPart('replace_plot_accessions'
 
     my $return_error = $replace_plot_accession_fieldmap->update_fieldmap_precheck();
 
-    if ($c->user()->check_roles("curator") and $return_error) {
-        if ($override eq "check") {
-            $c->stash->{rest} = { warning => "curator warning" };
-            return;
-        }
-    } elsif ($return_error) {
+    if ($return_error) {
         $c->stash->{rest} = { error => $return_error};
         return;
     }
-
 
     my $plot_of_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot_of', 'stock_relationship')->cvterm_id();
     my $accession_rs = $schema->resultset("Stock::Stock")->search({
@@ -2542,123 +2182,112 @@ sub replace_plot_accession : Chained('trial') PathPart('replace_plot_accessions'
 }
 
 sub replace_well_accession : Chained('trial') PathPart('replace_well_accessions') Args(0) {
-  my $self = shift;
-  my $c = shift;
-  my $schema = $c->dbic_schema('Bio::Chado::Schema');
-  my $old_accession = $c->req->param('old_accession');
-  my $new_accession = $c->req->param('new_accession');
-  my $old_plot_id = $c->req->param('old_plot_id');
-  my $old_plot_name = $c->req->param('old_plot_name');
-  my $trial_id = $c->stash->{trial_id};
+    my $self = shift;
+    my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
-  if ($self->privileges_denied($c)) {
-    $c->stash->{rest} = { error => "You have insufficient access privileges to edit this map." };
-    return;
-  }
+    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $old_accession = $c->req->param('old_accession');
+    my $new_accession = $c->req->param('new_accession');
+    my $old_plot_id = $c->req->param('old_plot_id');
+    my $old_plot_name = $c->req->param('old_plot_name');
+    my $trial_id = $c->stash->{trial_id};
 
-  if (!$new_accession){
-    $c->stash->{rest} = { error => "Provide new accession name." };
-    return;
-  }
-  my $cxgn_project_type = $c->stash->{trial}->get_cxgn_project_type();
+    if (!$new_accession){
+        $c->stash->{rest} = { error => "Provide new accession name." };
+        return;
+    }
+    my $cxgn_project_type = $c->stash->{trial}->get_cxgn_project_type();
 
-  my $replace_plot_accession_fieldmap = CXGN::Trial::FieldMap->new({
-    bcs_schema => $schema,
-    trial_id => $trial_id,
-    new_accession => $new_accession,
-    old_accession => $old_accession,
-    old_plot_id => $old_plot_id,
-    old_plot_name => $old_plot_name,
-    experiment_type => $cxgn_project_type->{experiment_type}
-  });
+    my $replace_plot_accession_fieldmap = CXGN::Trial::FieldMap->new({
+        bcs_schema => $schema,
+        trial_id => $trial_id,
+        new_accession => $new_accession,
+        old_accession => $old_accession,
+        old_plot_id => $old_plot_id,
+        old_plot_name => $old_plot_name,
+        experiment_type => $cxgn_project_type->{experiment_type}
+    });
 
-  my $return_error = $replace_plot_accession_fieldmap->update_fieldmap_precheck();
-     if ($return_error) {
-       $c->stash->{rest} = { error => $return_error };
-       return;
-     }
+    my $return_error = $replace_plot_accession_fieldmap->update_fieldmap_precheck();
+    if ($return_error) {
+        $c->stash->{rest} = { error => $return_error };
+        return;
+    }
 
-  print "Calling Replace Function...............\n";
-  my $replace_return_error = $replace_plot_accession_fieldmap->replace_plot_accession_fieldMap();
-  if ($replace_return_error) {
-    $c->stash->{rest} = { error => $replace_return_error };
-    return;
-  }
+    print "Calling Replace Function...............\n";
+    my $replace_return_error = $replace_plot_accession_fieldmap->replace_plot_accession_fieldMap();
+    if ($replace_return_error) {
+        $c->stash->{rest} = { error => $replace_return_error };
+        return;
+    }
 
-  print "OldAccession: $old_accession, NewAcc: $new_accession, OldWellId: $old_plot_id\n";
-  $c->stash->{rest} = { success => 1};
+    print "OldAccession: $old_accession, NewAcc: $new_accession, OldWellId: $old_plot_id\n";
+    $c->stash->{rest} = { success => 1};
 }
 
 sub substitute_stock : Chained('trial') PathPart('substitute_stock') Args(0) {
-  my $self = shift;
-	my $c = shift;
-  my $schema = $c->dbic_schema('Bio::Chado::Schema');
-  my $trial_id = $c->stash->{trial_id};
-  my $plot_1_info = $c->req->param('plot_1_info');
-  my $plot_2_info = $c->req->param('plot_2_info');
+    my $self = shift;
+    my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
-  my ($plot_1_id, $accession_1) = split /,/, $plot_1_info;
-  my ($plot_2_id, $accession_2) = split /,/, $plot_2_info;
+    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $trial_id = $c->stash->{trial_id};
+    my $plot_1_info = $c->req->param('plot_1_info');
+    my $plot_2_info = $c->req->param('plot_2_info');
 
-  if ($self->privileges_denied($c)) {
-    $c->stash->{rest} = { error => "You have insufficient access privileges to update this map." };
-    return;
-  }
+    my ($plot_1_id, $accession_1) = split /,/, $plot_1_info;
+    my ($plot_2_id, $accession_2) = split /,/, $plot_2_info;
 
-  if ($plot_1_id == $plot_2_id){
-    $c->stash->{rest} = { error => "Choose a different plot/stock in 'select plot 2' to perform this operation." };
-    return;
-  }
+    if ($plot_1_id == $plot_2_id){
+        $c->stash->{rest} = { error => "Choose a different plot/stock in 'select plot 2' to perform this operation." };
+        return;
+    }
 
-  my @controls;
-  my @ids;
+    my @controls;
+    my @ids;
 
-  my $fieldmap = CXGN::Trial::FieldMap->new({
-    bcs_schema => $schema,
-    trial_id => $trial_id,
-    first_plot_selected => $plot_1_id,
-    second_plot_selected => $plot_2_id,
-    first_accession_selected => $accession_1,
-    second_accession_selected => $accession_2,
-  });
+    my $fieldmap = CXGN::Trial::FieldMap->new({
+        bcs_schema => $schema,
+        trial_id => $trial_id,
+        first_plot_selected => $plot_1_id,
+        second_plot_selected => $plot_2_id,
+        first_accession_selected => $accession_1,
+        second_accession_selected => $accession_2,
+    });
 
-  my $return_error = $fieldmap->update_fieldmap_precheck();
-  if ($return_error) {
-    $c->stash->{rest} = { error => $return_error };
-    return;
-  }
+    my $return_error = $fieldmap->update_fieldmap_precheck();
+    if ($return_error) {
+        $c->stash->{rest} = { error => $return_error };
+        return;
+    }
 
-  my $return_check_error = $fieldmap->substitute_accession_precheck();
-  if ($return_check_error) {
-    $c->stash->{rest} = { error => $return_check_error };
-    return;
-  }
+    my $return_check_error = $fieldmap->substitute_accession_precheck();
+    if ($return_check_error) {
+        $c->stash->{rest} = { error => $return_check_error };
+        return;
+    }
 
-  my $update_return_error = $fieldmap->substitute_accession_fieldmap();
-  if ($update_return_error) {
-    $c->stash->{rest} = { error => $update_return_error };
-    return;
-  }
+    my $update_return_error = $fieldmap->substitute_accession_fieldmap();
+    if ($update_return_error) {
+        $c->stash->{rest} = { error => $update_return_error };
+        return;
+    }
 
-  $c->stash->{rest} = { success => 1};
+    $c->stash->{rest} = { success => 1};
 }
 
 sub create_plant_plot_entries : Chained('trial') PathPart('create_plant_entries') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
     my $plants_per_plot = $c->req->param("plants_per_plot") || 8;
     my $inherits_plot_treatments = $c->req->param("inherits_plot_treatments");
     my $plants_with_treatments;
     if($inherits_plot_treatments eq '1'){
         $plants_with_treatments = 1;
     }
-
-    if (my $error = $self->privileges_denied($c)) {
-        $c->stash->{rest} = { error => $error };
-        return;
-    }
-
-    my $user_id = $c->user->get_object->get_sp_person_id();
 
     if (!$plants_per_plot || $plants_per_plot > 500) {
         $c->stash->{rest} = { error => "Plants per plot number is required and must be smaller than 500." };
@@ -2685,17 +2314,14 @@ sub create_plant_plot_entries : Chained('trial') PathPart('create_plant_entries'
 sub edit_management_factor_details : Chained('trial') PathPart('edit_management_factor_details') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $treatment_date = $c->req->param("treatment_date");
     my $treatment_name = $c->req->param("treatment_name");
     my $treatment_description = $c->req->param("treatment_description");
     my $treatment_type = $c->req->param("treatment_type");
     my $treatment_year = $c->req->param("treatment_year");
-
-    if (my $error = $self->privileges_denied($c)) {
-        $c->stash->{rest} = { error => $error };
-        return;
-    }
 
     if (!$treatment_name) {
         $c->stash->{rest} = { error => 'No treatment name given!' };
@@ -2741,8 +2367,8 @@ sub edit_management_factor_details : Chained('trial') PathPart('edit_management_
 sub create_plant_subplot_entries : Chained('trial') PathPart('create_plant_subplot_entries') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $plant_owner = $c->user->get_object->get_sp_person_id;
-    my $plant_owner_username = $c->user->get_object->get_username;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
     my $plants_per_subplot = $c->req->param("plants_per_subplot") || 8;
     my $inherits_plot_treatments = $c->req->param("inherits_plot_treatments");
     my $plants_with_treatments;
@@ -2750,17 +2376,11 @@ sub create_plant_subplot_entries : Chained('trial') PathPart('create_plant_subpl
         $plants_with_treatments = 1;
     }
 
-    if (my $error = $self->privileges_denied($c)) {
-        $c->stash->{rest} = { error => $error };
-        return;
-    }
-
     if (!$plants_per_subplot || $plants_per_subplot > 500) {
         $c->stash->{rest} = { error => "Plants per subplot number is required and must be smaller than 500." };
         return;
     }
 
-    my $user_id = $c->user->get_object->get_sp_person_id();
     my $t = CXGN::Trial->new( { bcs_schema => $c->dbic_schema("Bio::Chado::Schema"), trial_id => $c->stash->{trial_id} });
 
     if ($t->create_plant_subplot_entities($plants_per_subplot, $plants_with_treatments, $user_id)) {
@@ -2781,8 +2401,8 @@ sub create_plant_subplot_entries : Chained('trial') PathPart('create_plant_subpl
 sub create_subplot_entries : Chained('trial') PathPart('create_subplot_entries') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $subplot_owner = $c->user->get_object->get_sp_person_id;
-    my $subplot_owner_username = $c->user->get_object->get_username;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
     my $subplots_per_plot = $c->req->param("subplots_per_plot") || 4;
     my $inherits_plot_treatments = $c->req->param("inherits_plot_treatments");
     my $subplots_with_treatments;
@@ -2790,19 +2410,12 @@ sub create_subplot_entries : Chained('trial') PathPart('create_subplot_entries')
         $subplots_with_treatments = 1;
     }
 
-    if (my $error = $self->privileges_denied($c)) {
-        $c->stash->{rest} = { error => $error };
-        return;
-    }
-
     if (!$subplots_per_plot || $subplots_per_plot > 500) {
         $c->stash->{rest} = { error => "Subplots per plot number is required and must be smaller than 500." };
         return;
     }
 
-    my $user_id = $c->user->get_object->get_sp_person_id();
-    my $t = CXGN::Trial->new( { bcs_schema => $c->dbic_schema("Bio::Chado::Schema"), trial_id => $c->stash->{trial_id} });
-
+    my $t = $c->stash->{trial};
     if ($t->create_subplot_entities($subplots_per_plot, $subplots_with_treatments, $user_id)) {
 
         my $dbh = $c->dbc->dbh();
@@ -2821,17 +2434,14 @@ sub create_subplot_entries : Chained('trial') PathPart('create_subplot_entries')
 sub create_tissue_samples : Chained('trial') PathPart('create_tissue_samples') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
     my $tissues_per_plant = $c->req->param("tissue_samples_per_plant") || 3;
     my $tissue_names = decode_json $c->req->param("tissue_samples_names");
     my $inherits_plot_treatments = $c->req->param("inherits_plot_treatments");
     my $tissues_with_treatments;
     if($inherits_plot_treatments eq '1'){
         $tissues_with_treatments = 1;
-    }
-
-    if (my $error = $self->privileges_denied($c)) {
-        $c->stash->{rest} = { error => $error };
-        $c->detach;
     }
 
     if (!$c->stash->{trial}->has_plant_entries){
@@ -2849,7 +2459,6 @@ sub create_tissue_samples : Chained('trial') PathPart('create_tissue_samples') A
         $c->detach;
     }
 
-    my $user_id = $c->user->get_object->get_sp_person_id();
     my $t = CXGN::Trial->new({ bcs_schema => $c->dbic_schema("Bio::Chado::Schema"), trial_id => $c->stash->{trial_id} });
 
     if ($t->create_tissue_samples($tissue_names, $inherits_plot_treatments, $user_id)) {
@@ -2866,83 +2475,12 @@ sub create_tissue_samples : Chained('trial') PathPart('create_tissue_samples') A
 
 }
 
-sub privileges_denied {
-    my $self = shift;
-    my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $trial_id = $c->stash->{trial_id};
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            return 'You must be logged in to do this!';
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-
-        return 0;
-    } else {
-        if (!$c->user){
-            return 'You must be logged in to do this!';
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
-
-    if ($c->user->check_roles('curator')) {
-        return 0;
-    }
-
-    my $breeding_programs = $c->stash->{trial}->get_breeding_programs();
-
-    if ( ($c->user->check_roles('submitter')) && ( $c->user->check_roles($breeding_programs->[0]->[1]))) {
-        return 0;
-    }
-    return "You have insufficient privileges to modify or delete this trial.";
-}
-
 # loading field coordinates
 
 sub upload_trial_coordinates : Path('/ajax/breeders/trial/coordsupload') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload plot coordinates (row and column number)!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload plot coordinates (row and column number)!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
-
-    if ($user_role ne 'curator' && $user_role ne 'submitter') {
-        $c->stash->{rest} = {error =>  "You have insufficient privileges to add coordinates (row and column numbers)." };
-        $c->detach();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
 
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
@@ -3252,17 +2790,10 @@ sub get_male_plants : Chained('trial') PathPart('get_male_plants') Args(0) {
 sub delete_all_crosses_in_crossingtrial : Chained('trial') PathPart('delete_all_crosses_in_crossingtrial') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $trial_id = $c->stash->{trial_id};
-
-    if (!$c->user()){
-        $c->stash->{rest} = { error => "You must be logged in to delete crosses" };
-        $c->detach();
-    }
-    if (!$c->user()->check_roles("curator")) {
-        $c->stash->{rest} = { error => "You do not have the correct role to delete crosses. Please contact us." };
-        $c->detach();
-    }
 
     my $trial = CXGN::Cross->new({schema => $schema, trial_id => $trial_id});
 
@@ -3463,6 +2994,8 @@ sub phenotype_heatmap : Chained('trial') PathPart('heatmap') Args(0) {
 sub get_suppress_plot_phenotype : Chained('trial') PathPart('suppress_phenotype') Args(0) {
   my $self = shift;
   my $c = shift;
+  my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
   my $schema = $c->dbic_schema('Bio::Chado::Schema');
   my $plot_name = $c->req->param('plot_name');
   my $plot_pheno_value = $c->req->param('phenotype_value');
@@ -3470,14 +3003,8 @@ sub get_suppress_plot_phenotype : Chained('trial') PathPart('suppress_phenotype'
   my $phenotype_id = $c->req->param('phenotype_id');
   my $trial_id = $c->stash->{trial_id};
   my $trial = $c->stash->{trial};
-  my $user_name = $c->user()->get_object()->get_username();
   my $time = DateTime->now();
   my $timestamp = $time->ymd()."_".$time->hms();
-
-  if ($self->privileges_denied($c)) {
-    $c->stash->{rest} = { error => "You have insufficient access privileges to suppress this phenotype." };
-    return;
-  }
 
   my $suppress_return_error = $trial->suppress_plot_phenotype($trait_id, $plot_name, $plot_pheno_value, $phenotype_id, $user_name, $timestamp);
   if ($suppress_return_error) {
@@ -3491,21 +3018,12 @@ sub get_suppress_plot_phenotype : Chained('trial') PathPart('suppress_phenotype'
 sub delete_single_assayed_trait : Chained('trial') PathPart('delete_single_trait') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
     my $pheno_ids = $c->req->param('pheno_id') ? JSON::decode_json($c->req->param('pheno_id')) : [];
     my $trait_ids = $c->req->param('traits_id') ? JSON::decode_json($c->req->param('traits_id')) : [];
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
     my $trial = $c->stash->{trial};
-
-    if (!$c->user()) {
-        print STDERR "User not logged in... not deleting trait.\n";
-        $c->stash->{rest} = {error => "You need to be logged in to delete trait." };
-        return;
-    }
-
-    if ($self->privileges_denied($c)) {
-        $c->stash->{rest} = { error => "You have insufficient access privileges to delete assayed trait for this trial." };
-        return;
-    }
 
     my $delete_trait_return_error = $trial->delete_assayed_trait($c->config->{basepath}, $c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, $pheno_ids, $trait_ids);
 
@@ -3631,36 +3149,12 @@ sub crossing_trial_from_field_trial : Chained('trial') PathPart('crossing_trial_
 sub trial_correlate_traits : Chained('trial') PathPart('correlate_traits') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $trait_ids = decode_json $c->req->param('trait_ids');
     my $obsunit_level = $c->req->param('observation_unit_level');
     my $correlation_type = $c->req->param('correlation_type');
-
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this analysis!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this analysis!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
 
     my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
         'MaterializedViewTable',
@@ -3762,6 +3256,8 @@ sub trial_correlate_traits : Chained('trial') PathPart('correlate_traits') Args(
 sub trial_plot_time_series_accessions : Chained('trial') PathPart('plot_time_series_accessions') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $trait_ids = decode_json $c->req->param('trait_ids');
     my $accession_ids = $c->req->param('accession_ids') ne 'null' ? decode_json $c->req->param('accession_ids') : [];
@@ -3769,32 +3265,6 @@ sub trial_plot_time_series_accessions : Chained('trial') PathPart('plot_time_ser
     my $data_level = $c->req->param('data_level');
     my $draw_error_bars = $c->req->param('draw_error_bars');
     my $use_cumulative_phenotype = $c->req->param('use_cumulative_phenotype');
-
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this analysis!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this analysis!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
 
     my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
         'MaterializedViewTable',
@@ -3965,38 +3435,14 @@ sub trial_plot_time_series_accessions : Chained('trial') PathPart('plot_time_ser
 sub trial_accessions_rank : Chained('trial') PathPart('accessions_rank') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $trait_ids = decode_json $c->req->param('trait_ids');
     my $trait_weights = decode_json $c->req->param('trait_weights');
     my $accession_ids = $c->req->param('accession_ids') ne 'null' ? decode_json $c->req->param('accession_ids') : [];
     my $trait_format = $c->req->param('trait_format');
     my $data_level = $c->req->param('data_level');
-
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this analysis!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this analysis!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
 
     my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
         'MaterializedViewTable',
@@ -4060,6 +3506,8 @@ sub trial_accessions_rank : Chained('trial') PathPart('accessions_rank') Args(0)
 sub trial_genotype_comparison : Chained('trial') PathPart('genotype_comparison') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+
     print STDERR Dumper $c->req->params();
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
@@ -4071,32 +3519,6 @@ sub trial_genotype_comparison : Chained('trial') PathPart('genotype_comparison')
     my $data_level = $c->req->param('data_level');
     my $genotype_filter_string = $c->req->param('genotype_filter');
     my $compute_from_parents = $c->req->param('compute_from_parents') eq 'yes' ? 1 : 0;
-
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this analysis!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this analysis!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
 
     my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
         'MaterializedViewTable',
@@ -4303,38 +3725,14 @@ sub trial_genotype_comparison : Chained('trial') PathPart('genotype_comparison')
 sub trial_calculate_numerical_derivative : Chained('trial') PathPart('calculate_numerical_derivative') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $trait_ids = decode_json $c->req->param('trait_ids');
     my $derivative = $c->req->param('derivative');
     my $data_level = $c->req->param('data_level');
-
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this analysis!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this analysis!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
 
     my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
         'MaterializedViewTable',
@@ -4668,6 +4066,8 @@ sub upload_entry_number_template : Path('/ajax/breeders/trial_entry_numbers/uplo
 sub upload_entry_number_template_POST : Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+
     my $upload = $c->req->upload('upload_entry_numbers_file');
     my $ignore_warnings = $c->req->param('ignore_warnings') eq 'true';
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
@@ -4678,16 +4078,6 @@ sub upload_entry_number_template_POST : Args(0) {
     my $upload_tempfile = $upload->tempname;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
-
-    ## Make sure user is logged in
-    if ( !$c->user() ) {
-        push(@errors, "You need to be logged in to upload entry numbers.");
-        $c->stash->{rest} = { filename => $upload_original_name, error => \@errors };
-        return;
-    }
-
-    my $user_id = $c->user()->get_object()->get_sp_person_id();
-    my $user_role = $c->user->get_object->get_user_type();
 
     ## Store uploaded temporary file in archive
     my $uploader = CXGN::UploadFile->new({
@@ -4745,6 +4135,44 @@ sub upload_entry_number_template_POST : Args(0) {
         warning => $parse_warnings->{'warning_messages'}
     };
     return;
+}
+
+sub _check_user_login {
+    my $c = shift;
+    my $check_priv = shift;
+
+    my $user_id;
+    my $user_name;
+    my $user_role;
+    my $session_id = $c->req->param("sgn_session_id");
+
+    if ($session_id){
+        my $dbh = $c->dbc->dbh;
+        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+        if (!$user_info[0]){
+            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+            $c->detach();
+        }
+        $user_id = $user_info[0];
+        $user_role = $user_info[1];
+        my $p = CXGN::People::Person->new($dbh, $user_id);
+        $user_name = $p->get_username;
+    } else{
+        if (!$c->user){
+            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
+            $c->detach();
+        }
+        $user_id = $c->user()->get_object()->get_sp_person_id();
+        $user_name = $c->user()->get_object()->get_username();
+        $user_role = $c->user->get_object->get_user_type();
+    }
+
+    if ($check_priv && $user_role ne 'curator' && $user_role ne 'submitter' && $user_role ne 'sequencer') {
+        $c->stash->{rest} = {error=>'You must be logged in and have privileges to do this!'};
+        $c->detach();
+    }
+
+    return ($user_id, $user_name, $user_role);
 }
 
 1;

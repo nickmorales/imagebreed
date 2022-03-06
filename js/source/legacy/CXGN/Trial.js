@@ -301,6 +301,10 @@ function edit_trial_details(){
     get_select_box('years', 'edit_trial_year', { 'default' : default_year, 'auto_generate': 1 });
     jQuery('#edit_trial_year').data("originalValue", default_year);
 
+    var default_company = document.getElementById("edit_trial_company").getAttribute("value");
+    get_select_box('private_companies', 'edit_trial_company', { 'selected' : default_company });
+    jQuery('#edit_trial_company').data("originalValue", default_company);
+
     var default_type = document.getElementById("edit_trial_type").getAttribute("value");
     get_select_box('trial_types', 'edit_trial_type',  { 'default' : default_type });
     jQuery('#edit_trial_type option[value="'+default_type+'"]').attr('selected','selected');

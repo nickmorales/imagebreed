@@ -8,16 +8,16 @@ $is_curator => undef
 
 <& /page/page_title.mas, title=>"Manage User Roles" &>
 
-<hr>
 % if ($is_curator) {
-	<h3>Curators can <button class="btn btn-default" id="add_person_role_button">Give User a Role</button> </h3>
-% }
 <hr>
+	<h3>Curators can <button class="btn btn-default" id="add_person_role_button">Give User a Role</button> </h3>
+<hr>
+% }
 
 <table id="manage_user_roles_table" class="table table-bordered">
 <thead>
 % if ($is_curator){
-<tr><th>Role</th><th>Username</th></tr>
+<tr><th>Role</th><th>Username</th><th>Options</th></tr>
 % } else {
 <tr><th>Breeding Program</th><th>Username</th></tr>
 % }
@@ -25,7 +25,7 @@ $is_curator => undef
 <tbody>
 % foreach (@$roles) {
 % if ($is_curator){
-	<tr><td><% $_->[2] %></td><td><a href="/solpeople/personal-info.pl?sp_person_id=<% $_->[1] %>"><% $_->[0] %></a></td></tr>
+	<tr><td><% $_->[2] %></td><td><a href="/solpeople/personal-info.pl?sp_person_id=<% $_->[1] %>"><% $_->[0] %></a></td><td><span class="glyphicon glyphicon-remove-circle text-danger" name="manage_roles_remove_user_role" data-sp_person_id=<% $_->[1] %> data-role=<% $_->[2] %> </span></td></tr>
 % } else {
 % if ($_->[2] ne 'curator' && $_->[2] ne 'user' && $_->[2] ne 'submitter' && $_->[2] ne 'sequencer'){
 	<tr><td><% $_->[2] %></td><td><a href="/solpeople/personal-info.pl?sp_person_id=<% $_->[1] %>"><% $_->[0] %></a></td></tr>
@@ -41,7 +41,39 @@ $is_curator => undef
 
 jQuery(document).ready(function() {
     jQuery('#manage_user_roles_table').DataTable();
-} );
+
+    jQuery('span[name="manage_roles_remove_user_role"]').click(function(){
+        var role = jQuery(this).data('role');
+        var sp_person_id = jQuery(this).data('sp_person_id');
+
+        if(confirm('Are you sure you want to remove this user role?')) {
+            jQuery.ajax({
+                url: '/ajax/people/remove_person_role',
+                type: 'POST',
+                beforeSend: function() {
+                    jQuery("#working_modal").modal("show");
+                },
+                data: {
+                    'sp_role_name' : role,
+                    'sp_person_id' : sp_person_id,
+                },
+                success: function(response) {
+                    jQuery("#working_modal").modal("hide");
+                    if (response.error) {
+                        alert(response.error);
+                    }
+                    else {
+                        alert("Successfully removed user role!");
+                        location.reload();
+                    }
+                },
+                error: function(response) {
+                    jQuery("#working_modal").modal("hide");
+                    alert("An error occurred removing user role");
+                },
+            });
+        }
+    });
+});
 
 </script>
-
