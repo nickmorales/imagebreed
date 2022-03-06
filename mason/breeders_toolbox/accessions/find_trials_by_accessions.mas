@@ -57,8 +57,6 @@
 </tbody>
 </table>
 
-<& /util/import_css.mas, paths => ['/documents/inc/datatables/jquery.dataTables.css'] &>
-
 <script defer="defer">
 
 jQuery(document).ready(function() {

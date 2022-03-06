@@ -32,12 +32,12 @@ sub trial_init : Chained('/') PathPart('breeders/trial') CaptureArgs(1) {
     $c->stash->{schema} = $schema;
     my $trial;
     eval {
-	$trial = CXGN::Trial->new( { bcs_schema => $schema, trial_id => $trial_id });
+        $trial = CXGN::Trial->new( { bcs_schema => $schema, trial_id => $trial_id });
     };
     if ($@) {
-	$c->stash->{template} = 'system_message.txt';
-	$c->stash->{message} = "The requested trial ($trial_id) does not exist";
-	return;
+        $c->stash->{template} = 'system_message.txt';
+        $c->stash->{message} = "The requested trial ($trial_id) does not exist";
+        return;
     }
     $c->stash->{trial} = $trial;
 }
@@ -59,8 +59,8 @@ sub trial_info : Chained('trial_init') PathPart('') Args(0) {
     #print STDERR $format;
     my $user = $c->user();
     if (!$user) {
-	$c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-	return;
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
     }
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
@@ -74,6 +74,9 @@ sub trial_info : Chained('trial_init') PathPart('') Args(0) {
     }
 
     $c->stash->{trial_name} = $trial->get_name();
+    $c->stash->{private_company_id} = $trial->private_company_id();
+    $c->stash->{private_company_name} = $trial->private_company_name();
+    $c->stash->{private_company_project_is_private} = $trial->private_company_project_is_private();
     $c->stash->{trial_owner} = $trial->get_owner_link();
 
     my $trial_type_data = $trial->get_project_type();

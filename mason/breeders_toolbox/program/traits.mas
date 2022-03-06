@@ -56,10 +56,6 @@ $collapse_phenotypes_section => 1
   </div>
 </div>
 
-<& /util/import_css.mas, paths => ['/documents/inc/datatables/jquery.dataTables.css'] &>
-
-
-
 <script>
 var d3 = d3v4;
 var draw_histogram = stackedObservationPhenotypeHistogram.draw;

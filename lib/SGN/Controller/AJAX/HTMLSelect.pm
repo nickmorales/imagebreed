@@ -119,7 +119,7 @@ sub get_private_companies_select : Path('/ajax/html/select/private_companies') A
     }
 
     my $private_companies = CXGN::PrivateCompany->new( { schema=> $c->dbic_schema("Bio::Chado::Schema") } );
-    my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($sp_person_id, 0);
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
 
     my @private_companies;
     foreach (@$private_companies_array) {

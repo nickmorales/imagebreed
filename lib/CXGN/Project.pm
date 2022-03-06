@@ -68,7 +68,7 @@ has 'project_id' => (
     is => 'rw',
     trigger => \&set_trial_id,
     builder => 'get_trial_id',
-    );
+);
 
 has 'name' => (
     isa => 'Str',
@@ -76,7 +76,7 @@ has 'name' => (
     trigger => \&set_name,
     builder => 'get_name',
     lazy => 1,
-    );
+);
 
 has 'description' => (
     isa => 'Maybe[Str]',
@@ -84,7 +84,7 @@ has 'description' => (
     trigger => \&set_description,
     builder => 'get_description',
     lazy => 1,
-    );
+);
 
 has 'year' => (
     isa => 'Maybe[Str]',
@@ -92,7 +92,23 @@ has 'year' => (
     trigger => \&get_year,
     builder => 'set_year',
     lazy => 1,
-    );
+);
+
+has 'private_company_id' => (
+    isa => 'Maybe[Int]',
+    is => 'rw',
+);
+
+has 'private_company_name' => (
+    isa => 'Maybe[Str]',
+    is => 'rw',
+);
+
+has 'private_company_project_is_private' => (
+    isa => 'Bool',
+    is => 'rw',
+    default => 0
+);
 
 has 'additional_info' => (
     is  => 'rw',
@@ -104,44 +120,47 @@ sub BUILD {
     my $args = shift;
 
     # print STDERR "BUILD CXGN::Project... with ".$args->{trial_id}."\n";
+    my $trial_id = $args->{trial_id};
+    my $name = $args->{name};
+    my $desc = $args->{description} || "(No description provided)";
 
-    if (! $args->{description}) {
-        $args->{description} = "(No description provided)";
+    my $row = $self->bcs_schema()->resultset("Project::Project")->find( { project_id => $trial_id });
+    if ($trial_id && !$row) {
+        die "The trial ".$trial_id." does not exist - aborting.";
     }
 
-    my $row = $self->bcs_schema()->resultset("Project::Project")->find( { project_id => $args->{trial_id} });
-
-    # print STDERR "PROJECT ID = $args->{trial_id}\n";
-    if ($row){
-	$self->name( $row->name() );
+    my $row_name_check = $self->bcs_schema()->resultset("Project::Project")->find( { name => $name } );
+    if (!$trial_id && $row_name_check) {
+        die "A trial with the name $name already exists. Please choose another name.";
     }
 
-    if ($args->{trial_id} && ! $row) {
-	die "The trial ".$args->{trial_id}." does not exist - aborting.";
-    }
+    if (!$trial_id && !$row) {
+        print STDERR "INSERTING A NEW Project ROW...\n";
 
-    $row = $self->bcs_schema()->resultset("Project::Project")->find( { name => $args->{name } } );
-
-
-    if (! $args->{trial_id} && $row) {
-        die "A trial with the name $args->{name} already exists. Please choose another name.";
-    }
-
-    if (! $args->{trial_id} && ! $row) {
-        print STDERR "INSERTING A NEW ROW...\n";
-
-        my $new_row = $args->{bcs_schema}->resultset("Project::Project")->create( { name => $args->{name}, description => $args->{description} });
+        my $new_row = $args->{bcs_schema}->resultset("Project::Project")->create({
+            name => $name,
+            description => $desc
+        });
         my $project_id = $new_row->project_id();
-        print STDERR "new project object has project id $project_id\n";
 
         $self->set_trial_id($project_id);
     }
 
-    if ($args->{trial_id} && $row) {
-        # print STDERR "Existing project... populating object.\n";
-        $self->set_trial_id($args->{trial_id});
-        $self->name($args->{name});
-        $self->description($args->{description});
+    if ($trial_id && $row) {
+        $self->set_trial_id($trial_id);
+        $self->name($row->name);
+        $self->description($row->description);
+
+        my $q = "SELECT p.private_company_id, p.name, project.is_private
+            FROM project
+            JOIN sgn_people.private_company AS p ON(project.private_company_id=p.private_company_id)
+            WHERE project.project_id=?;";
+        my $h = $args->{bcs_schema}->storage->dbh()->prepare($q);
+        $h->execute($trial_id);
+        my ($private_company_id, $private_company_name, $private_company_project_is_private) = $h->fetchrow_array();
+        $self->private_company_id($private_company_id);
+        $self->private_company_name($private_company_name);
+        $self->private_company_project_is_private($private_company_project_is_private);
     }
 }
 

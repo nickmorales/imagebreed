@@ -20,7 +20,12 @@ $field_trial_is_planned_to_be_genotyped
 $field_trial_is_planned_to_cross
 $trial_stock_type
 $trial_owner
+$company_id
+$company_name
+$company_project_is_private
 </%args>
+
+%  my $project_is_private = $company_project_is_private ? 'True' : 'False';
 
 <div class="row">
     <div class="col-sm-8">
@@ -162,6 +167,24 @@ $trial_owner
 %  print "<span class='text-danger'>[N/A]</span>";
 % }
                     </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td><b>Company Name </b></td>
+                <td>
+                    <span id="copmany_name">
+                        <a href="/company/<% $company_id %>"><% $company_name %></a>
+                    </span>
+                </td>
+            </tr>
+
+            <tr>
+                <td><b>Is Private to Company </b></td>
+                <td>
+                    <span id="copmany_project_is_private">
+                        <% $project_is_private %>
+                    </span>
                 </td>
             </tr>
 

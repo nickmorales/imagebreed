@@ -61,7 +61,7 @@ sub manage_private_companies : Path("/breeders/companies") :Args(0) {
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
 
     my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
-    my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($sp_person_id, 1);
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 1);
 
     $c->stash->{private_companies} = $private_companies_array;
     $c->stash->{template} = '/breeders_toolbox/manage_private_companies.mas';

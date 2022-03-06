@@ -132,8 +132,6 @@ $trial_stock_type => undef
 </div>
 
 
-<& /util/import_css.mas, paths => ['/documents/inc/datatables/jquery.dataTables.css'] &>
-
 <script>
 // wrap code in an immediately invoked function, so we can use d3v4 as d3;
 (function(){

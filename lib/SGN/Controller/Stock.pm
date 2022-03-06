@@ -18,6 +18,7 @@ use File::Slurp;
 use JSON::Any;
 use JSON;
 
+use CXGN::Stock;
 use CXGN::Chado::Stock;
 use SGN::View::Stock qw/stock_link stock_organisms stock_types breeding_programs /;
 use Bio::Chado::NaturalDiversity::Reports;
@@ -160,6 +161,9 @@ our $time;
 
 sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
     my ( $self, $c, $action) = @_;
+    my $dbh = $c->dbc->dbh;
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema', 'sgn_chado');
 
     if (!$c->user()) {
         my $url = '/' . $c->req->path;
@@ -180,12 +184,6 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
     my $submitter = $logged_user->check_roles('submitter') if $logged_user;
     my $sequencer = $logged_user->check_roles('sequencer') if $logged_user;
 
-    my $dbh = $c->dbc->dbh;
-
-    ##################
-
-    ###Check if a stock page can be printed###
-
     my $stock = $c->stash->{stock};
     my $stock_row = $c->stash->{stock_row};
     my $stock_id = $stock ? $stock->stock_id : undef ;
@@ -199,7 +197,21 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
         $c->throw_404( "No stock/accession exists for that identifier." );
     }
 
-    print STDERR "Checkpoint 2: Elapsed ".(time() - $time)."\n";
+    my $stock_obj = CXGN::Stock->new({
+        schema => $schema,
+        phenome_schema => $phenome_schema,
+        stock_id => $stock_id
+    });
+    my $private_company_id = $stock_obj->private_company_id();
+
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($person_id, 0);
+
+    if (!exists($allowed_private_company_ids_hash->{$private_company_id})) {
+        $c->stash->{template} = "generic_message.mas";
+        $c->stash->{message}  = "You are not in the company that owns this stock!";
+        return;
+    }
 
     my $props = $self->_stockprops($stock_row);
     # print message if the stock is visible only to certain user roles
@@ -222,8 +234,6 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
 	$c->stash->{message}  = "You do not have sufficient privileges to view the page of stock with database id $stock_id. You may need to log in to view this page.";
 	return;
     }
-
-    print STDERR "Checkpoint 3: Elapsed ".(time() - $time)."\n";
 
     # print message if the stock is obsolete
     my $obsolete = $stock->is_obsolete();
@@ -261,8 +271,6 @@ sub view_stock : Chained('get_stock') PathPart('view') Args(0) {
         $editable_stockprops .= ",row_number,col_number,plot number,block,replicate,range,is a control,plant_index_number,subplot_index_number,tissue_sample_index_number,tissue_type";
     }
 
-    print STDERR "Checkpoint 4: Elapsed ".(time() - $time)."\n";
-################
     $c->stash(
         template => '/stock/index.mas',
         stockref => {

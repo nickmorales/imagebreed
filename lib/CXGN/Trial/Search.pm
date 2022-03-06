@@ -342,7 +342,7 @@ sub search {
 
     if (scalar(@$private_company_ids_list)==0 && $sp_person_id) {
         my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
-        my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($sp_person_id, 0);
+        my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
         $private_company_ids_list = $private_companies_ids;
     }
     if ($self->subscription_model && scalar(@$private_company_ids_list) == 0) {

@@ -36,7 +36,7 @@ sub search : Path('/ajax/search/trials') Args(0) {
 
     if (scalar(@$private_company_ids_array)==0) {
         my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
-        my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($user_id, 0);
+        my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
         $private_company_ids_array = $private_companies_ids;
     }
 

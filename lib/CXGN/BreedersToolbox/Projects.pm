@@ -31,7 +31,7 @@ sub get_breeding_programs {
     my $sp_person_id = shift;
 
     my $private_companies = CXGN::PrivateCompany->new( { schema=> $self->schema } );
-    my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($sp_person_id, 0);
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
     my $company_ids_sql = join ',', @$private_companies_ids;
 
     my $breeding_program_cvterm_id = $self->get_breeding_program_cvterm_id();

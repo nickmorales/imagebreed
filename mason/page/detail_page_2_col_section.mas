@@ -50,9 +50,14 @@ $management_factor_date => undef
 $management_factor_type => undef
 $trial_stock_type => undef
 $trial_owner => undef
+$company_project_is_private => undef #Also uses company_id, company_name
 
 #Specific to stock detail page
+$stock_barcode_text => undef
+$stock_description => undef
 $type_name => undef
+$organism_id => undef
+$organism_species => undef
 $stockprops => undef
 $edit_privs => undef
 $editable_stock_props => undef
@@ -64,6 +69,7 @@ $image_ids => undef
 $related_image_ids => undef
 $dbh => undef
 $referer => undef
+$company_stock_is_private => undef #Also uses company_id, company_name
 
 #Specific to genotyping protocol detail page
 $protocol_id => undef
@@ -225,6 +231,9 @@ $company_members => []
                                 <& /breeders_toolbox/data_agreement.mas, trial_id => $trial_id &>
 % } #End trial_data_agreement_section
 
+% if ($info_section_id eq 'stock_details_section'){
+                                <& /stock/stock_details_section.mas, stock_id => $stock_id, identifier => $identifier_prefix, stock_barcode_text => $stock_barcode_text, type_name => $type_name, stock_uniquename => $stock_uniquename, stock_description => $stock_description, organism_id => $organism_id, organism_species => $organism_species, company_id => $company_id, company_name => $company_name, company_stock_is_private => $company_stock_is_private &>
+% } #End stock_details_section
 % if ($info_section_id eq 'stock_additional_info_section'){
                                 <& /stock/additional_info_section.mas, stock_id => $stock_id, type_name => $type_name, stockprops => $stockprops, edit_privs => $edit_privs, editable_stock_props => $editable_stock_props, editor_link => $editor_link, is_owner => $is_owner &>
 % } #End stock_additional_info_section
@@ -282,7 +291,7 @@ $company_members => []
                                 <& /breeders_toolbox/tissue_samples/sampling_trials.mas &>
 % } #End manage_tissue_samples_sampling_trials
 % if ($info_section_id eq 'trial_details'){
-                                <& /breeders_toolbox/trial/trial_details.mas, trial_id=>$trial_id, trial_name=>$trial_name, breeding_program_name=>$breeding_program_name, breeding_program_id=>$breeding_program_id, location_name=>$location_name, country_name=>$country_name, year=>$year, trial_type=>$trial_type, planting_date=>$planting_date, harvest_date=>$harvest_date, trial_description=>$trial_description, folder_name=>$folder_name, folder_id=>$folder_id, identifier_prefix=>$identifier_prefix, plot_width=>$plot_width, plot_length=>$plot_length, field_size=>$field_size, field_trial_is_planned_to_be_genotyped=>$field_trial_is_planned_to_be_genotyped, field_trial_is_planned_to_cross=>$field_trial_is_planned_to_cross, trial_stock_type => $trial_stock_type, trial_owner => $trial_owner &>
+                                <& /breeders_toolbox/trial/trial_details.mas, trial_id=>$trial_id, trial_name=>$trial_name, breeding_program_name=>$breeding_program_name, breeding_program_id=>$breeding_program_id, location_name=>$location_name, country_name=>$country_name, year=>$year, trial_type=>$trial_type, planting_date=>$planting_date, harvest_date=>$harvest_date, trial_description=>$trial_description, folder_name=>$folder_name, folder_id=>$folder_id, identifier_prefix=>$identifier_prefix, plot_width=>$plot_width, plot_length=>$plot_length, field_size=>$field_size, field_trial_is_planned_to_be_genotyped=>$field_trial_is_planned_to_be_genotyped, field_trial_is_planned_to_cross=>$field_trial_is_planned_to_cross, trial_stock_type => $trial_stock_type, trial_owner => $trial_owner, company_id => $company_id, company_name => $company_name, company_project_is_private => $company_project_is_private &>
 % } #End trial_details
 % if ($info_section_id eq 'stocks_search_graphical_filtering'){
                                 <& /search/stocks_graphicalfiltering.mas &>

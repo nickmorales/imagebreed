@@ -397,30 +397,15 @@ sub add_accession_list_POST : Args(0) {
     }
 
     my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
-    my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($user_id, 0);
-    my %allowed_private_company_ids = map {$_=>1} @$private_companies_ids;
-    my %allowed_private_company_access;
-    my %private_company_access_is_private;
-    foreach (@$private_companies_array) {
-        my $private_company_id = $_->[0];
-        my $user_access = $_->[17];
-        my $company_access = $_->[15];
-        $allowed_private_company_access{$private_company_id} = $user_access;
-        if ($company_access eq 'private_access') {
-            $private_company_access_is_private{$private_company_id} = 1;
-        }
-        else {
-            $private_company_access_is_private{$private_company_id} = 0;
-        }
-    }
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
 
     foreach (@$full_info){
-        if (!exists($allowed_private_company_ids{$_->{private_company_id}})) {
+        if (!exists($allowed_private_company_ids_hash->{$_->{private_company_id}})) {
             $c->stash->{rest} = {error =>  "You are not a member of this company!" };
             return;
         }
-        elsif ($allowed_private_company_access{$_->{private_company_id}} ne 'curator_access' && $allowed_private_company_access{$_->{private_company_id}} ne 'submitter_access') {
-            $c->stash->{rest} = {error =>  "You do not have submitter of curator accession in this company!" };
+        elsif ($allowed_private_company_access_hash->{$_->{private_company_id}} ne 'curator_access' && $allowed_private_company_access_hash->{$_->{private_company_id}} ne 'submitter_access') {
+            $c->stash->{rest} = {error =>  "You do not have submitter or curator access in this company!" };
             return;
         }
     }
@@ -482,7 +467,7 @@ sub add_accession_list_POST : Args(0) {
                     user_name => $user_name,
                     modification_note => 'Bulk load of accession information',
                     private_company_id => $_->{private_company_id},
-                    private_company_stock_is_private => $private_company_access_is_private{$_->{private_company_id}}
+                    private_company_stock_is_private => $private_company_access_is_private_hash->{$_->{private_company_id}}
                 });
                 my $added_stock_id = $stock->store();
                 push @added_stocks, $added_stock_id;

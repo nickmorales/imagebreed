@@ -1995,12 +1995,15 @@ sub stock_edit_details_POST :Args(0) {
     my $original_private_company_id = $stock->private_company_id();
 
     my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
-    my ($private_companies_array, $private_companies_ids) = $private_companies->get_users_private_companies($user_id, 0);
-    my %private_companies_hash = map {$_=>1} @$private_companies_ids;
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
 
-    if (!exists($private_companies_hash{$original_private_company_id})) {
+    if (!exists($allowed_private_company_ids_hash->{$original_private_company_id})) {
         $c->stash->{rest} = {error => "You are not in the company that owns this stock!"};
         $c->detach();
+    }
+    elsif ($allowed_private_company_access_hash->{$original_private_company_id} ne 'curator_access' && $allowed_private_company_access_hash->{$original_private_company_id} ne 'submitter_access') {
+        $c->stash->{rest} = {error =>  "You do not have submitter or curator access in this company and cannot edit these details!" };
+        return;
     }
 
     my $stock_store = CXGN::Stock->new({

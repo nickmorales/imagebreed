@@ -250,7 +250,24 @@ sub get_users_private_companies {
         push @private_companies_ids, $private_company_id;
     }
     # print STDERR Dumper \@private_companies;
-    return (\@private_companies, \@private_companies_ids);
+
+    my %allowed_private_company_ids = map {$_=>1} @private_companies_ids;
+    my %allowed_private_company_access;
+    my %private_company_access_is_private;
+    foreach (@private_companies) {
+        my $private_company_id = $_->[0];
+        my $user_access = $_->[17];
+        my $company_access = $_->[15];
+        $allowed_private_company_access{$private_company_id} = $user_access;
+        if ($company_access eq 'private_access') {
+            $private_company_access_is_private{$private_company_id} = 1;
+        }
+        else {
+            $private_company_access_is_private{$private_company_id} = 0;
+        }
+    }
+
+    return (\@private_companies, \@private_companies_ids, \%allowed_private_company_ids, \%allowed_private_company_access, \%private_company_access_is_private);
 }
 
 sub store_private_company {
