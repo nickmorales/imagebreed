@@ -384,6 +384,7 @@ function edit_trial_details(){
 
     jQuery('#trial_details_error_close_button').click( function() {
         document.getElementById('trial_details_error_message').innerHTML = "";
+        location.reload();
     });
 
     jQuery('#trial_details_saved_close_button').click( function() {

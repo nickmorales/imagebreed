@@ -33,7 +33,7 @@ sub tissue_sample_field_trials_GET : Args(0) {
     my $self = shift;
     my $c = shift;
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_tissue_sample($c, 0, 0, 0);
 
     my $trial_search = CXGN::Trial::Search->new({
         bcs_schema=>$bcs_schema,
@@ -77,7 +77,7 @@ sub tissue_sample_genotyping_trials_GET : Args(0) {
     my $self = shift;
     my $c = shift;
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_tissue_sample($c, 0, 0, 0);
 
     my $trial_search = CXGN::Trial::Search->new({
         bcs_schema=>$bcs_schema,
@@ -118,7 +118,7 @@ sub tissue_sample_sampling_trials_GET : Args(0) {
     my $self = shift;
     my $c = shift;
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_tissue_sample($c, 0, 0, 0);
 
     my $trial_search = CXGN::Trial::Search->new({
         bcs_schema=>$bcs_schema,
@@ -152,33 +152,18 @@ sub tissue_sample_sampling_trials_GET : Args(0) {
     $c->stash->{rest} = { data => \@result };
 }
 
-sub _check_user_login {
+sub _check_user_login_tissue_sample {
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     return ($user_id, $user_name, $user_role);
 }

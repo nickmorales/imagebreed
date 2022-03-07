@@ -33,6 +33,7 @@ use List::MoreUtils 'none';
 use Bio::GeneticRelationships::Pedigree;
 use Bio::GeneticRelationships::Individual;
 use CXGN::UploadFile;
+use CXGN::Login;
 use CXGN::Pedigree::AddCrossingtrial;
 use CXGN::Pedigree::AddCrosses;
 use CXGN::Pedigree::AddProgeny;
@@ -77,6 +78,8 @@ sub upload_cross_file_POST : Args(0) {
     my $suffix = $c->req->param('suffix');
     my $manage_page_crossing_experiment_id = $c->req->param('upload_crosses_crossing_experiment_id');
     my $experiment_page_crossing_experiment_id = $c->req->param('experiment_id');
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 'submitter', 0, 0);
+
     my $crossing_trial_id;
     if ($manage_page_crossing_experiment_id) {
         $crossing_trial_id = $manage_page_crossing_experiment_id;
@@ -115,13 +118,6 @@ sub upload_cross_file_POST : Args(0) {
     my %parsed_data;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
-
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
-
-    if (($user_role ne 'curator') && ($user_role ne 'submitter')) {
-        $c->stash->{rest} = {error=>'Only a submitter or a curator can upload crosses'};
-        $c->detach();
-    }
 
     my $uploader = CXGN::UploadFile->new({
         tempfile => $upload_tempfile,
@@ -281,8 +277,7 @@ sub add_cross_POST :Args(0) {
     my $male_plot_id = $c->req->param('male_plot');
     my $cross_combination = $c->req->param('cross_combination');
     $cross_name =~ s/^\s+|\s+$//g; #trim whitespace from front and end.
-
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 'submitter', 0, 0);
 
     print STDERR "CROSS COMBINATION=".Dumper($cross_combination)."\n";
 
@@ -365,6 +360,7 @@ sub get_cross_relationships :Path('/cross/ajax/relationships') :Args(1) {
     my $self = shift;
     my $c = shift;
     my $cross_id = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
@@ -390,6 +386,7 @@ sub get_membership :Path('/ajax/cross/membership') :Args(1) {
     my $self = shift;
     my $c = shift;
     my $cross_id = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
@@ -418,6 +415,7 @@ sub get_cross_parents :Path('/ajax/cross/accession_plot_plant_parents') Args(1) 
     my $self = shift;
     my $c = shift;
     my $cross_id = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $cross = $schema->resultset("Stock::Stock")->find( { stock_id => $cross_id });
@@ -453,6 +451,7 @@ sub get_cross_properties :Path('/ajax/cross/properties') Args(1) {
     my $self = shift;
     my $c = shift;
     my $cross_id = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $cross_info_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'crossing_metadata_json', 'stock_property')->cvterm_id();
@@ -487,6 +486,7 @@ sub get_cross_tissue_culture_summary :Path('/ajax/cross/tissue_culture_summary')
     my $c = shift;
     my $cross_id = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
     my $cross_samples_obj = CXGN::Cross->new({schema=>$schema, cross_stock_id=>$cross_id});
     my $cross_sample_data  = $cross_samples_obj->get_cross_tissue_culture_samples();
@@ -615,10 +615,10 @@ sub get_cross_tissue_culture_summary :Path('/ajax/cross/tissue_culture_summary')
     my $self = shift;
     my $c = shift;
     my $cross_id = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 'submitter', 0, 0);
 
     my $type = $c->req->param("type");
     my $value = $c->req->param("value");
-
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
@@ -659,15 +659,7 @@ sub get_cross_tissue_culture_summary :Path('/ajax/cross/tissue_culture_summary')
 sub cross_property_save :Path('/cross/property/save') Args(1) {
     my $self = shift;
     my $c = shift;
-
-    if (!$c->user()) {
-	      $c->stash->{rest} = { error => "You must be logged in to add properties." };
-	      return;
-    }
-    if (!($c->user()->has_role('submitter') or $c->user()->has_role('curator'))) {
-	      $c->stash->{rest} = { error => "You do not have sufficient privileges to add properties." };
-	      return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 'submitter', 0, 0);
 
     my $cross_id = $c->req->param("cross_id");
     my $type = $c->req->param("type");
@@ -701,15 +693,7 @@ sub add_more_progeny :Path('/cross/progeny/add') Args(1) {
     my $self = shift;
     my $c = shift;
     my $cross_id = shift;
-
-    if (!$c->user()) {
-	$c->stash->{rest} = { error => "You must be logged in add progeny." };
-	return;
-    }
-    if (!($c->user()->has_role('submitter') or $c->user()->has_role('curator'))) {
-	$c->stash->{rest} = { error => "You do not have sufficient privileges to add progeny." };
-	return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 'submitter', 0, 0);
 
     my $basename = $c->req->param("basename");
     my $start_number = $c->req->param("start_number");
@@ -936,6 +920,7 @@ sub add_crossingtrial_POST :Args(0){
     my $location = $c->req->param('crossingtrial_location');
     my $year = $c->req->param('year');
     my $project_description = $c->req->param('project_description');
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 'submitter', 0, 0);
 
     my $geolocation_lookup = CXGN::Location::LocationLookup->new(schema =>$schema);
     $geolocation_lookup->set_location_name($location);
@@ -1009,8 +994,7 @@ sub upload_progenies_POST : Args(0) {
     my %parsed_data;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
-
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 'submitter', 0, 0);
 
     my $uploader = CXGN::UploadFile->new({
         tempfile => $upload_tempfile,
@@ -1127,8 +1111,7 @@ sub validate_upload_existing_progenies_POST : Args(0) {
     my %parsed_data;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
-
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 'submitter', 0, 0);
 
     my $uploader = CXGN::UploadFile->new({
         tempfile => $upload_tempfile,
@@ -1180,14 +1163,12 @@ sub store_upload_existing_progenies : Path('/ajax/cross/store_upload_existing_pr
     my $self = shift;
     my $c = shift;
     my $archived_filename_with_path = $c->req->param('archived_file_name');
-    my $user_id = $c->req->param('user_id');
-#    print STDERR "ARCHIVED FILE NAME =".Dumper($archived_filename_with_path)."\n";
-#    print STDERR "USER ID =".Dumper($user_id)."\n";
     my $overwrite_pedigrees = $c->req->param('overwrite_pedigrees') ne 'false' ? $c->req->param('overwrite_pedigrees') : 0;
     my $chado_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $dbh = $c->dbc->dbh;
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 'submitter', 0, 0);
 
     my $upload_type = 'StoreExistingProgeniesExcel';
     my @all_crosses;
@@ -1263,6 +1244,8 @@ sub upload_info_POST : Args(0) {
     my $dbh = $c->dbc->dbh;
     my $cross_info_upload = $c->req->upload('crossinfo_upload_file');
     my $additional_info_upload = $c->req->upload('additional_info_upload_file');
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 'submitter', 0, 0);
+
     my $upload;
     my $upload_type;
     my $data_type;
@@ -1294,8 +1277,6 @@ sub upload_info_POST : Args(0) {
     my %parsed_data;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
-
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $uploader = CXGN::UploadFile->new({
         tempfile => $upload_tempfile,
@@ -1414,6 +1395,7 @@ sub upload_family_names_POST : Args(0) {
     my $dbh = $c->dbc->dbh;
     my $same_parents_upload = $c->req->upload('same_parents_file');
     my $reciprocal_parents_upload = $c->req->upload('reciprocal_parents_file');
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 'submitter', 0, 0);
 
     my $upload_original_name;
     my $upload_tempfile;
@@ -1442,8 +1424,6 @@ sub upload_family_names_POST : Args(0) {
     my %parsed_data;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
-
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
 
     my $uploader = CXGN::UploadFile->new({
         tempfile => $upload_tempfile,
@@ -1555,15 +1535,7 @@ sub delete_cross : Path('/ajax/cross/delete') : ActionClass('REST'){ }
 sub delete_cross_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-
-    if (!$c->user()){
-        $c->stash->{rest} = { error => "You must be logged in to delete crosses" };
-        $c->detach();
-    }
-    if (!$c->user()->check_roles("curator")) {
-        $c->stash->{rest} = { error => "You do not have the correct role to delete crosses. Please contact us." };
-        $c->detach();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
     my $cross_stock_id = $c->req->param("cross_id");
 
@@ -1591,8 +1563,9 @@ sub get_cross_transactions :Path('/ajax/cross/transactions') Args(1) {
     my $self = shift;
     my $c = shift;
     my $cross_id = shift;
-
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
+
     my $cross_transaction_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'cross_transaction_json', 'stock_property')->cvterm_id();
     my $cross_transactions = $schema->resultset("Stock::Stockprop")->find({stock_id => $cross_id, type_id => $cross_transaction_cvterm});
 
@@ -1618,46 +1591,12 @@ sub get_cross_transactions :Path('/ajax/cross/transactions') Args(1) {
 
 }
 
-sub _check_user_login {
-    my $c = shift;
-    my $role_check = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
-    if ($role_check && $user_role ne $role_check) {
-        $c->stash->{rest} = {error=>'You must have permission to do this! Please contact us!'};
-        $c->detach();
-    }
-    return ($user_id, $user_name, $user_role);
-}
-
 sub get_cross_additional_info :Path('/ajax/cross/additional_info') Args(1) {
     my $self = shift;
     my $c = shift;
     my $cross_id = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
     my $cross_additional_info_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'cross_additional_info', 'stock_property')->cvterm_id();
     my $cross_additional_info_rs = $schema->resultset("Stock::Stockprop")->find({stock_id => $cross_id, type_id => $cross_additional_info_cvterm});
@@ -1682,9 +1621,23 @@ sub get_cross_additional_info :Path('/ajax/cross/additional_info') Args(1) {
 
     push @props,\@row;
     $c->stash->{rest} = {data => \@props};
-
 }
 
+sub _check_user_login_cross {
+    my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
+}
 
 ###
 1;#

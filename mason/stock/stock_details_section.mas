@@ -76,11 +76,11 @@ $stock_barcode_text => undef
                     <div class="col-sm-8">
                         <select class="form-control" id="edit_stock_details_is_private">
 %  if ($company_stock_is_private eq 'True') {
-                            <option value='False'>False</option>
-                            <option value='True' selected>True</option>
+                            <option value='False' disabled>False</option>
+                            <option value='True' selected disabled>True</option>
 %  } else {
-                            <option value='False' selected>False</option>
-                            <option value='True'>True</option>
+                            <option value='False' selected disabled>False</option>
+                            <option value='True' disabled>True</option>
 %  }
                         </select>
                     </div>

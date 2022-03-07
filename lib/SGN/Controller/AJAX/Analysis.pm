@@ -66,7 +66,7 @@ sub store_analysis_json_POST {
     my $analysis_model_training_data_file = $c->req->param("analysis_model_training_data_file");
     my $analysis_model_training_data_file_type = $c->req->param("analysis_model_training_data_file_type");
     my $analysis_model_auxiliary_files = $c->req->param("analysis_model_auxiliary_files") ? decode_json $c->req->param("analysis_model_auxiliary_files") : [];
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_analysis($c, 'submitter', 0, 0);
 
     if ($analysis_to_save_boolean eq 'yes' && !$analysis_name) {
         $c->stash->{rest} = {error => "You are trying to save an analysis, but no name was given."};
@@ -130,7 +130,8 @@ sub store_analysis_spreadsheet_POST {
     my $analysis_model_auxiliary_file_type_2 = $c->req->param("upload_new_analysis_model_auxiliary_file_type_2");
     my $analysis_model_auxiliary_file_3 = $c->req->upload("upload_new_analysis_model_auxiliary_file_3");
     my $analysis_model_auxiliary_file_type_3 = $c->req->param("upload_new_analysis_model_auxiliary_file_type_3");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_analysis($c, 'submitter', 0, 0);
+
     my @error_status;
 
     my $check_name = $schema->resultset("Project::Project")->find({ name => $analysis_name });
@@ -164,7 +165,7 @@ sub store_analysis_spreadsheet_POST {
             $c->detach();
         }
         unlink $upload_tempfile;
-        
+
         push @$analysis_model_auxiliary_files, {
             auxiliary_model_file_archive_type => $analysis_model_auxiliary_file_type_1,
             auxiliary_model_file => $archived_filename_with_path
@@ -490,8 +491,8 @@ sub list_analyses_by_user_table :Path('/ajax/analyses/by_user') Args(0) {
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
     my $analysis_model_type = $c->req->param('analysis_model_type');
+    my ($user_id, $user_name, $user_role) = _check_user_login_analysis($c, 0, 0, 0);
 
     my @analyses = CXGN::Analysis->retrieve_analyses_by_user($schema, $people_schema, $metadata_schema, $phenome_schema, $user_id, $analysis_model_type);
 
@@ -525,8 +526,8 @@ sub list_analyses_models_by_user_table :Path('/ajax/analyses/models/by_user') Ar
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
     my $analysis_model_type = $c->req->param('analysis_model_type');
+    my ($user_id, $user_name, $user_role) = _check_user_login_analysis($c, 0, 0, 0);
 
     my $analysis_models_by_user = CXGN::AnalysisModel::GetModel::get_models_by_user($schema, $user_id, $analysis_model_type);
     #print STDERR Dumper $analysis_models_by_user;
@@ -559,7 +560,7 @@ sub list_analyses_by_model_table :Path('/ajax/analyses/by_model') Args(0) {
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_analysis($c, 0, 0, 0);
 
     my $model_id = $c->req->param('model_id');
     my $analysis_by_model = CXGN::AnalysisModel::GetModel::get_analyses_by_model($schema, $model_id);
@@ -581,7 +582,7 @@ sub list_analyses_by_model_table :Path('/ajax/analyses/by_model') Args(0) {
 Chained from ajax_analysis
 URL = /ajax/analysis/<analysis_id>/retrieve
 returns data for the analysis_id in the following json structure:
-{ 
+{
     analysis_name
     analysis_description
     analysis_result_type
@@ -601,7 +602,7 @@ sub retrieve_analysis_data :Chained("ajax_analysis") PathPart('retrieve') :Args(
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_analysis($c, 0, 0, 0);
 
     my $a = CXGN::Analysis->new( { bcs_schema => $bcs_schema, people_schema => $people_schema, metadata_schema => $metadata_schema, phenome_schema => $phenome_schema, trial_id => $c->stash->{analysis_id} } );
 
@@ -665,7 +666,7 @@ sub analysis_model_delete :Path('/ajax/analysis_model/delete') Args(0) {
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
+    my ($user_id, $user_name, $user_role) = _check_user_login_analysis($c, 'curator', 0, 0);
 
     my $model_id = $c->req->param('model_id');
     my $analysis_by_model = CXGN::AnalysisModel::GetModel::get_analyses_by_model($schema, $model_id);
@@ -695,38 +696,19 @@ sub analysis_model_delete :Path('/ajax/analysis_model/delete') Args(0) {
     $c->stash->{rest} = { success => 1 };
 }
 
-sub _check_user_login {
+sub _check_user_login_analysis {
     my $c = shift;
-    my $role_check = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
-    if ($role_check && $user_role ne $role_check) {
-        $c->stash->{rest} = {error=>'You must have permission to do this! Please contact us!'};
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
         $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
     return ($user_id, $user_name, $user_role);
 }
 

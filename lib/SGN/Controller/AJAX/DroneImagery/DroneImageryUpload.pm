@@ -49,7 +49,8 @@ sub upload_drone_imagery_check_drone_name_GET : Args(0) {
     $c->response->headers->header( "Access-Control-Allow-Origin" => '*' );
     my $drone_name = $c->req->param('drone_run_name');
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 0, 0, 0);
+
     my $project_rs = $schema->resultset("Project::Project")->search({name=>$drone_name});
     if ($project_rs->count > 0) {
         $c->stash->{rest} = { error => "Please use a globally unique drone run name! The name you specified has already ben used." };
@@ -71,7 +72,7 @@ sub upload_drone_imagery_POST : Args(0) {
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', 0, 0);
     print STDERR Dumper $c->req->params();
 
     my $selected_trial_id = $c->req->param('drone_run_field_trial_id');
@@ -1374,11 +1375,11 @@ sub upload_drone_imagery_new_vehicle_GET : Args(0) {
     my $c = shift;
     $c->response->headers->header( "Access-Control-Allow-Origin" => '*' );
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
     my $vehicle_name = $c->req->param('vehicle_name');
     my $vehicle_desc = $c->req->param('vehicle_description');
     my $battery_names_string = $c->req->param('battery_names');
     my @battery_names = split ',', $battery_names_string;
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', 0, 0);
 
     my $vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle', 'stock_type')->cvterm_id();
     my $vehicle_prop_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
@@ -1409,33 +1410,19 @@ sub upload_drone_imagery_new_vehicle_GET : Args(0) {
     $c->stash->{rest} = {success => 1, new_vehicle_id => $new_vehicle_id};
 }
 
-sub _check_user_login {
+sub _check_user_login_drone_imagery_upload {
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
     return ($user_id, $user_name, $user_role);
 }
 

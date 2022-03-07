@@ -34,8 +34,8 @@ sub list_analytics_protocols_by_user_table :Path('/ajax/analytics_protocols/by_u
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
     my $protocol_type = $c->req->param('analytics_protocol_type');
+    my ($user_id, $user_name, $user_role) = _check_user_login_analytics($c, 0, 0, 0);
 
     my $protocol_type_where = '';
     if ($protocol_type) {
@@ -78,8 +78,8 @@ sub list_analytics_protocols_result_files :Path('/ajax/analytics_protocols/resul
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
     my $analytics_protocol_id = $c->req->param('analytics_protocol_id');
+    my ($user_id, $user_name, $user_role) = _check_user_login_analytics($c, 0, 0, 0);
 
     if (!$analytics_protocol_id) {
         $c->stash->{rest} = { error => "No ID given!" };
@@ -122,9 +122,9 @@ sub analytics_protocols_merge_results :Path('/ajax/analytics_protocols_merge_res
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
     my @protocol_ids = split ',', $c->req->param('protocol_ids');
     my $analysis_type = $c->req->param('analysis_type');
+    my ($user_id, $user_name, $user_role) = _check_user_login_analytics($c, 'curator', 0, 0);
 
     my $protocolprop_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analytics_protocol_properties', 'protocol_property')->cvterm_id();
     my $protocolprop_results_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analytics_protocol_result_summary', 'protocol_property')->cvterm_id();
@@ -290,12 +290,12 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
     print STDERR Dumper $c->req->params();
     my $protocol_id = $c->req->param('protocol_id');
     my $trait_id = $c->req->param('trait_id');
     my $trial_id = $c->req->param('trial_id');
     my $default_tol = $c->req->param('default_tol');
+    my ($user_id, $user_name, $user_role) = _check_user_login_analytics($c, 'submitter', 0, 0);
 
     my $csv = Text::CSV->new({ sep_char => "," });
     my $dir = $c->tempfiles_subdir('/analytics_protocol_figure');
@@ -3490,7 +3490,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
     print STDERR Dumper $c->req->params();
     my $protocol_id = $c->req->param('protocol_id');
     my $trait_id = $c->req->param('trait_id');
@@ -3500,6 +3499,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $default_tol = $c->req->param('default_tol');
     my $cor_label_size = $c->req->param('cor_label_size');
     my $cor_label_digits = $c->req->param('cor_label_digits');
+    my ($user_id, $user_name, $user_role) = _check_user_login_analytics($c, 'submitter', 0, 0);
 
     my $csv = Text::CSV->new({ sep_char => "," });
     my $dir = $c->tempfiles_subdir('/analytics_protocol_figure');
@@ -12148,38 +12148,19 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     };
 }
 
-sub _check_user_login {
+sub _check_user_login_analytics {
     my $c = shift;
-    my $role_check = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
-    if ($role_check && $user_role ne $role_check) {
-        $c->stash->{rest} = {error=>'You must have permission to do this! Please contact us!'};
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
         $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
     return ($user_id, $user_name, $user_role);
 }
 

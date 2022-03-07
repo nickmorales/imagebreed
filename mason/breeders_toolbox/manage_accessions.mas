@@ -51,14 +51,6 @@ $editable_stock_props_definitions => {}
     </&>
 </div><!-- closes well -->
 
-<!-- div class="well">
-<&| /page/info_section.mas, title=>'Find Trials in Common', collapsible=>1, collapsed=>0, subtitle=>'<i>Use a list of accessions to search for trials that contain them all</i>'&>
-
-<& /breeders_toolbox/accessions/find_trials_by_accessions.mas &>
-
-</&>
-</div--><!-- closes well -->
-
 <div class="well">
 <&| /page/info_section.mas, title=>"Populations", id=> "manage_accessions_populations", collapsible=>1, collapsed=>1, subtitle=>'<button class="btn btn-sm btn-primary" style="margin:3px" id="manage_accessions_populations_new">Create Population</button>' &>
 <div class="panel-group" id="accordion"></div>

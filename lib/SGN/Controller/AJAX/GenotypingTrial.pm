@@ -24,11 +24,7 @@ sub generate_genotype_trial : Path('/ajax/breeders/generategenotypetrial') Actio
 sub generate_genotype_trial_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-
-    if (!($c->user()->check_roles('curator') || $c->user()->check_roles('submitter'))) {
-        $c->stash->{rest} = { error => 'You do not have the required privileges to create a genotyping plate.' };
-        $c->detach();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $plate_info = decode_json $c->req->param("plate_data");
@@ -101,7 +97,7 @@ sub generate_genotype_trial_POST : Args(0) {
 sub parse_genotype_trial_file : Path('/ajax/breeders/parsegenotypetrial') : ActionClass('REST') { }
 sub parse_genotype_trial_file_POST : Args(0) {
     my ($self, $c) = @_;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', 0, 0);
 
     my $chado_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
@@ -245,7 +241,7 @@ sub store_genotype_trial : Path('/ajax/breeders/storegenotypetrial') ActionClass
 sub store_genotype_trial_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $plate_info = decode_json $c->req->param("plate_data");
@@ -380,20 +376,14 @@ sub store_genotype_trial_POST : Args(0) {
 sub get_genotypingserver_credentials : Path('/ajax/breeders/genotyping_credentials') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', 0, 0);
 
-    if ($c->user && ($c->user->check_roles("submitter") || $c->user->check_roles("curator"))) {
-        $c->stash->{rest} = {
-            host => $c->config->{genotyping_server_host},
-            username => $c->config->{genotyping_server_username},
-            password => $c->config->{genotyping_server_password},
-            token => $c->config->{genotyping_server_token},
-        };
-    }
-    else {
-        $c->stash->{rest} = {
-            error => "Insufficient privileges for this operation."
-        };
-    }
+    $c->stash->{rest} = {
+        host => $c->config->{genotyping_server_host},
+        username => $c->config->{genotyping_server_username},
+        password => $c->config->{genotyping_server_password},
+        token => $c->config->{genotyping_server_token},
+    };
 }
 
 sub get_genotyping_data_projects : Path('/ajax/genotyping_data/projects') : ActionClass('REST') { }
@@ -403,8 +393,7 @@ sub get_genotyping_data_projects_GET : Args(0) {
     my $c = shift;
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $checkbox_select_name = $c->req->param('select_checkbox_name');
-
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 0, 0, 0);
 
     my $trial_search = CXGN::Trial::Search->new({
         bcs_schema=>$bcs_schema,
@@ -447,6 +436,7 @@ sub get_genotyping_data_protocols_GET : Args(0) {
     # my @genotyping_data_project_list = $c->req->param('genotyping_data_project_ids') ? split ',', $c->req->param('genotyping_data_project_ids') : ();
     my $limit;
     my $offset;
+    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 0, 0, 0);
 
     my $data = CXGN::Genotype::Protocol::list_simple($bcs_schema);
     my @result;
@@ -483,6 +473,7 @@ sub create_plate_order : Path('/ajax/breeders/createplateorder') ActionClass('RE
 sub create_plate_order_POST : Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $plate_info = decode_json $c->req->param("order_info");
@@ -523,6 +514,7 @@ sub store_plate_order : Path('/ajax/breeders/storeplateorder') ActionClass('REST
 sub store_plate_order_POST : Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $order_info = decode_json $c->req->param("order");
@@ -556,41 +548,19 @@ sub store_plate_order_POST : Args(0) {
 
 }
 
-sub _check_user_login {
+sub _check_user_login_genotyping_trial {
     my $c = shift;
     my $check_priv = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
+    my $original_private_company_id = shift;
+    my $user_access = shift;
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
-    if ($check_priv) {
-        if ($user_role ne 'curator' && $user_role ne 'submitter') {
-            $c->stash->{rest} = {error =>  "You have insufficient privileges!." };
-            $c->detach();
-        }
-    }
     return ($user_id, $user_name, $user_role);
 }
 

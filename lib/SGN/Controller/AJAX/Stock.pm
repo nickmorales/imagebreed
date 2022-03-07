@@ -66,7 +66,7 @@ sub add_stockprop_POST {
     my ( $self, $c ) = @_;
     my $response;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 'submitter', 0, 0);
 
     my $req = $c->req;
     my $stock_id = $c->req->param('stock_id');
@@ -107,7 +107,6 @@ sub add_stockprop_POST {
 
         try {
             $stock->create_stockprops( { $prop_type => $prop }, { autocreate => 1 } );
-
             my $stock = CXGN::Stock->new({
                 schema=>$schema,
                 stock_id=>$stock_id,
@@ -156,9 +155,9 @@ sub get_stockprops : Path('/stock/prop/get') : ActionClass('REST') { }
 
 sub get_stockprops_GET {
     my ($self, $c) = @_;
-
     my $stock_id = $c->req->param("stock_id");
     my $type_id = $c->req->param("type_id");
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
 
@@ -185,7 +184,7 @@ sub delete_stockprop_GET {
     my $self = shift;
     my $c = shift;
     my $stockprop_id = $c->req->param("stockprop_id");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 'submitter', 0, 0);
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $spr = $schema->resultset("Stock::Stockprop")->find( { stockprop_id => $stockprop_id });
@@ -204,448 +203,6 @@ sub delete_stockprop_GET {
 
 }
 
-
-
-sub associate_locus:Path('/ajax/stock/associate_locus') :ActionClass('REST') {}
-
-sub associate_locus_POST :Args(0) {
-    my ($self, $c) = @_;
-    $c->stash->{rest} = { error => "Nothing here, it's a POST.." } ;
-}
-
-sub associate_locus_GET :Args(0) {
-    my ( $self, $c ) = @_;
-    my $stock_id = $c->req->param('object_id');
-    ##my $allele_id = $c->req->param('allele_id');
-    #Phytoene synthase 1 (psy1) Allele: 1
-    #phytoene synthase 1 (psy1)
-    my $locus_input = $c->req->param('loci') ;
-    if (!$locus_input) {
-        $self->status_bad_request($c, message => 'need loci param' );
-        return;
-    }
-    my ($locus_data, $allele_symbol) = split (/ Allele: / ,$locus_input);
-    my $is_default = $allele_symbol ? 'f' : 't' ;
-    $locus_data =~ m/(.*)\s\((.*)\)/ ;
-    my $locus_name = $1;
-    my $locus_symbol = $2;
-    #print STDERR "Name: $locus_name Symbol: $locus_symbol Allele: $allele_symbol Default: $is_default\n";
-
-    my $schema =  $c->dbic_schema('Bio::Chado::Schema' , 'sgn_chado');
-    my ($allele) = $c->dbic_schema('CXGN::Phenome::Schema')
-        ->resultset('Locus')
-        ->search({
-            locus_name   => $locus_name,
-            locus_symbol => $locus_symbol,
-                 } )
-        ->search_related('alleles' , {
-            allele_symbol => $allele_symbol,
-            is_default => $is_default} );
-    if (!$allele) {
-        $c->stash->{rest} = { error => "no allele found for locus '$locus_data' (allele: '$allele_symbol')" };
-        return;
-    }
-    my $stock = $schema->resultset("Stock::Stock")->find({stock_id => $stock_id } ) ;
-    my  $allele_id = $allele->allele_id;
-    if (!$c->user) {
-        $c->stash->{rest} = { error => 'Must be logged in for associating loci! ' };
-        return;
-    }
-    if ( any { $_ eq 'curator' || $_ eq 'submitter' || $_ eq 'sequencer' } $c->user->roles() ) {
-        # if this fails, it will throw an acception and will (probably
-        # rightly) be counted as a server error
-        if ($stock && $allele_id) {
-            try {
-                my $cxgn_stock = CXGN::Stock->new(schema => $schema, stock_id => $stock_id);
-                $cxgn_stock->associate_allele($allele_id, $c->user->get_object->get_sp_person_id);
-
-                $c->stash->{rest} = ['success'];
-                # need to update the loci div!!
-                return;
-            } catch {
-                $c->stash->{rest} = { error => "Failed: $_" };
-                return;
-            };
-        } else {
-            $c->stash->{rest} = { error => 'need both valid stock_id and allele_id for adding the stockprop! ' };
-        }
-    } else {
-        $c->stash->{rest} = { error => 'No privileges for adding new loci. You must have an sgn submitter account. Please contact sgn-feedback@solgenomics.net for upgrading your user account. ' };
-    }
-}
-
-
-##############
-
-
-sub display_ontologies : Chained('/stock/get_stock') :PathPart('ontologies') : ActionClass('REST') { }
-
-sub display_ontologies_GET  {
-    my ($self, $c) = @_;
-    $c->forward('/stock/get_stock_cvterms');
-    my $schema = $c->dbic_schema("Bio::Chado::Schema", 'sgn_chado');
-    my $stock = $c->stash->{stock};
-    my $stock_id = $stock->stock_id;
-    my $trait_db_name => $c->get_conf('trait_ontology_db_name');
-    my $trait_cvterms = $c->stash->{stock_cvterms}->{$trait_db_name};
-    my $po_cvterms = $c->stash->{stock_cvterms}->{PO} ;
-    # should GO be here too?
-    my $go_cvterms = $c->stash->{stock_cvterms}->{GO};
-    my @stock_cvterms;
-    push @stock_cvterms, @$trait_cvterms if $trait_cvterms;
-    push @stock_cvterms, @$po_cvterms if $po_cvterms;
-    ################################
-    ###the following code should be re-formatted in JSON object,
-    #and the html generated in the javascript code
-    ### making this more reusable !
-    ###############################
-    my $hashref;
-    # need to check if the user is logged in, and has editing privileges
-    my $privileged;
-    if ($c->user) {
-        if ( $c->user->check_roles('curator') || $c->user->check_roles('submitter')  || $c->user->check_roles('sequencer') ) { $privileged = 1; }
-    }
-    # the ontology term is a stock_cvterm
-    # the evidence details are in stock_cvtermprop (relationship, evidence_code,
-    # evidence_description, evidence_with, reference, obsolete
-    # and the metadata for sp_person_id, create_date, etc.)
-    my @obs_annot;
-    #keys= cvterms, values= hash of arrays
-    #(keys= ontology details, values= list of evidences)
-    my %ont_hash = () ;
-    #some cvterms to be used for the evidence codes
-    my $cvterm_rs =  $schema->resultset("Cv::Cvterm");
-    my ($rel_cvterm) = $cvterm_rs->search( { name => 'relationship'} );
-    my ($evidence_cvterm) = $cvterm_rs->search( { name => 'evidence_code' } );
-    # go over the lists of Bio::Chado::Schema::Cv::Cvterm objects
-    # and build the annotation details
-    foreach (@stock_cvterms) {
-        my $cv_name      = $_->cvterm->cv->name;
-        my $cvterm_id    = $_->cvterm->cvterm_id;
-        my $cvterm_name  = $_->cvterm->name;
-        my $db_name      = $_->cvterm->dbxref->db->name;
-        my $accession    = $_->cvterm->dbxref->accession;
-        my $db_accession = $accession;
-        $db_accession = $cvterm_id if $db_name eq $trait_db_name;
-        my $url = $_->cvterm->dbxref->db->urlprefix . $_->cvterm->dbxref->db->url;
-        my $cvterm_link =
-            qq |<a href="/cvterm/$cvterm_id/view" target="blank">$cvterm_name</a>|;
-        # the stock_cvtermprop objects have all the evidence and metadata for the annotation
-        my $props = $_->stock_cvtermprops;
-        my ($relationship_id) = $props->search( { type_id =>$rel_cvterm->cvterm_id} )->single ? $props->search( { type_id =>$rel_cvterm->cvterm_id} )->single->value : undef; # should be 1 relationship per annotation
-        my ($evidence_code_id) = $props->search( { type_id => $evidence_cvterm->cvterm_id })->single ?  $props->search( { type_id => $evidence_cvterm->cvterm_id })->single->value : undef;
-        # should be 1 evidence_code
-        ############
-        my $evidence_desc_name;
-        my $rel_name = $relationship_id ? $cvterm_rs->find({ cvterm_id=>$relationship_id})->name : undef;
-        my $ev_name  = $evidence_code_id ? $cvterm_rs->find({ cvterm_id=>$evidence_code_id})->name : undef;
-        #if the cvterm has an obsolete property (must have a true value
-        # since annotations can be obsolete and un-obsolete, it is possible
-        # to have an obsolete property with value = 0, meaning the annotation
-        # is not obsolete.
-        # build the unobsolete link
-        my $stock_cvterm_id = $_->stock_cvterm_id;
-        my ($obsolete_prop) = $props->search(
-            {
-                value => '1',
-                'type.name' => 'obsolete',
-            },
-            { join =>  'type' } , );
-        if ($obsolete_prop) {
-            my $unobsolete =  qq | <input type = "button" onclick= "javascript:Tools.toggleObsoleteAnnotation('0', \'$stock_cvterm_id\',  \'/ajax/stock/toggle_obsolete_annotation\', \'/stock/$stock_id/ontologies\')" value = "unobsolete" /> | if $privileged ;
-
-            # generate the list of obsolete annotations
-            push @obs_annot,
-            $rel_name . " "
-                . $cvterm_link . " ("
-                . $ev_name . ")"
-                . $unobsolete;
-        }else {
-            my $ontology_details = $rel_name
-                . qq| $cvterm_link ($db_name:<a href="$url$db_accession" target="blank"> $accession</a>)<br />|;
-            # build the obsolete link if the user has  editing privileges
-            my $obsolete_link =  qq | <input type = "button" onclick="javascript:Tools.toggleObsoleteAnnotation('1', \'$stock_cvterm_id\',  \'/ajax/stock/toggle_obsolete_annotation\', \'/stock/$stock_id/ontologies\')" value ="delete" /> | if $privileged ;
-
-            my ($ev_with) = $props->search( {'type.name' => 'evidence_with'} , { join => 'type'  } )->single;
-            my $ev_with_dbxref = $ev_with ? $schema->resultset("General::Dbxref")->find( { dbxref_id=> $ev_with->value } ) : undef;
-            my $ev_with_url = $ev_with_dbxref ?  $ev_with_dbxref->urlprefix . $ev_with_dbxref->url . $ev_with_dbxref->accession : undef;
-            my $ev_with_acc = $ev_with_dbxref ? $ev_with_dbxref->accession : undef ;
-            # the reference is a stock_cvterm.pub_id
-            my ($reference) = $_->pub;
-            my $reference_dbxref = $reference ? $reference->pub_dbxrefs->first->dbxref : undef;
-            my $reference_url = $reference_dbxref ? $reference_dbxref->db->urlprefix . $reference_dbxref->db->url . $reference_dbxref->accession : undef;
-            my $reference_acc = $reference_dbxref ? $reference_dbxref->accession : undef;
-            my $display_ref = $reference_acc =~ /^\d/ ? 1 : 0;
-            # the submitter is a sp_person_id prop
-            my ($submitter) = $props->search( {'type.name' => 'sp_person_id'} , { join => 'type' } );
-            my $sp_person_id = $submitter ? $submitter->value : undef;
-            my $person= CXGN::People::Person->new($c->dbc->dbh, $sp_person_id);
-            my $submitter_info = qq| <a href="solpeople/personal_info.pl?sp_person_id=$sp_person_id">| . $person->get_first_name . " " . $person->get_last_name . "</a>" ;
-            my ($date) = $props->search( {'type.name' => 'create_date'} , { join =>  'type'  } )->first || undef ; # $props->search( {'type.name' => 'modified_date'} , { join =>  'type' } ) ;
-            my $evidence_date = $date ? substr $date->value , 0, 10 : undef;
-
-            # add an empty row if there is more than 1 evidence code
-            my $ev_string;
-            $ev_string .= "<hr />" if $ont_hash{$cv_name}{$ontology_details};
-            no warnings 'uninitialized';
-            $ev_string .=  $ev_name . "<br />";
-            $ev_string .= $evidence_desc_name . "<br />" if $evidence_desc_name;
-            $ev_string .= "<a href=\"$ev_with_url\">$ev_with_acc</a><br />" if $ev_with_acc;
-            $ev_string .="<a href=\"$reference_url\">$reference_acc</a><br />" if $display_ref;
-            $ev_string .= "$submitter_info $evidence_date $obsolete_link";
-            $ont_hash{$cv_name}{$ontology_details} .= $ev_string;
-        }
-    }
-    my $ontology_evidence;
-
-    #now we should have an %ont_hash with all the details we need for printing ...
-    #hash keys are the cv names ..
-    for my $cv_name ( sort keys %ont_hash ) {
-        my @evidence;
-        #and for each ontology annotation create an array ref of evidences
-        for my $ont_detail ( sort keys %{ $ont_hash{$cv_name} } ) {
-            push @evidence,
-            [ $ont_detail, $ont_hash{$cv_name}{$ont_detail} ];
-        }
-        my $ev = join "\n", map {
-            qq|<div class="term">$_->[0]</div>\n|
-                .qq|<div class="evidence">$_->[1]</div>\n|;
-        } @evidence;
-        $ontology_evidence .= info_table_html(
-            $cv_name     => $ev,
-            __border     => 0,
-            __tableattrs => 'width="100%"',
-            );
-    }
-    #display ontology annotation form
-    my $print_obsoleted;
-    if ( @obs_annot &&  $privileged ) {
-        my $obsoleted;
-        foreach my $term (@obs_annot) {
-            $obsoleted .= qq |$term  <br />\n |;
-        }
-        $print_obsoleted = html_alternate_show(
-            'obsoleted_terms', 'Show obsolete',
-            '',                qq|<div class="minorbox">$obsoleted</div> |,
-            );
-    }
-    $hashref->{html} = $ontology_evidence . $print_obsoleted;
-    $c->stash->{rest} = $hashref;
-}
-
-############
-sub associate_ontology:Path('/ajax/stock/associate_ontology') :ActionClass('REST') {}
-
-sub associate_ontology_GET :Args(0) {
-    my ($self, $c) = @_;
-    $c->stash->{rest} = { error => "Nothing here, it's a GET.." } ;
-}
-
-
-sub associate_ontology_POST :Args(0) {
-    my ( $self, $c ) = @_;
-
-    my $params = map { $_ => $c->req->param($_) } qw/
-       object_id ontology_input relationship evidence_code evidence_description
-       evidence_with reference
-    /;
-
-    my $stock_id       = $c->req->param('object_id');
-    my $ontology_input = $c->req->param('term_name');
-    my $relationship   = $c->req->param('relationship'); # a cvterm_id
-    my $evidence_code  = $c->req->param('evidence_code'); # a cvterm_id
-    my $evidence_description = $c->req->param('evidence_description') || undef; # a cvterm_id
-    my $evidence_with  = $c->req->param('evidence_with') || undef; # a dbxref_id (type='evidence_with' value = 'dbxref_id'
-    my $logged_user = $c->user;
-    my $logged_person_id = $logged_user->get_object->get_sp_person_id if $logged_user;
-
-    my $reference = $c->req->param('reference'); # a pub_id
-
-    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    my $cvterm_rs = $schema->resultset('Cv::Cvterm');
-    my ($pub_id) = $reference ? $reference :
-        $schema->resultset('Pub::Pub')->search( { title=> 'curator' } )->first->pub_id; # a pub for 'curator' should already be in the sgn database. can add here $curator_cvterm->create_with ... and then create the curator pub with type_id of $curator_cvterm
-
-    #solanaceae_phenotype--SP:000001--fruit size
-    my ($cv_name, $db_accession, $cvterm_name)  = split /--/ , $ontology_input;
-    my ($db_name, $accession) = split ':' , $db_accession;
-
-    my ($cvterm) = $schema
-        ->resultset('General::Db')
-        ->search({ 'me.name' => $db_name, } )->search_related('dbxrefs' , { accession => $accession } )
-        ->search_related('cvterm')->first; # should be only 1 cvterm per dbxref
-    if (!$cvterm) {
-        $c->stash->{rest} = { error => "no ontology term found for term $db_name : $accession" };
-        return;
-    }
-    my ($stock) = $c->stash->{stock} || $schema->resultset("Stock::Stock")->find( { stock_id => $stock_id } );
-
-    my  $cvterm_id = $cvterm->cvterm_id;
-    if (!$c->user) {
-        $c->stash->{rest} = { error => 'Must be logged in for associating ontology terms! ' };
-        return;
-    }
-    if ( any { $_ eq 'curator' || $_ eq 'submitter' || $_ eq 'sequencer' } $c->user->roles() ) {
-        # if this fails, it will throw an acception and will (probably
-        # rightly) be counted as a server error
-        #########################################################
-        if ($stock && $cvterm_id) {
-            try {
-                #check if the stock_cvterm exists
-                my $s_cvterm_rs = $stock->search_related(
-                    'stock_cvterms', { cvterm_id => $cvterm_id, pub_id => $pub_id } );
-                # if it exists , we need to increment the rank
-                my $rank = 0;
-                if ($s_cvterm_rs->first) {
-                    $rank = $s_cvterm_rs->get_column('rank')->max + 1;
-                    # now check if the evidence codes already exists
-                    my ($rel_prop, $ev_prop, $desc_prop, $with_prop);
-                    my $eprops = $s_cvterm_rs->search_related('stock_cvtermprops');
-                    $rel_prop = $eprops->search( {
-                        type_id => $cvterm_rs->search( { name => 'relationship'})->single->cvterm_id,
-                        value => $relationship  })->first;
-
-                    $ev_prop = $eprops->search( {
-                        type_id =>   $cvterm_rs->search( { name => 'evidence_code'})->single->cvterm_id,
-                        value => $evidence_code })->first;
-
-                    $desc_prop = $eprops->search( {
-                        type_id =>  $cvterm_rs->search( { name => 'evidence description'})->single->cvterm_id,
-                        value => $evidence_description })->first if $evidence_description;
-
-                    $with_prop = $eprops->search( {
-                        type_id =>  $cvterm_rs->search( { name => 'evidence_with'})->single->cvterm_id,
-                        value => $evidence_with })->first if $evidence_with;
-
-                    # return error if annotation + evidence exist
-                    if ($rel_prop && $ev_prop) {
-                        $c->stash->{rest} = { error => "Annotation exists with these evidence codes! " };
-                        return;
-                    }
-                }
-                # now store a new stock_cvterm
-                my $s_cvterm = $stock->create_related('stock_cvterms', {
-                    cvterm_id => $cvterm_id,
-                    pub_id    => $pub_id,
-                    rank      => $rank, } );
-#########
-                $s_cvterm->create_stock_cvtermprops(
-                    { 'relationship' => $relationship } , { db_name => 'OBO_REL', cv_name =>'relationship' } ) if looks_like_number($relationship);
-                $s_cvterm->create_stock_cvtermprops(
-                    { 'evidence_code' => $evidence_code } , { db_name => 'ECO', cv_name =>'evidence_code' } ) if looks_like_number($evidence_code);
-                 $s_cvterm->create_stock_cvtermprops(
-                     { 'evidence_description' => $evidence_description } , { cv_name =>'local', autocreate => 1 } ) if looks_like_number($evidence_description);
-                $s_cvterm->create_stock_cvtermprops(
-                    { 'evidence_with' => $evidence_with  } , { cv_name =>'local' , autocreate=>1} ) if looks_like_number($evidence_with);
-                # store the person loading the annotation
-                $s_cvterm->create_stock_cvtermprops(
-                    { 'sp_person_id' => $logged_person_id  } , { cv_name =>'local' , autocreate=>1} );
-                #store today's date
-                my $val = "now()";
-                $s_cvterm->create_stock_cvtermprops(
-                    { 'create_date' =>  \$val   } , { cv_name =>'local' , autocreate=>1, allow_duplicate_values => 1} );
-
-                $c->stash->{rest} = ['success'];
-                return;
-            } catch {
-                print STDERR "***** associate_ontology failed! $_ \n\n";
-                $c->stash->{rest} = { error => "Failed: $_" };
-                # send an email to sgn bugs
-                $c->stash->{email} = {
-                    to      => 'sgn-bugs@sgn.cornell.edu',
-                    from    => 'sgn-bugs@sgn.cornell.edu',
-                    subject => "Associate ontology failed! Stock_id = $stock_id",
-                    body    => $_,
-                };
-                $c->forward( $c->view('Email') );
-                return;
-            };
-            # if you reached here this means associate_ontology worked. Now send an email to sgn-db-curation
-            print STDERR "***** User " . $logged_user->get_object->get_first_name . " " . $logged_user->get_object->get_last_name . "has stored a new ontology term for stock $stock_id\n\n";
-            $c->stash->{email} = {
-                to      => 'sgn-db-curation@sgn.cornell.edu',
-                from    => 'www-data@sgn-vm.sgn.cornell.edu',
-                subject => "New ontology term loaded. Stock $stock_id",
-                body    => "User " . $logged_user->get_object->get_first_name . " " . $logged_user->get_object->get_last_name . "has stored a new ontology term for stock $stock_id http://solgenomics.net/stock/$stock_id/view",
-            };
-            $c->forward( $c->view('Email') );
-
-        } else {
-            $c->stash->{rest} = { error => 'need both valid stock_id and cvterm_id for adding an ontology term to this stock! ' };
-        }
-    } else {
-        $c->stash->{rest} = { error => 'No privileges for adding new ontology terms. You must have an sgn submitter account. Please contact sgn-feedback@solgenomics.net for upgrading your user account. ' };
-    }
-}
-
-sub references : Chained('/stock/get_stock') :PathPart('references') : ActionClass('REST') { }
-
-
-sub references_GET :Args(0) {
-    my ($self, $c) = @_;
-    my $stock = $c->stash->{stock};
-    # get a list of references
-    my $q =  "SELECT dbxref.dbxref_id, pub.pub_id, accession,title
-              FROM public.stock_pub
-              JOIN public.pub USING (pub_id)
-              JOIN public.pub_dbxref USING (pub_id)
-              JOIN public.dbxref USING (dbxref_id)
-              WHERE stock_id= ?";
-    my $sth = $c->dbc->dbh->prepare($q);
-    $sth->execute($stock->stock_id);
-    my $response_hash={};
-    while (my ($dbxref_id, $pub_id, $accession, $title) = $sth->fetchrow_array) {
-        $response_hash->{$accession . ": " . $title} = $pub_id ;
-    }
-    $c->stash->{rest} = $response_hash;
-}
-
-
-# nothing is returned here for now. This is just required for the integrity of the associate ontology form
-sub evidences : Chained('/stock/get_stock') :PathPart('evidences') : ActionClass('REST') { }
-
-sub evidences_GET :Args(0) {
-    my ($self, $c) = @_;
-    my $stock = $c->stash->{stock};
-    # get a list of evidences
-    my $response_hash={};
-
-    $c->stash->{rest} = $response_hash;
-}
-
-sub toggle_obsolete_annotation : Path('/ajax/stock/toggle_obsolete_annotation') : ActionClass('REST') { }
-
-sub toggle_obsolete_annotation_POST :Args(0) {
-    my ($self, $c) = @_;
-    my $stock = $c->stash->{stock};
-    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    my $obsolete_cvterm = $schema->resultset("Cv::Cvterm")->search(
-        { name => 'obsolete',
-          is_obsolete => 0 ,
-        } )->single; #should be one local term
-    my $stock_cvterm_id = $c->request->body_parameters->{id};
-    my $obsolete = $c->request->body_parameters->{obsolete};
-    my $response = {} ;
-    if ($stock_cvterm_id && $c->user ) {
-        my $stock_cvterm = $schema->resultset("Stock::StockCvterm")->find( { stock_cvterm_id => $stock_cvterm_id } );
-        if ($stock_cvterm) {
-            my ($prop) = $stock_cvterm->stock_cvtermprops( { type_id => $obsolete_cvterm->cvterm_id } ) if $obsolete_cvterm;
-            if ($prop) {
-                $prop->update( { value => $obsolete } ) ;
-            } else {
-                $stock_cvterm->create_stock_cvtermprops(
-                    { obsolete   => $obsolete },
-                    { autocreate => 1, cv_name => 'local'  },
-                    );
-            }
-            $response->{response} = "success";
-        }
-        else { $response->{error} = "No stock_cvtermp found for id $stock_cvterm_id ! "; }
-    } else { $response->{error} = 'stock_cvterm $stock_cvterm_id does not exists! ';  }
-    $c->stash->{rest} = $response;
-}
-
-
 =head2 trait_autocomplete
 
 Public Path: /ajax/stock/trait_autocomplete
@@ -659,6 +216,7 @@ sub trait_autocomplete : Local : ActionClass('REST') { }
 
 sub trait_autocomplete_GET :Args(0) {
     my ( $self, $c ) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
     # trim and regularize whitespace
@@ -688,6 +246,7 @@ sub project_autocomplete : Local : ActionClass('REST') { }
 
 sub project_autocomplete_GET :Args(0) {
     my ( $self, $c ) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
     # trim and regularize whitespace
@@ -717,6 +276,7 @@ sub project_year_autocomplete : Local : ActionClass('REST') { }
 
 sub project_year_autocomplete_GET :Args(0) {
     my ( $self, $c ) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
     # trim and regularize whitespace
@@ -751,6 +311,8 @@ sub seedlot_name_autocomplete : Local : ActionClass('REST') { }
 
 sub seedlot_name_autocomplete_GET :Args(0) {
     my ( $self, $c ) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
+
     my $term = $c->req->param('term');
     # trim and regularize whitespace
     $term =~ s/(^\s+|\s+)$//g;
@@ -783,6 +345,8 @@ sub stockproperty_autocomplete : Local : ActionClass('REST') { }
 
 sub stockproperty_autocomplete_GET :Args(0) {
     my ( $self, $c ) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
+
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $term = $c->req->param('term');
     my $cvterm_name = $c->req->param('property');
@@ -814,6 +378,7 @@ sub geolocation_autocomplete : Local : ActionClass('REST') { }
 
 sub geolocation_autocomplete_GET :Args(0) {
     my ( $self, $c ) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
     # trim and regularize whitespace
@@ -851,7 +416,7 @@ sub stock_autocomplete_GET :Args(0) {
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $people_schema = $c->dbic_schema('CXGN::People::Schema');
     my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
     my $stock_type_id = $c->req->param('stock_type_id');
@@ -896,6 +461,7 @@ sub accession_autocomplete : Local : ActionClass('REST') { }
 
 sub accession_autocomplete_GET :Args(0) {
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
 
@@ -930,6 +496,7 @@ sub accession_or_cross_autocomplete : Local : ActionClass('REST') { }
 
 sub accession_or_cross_autocomplete_GET :Args(0) {
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
 
@@ -964,6 +531,7 @@ sub cross_autocomplete : Local : ActionClass('REST') { }
 
 sub cross_autocomplete_GET :Args(0) {
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
 
@@ -997,6 +565,7 @@ sub family_name_autocomplete : Local : ActionClass('REST') { }
 
 sub family_name_autocomplete_GET :Args(0) {
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
 
@@ -1031,6 +600,7 @@ sub population_autocomplete : Local : ActionClass('REST') { }
 
 sub population_autocomplete_GET :Args(0) {
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
 
@@ -1068,6 +638,7 @@ sub accession_population_autocomplete : Local : ActionClass('REST') { }
 
 sub accession_population_autocomplete_GET :Args(0) {
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
 
@@ -1100,6 +671,7 @@ sub pedigree_female_parent_autocomplete: Local : ActionClass('REST'){}
 
 sub pedigree_female_parent_autocomplete_GET : Args(0){
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
 
@@ -1138,6 +710,7 @@ sub pedigree_male_parent_autocomplete: Local : ActionClass('REST'){}
 
 sub pedigree_male_parent_autocomplete_GET : Args(0){
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
 
@@ -1175,6 +748,7 @@ sub cross_female_parent_autocomplete: Local : ActionClass('REST'){}
 
 sub cross_female_parent_autocomplete_GET : Args(0){
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
 
@@ -1213,6 +787,7 @@ sub cross_male_parent_autocomplete: Local : ActionClass('REST'){}
 
 sub cross_male_parent_autocomplete_GET : Args(0){
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
 
@@ -1243,6 +818,7 @@ sub parents : Local : ActionClass('REST') {}
 sub parents_GET : Path('/ajax/stock/parents') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $stock_id = $c->req->param("stock_id");
 
@@ -1278,7 +854,7 @@ sub remove_parent_GET : Path('/ajax/stock/parent/remove') Args(0) {
     my ($self, $c) = @_;
     my $stock_id = $c->req->param("stock_id");
     my $parent_id = $c->req->param("parent_id");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 'submitter', 0, 0);
 
     if (!$stock_id || ! $parent_id) {
         $c->stash->{rest} = { error => "No stock and parent specified" };
@@ -1316,7 +892,7 @@ sub add_stock_parent : Local : ActionClass('REST') { }
 sub add_stock_parent_GET :Args(0) {
     my ($self, $c) = @_;
     print STDERR "Add_stock_parent function...\n";
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 'submitter', 0, 0);
 
     my $stock_id = $c->req->param('stock_id');
     my $parent_name = $c->req->param('parent_name');
@@ -1386,21 +962,6 @@ sub add_stock_parent_GET :Args(0) {
 }
 
 
-
-sub generate_genotype_matrix : Path('/phenome/genotype/matrix/generate') :Args(1) {
-    my $self = shift;
-    my $c = shift;
-    my $group = shift;
-
-    my $file = $c->config->{genotype_dump_file} || "/tmp/genotype_dump_file";
-
-    CXGN::Phenome::DumpGenotypes::dump_genotypes($c->dbc->dbh, $file);
-
-
-    $c->stash->{rest}= [ 1];
-
-}
-
 =head2 action get_stock_trials()
 
  Usage:        /stock/<stock_id>/datatables/trials
@@ -1415,6 +976,7 @@ sub generate_genotype_matrix : Path('/phenome/genotype/matrix/generate') :Args(1
 sub get_stock_trials :Chained('/stock/get_stock') PathPart('datatables/trials') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my @trials = $c->stash->{stock}->get_trials();
 
@@ -1425,97 +987,6 @@ sub get_stock_trials :Chained('/stock/get_stock') PathPart('datatables/trials') 
     $c->stash->{rest} = { data => \@formatted_trials };
 }
 
-
-=head2 action get_shared_trials()
-
- Usage:        /datatables/sharedtrials
- Desc:         retrieves trials associated with multiple stocks
- Ret:          a table in json suitable for datatables
- Args:         array of stock uniquenames
- Side Effects:
- Example:
-
-=cut
-
-sub get_shared_trials :Path('/stock/get_shared_trials') : ActionClass('REST'){
-
-sub get_shared_trials_POST :Args(1) {
-    my ($self, $c) = @_;
-    $c->stash->{rest} = { error => "Nothing here, it's a POST.." } ;
-}
-sub get_shared_trials_GET :Args(1) {
-    my $self = shift;
-    my $c = shift;
-
-    my @stock_ids = $c->request->param( 'stock_ids[]' );
-    my $stock_string = join ",", map { "'$_'" } (@stock_ids);
-    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    my $dbh = $c->dbc->dbh();
-    my $bs = CXGN::BreederSearch->new( { dbh=>$dbh } );
-
-    my $criteria_list = [
-               'accessions',
-               'trials'
-             ];
-
-    my $dataref = {
-               'trials' => {
-                           'accessions' => $stock_string
-                         }
-                  };
-
-    my $queryref = {
-               'trials' => {
-                           'accessions' => 1
-                         }
-                  };
-
-    my $status = $bs->test_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass});
-    if ($status->{'error'}) {
-      $c->stash->{rest} = { error => $status->{'error'}};
-      return;
-    }
-    my $trial_query = $bs->metadata_query($criteria_list, $dataref, $queryref);
-    my @shared_trials = @{$trial_query->{results}};
-
-    my @formatted_rows = ();
-
-    foreach my $stock_id (@stock_ids) {
-	     my $trials_string ='';
-       my $stock = CXGN::Stock->new(schema => $schema, stock_id => $stock_id);
-       my $uniquename = $stock->uniquename;
-       $dataref = {
-             'trials' => {
-                         'accessions' => $stock_id
-                       }
-                };
-        $trial_query = $bs->metadata_query($criteria_list, $dataref, $queryref);
-        my @current_trials = @{$trial_query->{results}};
-	      my $num_trials = scalar @current_trials;
-
-	      foreach my $t (@current_trials) {
-          print STDERR "t = " . Dumper($t);
-          $trials_string = $trials_string . '<a href="/breeders/trial/'.$t->[0].'">'.$t->[1].'</a>,  ';
-	      }
-	      $trials_string =~ s/,\s+$//;
-	      push @formatted_rows, ['<a href="/stock/'.$stock_id.'/view">'.$uniquename.'</a>', $num_trials, $trials_string ];
-    }
-
-    my $num_trials = scalar @shared_trials;
-    if ($num_trials > 0) {
-	    my $trials_string = '';
-	    foreach my $t (@shared_trials) {
-	       $trials_string = $trials_string . '<a href="/breeders/trial/'.$t->[0].'">'.$t->[1].'</a>,  ';
-      }
-	    $trials_string  =~ s/,\s+$//;
-	    push @formatted_rows, [ "Trials in Common", $num_trials, $trials_string];
-    } else {
-      push @formatted_rows, [ "Trials in Common", $num_trials, "No shared trials found."];
-    }
-
-    $c->stash->{rest} = { data => \@formatted_rows, shared_trials => \@shared_trials };
-  }
-}
 
 =head2 action get_stock_trait_list()
 
@@ -1532,6 +1003,7 @@ sub get_stock_trait_list :Chained('/stock/get_stock') PathPart('datatables/trait
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $stock = CXGN::Stock->new({schema => $schema, stock_id =>$c->stash->{stock_id}});
 
@@ -1554,6 +1026,7 @@ sub get_phenotypes_by_stock_and_trial :Chained('/stock/get_stock') PathPart('dat
     my $c = shift;
     my $trial_id = shift;
     my $stock_type = $c->stash->{stock}->type()->name();
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $q;
     if ($stock_type eq 'accession'){
@@ -1589,6 +1062,7 @@ sub get_pedigree_string :Chained('/stock/get_stock') PathPart('pedigree') Args(0
     my $self = shift;
     my $c = shift;
     my $level = $c->req->param("level");
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $stock = CXGN::Stock->new(
         schema => $c->dbic_schema("Bio::Chado::Schema"),
@@ -1607,6 +1081,7 @@ sub get_pedigree_string_ :Chained('/stock/get_stock') PathPart('pedigreestring')
     my $level = $c->req->param("level");
     my $stock_id = $c->stash->{stock}->stock_id();
     my $stock_name = $c->stash->{stock}->name();
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $pedigree_string;
 
@@ -1711,6 +1186,7 @@ sub stock_lookup_POST {
     my $lookup_from_field = shift;
     my $lookup_field = shift;
     my $value_to_lookup = $c->req->param($lookup_from_field);
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     #print STDERR $lookup_from_field;
     #print STDERR $lookup_field;
@@ -1729,6 +1205,7 @@ sub get_trial_related_stock:Chained('/stock/get_stock') PathPart('datatables/tri
     my $self = shift;
     my $c = shift;
     my $stock_id = $c->stash->{stock_row}->stock_id();
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema", 'sgn_chado');
 
@@ -1753,6 +1230,7 @@ sub get_progenies:Chained('/stock/get_stock') PathPart('datatables/progenies') A
     my $self = shift;
     my $c = shift;
     my $stock_id = $c->stash->{stock_row}->stock_id();
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema", 'sgn_chado');
     my $progenies = CXGN::Stock::RelatedStocks->new({dbic_schema => $schema, stock_id =>$stock_id});
@@ -1770,6 +1248,7 @@ sub get_siblings:Chained('/stock/get_stock') PathPart('datatables/siblings') Arg
     my $self = shift;
     my $c = shift;
     my $stock_id = $c->stash->{stock_row}->stock_id();
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema", 'sgn_chado');
     my $stock = CXGN::Stock->new({schema => $schema, stock_id=>$stock_id});
@@ -1796,6 +1275,7 @@ sub get_group_and_member:Chained('/stock/get_stock') PathPart('datatables/group_
     my $self = shift;
     my $c = shift;
     my $stock_id = $c->stash->{stock_row}->stock_id();
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema", 'sgn_chado');
 
@@ -1820,6 +1300,7 @@ sub get_stock_for_tissue:Chained('/stock/get_stock') PathPart('datatables/stock_
     my $self = shift;
     my $c = shift;
     my $stock_id = $c->stash->{stock_row}->stock_id();
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema", 'sgn_chado');
 
@@ -1845,6 +1326,7 @@ sub get_stock_datatables_genotype_data_GET  {
     my $limit = $c->req->param('length') || 1000;
     my $offset = $c->req->param('start') || 0;
     my $stock_id = $c->stash->{stock_row}->stock_id();
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema", 'sgn_chado');
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
@@ -1916,7 +1398,7 @@ sub stock_obsolete : Path('/stock/obsolete') : ActionClass('REST') { }
 sub stock_obsolete_GET {
     my ( $self, $c ) = @_;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 'curator', 0, 0);
 
     my $stock_id = $c->req->param('stock_id');
     my $is_obsolete  = $c->req->param('is_obsolete');
@@ -1959,6 +1441,7 @@ sub get_accessions_with_pedigree_GET {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $result = CXGN::Cross->get_progeny_info($schema);
 
@@ -1979,7 +1462,8 @@ sub stock_edit_details_POST :Args(0) {
     # print STDERR Dumper $c->req->params();
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 'submitter', 0, 0);
+
     my $stock_id = $c->req->param('stock_id');
     my $private_company_id = $c->req->param('private_company_id');
     my $uniquename = $c->req->param('uniquename');
@@ -2022,38 +1506,19 @@ sub stock_edit_details_POST :Args(0) {
     $c->stash->{rest} = $return;
 }
 
-sub _check_user_login {
+sub _check_user_login_stock {
     my $c = shift;
     my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
 
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else {
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
-    if ($check_priv && $user_role ne 'curator' && $user_role ne 'submitter' && $user_role ne 'sequencer') {
-        $c->stash->{rest} = {error=>'You must be logged in and have privileges to do this!'};
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
         $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
     return ($user_id, $user_name, $user_role);
 }
 

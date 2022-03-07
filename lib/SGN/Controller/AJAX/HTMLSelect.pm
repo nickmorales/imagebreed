@@ -53,6 +53,7 @@ __PACKAGE__->config(
 sub get_location_select : Path('/ajax/html/select/locations') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $id = $c->req->param("id") || "location_select";
     my $name = $c->req->param("name") || "location_select";
@@ -76,17 +77,13 @@ sub get_location_select : Path('/ajax/html/select/locations') Args(0) {
 sub get_breeding_program_select : Path('/ajax/html/select/breeding_programs') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $id = $c->req->param("id") || "breeding_program_select";
     my $name = $c->req->param("name") || "breeding_program_select";
     my $empty = $c->req->param("empty") || "";
 
-    my $sp_person_id;
-    if ($c->user()) {
-        $sp_person_id = $c->user()->get_object()->get_sp_person_id();
-    }
-
-    my $breeding_programs = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } )->get_breeding_programs($sp_person_id);
+    my $breeding_programs = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } )->get_breeding_programs($user_id);
 
     my $default = $c->req->param("default") || @$breeding_programs[0]->[0];
     if ($empty) { unshift @$breeding_programs, [ "", "Please select a program" ]; }
@@ -104,6 +101,7 @@ sub get_private_companies_select : Path('/ajax/html/select/private_companies') A
     my $self = shift;
     my $c = shift;
     # print STDERR Dumper $c->req->params();
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $id = $c->req->param("id") || "private_companies_select";
     my $name = $c->req->param("name") || "private_companies_select";
@@ -113,13 +111,8 @@ sub get_private_companies_select : Path('/ajax/html/select/private_companies') A
     my $multiple = $c->req->param('multiple') || "";
     my $multiple_select_all = $c->req->param('multiple_select_all') || "";
 
-    my $sp_person_id;
-    if ($c->user()) {
-        $sp_person_id = $c->user()->get_object()->get_sp_person_id();
-    }
-
     my $private_companies = CXGN::PrivateCompany->new( { schema=> $c->dbic_schema("Bio::Chado::Schema") } );
-    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
 
     my @private_companies;
     foreach (@$private_companies_array) {
@@ -142,6 +135,7 @@ sub get_private_companies_select : Path('/ajax/html/select/private_companies') A
 sub get_year_select : Path('/ajax/html/select/years') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $id = $c->req->param("id") || "year_select";
     my $name = $c->req->param("name") || "year_select";
@@ -172,6 +166,7 @@ sub get_year_select : Path('/ajax/html/select/years') Args(0) {
 sub get_trial_folder_select : Path('/ajax/html/select/folders') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $breeding_program_id = $c->req->param("breeding_program_id");
     my $folder_for_trials = 1 ? $c->req->param("folder_for_trials") eq 'true' : 0;
@@ -207,6 +202,7 @@ sub get_trial_type_select : Path('/ajax/html/select/trial_types') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $id = $c->req->param("id") || "trial_type_select";
     my $name = $c->req->param("name") || "trial_type_select";
@@ -246,6 +242,7 @@ sub get_treatments_select : Path('/ajax/html/select/treatments') Args(0) {
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $trial_id = $c->req->param("trial_id");
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $id = $c->req->param("id") || "treatment_select";
     my $name = $c->req->param("name") || "treatment_select";
@@ -276,6 +273,7 @@ sub get_projects_select : Path('/ajax/html/select/projects') Args(0) {
     my $get_crossing_trials = $c->req->param("get_crossing_trials");
     my $get_genotyping_trials = $c->req->param("get_genotyping_trials");
     my $include_analyses = $c->req->param("include_analyses");
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $projects;
     if (!$breeding_program_id && !$breeding_program_name) {
@@ -350,6 +348,7 @@ sub get_trials_select : Path('/ajax/html/select/trials') Args(0) {
     my $breeding_program_id = $c->req->param("breeding_program_id");
     my $breeding_program_name = $c->req->param("breeding_program_name");
     my $trial_name_values = $c->req->param("trial_name_values") || 0;
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $projects;
     if (!$breeding_program_id && !$breeding_program_name) {
@@ -395,7 +394,7 @@ sub get_trials_select : Path('/ajax/html/select/trials') Args(0) {
     @trials = sort { $a->[1] cmp $b->[1] } @trials;
 
     if ($include_lists) {
-        my $lists = CXGN::List::available_lists($c->dbc->dbh(), $c->user()->get_sp_person_id());
+        my $lists = CXGN::List::available_lists($c->dbc->dbh(), $user_id);
         my $public_lists = CXGN::List::available_public_lists($c->dbc->dbh());
         my $lt = CXGN::List::Transform->new();
 
@@ -444,6 +443,7 @@ sub get_genotyping_trials_select : Path('/ajax/html/select/genotyping_trials') A
     my $p = CXGN::BreedersToolbox::Projects->new( { schema => $schema } );
     my $breeding_program_id = $c->req->param("breeding_program_id");
     my $breeding_program_name = $c->req->param("breeding_program_name");
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $projects;
     if (!$breeding_program_id && !$breeding_program_name) {
@@ -493,8 +493,7 @@ sub get_label_data_source_select : Path('/ajax/html/select/label_data_sources') 
     my $empty = $c->req->param("empty") || "";
     my $live_search = $c->req->param("live_search") ? 'data-live-search="true"' : '';
     my $default = $c->req->param("default") || 0;
-
-    my $user_id = $c->user()->get_sp_person_id();
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     # my $all_lists = CXGN::List::all_types($c->dbc->dbh());
 
@@ -557,62 +556,12 @@ sub get_label_data_source_select : Path('/ajax/html/select/label_data_sources') 
 
     $c->stash->{rest} = { select => $html };
 }
-# sub get_trials_select : Path('/ajax/html/select/trials') Args(0) {
-#     my $self = shift;
-#     my $c = shift;
-#
-    # my $id = $c->req->param("id") || "label_data_sources_select";
-    # my $name = $c->req->param("name") || "label_data_sources_select";
-    # my $empty = $c->req->param("empty") || "";
-    # my $live_search = $c->req->param("live_search") ? 'data-live-search="true"' : '';
-    # my $default = $c->req->param("default") || 0;
-    #
-    # my $lists = CXGN::List::available_lists($c->dbc->dbh(), $c->user(), 'plots');
-    # my $public_lists = CXGN::List::available_public_lists($c->dbc->dbh(), 'plots');
-    #
-    # my $projects = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } )->get_breeding_programs();
-    # my @trials = [];
-    # foreach my $project (@$projects) {
-    #   my ($field_trials, $cross_trials, $genotyping_trials) = $projects->get_trials_by_breeding_program($project->[0]);
-    #   foreach (@$field_trials) {
-    #       push @trials, $_;
-    #   }
-    # }
-    # @trials = sort { $a->[1] cmp $b->[1] } @trials;
-    #
-    # my @choices = [];
-    # push @choices, '__Your Plot Lists';
-    # foreach my $item (@$lists) {
-    #     push @choices, $item;
-    # }
-    # push @choices, '__Public Plot Lists';
-    # foreach my $item (@$public_lists) {
-    #     push @choices, $item;
-    # }
-    # push @choices, '__Trials';
-    # foreach my $trial (@trials) {
-    #     push @choices, $trial;
-    # }
-    #
-    # print STDERR "Choices are:\n".Dumper(@choices);
-    #
-    # if ($default) { unshift @trials, [ '', $default ]; }
-    #
-    # my $html = simple_selectbox_html(
-    #   name => $name,
-    #   id => $id,
-    #   choices => \@choices,
-    #   params => $live_search
-    # );
-#
-#     $c->stash->{rest} = { select => $html };
-# }
 
 sub get_stocks_select : Path('/ajax/html/select/stocks') Args(0) {
-	my $self = shift;
-	my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
-	my $params = _clean_inputs($c->req->params);
+    my $self = shift;
+    my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
+    my $params = _clean_inputs($c->req->params);
     my $names_as_select = $params->{names_as_select}->[0] || 0;
 
     my %stockprops_values;
@@ -626,72 +575,72 @@ sub get_stocks_select : Path('/ajax/html/select/stocks') Args(0) {
         $stockprops_values{'accession number'} = $params->{accession_number_list};
     }
 
-	my $stock_search = CXGN::Stock::Search->new({
-		bcs_schema=>$c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
-		people_schema=>$c->dbic_schema("CXGN::People::Schema"),
-		phenome_schema=>$c->dbic_schema("CXGN::Phenome::Schema"),
-		match_type=>$params->{match_type}->[0],
-		match_name=>$params->{match_type}->[0],
-		uniquename_list=>$params->{uniquename_list},
-		genus_list=>$params->{genus_list},
-		species_list=>$params->{species_list},
-		stock_id_list=>$params->{stock_id_list},
-		organism_id=>$params->{organism_id}->[0],
-		stock_type_name=>$params->{stock_type_name}->[0],
-		stock_type_id=>$params->{stock_type_id}->[0],
-		owner_first_name=>$params->{owner_first_name}->[0],
-		owner_last_name=>$params->{owner_last_name}->[0],
-		trait_cvterm_name_list=>$params->{trait_cvterm_name_list},
-		minimum_phenotype_value=>$params->{minimum_phenotype_value}->[0],
-		maximum_phenotype_value=>$params->{maximum_phenotype_value}->[0],
-		trial_name_list=>$params->{trial_name_list},
-		trial_id_list=>$params->{trial_id_list},
-		breeding_program_id_list=>$params->{breeding_program_id_list},
-		location_name_list=>$params->{location_name_list},
-		year_list=>$params->{year_list},
+    my $stock_search = CXGN::Stock::Search->new({
+        bcs_schema=>$c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
+        people_schema=>$c->dbic_schema("CXGN::People::Schema"),
+        phenome_schema=>$c->dbic_schema("CXGN::Phenome::Schema"),
+        match_type=>$params->{match_type}->[0],
+        match_name=>$params->{match_type}->[0],
+        uniquename_list=>$params->{uniquename_list},
+        genus_list=>$params->{genus_list},
+        species_list=>$params->{species_list},
+        stock_id_list=>$params->{stock_id_list},
+        organism_id=>$params->{organism_id}->[0],
+        stock_type_name=>$params->{stock_type_name}->[0],
+        stock_type_id=>$params->{stock_type_id}->[0],
+        owner_first_name=>$params->{owner_first_name}->[0],
+        owner_last_name=>$params->{owner_last_name}->[0],
+        trait_cvterm_name_list=>$params->{trait_cvterm_name_list},
+        minimum_phenotype_value=>$params->{minimum_phenotype_value}->[0],
+        maximum_phenotype_value=>$params->{maximum_phenotype_value}->[0],
+        trial_name_list=>$params->{trial_name_list},
+        trial_id_list=>$params->{trial_id_list},
+        breeding_program_id_list=>$params->{breeding_program_id_list},
+        location_name_list=>$params->{location_name_list},
+        year_list=>$params->{year_list},
         stockprops_values=>\%stockprops_values,
-		limit=>$params->{limit}->[0],
-		offset=>$params->{offset}->[0],
-		minimal_info=>1,
+        limit=>$params->{limit}->[0],
+        offset=>$params->{offset}->[0],
+        minimal_info=>1,
         display_pedigree=>0,
         sp_person_id=>$user_id,
         subscription_model=>$c->config->{subscription_model}
-	});
-	my ($result, $records_total) = $stock_search->search();
-	#print STDERR Dumper $result;
-	my $id = $c->req->param("id") || "html_trial_select";
-	my $name = $c->req->param("name") || "html_trial_select";
-	my $multiple = defined($c->req->param("multiple")) ? $c->req->param("multiple") : 1;
-	my $size = $c->req->param("size");
-	my $empty = $c->req->param("empty") || "";
-	my $data_related = $c->req->param("data-related") || "";
-	my @stocks;
-	foreach my $r (@$result) {
+    });
+    my ($result, $records_total) = $stock_search->search();
+    #print STDERR Dumper $result;
+    my $id = $c->req->param("id") || "html_trial_select";
+    my $name = $c->req->param("name") || "html_trial_select";
+    my $multiple = defined($c->req->param("multiple")) ? $c->req->param("multiple") : 1;
+    my $size = $c->req->param("size");
+    my $empty = $c->req->param("empty") || "";
+    my $data_related = $c->req->param("data-related") || "";
+    my @stocks;
+    foreach my $r (@$result) {
         if ($names_as_select) {
-	        push @stocks, [ $r->{uniquename}, $r->{uniquename} ];
+            push @stocks, [ $r->{uniquename}, $r->{uniquename} ];
         } else {
             push @stocks, [ $r->{stock_id}, $r->{uniquename} ];
         }
-	}
-	@stocks = sort { $a->[1] cmp $b->[1] } @stocks;
+    }
+    @stocks = sort { $a->[1] cmp $b->[1] } @stocks;
 
-	if ($empty) { unshift @stocks, [ "", "Please select a stock" ]; }
+    if ($empty) { unshift @stocks, [ "", "Please select a stock" ]; }
 
-	my $html = simple_selectbox_html(
-		multiple => $multiple,
-		name => $name,
-		id => $id,
-		size => $size,
-		choices => \@stocks,
+    my $html = simple_selectbox_html(
+        multiple => $multiple,
+        name => $name,
+        id => $id,
+        size => $size,
+        choices => \@stocks,
         data_related => $data_related
-	);
-	$c->stash->{rest} = { select => $html };
+    );
+    $c->stash->{rest} = { select => $html };
 }
 
 sub get_seedlots_select : Path('/ajax/html/select/seedlots') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $accessions = $c->req->param('seedlot_content_accession_name') ? [$c->req->param('seedlot_content_accession_name')] : [];
     my $crosses = $c->req->param('seedlot_content_cross_name') ? [$c->req->param('seedlot_content_cross_name')] : [];
@@ -763,6 +712,7 @@ sub get_ontologies : Path('/ajax/html/select/trait_variable_ontologies') Args(0)
     my $cvprop_type_names = $c->req->param("cvprop_type_name") ? decode_json $c->req->param("cvprop_type_name") : ['trait_ontology', 'method_ontology', 'unit_ontology'];
     my $use_full_trait_name = $c->req->param("use_full_trait_name") || 0;
     my $hide_onts = $c->req->param("hide_protected_onts") || 0;
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $observation_variables = CXGN::BrAPI::v1::ObservationVariables->new({
         bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
@@ -821,6 +771,7 @@ sub get_high_dimensional_phenotypes_protocols : Path('/ajax/html/select/high_dim
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $checkbox_name = $c->req->param('checkbox_name');
     my $protocol_type = $c->req->param('high_dimensional_phenotype_protocol_type');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $protocol_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, $protocol_type, 'protocol_type')->cvterm_id();
     my $protocolprop_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'high_dimensional_phenotype_protocol_properties', 'protocol_property')->cvterm_id();
@@ -857,6 +808,7 @@ sub get_analytics_protocols : Path('/ajax/html/select/analytics_protocols') Args
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $checkbox_name = $c->req->param('checkbox_name');
     my $protocol_type = $c->req->param('analytics_protocol_type');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $protocol_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, $protocol_type, 'protocol_type')->cvterm_id();
     my $protocolprop_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analytics_protocol_properties', 'protocol_property')->cvterm_id();
@@ -891,6 +843,7 @@ sub get_sequence_metadata_protocols : Path('/ajax/html/select/sequence_metadata_
     my $checkbox_name = $c->req->param('checkbox_name');
     my $data_type_cvterm_id = $c->req->param('sequence_metadata_data_type_id');
     my $include_query_link = $c->req->param('include_query_link');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
@@ -966,6 +919,7 @@ sub get_trained_nirs_models : Path('/ajax/html/select/trained_nirs_models') Args
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $checkbox_name = $c->req->param('checkbox_name');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $nirs_model_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'waves_nirs_spectral_predictions', 'protocol_type')->cvterm_id();
     my $model_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analysis_model_properties', 'protocol_property')->cvterm_id();
@@ -1003,6 +957,7 @@ sub get_trained_keras_cnn_models : Path('/ajax/html/select/trained_keras_cnn_mod
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $keras_cnn_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'trained_keras_cnn_model', 'protocol_type')->cvterm_id();
     my $model_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analysis_model_properties', 'protocol_property')->cvterm_id();
@@ -1050,6 +1005,7 @@ sub get_trained_keras_mask_r_cnn_models : Path('/ajax/html/select/trained_keras_
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $keras_mask_r_cnn_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'trained_keras_mask_r_cnn_model', 'protocol_type')->cvterm_id();
     my $model_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analysis_model_properties', 'protocol_property')->cvterm_id();
@@ -1085,6 +1041,7 @@ sub get_analysis_models : Path('/ajax/html/select/models') Args(0) {
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $model_properties_cvterm_id = $c->req->param('nd_protocol_type') ? SGN::Model::Cvterm->get_cvterm_row($schema, $c->req->param('nd_protocol_type'), 'protocol_property')->cvterm_id() : SGN::Model::Cvterm->get_cvterm_row($schema, 'analysis_model_properties', 'protocol_property')->cvterm_id();
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $model_q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.description, model_type.value
         FROM nd_protocol
@@ -1117,6 +1074,7 @@ sub get_imaging_event_vehicles : Path('/ajax/html/select/imaging_event_vehicles'
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle', 'stock_type')->cvterm_id();
     my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
@@ -1161,6 +1119,7 @@ sub get_traits_select : Path('/ajax/html/select/traits') Args(0) {
     my $multiple = $c->req->param('multiple');
     my $empty = $c->req->param('empty');
     my $select_all = $c->req->param('select_all');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $id = $c->req->param("id") || "html_trial_select";
     my $name = $c->req->param("name") || "html_trial_select";
@@ -1325,6 +1284,7 @@ sub get_phenotyped_trait_components_select : Path('/ajax/html/select/phenotyped_
     my $data_level = $c->req->param('data_level') || 'all';
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $composable_cvterm_format = $c->config->{composable_cvterm_format};
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     if ($data_level eq 'all') {
         $data_level = '';
@@ -1362,6 +1322,8 @@ sub get_composable_cvs_allowed_combinations_select : Path('/ajax/html/select/com
     my $c = shift;
     my $id = $c->req->param("id") || "html_composable_cvs_combinations_select";
     my $name = $c->req->param("name") || "html_composable_cvs_combinations_select";
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
+
     my $composable_cvs_allowed_combinations = $c->config->{composable_cvs_allowed_combinations};
     my @combinations = split ',', $composable_cvs_allowed_combinations;
     my @select;
@@ -1384,6 +1346,7 @@ sub get_crosses_select : Path('/ajax/html/select/crosses') Args(0) {
     my $p = CXGN::BreedersToolbox::Projects->new( { schema => $schema } );
     my $breeding_program_id = $c->req->param("breeding_program_id");
     my $breeding_program_name = $c->req->param("breeding_program_name");
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $projects;
     if (!$breeding_program_id && !$breeding_program_name) {
@@ -1420,6 +1383,7 @@ sub get_crosses_select : Path('/ajax/html/select/crosses') Args(0) {
 sub get_genotyping_protocol_select : Path('/ajax/html/select/genotyping_protocol') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $id = $c->req->param("id") || "gtp_select";
     my $name = $c->req->param("name") || "genotyping_protocol_select";
@@ -1448,34 +1412,33 @@ sub get_genotyping_protocol_select : Path('/ajax/html/select/genotyping_protocol
 }
 
 sub get_trait_components_select : Path('/ajax/html/select/trait_components') Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
-  my $self = shift;
-  my $c = shift;
+    my $cv_id = $c->req->param('cv_id');
+    #print STDERR "cv_id = $cv_id\n";
+    my $id = $c->req->param("id") || "component_select";
+    my $name = $c->req->param("name") || "component_select";
+    my $default = $c->req->param("default") || 0;
+    my $multiple =  $c->req->param("multiple") || 0;
+    my $size = $c->req->param('size') || '5';
 
-  my $cv_id = $c->req->param('cv_id');
-  #print STDERR "cv_id = $cv_id\n";
-  my $id = $c->req->param("id") || "component_select";
-  my $name = $c->req->param("name") || "component_select";
-  my $default = $c->req->param("default") || 0;
-  my $multiple =  $c->req->param("multiple") || 0;
-  my $size = $c->req->param('size') || '5';
+    my $dbh = $c->dbc->dbh();
+    my $onto = CXGN::Onto->new( { schema => $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado') } );
+    my @components = $onto->get_terms($cv_id);
+    #print STDERR Dumper \@components;
+    if ($default) { unshift @components, [ '', $default ]; }
 
-  my $dbh = $c->dbc->dbh();
-  my $onto = CXGN::Onto->new( { schema => $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado') } );
-  my @components = $onto->get_terms($cv_id);
-  #print STDERR Dumper \@components;
-  if ($default) { unshift @components, [ '', $default ]; }
+    my $html = simple_selectbox_html(
+        name => $name,
+        multiple => $multiple,
+        id => $id,
+        choices => \@components,
+        size => $size
+    );
 
-  my $html = simple_selectbox_html(
-    name => $name,
-    multiple => $multiple,
-    id => $id,
-    choices => \@components,
-    size => $size
-  );
-
-  $c->stash->{rest} = { select => $html };
-
+    $c->stash->{rest} = { select => $html };
 }
 
 
@@ -1487,6 +1450,7 @@ sub ontology_children_select : Path('/ajax/html/select/ontology_children') Args(
     my $size = $c->req->param('size') || '5';
     my $value_format = $c->req->param('value_format') || 'ids';
     print STDERR "Parent Node $parent_node_cvterm\n";
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $select_name = $c->request->param("selectbox_name");
     my $select_id = $c->request->param("selectbox_id");
@@ -1537,6 +1501,7 @@ sub all_ontology_terms_select : Path('/ajax/html/select/all_ontology_terms') Arg
     my ($self, $c) = @_;
     my $db_id = $c->request->param("db_id");
     my $size = $c->req->param('size') || '5';
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $select_name = $c->request->param("selectbox_name");
     my $select_id = $c->request->param("selectbox_id");
@@ -1580,41 +1545,37 @@ sub get_datasets_select :Path('/ajax/html/select/datasets') Args(0) {
     my $checkbox_name = $c->request->param("checkbox_name") || 'dataset_select_checkbox';
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $num = int(rand(1000));
-    my $user_id;
     my @datasets;
-    if ($c->user()) {
-        if ($user_id = $c->user->get_object()->get_sp_person_id()) {
 
-            my $user_datasets = CXGN::Dataset->get_datasets_by_user(
-                $c->dbic_schema("CXGN::People::Schema"),
-                $user_id
-            );
-            #print STDERR "Retrieved datasets: ".Dumper($user_datasets);
+    my $user_datasets = CXGN::Dataset->get_datasets_by_user(
+        $c->dbic_schema("CXGN::People::Schema"),
+        $user_id
+    );
+    #print STDERR "Retrieved datasets: ".Dumper($user_datasets);
 
-            foreach (@$user_datasets) {
-                my $dataset_id = $_->[0];
-                my $dataset_name = $_->[1];
-                my $dataset_description = $_->[2];
+    foreach (@$user_datasets) {
+        my $dataset_id = $_->[0];
+        my $dataset_name = $_->[1];
+        my $dataset_description = $_->[2];
 
-                my $ds = CXGN::Dataset->new({
-                    schema => $schema,
-                    people_schema => $people_schema,
-                    sp_dataset_id => $dataset_id
-                });
-                my $info = $ds->get_dataset_data();
+        my $ds = CXGN::Dataset->new({
+            schema => $schema,
+            people_schema => $people_schema,
+            sp_dataset_id => $dataset_id
+        });
+        my $info = $ds->get_dataset_data();
 
-                my $dataset_info = {
-                    id => $dataset_id,
-                    name => $dataset_name,
-                    description => $dataset_description,
-                    info => $info
-                };
+        my $dataset_info = {
+            id => $dataset_id,
+            name => $dataset_name,
+            description => $dataset_description,
+            info => $info
+        };
 
-                push @datasets, $dataset_info;
-            }
-        }
+        push @datasets, $dataset_info;
     }
     #print STDERR Dumper \@datasets;
 
@@ -1678,6 +1639,7 @@ sub get_datasets_intersect_select : Path('/ajax/html/select/datasets_intersect')
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $people_schema = $c->dbic_schema('CXGN::People::Schema');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $name = $c->req->param("name");
     my $id = $c->req->param("id");
@@ -1747,6 +1709,7 @@ sub get_drone_imagery_parameter_select : Path('/ajax/html/select/drone_imagery_p
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $project_id = $c->req->param("field_trial_id");
     my $drone_run_parameter = $c->req->param("parameter");
@@ -1800,6 +1763,7 @@ sub get_drone_imagery_drone_runs_with_gcps : Path('/ajax/html/select/drone_runs_
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $id = $c->req->param("id") || "drone_imagery_drone_run_gcp_select";
     my $name = $c->req->param("name") || "drone_imagery_drone_run_gcp_select";
@@ -1841,6 +1805,7 @@ sub get_drone_imagery_drone_runs : Path('/ajax/html/select/drone_runs') Args(0) 
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $id = $c->req->param("id") || "drone_imagery_drone_run_select";
     my $name = $c->req->param("name") || "drone_imagery_drone_run_select";
@@ -1880,6 +1845,7 @@ sub get_drone_imagery_plot_polygon_types : Path('/ajax/html/select/drone_imagery
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $names_as_select = $c->req->param("names_as_select") || 0;
     my $standard_process = $c->req->param("standard_process_type") || 'minimal';
@@ -1924,6 +1890,7 @@ sub get_micasense_aligned_raw_images : Path('/ajax/html/select/micasense_aligned
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $drone_run_project_id = $c->req->param("drone_run_project_id");
 
@@ -1968,6 +1935,7 @@ sub get_micasense_aligned_raw_images_grid : Path('/ajax/html/select/micasense_al
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $drone_run_project_id = $c->req->param("drone_run_project_id");
 
@@ -2070,6 +2038,7 @@ sub get_plot_polygon_templates_partial : Path('/ajax/html/select/plot_polygon_te
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $drone_run_project_id = $c->req->param("drone_run_project_id");
 
@@ -2116,6 +2085,7 @@ sub get_plot_image_sizes : Path('/ajax/html/select/plot_image_sizes') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $drone_run_project_id = $c->req->param("drone_run_project_id");
 
@@ -2160,6 +2130,7 @@ sub get_drone_imagery_drone_run_band : Path('/ajax/html/select/drone_imagery_dro
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $drone_run_project_id = $c->req->param("drone_run_project_id");
 
@@ -2194,6 +2165,8 @@ sub get_drone_imagery_drone_run_band : Path('/ajax/html/select/drone_imagery_dro
 sub get_items_select : Path('/ajax/html/select/items') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
+
     my $params = _clean_inputs($c->req->params);
     my $items = $params->{list_items},
     my $size = $params->{size};
@@ -2238,33 +2211,18 @@ sub _clean_inputs {
 	return $params;
 }
 
-sub _check_user_login {
+sub _check_user_login_html_select {
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     return ($user_id, $user_name, $user_role);
 }

@@ -77,13 +77,13 @@ sub drone_imagery_show_example_simulations_POST : Args(0) {
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
     my $sims = $c->req->param('simulations');
     my $sim_env_change_over_time = $c->req->param('change_over_time');
     my $correlation_between_times = $c->req->param('correlation_over_time');
     my $trait_id = $c->req->param('real_data_trait_id');
     my $field_trial_id = $c->req->param('field_trial_id');
     my $trait_id_list = decode_json $c->req->param('trait_ids');
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_analytics($c, 0, 0, 0);
 
     my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
         'MaterializedViewTable',
@@ -977,13 +977,12 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 'curator');
-
     my $statistics_select_original = $c->req->param('statistics_select');
     my $analytics_protocol_id = $c->req->param('analytics_protocol_id');
     my $analytics_protocol_name = $c->req->param('analytics_protocol_name');
     my $analytics_protocol_desc = $c->req->param('analytics_protocol_desc');
     my $sim_env_change_over_time = $c->req->param('sim_env_change_over_time') || '';
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_analytics($c, 'submitter', 0, 0);
 
     my $field_trial_id_list = $c->req->param('field_trial_id_list') ? decode_json $c->req->param('field_trial_id_list') : [];
     my $field_trial_id_list_string = join ',', @$field_trial_id_list;
@@ -15535,38 +15534,19 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     };
 }
 
-sub _check_user_login {
+sub _check_user_login_drone_imagery_analytics {
     my $c = shift;
-    my $role_check = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
-    if ($role_check && $user_role ne $role_check) {
-        $c->stash->{rest} = {error=>'You must have permission to do this! Please contact us!'};
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
         $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
     return ($user_id, $user_name, $user_role);
 }
 

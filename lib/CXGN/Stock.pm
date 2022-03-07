@@ -693,11 +693,11 @@ sub store {
             my $h = $self->schema->storage->dbh()->prepare($q);
             $h->execute($self->private_company_id, $self->stock_id());
         }
-        if (defined($self->private_company_stock_is_private)) {
-            my $q = "UPDATE stock SET is_private=? WHERE stock_id=?;";
-            my $h = $self->schema->storage->dbh()->prepare($q);
-            $h->execute($self->private_company_stock_is_private, $self->stock_id());
-        }
+        # if (defined($self->private_company_stock_is_private)) {
+        #     my $q = "UPDATE stock SET is_private=? WHERE stock_id=?;";
+        #     my $h = $self->schema->storage->dbh()->prepare($q);
+        #     $h->execute($self->private_company_stock_is_private, $self->stock_id());
+        # }
     }
     $self->associate_owner($self->sp_person_id, $self->sp_person_id, $self->user_name, $self->modification_note);
 
@@ -1547,6 +1547,7 @@ sub _new_metadata_id {
     my $sp_person_id = shift;
     my $user_name = shift;
     my $modification_note = shift;
+    print STDERR Dumper [$sp_person_id, $user_name, $modification_note];
     my $metadata_schema = CXGN::Metadata::Schema->connect(
         sub { $self->schema()->storage()->dbh() },
         );

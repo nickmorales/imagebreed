@@ -40,7 +40,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', 0, 0);
     print STDERR Dumper $c->req->params();
 
     my $selected_trial_ids = $c->req->param('drone_run_field_trial_id');
@@ -1251,7 +1251,7 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $dbh = $c->dbc->dbh;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', 0, 0);
     print STDERR Dumper $c->req->params();
 
     my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle', 'stock_type')->cvterm_id();
@@ -1827,7 +1827,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $dbh = $c->dbc->dbh;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', 0, 0);
     print STDERR Dumper $c->req->params();
 
     my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle', 'stock_type')->cvterm_id();
@@ -2896,7 +2896,7 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $dbh = $c->dbc->dbh;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', 0, 0);
     # print STDERR Dumper $c->req->params();
 
     my $overwrite_geojson = $c->req->param('upload_drone_imagery_geocoordinate_param_overwrite_geojson') eq 'yes' ? 1 : 0;
@@ -3189,7 +3189,7 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $dbh = $c->dbc->dbh;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', 0, 0);
     # print STDERR Dumper $c->req->params();
 
     my $upload_file = $c->req->upload('manage_drone_imagery_standard_process_geotiff_params_geotiff');
@@ -3593,41 +3593,19 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
     return;
 }
 
-sub _check_user_login {
+sub _check_user_login_drone_imagery_upload {
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{message} = 'You must be logged in to do this!';
-            $c->stash->{template} = 'generic_message.mas';
-            return;
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{message} = 'You must be logged in to do this!';
-            $c->stash->{template} = 'generic_message.mas';
-            return;
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
-    if ($user_role ne 'curator' && $user_role ne 'submitter' && $user_role ne 'sequencer') {
-        $c->stash->{message} = 'You do not have permissions to do this! Please contact us.';
-        $c->stash->{template} = 'generic_message.mas';
-        return;
-    }
     return ($user_id, $user_name, $user_role);
 }
 

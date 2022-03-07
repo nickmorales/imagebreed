@@ -142,8 +142,14 @@ sub BUILD {
             description => $desc
         });
         my $project_id = $new_row->project_id();
-
         $self->set_trial_id($project_id);
+
+        if ($self->private_company_id()) {
+            $self->set_private_company($self->private_company_id());
+        }
+        if ($self->private_company_project_is_private()) {
+            $self->set_private_company_project_is_private($self->private_company_project_is_private());
+        }
     }
 
     if ($trial_id && $row) {
@@ -356,8 +362,18 @@ sub set_private_company {
     my $private_company_id = shift;
 
     my $q = "UPDATE project SET private_company_id = ? WHERE project_id = ?;";
+    # print STDERR Dumper [$private_company_id, $self->project_id];
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($private_company_id, $self->project_id);
+}
+
+sub set_private_company_project_is_private {
+    my $self = shift;
+    my $is_private = shift;
+
+    my $q = "UPDATE project SET is_private = ? WHERE project_id = ?;";
+    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($is_private, $self->project_id);
 }
 
 =head2 function get_nd_experiment_id()

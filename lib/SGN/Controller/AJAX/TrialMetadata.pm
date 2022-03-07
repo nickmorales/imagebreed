@@ -106,7 +106,7 @@ sub delete_trial_data_GET : Chained('trial') PathPart('delete') Args(1) {
     my $self = shift;
     my $c = shift;
     my $datatype = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'curator', 'curator_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
@@ -163,12 +163,16 @@ sub trial_phenotypes_fully_uploaded_GET   {
     my $self = shift;
     my $c = shift;
     my $trial = $c->stash->{trial};
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
+
     $c->stash->{rest} = { phenotypes_fully_uploaded => $trial->get_phenotypes_fully_uploaded() };
 }
 
 sub trial_phenotypes_fully_uploaded_POST  {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
+
     my $value = $c->req->param("phenotypes_fully_uploaded");
     my $trial = $c->stash->{trial};
     eval {
@@ -187,6 +191,7 @@ sub trial_details : Chained('trial') PathPart('details') Args(0) ActionClass('RE
 sub trial_details_GET   {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = $c->stash->{trial};
     my $planting_date = $trial->get_planting_date();
@@ -206,10 +211,10 @@ sub trial_details_GET   {
 sub trial_details_POST  {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
-
     my $trial_id = $c->stash->{trial_id};
     my $trial = $c->stash->{trial};
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
+
     my @categories = $c->req->param("categories[]");
 
     my $details = {};
@@ -219,24 +224,10 @@ sub trial_details_POST  {
 
     if (!%{$details}) {
         $c->stash->{rest} = { error => "No values were edited, so no changes could be made for this trial's details." };
-        return;
+        $c->detach();
     }
     else {
         print STDERR "Here are the deets: " . Dumper($details) . "\n";
-    }
-
-    my $original_private_company_id = $trial->private_company_id();
-
-    my $private_companies = CXGN::PrivateCompany->new( { schema=> $c->stash->{schema} } );
-    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
-
-    if (!exists($allowed_private_company_ids_hash->{$original_private_company_id})) {
-        $c->stash->{rest} = {error => "You are not in the company that owns this stock!"};
-        $c->detach();
-    }
-    elsif ($allowed_private_company_access_hash->{$original_private_company_id} ne 'curator_access' && $allowed_private_company_access_hash->{$original_private_company_id} ne 'submitter_access') {
-        $c->stash->{rest} = {error =>  "You do not have submitter or curator access in this company and cannot edit these details!" };
-        return;
     }
 
     my $program_object = CXGN::BreedersToolbox::Projects->new( { schema => $c->stash->{schema} });
@@ -289,6 +280,7 @@ sub traits_assayed : Chained('trial') PathPart('traits_assayed') Args(0) {
     my $self = shift;
     my $c = shift;
     my $stock_type = $c->req->param('stock_type');
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my @traits_assayed  = $c->stash->{trial}->get_traits_assayed($stock_type);
     $c->stash->{rest} = { traits_assayed => \@traits_assayed };
@@ -297,7 +289,7 @@ sub traits_assayed : Chained('trial') PathPart('traits_assayed') Args(0) {
 sub trait_phenotypes : Chained('trial') PathPart('trait_phenotypes') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     #get userinfo from db
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
@@ -320,6 +312,7 @@ sub trait_phenotypes : Chained('trial') PathPart('trait_phenotypes') Args(0) {
 sub phenotype_summary : Chained('trial') PathPart('phenotypes') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $schema = $c->stash->{schema};
     my $round = Math::Round::Var->new(0.01);
@@ -468,6 +461,7 @@ sub trait_histogram : Chained('trial') PathPart('trait_histogram') Args(1) {
     my $c = shift;
     my $trait_id = shift;
     my $stock_type = $c->req->param('stock_type') || 'plot';
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my @data = $c->stash->{trial}->get_phenotypes_for_trait($trait_id, $stock_type);
 
@@ -477,7 +471,7 @@ sub trait_histogram : Chained('trial') PathPart('trait_histogram') Args(1) {
 sub get_trial_folder :Chained('trial') PathPart('folder') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $project_parent = $c->stash->{trial}->get_folder();
 
@@ -488,6 +482,8 @@ sub get_trial_folder :Chained('trial') PathPart('folder') Args(0) {
 sub get_trial_location :Chained('trial') PathPart('location') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
+
     my $location = $c->stash->{trial}->get_location;
     $c->stash->{rest} = { location => $location };
 }
@@ -496,6 +492,7 @@ sub trial_accessions : Chained('trial') PathPart('accessions') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = CXGN::Trial->new( { bcs_schema => $schema, trial_id => $c->stash->{trial_id} });
 
@@ -508,6 +505,7 @@ sub trial_stocks : Chained('trial') PathPart('stocks') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = CXGN::Trial->new( { bcs_schema => $schema, trial_id => $c->stash->{trial_id} });
 
@@ -520,6 +518,7 @@ sub trial_tissue_sources : Chained('trial') PathPart('tissue_sources') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = CXGN::Trial->new( { bcs_schema => $schema, trial_id => $c->stash->{trial_id} });
     my $data = $trial->get_tissue_sources();
@@ -531,6 +530,7 @@ sub trial_seedlots : Chained('trial') PathPart('seedlots') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = CXGN::Trial->new( { bcs_schema => $schema, trial_id => $c->stash->{trial_id} });
 
@@ -542,7 +542,7 @@ sub trial_seedlots : Chained('trial') PathPart('seedlots') Args(0) {
 sub trial_used_seedlots_upload : Chained('trial') PathPart('upload_used_seedlots') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_used_seedlot_file');
@@ -632,7 +632,7 @@ sub trial_used_seedlots_upload : Chained('trial') PathPart('upload_used_seedlots
 sub trial_upload_plants : Chained('trial') PathPart('upload_plants') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_plants_file');
@@ -717,7 +717,7 @@ sub trial_upload_plants : Chained('trial') PathPart('upload_plants') Args(0) {
 sub trial_upload_plants_subplot : Chained('trial') PathPart('upload_plants_subplot') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_plants_subplot_file');
@@ -802,7 +802,7 @@ sub trial_upload_plants_subplot : Chained('trial') PathPart('upload_plants_subpl
 sub trial_upload_subplots : Chained('trial') PathPart('upload_subplots') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_subplots_file');
@@ -887,7 +887,7 @@ sub trial_upload_subplots : Chained('trial') PathPart('upload_subplots') Args(0)
 sub trial_upload_plants_with_index_number : Chained('trial') PathPart('upload_plants_with_plant_index_number') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_plants_with_index_number_file');
@@ -973,7 +973,7 @@ sub trial_upload_plants_with_index_number : Chained('trial') PathPart('upload_pl
 sub trial_upload_plants_subplot_with_index_number : Chained('trial') PathPart('upload_plants_subplot_with_plant_index_number') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_plants_subplot_with_index_number_file');
@@ -1059,7 +1059,7 @@ sub trial_upload_plants_subplot_with_index_number : Chained('trial') PathPart('u
 sub trial_upload_subplots_with_index_number : Chained('trial') PathPart('upload_subplots_with_subplot_index_number') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_subplots_with_index_number_file');
@@ -1145,7 +1145,7 @@ sub trial_upload_subplots_with_index_number : Chained('trial') PathPart('upload_
 sub trial_upload_plants_with_number_of_plants : Chained('trial') PathPart('upload_plants_with_number_of_plants') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_plants_with_number_of_plants_file');
@@ -1231,7 +1231,7 @@ sub trial_upload_plants_with_number_of_plants : Chained('trial') PathPart('uploa
 sub trial_upload_plants_subplot_with_number_of_plants : Chained('trial') PathPart('upload_plants_subplot_with_number_of_plants') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_plants_subplot_with_number_of_plants_file');
@@ -1317,7 +1317,7 @@ sub trial_upload_plants_subplot_with_number_of_plants : Chained('trial') PathPar
 sub trial_upload_subplots_with_number_of_subplots : Chained('trial') PathPart('upload_subplots_with_number_of_subplots') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $upload = $c->req->upload('trial_upload_subplots_with_number_of_subplots_file');
@@ -1403,7 +1403,7 @@ sub trial_upload_subplots_with_number_of_subplots : Chained('trial') PathPart('u
 sub trial_plot_gps_upload : Chained('trial') PathPart('upload_plot_gps') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
@@ -1523,7 +1523,7 @@ sub trial_plot_gps_upload : Chained('trial') PathPart('upload_plot_gps') Args(0)
 sub trial_change_plot_accessions_upload : Chained('trial') PathPart('change_plot_accessions_using_file') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $trial_id = $c->stash->{trial_id};
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
@@ -1646,7 +1646,7 @@ sub trial_change_plot_accessions_upload : Chained('trial') PathPart('change_plot
 sub trial_additional_file_upload : Chained('trial') PathPart('upload_additional_file') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $upload = $c->req->upload('trial_upload_additional_file');
     my $subdirectory = "trial_additional_file_upload";
@@ -1685,7 +1685,7 @@ sub trial_additional_file_upload : Chained('trial') PathPart('upload_additional_
 sub get_trial_additional_file_uploaded : Chained('trial') PathPart('get_uploaded_additional_file') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $files = $c->stash->{trial}->get_additional_uploaded_files();
     $c->stash->{rest} = {success=>1, files=>$files};
@@ -1695,6 +1695,7 @@ sub trial_controls : Chained('trial') PathPart('controls') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = CXGN::Trial->new( { bcs_schema => $schema, trial_id => $c->stash->{trial_id} });
 
@@ -1708,6 +1709,7 @@ sub controls_by_plot : Chained('trial') PathPart('controls_by_plot') Args(0) {
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my @plot_ids = $c->req->param('plot_ids[]');
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $c->stash->{trial_id} });
 
@@ -1720,6 +1722,7 @@ sub trial_plots : Chained('trial') PathPart('plots') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = $c->stash->{trial};
 
@@ -1733,6 +1736,7 @@ sub trial_has_data_levels : Chained('trial') PathPart('has_data_levels') Args(0)
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = $c->stash->{trial};
     $c->stash->{rest} = {
@@ -1747,6 +1751,7 @@ sub trial_has_subplots : Chained('trial') PathPart('has_subplots') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = $c->stash->{trial};
     $c->stash->{rest} = { has_subplots => $trial->has_subplot_entries(), trial_name => $trial->get_name };
@@ -1756,6 +1761,7 @@ sub trial_subplots : Chained('trial') PathPart('subplots') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = $c->stash->{trial};
 
@@ -1768,6 +1774,7 @@ sub trial_has_plants : Chained('trial') PathPart('has_plants') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = $c->stash->{trial};
     $c->stash->{rest} = { has_plants => $trial->has_plant_entries(), trial_name => $trial->get_name };
@@ -1777,6 +1784,7 @@ sub trial_plants : Chained('trial') PathPart('plants') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = $c->stash->{trial};
 
@@ -1789,6 +1797,7 @@ sub trial_has_tissue_samples : Chained('trial') PathPart('has_tissue_samples') A
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = $c->stash->{trial};
     $c->stash->{rest} = { has_tissue_samples => $trial->has_tissue_sample_entries(), trial_name => $trial->get_name };
@@ -1798,6 +1807,7 @@ sub trial_tissue_samples : Chained('trial') PathPart('tissue_samples') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = $c->stash->{trial};
 
@@ -1809,6 +1819,7 @@ sub trial_tissue_samples : Chained('trial') PathPart('tissue_samples') Args(0) {
 sub trial_phenotype_metadata : Chained('trial') PathPart('phenotype_metadata') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = $c->stash->{trial};
     my $data = $trial->get_phenotype_metadata();
@@ -1819,6 +1830,7 @@ sub trial_phenotype_metadata : Chained('trial') PathPart('phenotype_metadata') A
 sub trial_aerial_imaging_event_report_files : Chained('trial') PathPart('aerial_imaging_event_report_files') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = $c->stash->{trial};
     my $data = $trial->get_aerial_imaging_event_report_file_metadata();
@@ -1830,6 +1842,7 @@ sub trial_treatments : Chained('trial') PathPart('treatments') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial = $c->stash->{trial};
 
@@ -1841,7 +1854,7 @@ sub trial_treatments : Chained('trial') PathPart('treatments') Args(0) {
 sub trial_add_treatment : Chained('trial') PathPart('add_treatment') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
     my $trial_id = $c->stash->{trial_id};
@@ -1881,6 +1894,7 @@ sub trial_layout : Chained('trial') PathPart('layout') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $layout = $c->stash->{trial_layout};
 
@@ -1893,6 +1907,7 @@ sub trial_layout_table : Chained('trial') PathPart('layout_table') Args(0) {
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $selected_cols = $c->req->param('selected_columns') ? decode_json $c->req->param('selected_columns') : {"plot_name"=>1,"plot_number"=>1,"block_number"=>1,"accession_name"=>1,"is_a_control"=>1,"rep_number"=>1,"row_number"=>1,"col_number"=>1};
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_layout_download = CXGN::Trial::TrialLayoutDownload->new({
         schema => $schema,
@@ -1911,6 +1926,7 @@ sub trial_design : Chained('trial') PathPart('design') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $layout = $c->stash->{trial_layout};
 
@@ -1961,10 +1977,10 @@ sub trial_design : Chained('trial') PathPart('design') Args(0) {
 }
 
 sub get_spatial_layout : Chained('trial') PathPart('coords') Args(0) {
-
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $cxgn_project_type = $c->stash->{trial}->get_cxgn_project_type();
 
@@ -2016,6 +2032,7 @@ sub trial_completion_layout_section : Chained('trial') PathPart('trial_completio
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $experiment_type = $c->req->param('experiment_type') || 'field_layout';
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_layout = CXGN::Trial::TrialLayout->new({schema => $schema, trial_id => $c->stash->{trial_id}, experiment_type => $experiment_type, verify_layout=>1, verify_physical_map=>1});
     my $trial_errors = $trial_layout->generate_and_cache_layout();
@@ -2041,6 +2058,7 @@ sub trial_completion_phenotype_section : Chained('trial') PathPart('trial_comple
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $plot_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot', 'stock_type')->cvterm_id();
     my $plant_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plant', 'stock_type')->cvterm_id();
@@ -2061,7 +2079,7 @@ sub trial_completion_phenotype_section : Chained('trial') PathPart('trial_comple
 sub delete_field_coord : Path('/ajax/phenotype/delete_field_coords') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $trial_id = $c->req->param('trial_id');
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
@@ -2088,7 +2106,7 @@ sub delete_field_coord : Path('/ajax/phenotype/delete_field_coords') Args(0) {
 sub replace_trial_stock : Chained('trial') PathPart('replace_stock') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
     my $old_stock_id = $c->req->param('old_stock_id');
@@ -2125,7 +2143,7 @@ sub replace_trial_stock : Chained('trial') PathPart('replace_stock') Args(0) {
 sub replace_plot_accession : Chained('trial') PathPart('replace_plot_accessions') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
     my $old_accession = $c->req->param('old_accession');
@@ -2185,7 +2203,7 @@ sub replace_plot_accession : Chained('trial') PathPart('replace_plot_accessions'
 sub replace_well_accession : Chained('trial') PathPart('replace_well_accessions') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
     my $old_accession = $c->req->param('old_accession');
@@ -2230,7 +2248,7 @@ sub replace_well_accession : Chained('trial') PathPart('replace_well_accessions'
 sub substitute_stock : Chained('trial') PathPart('substitute_stock') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
     my $trial_id = $c->stash->{trial_id};
@@ -2281,7 +2299,7 @@ sub substitute_stock : Chained('trial') PathPart('substitute_stock') Args(0) {
 sub create_plant_plot_entries : Chained('trial') PathPart('create_plant_entries') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $plants_per_plot = $c->req->param("plants_per_plot") || 8;
     my $inherits_plot_treatments = $c->req->param("inherits_plot_treatments");
@@ -2315,7 +2333,7 @@ sub create_plant_plot_entries : Chained('trial') PathPart('create_plant_entries'
 sub edit_management_factor_details : Chained('trial') PathPart('edit_management_factor_details') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $treatment_date = $c->req->param("treatment_date");
@@ -2368,7 +2386,7 @@ sub edit_management_factor_details : Chained('trial') PathPart('edit_management_
 sub create_plant_subplot_entries : Chained('trial') PathPart('create_plant_subplot_entries') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $plants_per_subplot = $c->req->param("plants_per_subplot") || 8;
     my $inherits_plot_treatments = $c->req->param("inherits_plot_treatments");
@@ -2402,7 +2420,7 @@ sub create_plant_subplot_entries : Chained('trial') PathPart('create_plant_subpl
 sub create_subplot_entries : Chained('trial') PathPart('create_subplot_entries') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $subplots_per_plot = $c->req->param("subplots_per_plot") || 4;
     my $inherits_plot_treatments = $c->req->param("inherits_plot_treatments");
@@ -2435,7 +2453,7 @@ sub create_subplot_entries : Chained('trial') PathPart('create_subplot_entries')
 sub create_tissue_samples : Chained('trial') PathPart('create_tissue_samples') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $tissues_per_plant = $c->req->param("tissue_samples_per_plant") || 3;
     my $tissue_names = decode_json $c->req->param("tissue_samples_names");
@@ -2481,7 +2499,7 @@ sub create_tissue_samples : Chained('trial') PathPart('create_tissue_samples') A
 sub upload_trial_coordinates : Path('/ajax/breeders/trial/coordsupload') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
@@ -2554,6 +2572,7 @@ sub crosses_in_crossingtrial : Chained('trial') PathPart('crosses_in_crossingtri
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({schema => $schema, trial_id => $trial_id});
@@ -2575,6 +2594,7 @@ sub crosses_and_details_in_trial : Chained('trial') PathPart('crosses_and_detail
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id});
@@ -2612,6 +2632,7 @@ sub cross_properties_trial : Chained('trial') PathPart('cross_properties_trial')
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id});
@@ -2640,6 +2661,7 @@ sub cross_progenies_trial : Chained('trial') PathPart('cross_progenies_trial') A
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id});
@@ -2659,6 +2681,7 @@ sub seedlots_from_crossingtrial : Chained('trial') PathPart('seedlots_from_cross
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({schema => $schema, trial_id => $trial_id});
@@ -2684,6 +2707,7 @@ sub get_crosses : Chained('trial') PathPart('get_crosses') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id});
@@ -2700,6 +2724,7 @@ sub get_female_accessions : Chained('trial') PathPart('get_female_accessions') A
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id});
@@ -2716,6 +2741,7 @@ sub get_male_accessions : Chained('trial') PathPart('get_male_accessions') Args(
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id});
@@ -2731,6 +2757,7 @@ sub get_female_plots : Chained('trial') PathPart('get_female_plots') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id});
@@ -2746,6 +2773,7 @@ sub get_male_plots : Chained('trial') PathPart('get_male_plots') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id});
@@ -2761,6 +2789,7 @@ sub get_female_plants : Chained('trial') PathPart('get_female_plants') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id});
@@ -2777,6 +2806,7 @@ sub get_male_plants : Chained('trial') PathPart('get_male_plants') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id});
@@ -2791,7 +2821,7 @@ sub get_male_plants : Chained('trial') PathPart('get_male_plants') Args(0) {
 sub delete_all_crosses_in_crossingtrial : Chained('trial') PathPart('delete_all_crosses_in_crossingtrial') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $trial_id = $c->stash->{trial_id};
@@ -2820,6 +2850,7 @@ sub cross_additional_info_trial : Chained('trial') PathPart('cross_additional_in
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $trial = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id});
@@ -2849,6 +2880,7 @@ sub downloaded_intercross_file_metadata : Chained('trial') PathPart('downloaded_
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $crosses = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id, file_type => 'intercross_download'});
@@ -2862,6 +2894,7 @@ sub uploaded_intercross_file_metadata : Chained('trial') PathPart('uploaded_inte
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $trial_id = $c->stash->{trial_id};
     my $crosses = CXGN::Cross->new({ schema => $schema, trial_id => $trial_id, file_type => 'intercross_upload'});
@@ -2877,6 +2910,7 @@ sub phenotype_heatmap : Chained('trial') PathPart('heatmap') Args(0) {
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $trial_id = $c->stash->{trial_id};
     my $trait_id = $c->req->param("selected");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my @items = map {@{$_}[0]} @{$c->stash->{trial}->get_plots()};
     #print STDERR Dumper(\@items);
@@ -2995,7 +3029,7 @@ sub phenotype_heatmap : Chained('trial') PathPart('heatmap') Args(0) {
 sub get_suppress_plot_phenotype : Chained('trial') PathPart('suppress_phenotype') Args(0) {
   my $self = shift;
   my $c = shift;
-  my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+  my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
   my $schema = $c->dbic_schema('Bio::Chado::Schema');
   my $plot_name = $c->req->param('plot_name');
@@ -3019,7 +3053,7 @@ sub get_suppress_plot_phenotype : Chained('trial') PathPart('suppress_phenotype'
 sub delete_single_assayed_trait : Chained('trial') PathPart('delete_single_trait') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $pheno_ids = $c->req->param('pheno_id') ? JSON::decode_json($c->req->param('pheno_id')) : [];
     my $trait_ids = $c->req->param('traits_id') ? JSON::decode_json($c->req->param('traits_id')) : [];
@@ -3042,6 +3076,9 @@ sub retrieve_plot_image : Chained('trial') PathPart('retrieve_plot_images') Args
   my $image_ids =  decode_json $c->req->param('image_ids');
   my $plot_name = $c->req->param('plot_name');
   my $plot_id = $c->req->param('plot_id');
+
+  my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
+
   my $trial_id = $c->stash->{trial_id};
   my $stockref;
   my $image_objects;
@@ -3118,6 +3155,8 @@ sub field_trial_from_field_trial : Chained('trial') PathPart('field_trial_from_f
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
+
 
     my $source_field_trials_for_this_trial = $c->stash->{trial}->get_field_trials_source_field_trials();
     my $field_trials_sourced_from_this_trial = $c->stash->{trial}->get_field_trials_sourced_from_field_trials();
@@ -3129,6 +3168,7 @@ sub genotyping_trial_from_field_trial : Chained('trial') PathPart('genotyping_tr
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $genotyping_trials_from_field_trial = $c->stash->{trial}->get_genotyping_trials_from_field_trial();
     my $field_trials_source_of_genotyping_trial = $c->stash->{trial}->get_field_trials_source_of_genotyping_trial();
@@ -3140,6 +3180,7 @@ sub crossing_trial_from_field_trial : Chained('trial') PathPart('crossing_trial_
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $crossing_trials_from_field_trial = $c->stash->{trial}->get_crossing_trials_from_field_trial();
     my $field_trials_source_of_crossing_trial = $c->stash->{trial}->get_field_trials_source_of_crossing_trial();
@@ -3150,7 +3191,7 @@ sub crossing_trial_from_field_trial : Chained('trial') PathPart('crossing_trial_
 sub trial_correlate_traits : Chained('trial') PathPart('correlate_traits') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $trait_ids = decode_json $c->req->param('trait_ids');
@@ -3257,7 +3298,7 @@ sub trial_correlate_traits : Chained('trial') PathPart('correlate_traits') Args(
 sub trial_plot_time_series_accessions : Chained('trial') PathPart('plot_time_series_accessions') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $trait_ids = decode_json $c->req->param('trait_ids');
@@ -3436,7 +3477,7 @@ sub trial_plot_time_series_accessions : Chained('trial') PathPart('plot_time_ser
 sub trial_accessions_rank : Chained('trial') PathPart('accessions_rank') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $trait_ids = decode_json $c->req->param('trait_ids');
@@ -3507,7 +3548,7 @@ sub trial_accessions_rank : Chained('trial') PathPart('accessions_rank') Args(0)
 sub trial_genotype_comparison : Chained('trial') PathPart('genotype_comparison') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     print STDERR Dumper $c->req->params();
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
@@ -3726,7 +3767,7 @@ sub trial_genotype_comparison : Chained('trial') PathPart('genotype_comparison')
 sub trial_calculate_numerical_derivative : Chained('trial') PathPart('calculate_numerical_derivative') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
@@ -3986,6 +4027,7 @@ sub get_entry_numbers : Chained('trial') PathPart('entry_numbers') Args(0) {
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $trial = $c->stash->{trial};
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     # Get Entry Number map (stock_id -> entry number)
     my $entry_number_map = $trial->get_entry_numbers();
@@ -4016,6 +4058,7 @@ sub create_entry_number_template : Path('/ajax/breeders/trial_entry_numbers/crea
     my $c = shift;
     my @trial_ids = split(',', $c->req->param('trial_ids'));
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $dir = $c->tempfiles_subdir('download');
     my $temp_file_name = "entry_numbers_XXXX";
@@ -4043,6 +4086,7 @@ sub download_entry_number_template : Path('/ajax/breeders/trial_entry_numbers/do
     my $self = shift;
     my $c = shift;
     my $tempfile = $c->req->param('file');
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     $c->res->content_type('application/vnd.ms-excel');
     $c->res->header('Content-Disposition', qq[attachment; filename="entry_number_template.xls"]);
@@ -4067,7 +4111,7 @@ sub upload_entry_number_template : Path('/ajax/breeders/trial_entry_numbers/uplo
 sub upload_entry_number_template_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c, 1);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $upload = $c->req->upload('upload_entry_numbers_file');
     my $ignore_warnings = $c->req->param('ignore_warnings') eq 'true';
@@ -4138,40 +4182,20 @@ sub upload_entry_number_template_POST : Args(0) {
     return;
 }
 
-sub _check_user_login {
+sub _check_user_login_trial_metadata {
     my $c = shift;
     my $check_priv = shift;
+    my $user_access = shift;
 
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
+    my $trial = $c->stash->{trial};
+    my $original_private_company_id = $trial->private_company_id();
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
-
-    if ($check_priv && $user_role ne 'curator' && $user_role ne 'submitter' && $user_role ne 'sequencer') {
-        $c->stash->{rest} = {error=>'You must be logged in and have privileges to do this!'};
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
         $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     return ($user_id, $user_name, $user_role);
 }

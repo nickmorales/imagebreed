@@ -23,7 +23,7 @@ __PACKAGE__->config(
 sub list_seedlots :Path('/ajax/breeders/seedlots') :Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login($c);
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 0, 0, 0);
 
     my $params = $c->req->params() || {};
     my $seedlot_name = $params->{seedlot_name} || '';
@@ -126,6 +126,7 @@ sub seedlot_base : Chained('/') PathPart('ajax/breeders/seedlot') CaptureArgs(1)
 sub seedlot_details :Chained('seedlot_base') PathPart('') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 0, 0, 0);
 
     $c->stash->{rest} = {
         success => 1,
@@ -147,15 +148,8 @@ sub seedlot_details :Chained('seedlot_base') PathPart('') Args(0) {
 sub seedlot_edit :Chained('seedlot_base') PathPart('edit') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'submitter', 0, 0);
 
-    if (!$c->user()){
-        $c->stash->{rest} = { error => "You must be logged in to edit seedlot details" };
-        $c->detach();
-    }
-    if (!$c->user()->check_roles("curator")) {
-        $c->stash->{rest} = { error => "You do not have the correct role to edit seedlot detail. Please contact us." };
-        $c->detach();
-    }
     my $seedlot = $c->stash->{seedlot};
 
     my $saved_seedlot_name = $seedlot->uniquename;
@@ -233,15 +227,7 @@ sub seedlot_edit :Chained('seedlot_base') PathPart('edit') Args(0) {
 sub seedlot_delete :Chained('seedlot_base') PathPart('delete') Args(0) {
     my $self = shift;
     my $c = shift;
-
-    if (!$c->user()){
-        $c->stash->{rest} = { error => "You must be logged in the delete seedlots" };
-        $c->detach();
-    }
-    if (!$c->user()->check_roles("curator")) {
-        $c->stash->{rest} = { error => "You do not have the correct role to delete seedlots. Please contact us." };
-        $c->detach();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'curator', 0, 0);
 
     my $error = $c->stash->{seedlot}->delete();
     if (!$error){
@@ -255,17 +241,8 @@ sub seedlot_delete :Chained('seedlot_base') PathPart('delete') Args(0) {
 sub seedlot_verify_delete_by_list :Path('/ajax/seedlots/verify_delete_by_list') Args(0) {
     my $self = shift;
     my $c = shift;
-
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'curator', 0, 0);
     my $list_id = $c->req->param("list_id");
-
-    if (!$c->user()){
-        $c->stash->{rest} = { error => "You must be logged in the delete seedlots" };
-        $c->detach();
-    }
-    if (!$c->user()->check_roles("curator")) {
-        $c->stash->{rest} = { error => "You do not have the correct role to delete seedlots. Please contact us." };
-        $c->detach();
-    }
 
     print STDERR "DELETE VERIFY USING LIST!\n";
 
@@ -280,17 +257,8 @@ sub seedlot_verify_delete_by_list :Path('/ajax/seedlots/verify_delete_by_list') 
 sub seedlot_confirm_delete_by_list :Path('/ajax/seedlots/confirm_delete_by_list') Args(0) {
     my $self = shift;
     my $c = shift;
-
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'curator', 0, 0);
     my $list_id = $c->req->param("list_id");
-
-    if (!$c->user()){
-        $c->stash->{rest} = { error => "You must be logged in the delete seedlots" };
-        $c->detach();
-    }
-    if (!$c->user()->check_roles("curator")) {
-        $c->stash->{rest} = { error => "You do not have the correct role to delete seedlots. Please contact us." };
-        $c->detach();
-    }
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
@@ -309,15 +277,7 @@ sub seedlot_confirm_delete_by_list :Path('/ajax/seedlots/confirm_delete_by_list'
 sub create_seedlot :Path('/ajax/breeders/seedlot-create/') :Args(0) {
     my $self = shift;
     my $c = shift;
-
-    if (!$c->user){
-        $c->stash->{rest} = {error=>'You must be logged in to add a seedlot transaction!'};
-        $c->detach();
-    }
-    if (!($c->user()->check_roles('curator') || $c->user()->check_roles('submitter'))) {
-        $c->stash->{rest} = { error => "You do not have the correct submitter or curator role to add seedlots. Please contact us." };
-        $c->detach();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'submitter', 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
@@ -405,14 +365,7 @@ sub create_seedlot :Path('/ajax/breeders/seedlot-create/') :Args(0) {
         $c->detach();
     }
 
-    my $operator;
-    if ($c->user) {
-        $operator = $c->user->get_object->get_username;
-    }
-    my $user_id = $c->user()->get_object()->get_sp_person_id();
-
     my $seedlot_id;
-
     eval {
         my $sl = CXGN::Stock::Seedlot->new(schema => $schema);
         $sl->uniquename($seedlot_uniquename);
@@ -439,7 +392,7 @@ sub create_seedlot :Path('/ajax/breeders/seedlot-create/') :Args(0) {
         }
         $transaction->timestamp($timestamp);
         $transaction->description($description);
-        $transaction->operator($operator);
+        $transaction->operator($user_name);
         $transaction->store();
 
         my $sl_new = CXGN::Stock::Seedlot->new(schema => $schema, seedlot_id=>$seedlot_id);
@@ -473,31 +426,7 @@ sub upload_seedlots : Path('/ajax/breeders/seedlot-upload/') : ActionClass('REST
 sub upload_seedlots_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload seedlots!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload seedlots!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'submitter', 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
@@ -717,31 +646,7 @@ sub upload_seedlots_inventory : Path('/ajax/breeders/seedlot-inventory-upload/')
 sub upload_seedlots_inventory_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload seedlot inventory!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload seedlot inventory!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'submitter', 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
@@ -865,6 +770,8 @@ sub seedlot_transaction_base :Chained('seedlot_base') PathPart('transaction') Ca
 sub seedlot_transaction_details :Chained('seedlot_transaction_base') PathPart('') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 0, 0, 0);
+
     my $t = $c->stash->{transaction_object};
     $c->stash->{rest} = {
         success => 1,
@@ -880,15 +787,7 @@ sub seedlot_transaction_details :Chained('seedlot_transaction_base') PathPart(''
 sub edit_seedlot_transaction :Chained('seedlot_transaction_base') PathPart('edit') Args(0) {
     my $self = shift;
     my $c = shift;
-
-    if (!$c->user()){
-        $c->stash->{rest} = { error => "You must be logged in to edit seedlot transactions" };
-        $c->detach();
-    }
-    if (!$c->user()->check_roles("curator")) {
-        $c->stash->{rest} = { error => "You do not have the correct role to edit seedlot transactions. Please contact us." };
-        $c->detach();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'submitter', 0, 0);
 
     my $t = $c->stash->{transaction_object};
     my $edit_operator = $c->req->param('operator');
@@ -925,6 +824,7 @@ sub list_seedlot_transactions :Chained('seedlot_base') :PathPart('transactions')
     my $accession_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, "accession", "stock_type")->cvterm_id();
     my $plot_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, "plot", "stock_type")->cvterm_id();
     my %types_hash = ( $type_id => 'seedlot', $accession_type_id => 'accession', $plot_type_id => 'plot', $cross_type_id => 'cross' );
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 0, 0, 0);
 
     #print STDERR Dumper $transactions;
     my @transactions;
@@ -976,13 +876,7 @@ sub add_seedlot_transaction :Chained('seedlot_base') :PathPart('transaction/add'
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-
-    if (!$c->user){
-        $c->stash->{rest} = {error=>'You must be logged in to add a seedlot transaction!'};
-        $c->detach();
-    }
-    my $operator = $c->user->get_object->get_username;
-    my $user_id = $c->user->get_object->get_sp_person_id;
+    my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'submitter', 0, 0);
 
     my $to_new_seedlot_name = $c->req->param('to_new_seedlot_name');
     my $stock_id;
@@ -1062,7 +956,7 @@ sub add_seedlot_transaction :Chained('seedlot_base') :PathPart('transaction/add'
             $transaction->weight_gram($weight);
             $transaction->timestamp($timestamp);
             $transaction->description($description);
-            $transaction->operator($operator);
+            $transaction->operator($user_name);
             $transaction->store();
 
             my $sl_new = CXGN::Stock::Seedlot->new(schema => $schema, seedlot_id=>$seedlot_id);
@@ -1120,7 +1014,7 @@ sub add_seedlot_transaction :Chained('seedlot_base') :PathPart('transaction/add'
     $transaction->weight_gram($weight);
     $transaction->timestamp($timestamp);
     $transaction->description($description);
-    $transaction->operator($c->user->get_object->get_username);
+    $transaction->operator($user_name);
     my $transaction_id = $transaction->store();
 
     if ($new_sl){
@@ -1141,33 +1035,18 @@ sub add_seedlot_transaction :Chained('seedlot_base') :PathPart('transaction/add'
     $c->stash->{rest} = { success => 1, transaction_id => $transaction_id };
 }
 
-sub _check_user_login {
+sub _check_user_login_seedlot {
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     return ($user_id, $user_name, $user_role);
 }

@@ -59,7 +59,7 @@ our $EXCHANGE_DBH = 1;
 
  Usage:        my $login = CXGN::Login->new($dbh)
  Desc:         creates a new login object
- Ret:          
+ Ret:
  Args:         a database handle
  Side Effects: connects to database
  Example:
@@ -84,6 +84,67 @@ sub new {
     $self->{conf_object} = $c || do{ require SGN::Context; SGN::Context->new };
     return $self;
 }
+
+sub _check_user_login {
+    my $c = shift;
+    my $check_priv = shift; #curator, submitter
+    my $check_company_id = shift;
+    my $check_company_id_access = shift; #curator_access, submitter_access
+    my $bcs_schema = $c->dbic_schema("Bio::Chado::Schema");
+
+    my $user_id;
+    my $user_name;
+    my $user_role;
+    my $session_id = $c->req->param("sgn_session_id");
+
+    if ($session_id){
+        my $dbh = $c->dbc->dbh;
+        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
+        if (!$user_info[0]){
+            return {error=>'You must be logged in to do this!'};
+        }
+        $user_id = $user_info[0];
+        $user_role = $user_info[1];
+        my $p = CXGN::People::Person->new($dbh, $user_id);
+        $user_name = $p->get_username;
+    } else{
+        if (!$c->user){
+            return {error=>'You must be logged in to do this!'};
+        }
+        $user_id = $c->user()->get_object()->get_sp_person_id();
+        $user_name = $c->user()->get_object()->get_username();
+        $user_role = $c->user->get_object->get_user_type();
+    }
+
+    if ($check_priv && $user_role ne 'curator' && $user_role ne $check_priv && $user_role ne 'sequencer') {
+        return {error=>'You must be logged in and have privileges to do this!'};
+    }
+
+    if ($check_company_id) {
+        my $private_companies = CXGN::PrivateCompany->new( { schema=> $bcs_schema } );
+        my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
+
+        if (!exists($allowed_private_company_ids_hash->{$check_company_id})) {
+            return {error=>'You must belong to the company to do this!'};
+        }
+
+        if ($check_company_id_access) {
+            my $user_access = $allowed_private_company_access_hash->{$check_company_id};
+            #check for curator_access or submitter_access
+            if ($user_access ne 'curator_access' && $user_access ne $check_company_id_access) {
+                return {error=>"You must belong in the company and have $check_company_id_access to do this!"};
+            }
+        }
+    }
+
+    return {
+        info => [$user_id, $user_name, $user_role]
+    };
+}
+
+
+#CLASS method
+
 
 =head2 get_login_status
 
@@ -148,8 +209,8 @@ sub get_login_info {
 =head2 verify_session
 
  Usage:        $login->verify_session($user_type)
- Desc:         checks whether a user is logged in currently and 
-               is of the minimum user type $user_type. 
+ Desc:         checks whether a user is logged in currently and
+               is of the minimum user type $user_type.
                user types have the following precedence:
                user < submitter < sequencer < curator
  Ret:          the person_id, if a session exists
@@ -380,7 +441,7 @@ sub login_user {
 
  Usage:        $login->logout_user();
  Desc:         log out the current logged in user
- Ret:          nothing  
+ Ret:          nothing
  Args:         none
  Side Effects: resets the cookie to empty
  Example:
@@ -400,7 +461,7 @@ sub logout_user {
 =head2 update_timestamp
 
  Usage:        $login->update_timestamp();
- Desc:         updates the timestamp, such that users don't 
+ Desc:         updates the timestamp, such that users don't
                get logged out when they are active on the site.
  Ret:          nothing
  Args:         none
@@ -423,7 +484,7 @@ sub update_timestamp {
  Usage:        my $cookie = $login->get_login_cookie();
  Desc:         returns the cookie for the current login
  Args:         none
- Side Effects: 
+ Side Effects:
  Example:
 
 =cut
@@ -464,93 +525,93 @@ sub set_sql {
 
         user_from_cookie =>    #send: session_time_in_secs, cookiestring
 
-          "	SELECT 
+          "	SELECT
 				sp_token.sp_person_id,
 				sgn_people.sp_roles.name as user_type,
 				user_prefs,
-				extract (epoch FROM current_timestamp-sp_token.last_access_time)>? AS expired 
-			FROM 
+				extract (epoch FROM current_timestamp-sp_token.last_access_time)>? AS expired
+			FROM
 				sgn_people.sp_person JOIN sgn_people.sp_person_roles using(sp_person_id) join sgn_people.sp_roles using(sp_role_id) JOIN sgn_people.sp_token on(sgn_people.sp_person.sp_person_id = sgn_people.sp_token.sp_person_id)
-			WHERE 
+			WHERE
 				sp_token.cookie_string=?
                         ORDER BY sp_role_id
                         LIMIT 1",
 
         user_from_uname_pass =>
 
-          "	SELECT 
+          "	SELECT
 				sp_person_id, disabled, user_prefs, first_name, last_name
-			FROM 
-				sgn_people.sp_person 
-			WHERE 
-				UPPER(username)=UPPER(?) 
+			FROM
+				sgn_people.sp_person
+			WHERE
+				UPPER(username)=UPPER(?)
 				AND (sp_person.password = crypt(?, sp_person.password))",
 
         cookie_string_exists =>
 
-          "	SELECT 
-				sgn_people.sp_token.cookie_string 
-			FROM 
-				sgn_people.sp_person JOIN sgn_people.sp_token using(sp_person_id) 
-			WHERE 
+          "	SELECT
+				sgn_people.sp_token.cookie_string
+			FROM
+				sgn_people.sp_person JOIN sgn_people.sp_token using(sp_person_id)
+			WHERE
 				sp_token.cookie_string=?",
 
         login =>    #send: cookie_string, sp_person_id
 
           "	INSERT INTO
-				sgn_people.sp_token(cookie_string, sp_person_id, last_access_time) 
-			VALUES ( 
+				sgn_people.sp_token(cookie_string, sp_person_id, last_access_time)
+			VALUES (
 				?,
-				?, 
+				?,
 				current_timestamp
             )",
-            
+
 
         logout =>    #send: cookie_string
 
-          "	UPDATE 
-				sgn_people.sp_token 
-			SET 
+          "	UPDATE
+				sgn_people.sp_token
+			SET
 				cookie_string=null,
-				last_access_time=current_timestamp 
-			WHERE 
+				last_access_time=current_timestamp
+			WHERE
 				cookie_string=?",
 
         refresh_cookie =>    #send: cookie_string  (updates the timestamp)
 
-          "	UPDATE 
+          "	UPDATE
 				sgn_people.sp_token
-			SET 
-				last_access_time=current_timestamp 
-			WHERE 
+			SET
+				last_access_time=current_timestamp
+			WHERE
 				cookie_string=?",
 
         stats_aggregate => #send:  session_timeout_in_secs (gets aggregate login data)
 
-          "	SELECT  
-				sp_roles.name, count(*) 
-			FROM 
+          "	SELECT
+				sp_roles.name, count(*)
+			FROM
 				sgn_people.sp_person
                         JOIN    sgn_people.sp_person_roles USING(sp_person_id)
                         JOIN    sgn_people.sp_roles USING(sp_role_id)
                         JOIN    sgn_people.sp_token on(sgn_people.sp_person.sp_person_id=sgn_people.sp_token.sp_person_id)
-           
-			WHERE 
-				sp_token.last_access_time IS NOT NULL 
-				AND sp_token.cookie_string IS NOT NULL 	
-				AND extract(epoch from now()-sp_token.last_access_time)<? 
-			GROUP BY 	
+
+			WHERE
+				sp_token.last_access_time IS NOT NULL
+				AND sp_token.cookie_string IS NOT NULL
+				AND extract(epoch from now()-sp_token.last_access_time)<?
+			GROUP BY
 				sp_roles.name",
 
         stats_private => #send: session_timeout_in_secs (gets all logged-in users)
 
-          "	SELECT 
-				sp_roles.name as user_type, username, contact_email 
-			FROM 
+          "	SELECT
+				sp_roles.name as user_type, username, contact_email
+			FROM
 				sgn_people.sp_person JOIN sgn_people.sp_person_roles using(sp_person_id) JOIN sgn_people.sp_roles using (sp_role_id) JOIN sgn_people.sp_token on (sgn_people.sp_person.sp_person_id=sgn_people.sp_token.sp_person_id)
-			WHERE 
-				sp_token.last_access_time IS NOT NULL 
-				AND sp_token.cookie_string IS NOT NULL	
+			WHERE
+				sp_token.last_access_time IS NOT NULL
+				AND sp_token.cookie_string IS NOT NULL
 				AND extract(epoch from now()-sp_token.last_access_time)<?",
 
     };
@@ -570,4 +631,3 @@ sub get_sql {
 ###
 1;    #do not remove
 ###
-
