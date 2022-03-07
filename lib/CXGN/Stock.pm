@@ -691,15 +691,8 @@ sub store {
             $self->_update_population_relationship();
         }
         if ($self->private_company_id) {
-            my $q = "UPDATE stock SET private_company_id=? WHERE stock_id=?;";
-            my $h = $self->schema->storage->dbh()->prepare($q);
-            $h->execute($self->private_company_id, $self->stock_id());
+            $self->_set_stock_private_company();
         }
-        # if (defined($self->private_company_stock_is_private)) {
-        #     my $q = "UPDATE stock SET is_private=? WHERE stock_id=?;";
-        #     my $h = $self->schema->storage->dbh()->prepare($q);
-        #     $h->execute($self->private_company_stock_is_private, $self->stock_id());
-        # }
     }
     $self->associate_owner($self->sp_person_id, $self->sp_person_id, $self->user_name, $self->modification_note);
 
@@ -897,6 +890,25 @@ sub set_species {
     else {
         warn "NO organism found for species name $species_name!!\n";
     }
+}
+
+sub _set_stock_private_company {
+    my $self = shift;
+    my $q = "UPDATE stock SET private_company_id=? WHERE stock_id=?;";
+    my $h = $self->schema->storage->dbh()->prepare($q);
+    $h->execute($self->private_company_id, $self->stock_id());
+
+    my $q1 = "SELECT cvterm.name FROM sgn_people.private_company AS p JOIN cvterm ON(p.type_id=cvterm.cvterm_id) WHERE private_company_id=?;";
+    my $h1 = $self->schema->storage->dbh()->prepare($q1);
+    $h1->execute($self->private_company_id);
+    my ($type_name) = $h1->fetchrow_array();
+
+    my $stock_is_private = $type_name eq 'private_access' ? 1 : 0;
+    my $q2 = "UPDATE stock SET is_private=? WHERE stock_id=?;";
+    my $h2 = $self->schema->storage->dbh()->prepare($q2);
+    $h2->execute($stock_is_private, $self->stock_id());
+
+    $self->private_company_stock_is_private($stock_is_private);
 }
 
 =head2 function get_image_ids()

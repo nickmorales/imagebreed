@@ -126,9 +126,9 @@ sub generate_results_POST : Args(0) {
     my $rf_var_imp = $c->req->param('rf');
 
     if ($preprocessing_boolean == 0){
-        $preprocessing_boolean = "FALSE";
+        $preprocessing_boolean = '1';
     } else {
-        $preprocessing_boolean = "TRUE";
+        $preprocessing_boolean = '1:13';
     }
 
     if ($rf_var_imp == 0){
