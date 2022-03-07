@@ -18,6 +18,11 @@ sub onto_browser : Path('/tools/onto') :Args(0) {
     my $self = shift;
     my $c = shift;
 
+    if (!$c->user()) {
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
+    }
+
     my $root_nodes = $c->config->{onto_root_namespaces};
     my @namespaces = split ",", $root_nodes;
     foreach my $n (@namespaces) {
