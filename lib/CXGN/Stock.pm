@@ -527,14 +527,16 @@ sub BUILD {
         $self->private_company_name($private_company_name);
         $self->private_company_stock_is_private($is_private);
 
-        my $organism_rs = $self->schema->resultset("Organism::Organism")->search({ organism_id=>$stock->organism_id });
-        my $organism = $organism_rs->first();
-        $self->organism($organism);
-        $self->organism_abbreviation($organism->abbreviation);
-        $self->genus($organism->genus);
-        $self->species($organism->species);
-        $self->organism_common_name($organism->common_name);
-        $self->organism_comment($organism->comment);
+        if ($stock->organism_id) {
+            my $organism_rs = $self->schema->resultset("Organism::Organism")->search({ organism_id=>$stock->organism_id });
+            my $organism = $organism_rs->first();
+            $self->organism($organism);
+            $self->organism_abbreviation($organism->abbreviation);
+            $self->genus($organism->genus);
+            $self->species($organism->species);
+            $self->organism_common_name($organism->common_name);
+            $self->organism_comment($organism->comment);
+        }
     }
 
 
