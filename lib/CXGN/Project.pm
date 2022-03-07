@@ -351,6 +351,14 @@ sub set_description {
 
 }
 
+sub set_private_company {
+    my $self = shift;
+    my $private_company_id = shift;
+
+    my $q = "UPDATE project SET private_company_id = ? WHERE project_id = ?;";
+    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($private_company_id, $self->project_id);
+}
 
 =head2 function get_nd_experiment_id()
 

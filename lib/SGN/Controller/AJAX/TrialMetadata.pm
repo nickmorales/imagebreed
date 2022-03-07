@@ -269,6 +269,7 @@ sub trial_details_POST  {
         if ($details->{plan_to_cross}) { $trial->set_field_trial_is_planned_to_cross($details->{plan_to_cross}); }
     };
 
+    if ($details->{company}) { $trial->set_private_company($details->{company}); }
     if ($details->{plate_format}) { $trial->set_genotyping_plate_format($details->{plate_format}); }
     if ($details->{plate_sample_type}) { $trial->set_genotyping_plate_sample_type($details->{plate_sample_type}); }
     if ($details->{facility}) { $trial->set_genotyping_facility($details->{facility}); }
