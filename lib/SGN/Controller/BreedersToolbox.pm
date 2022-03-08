@@ -234,30 +234,22 @@ sub manage_nurseries : Path("/breeders/nurseries") Args(0) {
     my $c = shift;
 
     if (!$c->user()) {
-
-	# redirect to login page
-	#
-	$c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-	return;
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
     }
+    my $sp_person_id = $c->user()->get_object()->get_sp_person_id();
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+
     my $bp = CXGN::BreedersToolbox::Projects->new( { schema=>$schema });
     my $breeding_programs = $bp->get_breeding_programs();
 
-    $c->stash->{user_id} = $c->user()->get_object()->get_sp_person_id();
-
-    $c->stash->{locations} = $bp->get_all_locations($c);
-
+    $c->stash->{user_id} = $sp_person_id;
+    $c->stash->{locations} = $bp->get_all_locations($sp_person_id);
     #$c->stash->{projects} = $self->get_projects($c);
-
     $c->stash->{programs} = $breeding_programs;
-
     $c->stash->{roles} = $c->user()->roles();
-
     $c->stash->{nurseries} = $self->get_nurseries($c);
-
     $c->stash->{template} = '/breeders_toolbox/manage_nurseries.mas';
-
 }
 
 sub manage_crosses : Path("/breeders/crosses") Args(0) {
@@ -265,20 +257,19 @@ sub manage_crosses : Path("/breeders/crosses") Args(0) {
     my $c = shift;
 
     if (!$c->user()) {
-
-	# redirect to login page
-	#
-	$c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-	return;
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
     }
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $sp_person_id = $c->user()->get_object()->get_sp_person_id();
+
     my $bp = CXGN::BreedersToolbox::Projects->new( { schema=>$schema });
     my $breeding_programs = $bp->get_breeding_programs();
 
     my $crossingtrial = CXGN::BreedersToolbox::Projects->new( { schema=>$schema });
     my $crossing_trials = $crossingtrial->get_crossing_trials();
 
-    $c->stash->{user_id} = $c->user()->get_object()->get_sp_person_id();
+    $c->stash->{user_id} = $sp_person_id;
 
 
     my @breeding_programs = @$breeding_programs;
@@ -298,19 +289,12 @@ sub manage_crosses : Path("/breeders/crosses") Args(0) {
     my $locations = $json->decode($crossingtrial->get_all_locations_by_breeding_program());
 
     $c->stash->{locations} = $locations;
-
     $c->stash->{programs} = \@breeding_programs;
-
-    #$c->stash->{locations} = $bp->get_all_locations($c);
-
+    #$c->stash->{locations} = $bp->get_all_locations($sp_person_id);
     #$c->stash->{programs} = $breeding_programs;
-
     $c->stash->{crossing_trials} = $crossing_trials;
-
     $c->stash->{roles} = $c->user()->roles();
-
     $c->stash->{template} = '/breeders_toolbox/manage_crosses.mas';
-
 }
 
 sub manage_phenotyping :Path("/breeders/phenotyping") Args(0) {
@@ -337,9 +321,10 @@ sub manage_nirs :Path("/breeders/nirs") Args(0) {
     my $c = shift;
 
     if (!$c->user()) {
-	$c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-	return;
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
     }
+    my $sp_person_id = $c->user()->get_object()->get_sp_person_id();
 
     my @file_types = ( 'nirs spreadsheet' );
     my $all_data = $self->get_file_data($c, \@file_types, 1);
@@ -367,6 +352,7 @@ sub manage_upload :Path("/breeders/upload") Args(0) {
         $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
         return;
     }
+    my $sp_person_id = $c->user()->get_object()->get_sp_person_id();
 
     my @editable_stock_props = split ',', $c->config->{editable_stock_props};
     my %editable_stock_props = map { $_=>1 } @editable_stock_props;
@@ -398,7 +384,7 @@ sub manage_upload :Path("/breeders/upload") Args(0) {
     $c->stash->{management_factor_types} = \@management_factor_types;
     $c->stash->{facilities} = \@facilities;
     $c->stash->{geojson_locations} = $json->decode($projects->get_all_locations_by_breeding_program());
-    $c->stash->{locations} = $projects->get_all_locations();
+    $c->stash->{locations} = $projects->get_all_locations($sp_person_id);
     $c->stash->{breeding_programs} = $breeding_programs;
     $c->stash->{timestamp} = localtime;
     $c->stash->{preferred_species} = $c->config->{preferred_species};
@@ -830,36 +816,35 @@ sub manage_genotyping : Path("/breeders/genotyping") Args(0) {
     my $c = shift;
 
     if (!$c->user()) {
-	# redirect to login page
-	$c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-	return;
+        # redirect to login page
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
     }
-
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $sp_person_id = $c->user()->get_object()->get_sp_person_id();
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
 
     my $projects = CXGN::BreedersToolbox::Projects->new( { schema=> $schema } );
 
-    my $breeding_programs = $projects->get_breeding_programs();
+    my $breeding_programs = $projects->get_breeding_programs($sp_person_id);
 
     my %genotyping_trials_by_breeding_project = ();
 
     foreach my $bp (@$breeding_programs) {
-	$genotyping_trials_by_breeding_project{$bp->[1]}= $projects->get_genotyping_trials_by_breeding_program($bp->[0]);
+        $genotyping_trials_by_breeding_project{$bp->[1]}= $projects->get_genotyping_trials_by_breeding_program($bp->[0]);
     }
 
     $genotyping_trials_by_breeding_project{'Other'} = $projects->get_genotyping_trials_by_breeding_program();
+    print STDERR Dumper \%genotyping_trials_by_breeding_project;
+
+    my $locations = $projects->get_all_locations($sp_person_id);
 
     my $genotyping_facilities = $c->config->{genotyping_facilities};
     my @facilities = split ',',$genotyping_facilities;
 
-    $c->stash->{locations} = $projects->get_all_locations($c);
-
+    $c->stash->{locations} = $locations;
     $c->stash->{genotyping_trials_by_breeding_project} = \%genotyping_trials_by_breeding_project;
-
     $c->stash->{breeding_programs} = $breeding_programs;
-
     $c->stash->{facilities} = \@facilities;
-
     $c->stash->{template} = '/breeders_toolbox/manage_genotyping.mas';
 }
 

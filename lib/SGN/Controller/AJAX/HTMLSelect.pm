@@ -223,7 +223,7 @@ sub get_trial_folder_select : Path('/ajax/html/select/folders') Args(0) {
         private_company_id => $private_company_id
     });
     if (scalar(@folders) == 0) {
-        $c->stash->{rest} = { error => "No folders available! Select again!" };
+        $c->stash->{rest} = { success => 1 };
         $c->detach();
     }
 
