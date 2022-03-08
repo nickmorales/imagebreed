@@ -148,7 +148,7 @@ sub detail {
 	}
     my $names = join ',', @sp_person_names;
     my $person_id = join ',',  @sp_persons;
-    
+
 	%result = (
 		programDbId=>qq|$id|,
 		programName=>$name,
@@ -190,7 +190,7 @@ sub store {
 
 		my $p = CXGN::BreedersToolbox::Projects->new({ schema => $schema });
 
-		my $new_program = $p->new_breeding_program($name, $desc);
+		my $new_program = $p->new_breeding_program($name, $desc, 1);
 
 		if ($new_program->{'error'}) {
 			return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Program %s was not stored.', $name));
@@ -200,7 +200,7 @@ sub store {
 		push @program_ids, $new_program;
 
 	}
-	
+
 	my %result;
 	my $count = scalar @program_ids;
     my $pagination = CXGN::BrAPI::Pagination->pagination_response($count,$page_size,$page);
@@ -243,7 +243,7 @@ sub update {
 	$row->insert();
 	my $project_id = $row->project_id();
 	push @program_ids, $project_id;
-	
+
 	my %result;
 	my $count = scalar @program_ids;
     my $pagination = CXGN::BrAPI::Pagination->pagination_response($count,$page_size,$page);

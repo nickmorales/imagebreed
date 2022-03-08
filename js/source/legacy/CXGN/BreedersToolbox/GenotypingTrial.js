@@ -505,6 +505,14 @@ function edit_genotyping_trial_details(){
     get_select_box('breeding_programs', 'edit_genotyping_trial_breeding_program', { 'default' : default_bp });
     jQuery('#edit_trial_breeding_program').data("originalValue", default_bp);
 
+    var default_company = document.getElementById("edit_genotyping_trial_company").getAttribute("value");
+    get_select_box('private_companies', 'edit_genotyping_trial_company', { 'selected' : default_company });
+    jQuery('#edit_genotyping_trial_company').data("originalValue", default_company);
+
+    jQuery(document).on('change', '#edit_genotyping_trial_company', function(){
+        get_select_box('breeding_programs', 'edit_genotyping_trial_breeding_program', { 'private_company_id':jQuery(this).val() });
+    });
+
     jQuery('#edit_genotyping_trial_details_cancel_button').click(function(){
         reset_dialog_body('genotyping_trial_details_edit_body', edit_details_body_html);
     });

@@ -479,46 +479,37 @@ sub new_breeding_program {
     my $self= shift;
     my $name = shift;
     my $description = shift;
+    my $private_company_id = shift;
 
     my $type_id = $self->get_breeding_program_cvterm_id();
 
-    my $rs = $self->schema()->resultset("Project::Project")->search(
-	{
-	    name => $name,
-	});
+    my $rs = $self->schema()->resultset("Project::Project")->search({
+        name => $name,
+    });
     if ($rs->count() > 0) {
-	return { error => "A breeding program with name '$name' already exists." };
-
+        return { error => "A breeding program with name '$name' already exists." };
     }
     my $project_id;
     eval {
+        my $role = CXGN::People::Roles->new({bcs_schema=>$self->schema});
+        my $error = $role->add_sp_role($name);
+        if ($error){
+            die $error;
+        }
 
-		my $role = CXGN::People::Roles->new({bcs_schema=>$self->schema});
-		my $error = $role->add_sp_role($name);
-		if ($error){
-			die $error;
-		}
+        my $q = "INSERT INTO project (name, description, private_company_id) VALUES (?,?,?);";
+        my $h = $self->schema->storage->dbh()->prepare($q);
+        $h->execute($name, $description, $private_company_id);
 
-	my $row = $self->schema()->resultset("Project::Project")->create(
-	    {
-		name => $name,
-		description => $description,
-	    });
+        my $row = $self->schema()->resultset("Project::Project")->find({name => $name});
+        $project_id = $row->project_id();
 
-	$row->insert();
-    $project_id = $row->project_id();
-
-	my $prop_row = $self->schema()->resultset("Project::Projectprop")->create(
-	    {
-		type_id => $type_id,
-		project_id => $row->project_id(),
-
-	    });
-	$prop_row->insert();
-
+        my $prop_row = $self->schema()->resultset("Project::Projectprop")->create({
+            type_id => $type_id,
+            project_id => $row->project_id(),
+        });
+        $prop_row->insert();
     };
-
-
 
     if ($@) {
         return { error => "An error occurred while generating a new breeding program. ($@)" };
@@ -526,7 +517,6 @@ sub new_breeding_program {
         print STDERR "The new breeding program $name was created with id $project_id\n";
         return { success => "The new breeding program $name was created.", id => $project_id };
     }
-
 }
 
 sub delete_breeding_program {

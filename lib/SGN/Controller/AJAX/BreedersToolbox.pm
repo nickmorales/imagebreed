@@ -30,14 +30,15 @@ sub new_breeding_program :Path('/breeders/program/new') Args(0) {
     my $c = shift;
     my $name = $c->req->param("name");
     my $desc = $c->req->param("desc");
+    my $private_company_id = $c->req->param("private_company_id");
 
     if (!($c->user() || $c->user()->check_roles('submitter'))) {
-	$c->stash->{rest} = { error => 'You need to be logged in and have sufficient privileges to add a breeding program.' };
+        $c->stash->{rest} = { error => 'You need to be logged in and have sufficient privileges to add a breeding program.' };
     }
 
     my $p = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") });
 
-    my $new_program = $p->new_breeding_program($name, $desc);
+    my $new_program = $p->new_breeding_program($name, $desc, $private_company_id);
 
     print STDERR "New program is ".Dumper($new_program)."\n";
 

@@ -5,6 +5,8 @@ $trial_name
 $plate_id
 $breeding_program_name
 $breeding_program_id
+$private_company_id
+$private_company_name
 $location_data => undef
 $year => undef
 $trial_type => undef
@@ -279,6 +281,8 @@ $raw_data_link => undef
 <& /breeders_toolbox/genotyping_trials/edit_genotyping_trial_details_dialog.mas,
 trial_name => $trial_name,
 breeding_program => $breeding_program_id,
+company_id => $private_company_id,
+company_name => $private_company_name,
 genotyping_facility => $genotyping_facility,
 genotyping_facility_status => $genotyping_facility_status,
 genotyping_facility_submitted => $genotyping_facility_submitted,

@@ -321,6 +321,11 @@ function edit_trial_details(){
     var default_type = document.getElementById("edit_trial_plan_to_cross").getAttribute("value");
     jQuery('#edit_trial_plan_to_cross option[value="'+default_type+'"]').attr('selected','selected');
 
+    jQuery(document).on('change', '#edit_trial_company', function(){
+        get_select_box('breeding_programs', 'edit_trial_breeding_program', { 'private_company_id':jQuery(this).val() });
+        get_select_box('locations', 'edit_trial_location', { 'private_company_id':jQuery(this).val() });
+    });
+
     //create bootstrap daterangepickers for planting and harvest dates
     var planting_date_element = jQuery("#edit_trial_planting_date");
     set_daterangepicker_default (planting_date_element);

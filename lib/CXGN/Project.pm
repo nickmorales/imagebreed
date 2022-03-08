@@ -366,13 +366,13 @@ sub set_private_company {
     $h->execute($private_company_id, $self->project_id);
 
     my $q1 = "SELECT cvterm.name FROM sgn_people.private_company AS p JOIN cvterm ON(p.type_id=cvterm.cvterm_id) WHERE private_company_id=?;";
-    my $h1 = $self->schema->storage->dbh()->prepare($q1);
+    my $h1 = $self->bcs_schema->storage->dbh()->prepare($q1);
     $h1->execute($private_company_id);
     my ($type_name) = $h1->fetchrow_array();
 
     my $project_is_private = $type_name eq 'private_access' ? 1 : 0;
-    my $q2 = "UPDATE project SET is_private=? WHERE stock_id=?;";
-    my $h2 = $self->schema->storage->dbh()->prepare($q2);
+    my $q2 = "UPDATE project SET is_private=? WHERE project_id=?;";
+    my $h2 = $self->bcs_schema->storage->dbh()->prepare($q2);
     $h2->execute($project_is_private, $self->project_id());
 
     $self->private_company_project_is_private($project_is_private);

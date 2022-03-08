@@ -277,6 +277,7 @@ sub save_trial {
 		return { error => "Trial not saved: location not found" };
 	}
 
+    my $accession_cvterm = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'accession', 'stock_type');
     my $project_year_cvterm = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'project year', 'project_property');
     my $project_design_cvterm = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'design', 'project_property');
     my $field_size_cvterm = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'field_size', 'project_property');
@@ -319,6 +320,11 @@ sub save_trial {
     if ($self->get_is_genotyping()) {
         print STDERR "Generating a genotyping trial...\n";
         $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'genotyping_layout', 'experiment_type')->cvterm_id();
+
+        my $blank_stock_check = $chado_schema->resultset("Stock::Stock")->find({uniquename=>"BLANK"});
+        if (!$blank_stock_check) {
+            my $blank_stock = $chado_schema->resultset("Stock::Stock")->create({name=>"uniquename", uniquename=>"BLANK", type_id=>$accession_cvterm->cvterm_id() });
+        }
     }
     elsif ($self->get_is_analysis()) {
         print STDERR "Generating an analysis trial...\n";
