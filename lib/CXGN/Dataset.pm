@@ -669,6 +669,12 @@ sub retrieve_phenotypes_ref {
         push @plot_ids, $_->[0];
     }
 
+    my $plants = $self->retrieve_plants();
+    my @plant_ids;
+    foreach (@$plants) {
+        push @plant_ids, $_->[0];
+    }
+
     my $accessions = $self->retrieve_accessions();
     my @accession_ids;
     foreach (@$accessions) {
@@ -695,6 +701,7 @@ sub retrieve_phenotypes_ref {
             trait_list=>\@trait_ids,
             trial_list=>\@trial_ids,
             plot_list=>\@plot_ids,
+            plant_list=>\@plant_ids,
             accession_list=>\@accession_ids,
             exclude_phenotype_outlier=>$self->exclude_phenotype_outlier
         }

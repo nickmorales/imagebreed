@@ -45,7 +45,7 @@ $response = $ua->post(
         Content => [
             upload_nirs_spreadsheet_file_input => [ $file, 'nirs_data_upload' ],
             "sgn_session_id"=>$sgn_session_id,
-            "upload_nirs_spreadsheet_data_level"=>"plots",
+            "upload_nirs_spreadsheet_data_level"=>"plants",
             "upload_nirs_spreadsheet_protocol_name"=>"NIRS SCIO Protocol",
             "upload_nirs_spreadsheet_protocol_desc"=>"description",
             "upload_nirs_spreadsheet_protocol_device_type"=>"SCIO"
@@ -68,7 +68,7 @@ $response = $ua->post(
         Content => [
             upload_nirs_spreadsheet_file_input => [ $file, 'nirs_data_upload' ],
             "sgn_session_id"=>$sgn_session_id,
-            "upload_nirs_spreadsheet_data_level"=>"plots",
+            "upload_nirs_spreadsheet_data_level"=>"plants",
             "upload_nirs_spreadsheet_protocol_name"=>"NIRS SCIO Protocol",
             "upload_nirs_spreadsheet_protocol_desc"=>"description",
             "upload_nirs_spreadsheet_protocol_device_type"=>"SCIO"
@@ -82,7 +82,7 @@ my $message_hash = decode_json $message;
 print STDERR Dumper $message_hash;
 ok($message_hash->{figure});
 is(scalar(@{$message_hash->{success}}), 8);
-is($message_hash->{success}->[6], 'All values in your file have been successfully processed!<br><br>15 NIRS profiles stored<br><br>');
+is($message_hash->{success}->[6], 'All values in your file have been successfully processed!<br><br>30 NIRS profiles stored<br><br>');
 my $nirs_protocol_id = $message_hash->{nd_protocol_id};
 
 my $dry_matter_trait_id = $f->bcs_schema()->resultset("Cv::Cvterm")->find({name => 'dry matter content percentage'})->cvterm_id();
@@ -208,14 +208,14 @@ $response = $ua->post(
         ]
     );
 
-#print STDERR Dumper $response;
-# ok($response->is_success);
-# $message = $response->decoded_content;
-# $message_hash = decode_json $message;
-# print STDERR Dumper $message_hash;
-# ok($message_hash->{model_properties});
-# ok($message_hash->{model_file});
-# ok($message_hash->{training_data_file});
-# ok($message_hash->{performance_output});
+print STDERR Dumper $response;
+ok($response->is_success);
+$message = $response->decoded_content;
+$message_hash = decode_json $message;
+print STDERR Dumper $message_hash;
+ok($message_hash->{model_properties});
+ok($message_hash->{model_file});
+ok($message_hash->{training_data_file});
+ok($message_hash->{performance_output});
 
 done_testing();
