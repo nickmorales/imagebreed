@@ -2494,9 +2494,7 @@ sub create_tissue_samples : Chained('trial') PathPart('create_tissue_samples') A
 
 }
 
-# loading field coordinates
-
-sub upload_trial_coordinates : Path('/ajax/breeders/trial/coordsupload') Args(0) {
+sub upload_trial_coordinates : Chained('trial') PathPart('coordsupload') Args(0) {
     my $self = shift;
     my $c = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');

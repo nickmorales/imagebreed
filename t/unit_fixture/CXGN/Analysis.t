@@ -24,7 +24,7 @@ my $mech = Test::WWW::Mechanize->new;
 $mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
 my $response = decode_json $mech->content;
 print STDERR Dumper $response;
-is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
+is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
 my $sgn_session_id = $response->{access_token};
 print STDERR $sgn_session_id."\n";
 
@@ -178,7 +178,7 @@ is_deeply($saved_model_object->{model_properties}, {
                                   'arbitrary_property' => '0.001'
                                 });
 
-sleep(15);
+sleep(10);
 my $a = CXGN::Analysis->new({
     bcs_schema => $schema,
     people_schema => $people_schema,
@@ -232,7 +232,7 @@ my $message_hash_uploaded_analysis = decode_json $message_uploaded_analysis;
 print STDERR Dumper $message_hash_uploaded_analysis;
 ok($message_hash_uploaded_analysis->{analysis_id});
 
-sleep(15);
+sleep(10);
 my $a = CXGN::Analysis->new({
     bcs_schema => $schema,
     people_schema => $people_schema,
@@ -248,4 +248,3 @@ print STDERR "Rolling back...\n";
 #$dbh->rollback();
 
 done_testing();
-

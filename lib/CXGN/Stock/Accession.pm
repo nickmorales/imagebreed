@@ -15,7 +15,7 @@ Code structure copied from CXGN::Stock::Seedlot, with inheritance from CXGN::Sto
 =head1 AUTHOR
 
 
-=head1 ACCESSORS & METHODS 
+=head1 ACCESSORS & METHODS
 
 =cut
 
@@ -387,7 +387,8 @@ sub store {
 
     print STDERR "storing: UNIQUENAME=".$self->uniquename()."\n";
 
-    my $id = $self->SUPER::store();
+    my $new_stock = $self->SUPER::store();
+    my $id = $new_stock->{stock_id};
 
     if ($self->accessionNumber){
         $self->_store_stockprop('accession number', $self->accessionNumber);
@@ -507,4 +508,3 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-

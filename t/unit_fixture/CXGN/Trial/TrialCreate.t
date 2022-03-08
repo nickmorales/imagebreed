@@ -22,6 +22,13 @@ ok(my $chado_schema = $fix->bcs_schema);
 ok(my $phenome_schema = $fix->phenome_schema);
 ok(my $dbh = $fix->dbh);
 
+my $mech = Test::WWW::Mechanize->new(timeout=>30000);
+$mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
+my $response = decode_json $mech->content;
+print STDERR Dumper $response;
+is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
+my $sgn_session_id = $response->{access_token};
+
 # create a location for the trial
 ok(my $trial_location = "test_location_for_trial");
 ok(my $location = $chado_schema->resultset('NaturalDiversity::NdGeolocation')
@@ -356,7 +363,7 @@ foreach my $acc (@$genotyping_accession_names) {
 }
 
 my $mech = Test::WWW::Mechanize->new;
-$mech->get_ok('http://localhost:3010/ajax/breeders/trial/'.$save->{'trial_id'}.'/design');
+$mech->get_ok('http://localhost:3010/ajax/breeders/trial/'.$save->{'trial_id'}.'/design?sgn_session_id='.$sgn_session_id);
 my $response = decode_json $mech->content;
 print STDERR Dumper $response;
 is(scalar(keys %{$response->{design}}), 11);
@@ -499,7 +506,7 @@ is(scalar(@$trial_management_factors), 2);
 $mech->post_ok('http://localhost:3010/brapi/v2/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
-is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
+is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
 is($response->{'userDisplayName'}, 'Jane Doe');
 is($response->{'expires_in'}, '7200');
 my $access_token = $response->{access_token};

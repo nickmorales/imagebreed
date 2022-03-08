@@ -1183,7 +1183,8 @@ sub store {
         if(!$self->stock){
             $self->name($self->uniquename());
             $self->type('seedlot');
-            my $id = $self->SUPER::store();
+            my $new_stock = $self->SUPER::store();
+            my $id = $new_stock->{stock_id};
             print STDERR "Saving seedlot returned ID $id.".localtime."\n";
             $self->seedlot_id($id);
             $self->_store_seedlot_location();

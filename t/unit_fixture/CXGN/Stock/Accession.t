@@ -61,7 +61,8 @@ my $stock1 = CXGN::Stock::Accession->new({
     #subtaxa=>$_->{subtaxa},
     #subtaxaAuthority=>$_->{subtaxaAuthority},
     donors=>$stock1donors,
-    acquisitionDate=>$stock1_date
+    acquisitionDate=>$stock1_date,
+    private_company_id=>1
 });
 my $stock_id1 = $stock1->store();
 
@@ -131,7 +132,8 @@ my $stock2 = CXGN::Stock::Accession->new({
     #subtaxa=>$_->{subtaxa},
     #subtaxaAuthority=>$_->{subtaxaAuthority},
     donors=>$stock2donors,
-    acquisitionDate=>$stock2_date
+    acquisitionDate=>$stock2_date,
+    private_company_id=>1
 });
 my $stock_id2 = $stock2->store();
 

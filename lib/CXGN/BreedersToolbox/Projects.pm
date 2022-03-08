@@ -7,6 +7,7 @@ use SGN::Model::Cvterm;
 use CXGN::People::Roles;
 use JSON;
 use Encode;
+use CXGN::PrivateCompany;
 
 has 'schema' => (
 		 is       => 'rw',

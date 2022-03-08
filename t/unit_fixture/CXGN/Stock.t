@@ -18,7 +18,10 @@ $new_s->uniquename("aniceuniquename");
 $new_s->name("anicename");
 $new_s->type("accession");
 $new_s->description("blablabla");
-my $new_s_id = $new_s->store();
+$new_s->private_company_id(1);
+my $new_stock = $new_s->store();
+my $new_s_id = $new_stock->{stock_id};
+ok($new_s_id);
 
 my $copy_s = CXGN::Stock->new(schema => $schema, stock_id => $new_s_id);
 is($copy_s->name(), $new_s->name(), "name save check");
@@ -35,6 +38,7 @@ $new_s->uniquename("new_uniquename");
 $new_s->type("plot");
 $new_s->description("blablabla 2");
 $new_s->is_obsolete(1);
+$new_s->private_company_id(1);
 $new_s->store();
 
 my $update_s = CXGN::Stock->new(schema => $schema, stock_id => $new_s_id);

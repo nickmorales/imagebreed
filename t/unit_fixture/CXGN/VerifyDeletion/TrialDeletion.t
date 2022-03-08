@@ -32,7 +32,7 @@ my $json = JSON->new->allow_nonref;
 $mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
-is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
+is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
 my $sgn_session_id = $response->{access_token};
 
 my $project_rs = $schema->resultset("Project::Project")->find({name=>'CASS_6Genotypes_Sampling_2015'});

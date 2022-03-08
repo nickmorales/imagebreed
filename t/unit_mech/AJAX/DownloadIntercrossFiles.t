@@ -22,7 +22,7 @@ my $mech = Test::WWW::Mechanize->new;
 
 $mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
 my $response = decode_json $mech->content;
-is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
+is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
 my $sgn_session_id = $response->{access_token};
 
 #adding crossing experiment and lists for downloaded files

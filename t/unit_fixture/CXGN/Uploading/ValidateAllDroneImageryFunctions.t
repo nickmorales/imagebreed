@@ -26,7 +26,7 @@ my $mech = Test::WWW::Mechanize->new;
 $mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
 my $response = decode_json $mech->content;
 print STDERR Dumper $response;
-is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
+is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
 my $sgn_session_id = $response->{access_token};
 print STDERR $sgn_session_id."\n";
 
@@ -158,6 +158,7 @@ print STDERR Dumper $odm2_report_data;
 is($odm2_report_file_count, 13);
 
 }
+# END ODM
 
 #Testing upload of RGB unstitched raw captures.
 my $rasterblue = $f->config->{basepath}."/t/data/imagebreed/RasterBlue.png";
@@ -217,7 +218,7 @@ ok($a_drone_run_project_id);
 $mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
 my $response = decode_json $mech->content;
 print STDERR Dumper $response;
-is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
+is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
 $sgn_session_id = $response->{access_token};
 print STDERR $sgn_session_id."\n";
 
@@ -323,7 +324,7 @@ ok($message_hash_get_template->{success});
 ok($message_hash_get_template->{parameter});
 
 $ua = LWP::UserAgent->new;
-my $response_drone_runs = $ua->get('http://localhost:3010/api/drone_imagery/drone_runs?select_checkbox_name=drone_test_checkbox&field_trial_id='.$field_trial_id);
+my $response_drone_runs = $ua->get('http://localhost:3010/api/drone_imagery/drone_runs?sgn_session_id='.$sgn_session_id.'&select_checkbox_name=drone_test_checkbox&field_trial_id='.$field_trial_id);
 ok($response_drone_runs->is_success);
 my $message_drone_runs = $response_drone_runs->decoded_content;
 my $message_hash_drone_runs = decode_json $message_drone_runs;
@@ -336,7 +337,7 @@ is(scalar(@{$message_hash_drone_runs->{data}}), 1);
 }
 
 $ua = LWP::UserAgent->new;
-my $response_image_types = $ua->get('http://localhost:3010/api/drone_imagery/plot_polygon_types?select_checkbox_name=drone_test_checkbox&field_trial_id='.$field_trial_id);
+my $response_image_types = $ua->get('http://localhost:3010/api/drone_imagery/plot_polygon_types?sgn_session_id='.$sgn_session_id.'&select_checkbox_name=drone_test_checkbox&field_trial_id='.$field_trial_id);
 ok($response_image_types->is_success);
 my $message_image_types = $response_image_types->decoded_content;
 my $message_hash_image_types = decode_json $message_image_types;
@@ -344,7 +345,7 @@ print STDERR Dumper $message_hash_image_types;
 is(scalar(@{$message_hash_image_types->{data}}), 1);
 
 $ua = LWP::UserAgent->new;
-my $response_drone_run_bands = $ua->get('http://localhost:3010/api/drone_imagery/drone_run_bands?select_checkbox_name=drone_test_checkbox&field_trial_id='.$field_trial_id.'&drone_run_project_id='.$message_hash_raster->{drone_run_project_id});
+my $response_drone_run_bands = $ua->get('http://localhost:3010/api/drone_imagery/drone_run_bands?sgn_session_id='.$sgn_session_id.'&select_checkbox_name=drone_test_checkbox&field_trial_id='.$field_trial_id.'&drone_run_project_id='.$message_hash_raster->{drone_run_project_id});
 ok($response_drone_run_bands->is_success);
 my $message_drone_run_bands = $response_drone_run_bands->decoded_content;
 my $message_hash_drone_run_bands = decode_json $message_drone_run_bands;
@@ -352,7 +353,7 @@ print STDERR Dumper $message_hash_drone_run_bands;
 is(scalar(@{$message_hash_drone_run_bands->{data}}), 5);
 
 $ua = LWP::UserAgent->new;
-my $response_weeks_after_planting = $ua->get('http://localhost:3010/api/drone_imagery/get_weeks_after_planting_date?select_checkbox_name=drone_test_checkbox&field_trial_id='.$field_trial_id.'&drone_run_project_id='.$message_hash_raster->{drone_run_project_id});
+my $response_weeks_after_planting = $ua->get('http://localhost:3010/api/drone_imagery/get_weeks_after_planting_date?sgn_session_id='.$sgn_session_id.'&select_checkbox_name=drone_test_checkbox&field_trial_id='.$field_trial_id.'&drone_run_project_id='.$message_hash_raster->{drone_run_project_id});
 ok($response_weeks_after_planting->is_success);
 my $message_weeks_after_planting = $response_weeks_after_planting->decoded_content;
 my $message_hash_weeks_after_planting = decode_json $message_weeks_after_planting;

@@ -663,6 +663,12 @@ retrieves phenotypes as a hashref representation
 sub retrieve_phenotypes_ref {
     my $self = shift;
 
+    my $plots = $self->retrieve_plots();
+    my @plot_ids;
+    foreach (@$plots) {
+        push @plot_ids, $_->[0];
+    }
+
     my $accessions = $self->retrieve_accessions();
     my @accession_ids;
     foreach (@$accessions) {
@@ -688,6 +694,7 @@ sub retrieve_phenotypes_ref {
             data_level=>$self->data_level(),
             trait_list=>\@trait_ids,
             trial_list=>\@trial_ids,
+            plot_list=>\@plot_ids,
             accession_list=>\@accession_ids,
             exclude_phenotype_outlier=>$self->exclude_phenotype_outlier
         }

@@ -45,7 +45,7 @@ my $breeding_program_id = $bp_rs->first->project_id;
 ##
 $mech->post_ok('/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ], "BrAPI Login");
 my $response = decode_json $mech->content;
-is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull', "Login Succssful");
+is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull', "Login Succssful");
 my $sgn_session_id = $response->{access_token};
 isnt($sgn_session_id, '', "SGN Session Token");
 

@@ -17,7 +17,7 @@ my $mech = Test::WWW::Mechanize->new;
 $mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
 my $response = decode_json $mech->content;
 print STDERR Dumper $response;
-is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
+is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
 my $sgn_session_id = $response->{access_token};
 print STDERR $sgn_session_id."\n";
 
@@ -25,11 +25,11 @@ $mech->get_ok("http://localhost:3010/breeders/download_pedigree_action?input_for
 $response = $mech->content;
 
 my $expected_response = 'Accession	Female_Parent	Male_Parent	Cross_Type
-test5P001	test_accession4	test_accession5	
-test5P002	test_accession4	test_accession5	
-test5P003	test_accession4	test_accession5	
-test5P004	test_accession4	test_accession5	
-test5P005	test_accession4	test_accession5	
+test5P001	test_accession4	test_accession5
+test5P002	test_accession4	test_accession5
+test5P003	test_accession4	test_accession5
+test5P004	test_accession4	test_accession5
+test5P005	test_accession4	test_accession5
 ';
 
 # for identifying whitespace differences
@@ -43,16 +43,16 @@ $mech->get_ok('http://localhost:3010/breeders/download_pedigree_action?input_for
 $response = $mech->content;
 
 $expected_response = 'Accession	Female_Parent	Male_Parent	Cross_Type
-test5P001	test_accession4	test_accession5	
-test5P002	test_accession4	test_accession5	
-test5P003	test_accession4	test_accession5	
-test5P004	test_accession4	test_accession5	
-test5P005	test_accession4	test_accession5	
+test5P001	test_accession4	test_accession5
+test5P002	test_accession4	test_accession5
+test5P003	test_accession4	test_accession5
+test5P004	test_accession4	test_accession5
+test5P005	test_accession4	test_accession5
 test_accession4	test_accession1	test_accession2	biparental
 test_accession5	test_accession3		open
-test_accession1			
-test_accession2			
-test_accession3			
+test_accession1
+test_accession2
+test_accession3
 ';
 
 # for identifying whitespace differences

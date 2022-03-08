@@ -22,7 +22,7 @@ my $response;
 $mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
-is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
+is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
 
 $mech->get_ok('http://localhost:3010/ajax/breeders/new_identifier_generation?identifier_name=test_identifier_generation&identifier_prefix=ACTLNG&num_digits=6&current_number=1&description=test');
 $response = decode_json $mech->content;

@@ -31,11 +31,12 @@ $sl->organization_name($seedlot_organization);
 $sl->population_name($seedlot_population_name);
 $sl->breeding_program_id($seedlot_breeding_program_id);
 $sl->quality('MOLD');
-
+$sl->private_company_id(1);
 
 #TO DO
 #$sl->cross_id($cross_id);
 my $return = $sl->store();
+print STDERR Dumper $return;
 my $seedlot_id = $return->{seedlot_id};
 
 my $s = CXGN::Stock::Seedlot->new(schema=>$schema, seedlot_id=>$seedlot_id);
