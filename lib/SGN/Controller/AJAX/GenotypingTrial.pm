@@ -24,10 +24,12 @@ sub generate_genotype_trial : Path('/ajax/breeders/generategenotypetrial') Actio
 sub generate_genotype_trial_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', 0, 0);
+    my $plate_info = decode_json $c->req->param("plate_data");
+
+    my $private_company_id = $plate_info->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', $private_company_id, 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
-    my $plate_info = decode_json $c->req->param("plate_data");
     #print STDERR Dumper $plate_info;
 
     if ( !$plate_info->{elements} || !$plate_info->{genotyping_facility_submit} || !$plate_info->{project_name} || !$plate_info->{description} || !$plate_info->{location} || !$plate_info->{year} || !$plate_info->{name} || !$plate_info->{breeding_program} || !$plate_info->{genotyping_facility} || !$plate_info->{sample_type} || !$plate_info->{plate_format} ) {
@@ -241,10 +243,12 @@ sub store_genotype_trial : Path('/ajax/breeders/storegenotypetrial') ActionClass
 sub store_genotype_trial_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', 0, 0);
+    my $plate_info = decode_json $c->req->param("plate_data");
+
+    my $private_company_id = $plate_info->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', $private_company_id, 'submitter_access');
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
-    my $plate_info = decode_json $c->req->param("plate_data");
     #print STDERR Dumper $plate_info;
 
     if ( !$plate_info->{design} || !$plate_info->{genotyping_facility_submit} || !$plate_info->{project_name} || !$plate_info->{description} || !$plate_info->{location} || !$plate_info->{year} || !$plate_info->{name} || !$plate_info->{breeding_program} || !$plate_info->{genotyping_facility} || !$plate_info->{sample_type} || !$plate_info->{plate_format} ) {
@@ -308,6 +312,7 @@ sub store_genotype_trial_POST : Args(0) {
             genotyping_plate_format => $plate_info->{plate_format},
             genotyping_plate_sample_type => $plate_info->{sample_type},
             genotyping_trial_from_field_trial => \@field_trial_ids,
+            private_company_id => $private_company_id
         });
 
         $message = $ct->save_trial();

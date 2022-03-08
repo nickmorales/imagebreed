@@ -15,9 +15,15 @@ var $j = jQuery.noConflict();
 jQuery(document).ready(function ($) {
 
     // defined in CXGN.BreedersToolbox.HTMLSelect
+    get_select_box("private_companies", "company_select_div", {'name': 'select_private_company_id', 'id': 'select_private_company_id'});
     get_select_box("locations", "location_select_div", {});
     get_select_box("breeding_programs", "breeding_program_select_div", {});
     get_select_box("years", "year_select_div", {'auto_generate': 1});
+
+    jQuery(document).on('change', '#select_private_company_id', function(){
+        get_select_box("locations", "location_select_div", {'private_company_id':jQuery(this).val()});
+        get_select_box("breeding_programs", "breeding_program_select_div", {'private_company_id':jQuery(this).val()});
+    });
 
     get_select_box("locations", "upload_genotype_location_select_div", {'id': 'upload_genotype_location_select', 'name': 'upload_genotype_location_select'});
     get_select_box("breeding_programs", "upload_genotype_breeding_program_select_div", {'id': 'upload_genotype_breeding_program_select', 'name': 'upload_genotype_breeding_program_select'});
@@ -52,6 +58,7 @@ jQuery(document).ready(function ($) {
     var plate_data = new Object();
     jQuery('#add_geno_trial_submit').click(function () {
         plate_data = new Object();
+        plate_data.private_company_id = jQuery('#select_private_company_id').val();
         plate_data.breeding_program = jQuery('#breeding_program_select').val();
         plate_data.year = jQuery('#year_select').val();
         plate_data.location = jQuery('#location_select').val();
