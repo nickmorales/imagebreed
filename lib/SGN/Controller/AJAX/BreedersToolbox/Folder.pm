@@ -29,6 +29,7 @@ sub create_folder :Path('/ajax/folder/new') Args(0) {
     my $parent_folder_id = $c->req->param("parent_folder_id");
     my $folder_name = $c->req->param("folder_name");
     my $breeding_program_id = $c->req->param("breeding_program_id");
+    my $private_company_id = $c->req->param("private_company_id");
 
     my $folder_for_trials;
     my $folder_for_crosses;
@@ -61,7 +62,8 @@ sub create_folder :Path('/ajax/folder/new') Args(0) {
 	    breeding_program_id => $breeding_program_id,
         folder_for_trials => $folder_for_trials,
         folder_for_crosses => $folder_for_crosses,
-        folder_for_genotyping_trials => $folder_for_genotyping_trials
+        folder_for_genotyping_trials => $folder_for_genotyping_trials,
+        private_company_id => $private_company_id
 	});
 
     $c->stash->{rest} = {

@@ -210,6 +210,7 @@ sub create {
 	my $folder_name = $args->{name};
 	my $description = $args->{description} || "";
 	my $breeding_program_id = $args->{breeding_program_id};
+	my $private_company_id = $args->{private_company_id};
 	my $parent_folder_id = $args->{parent_folder_id};
 	my $folder_for_trials = $args->{folder_for_trials};
 	my $folder_for_crosses = $args->{folder_for_crosses};
@@ -253,6 +254,7 @@ sub create {
 	});
 	$folder->associate_parent($parent_folder_id);
 	$folder->associate_breeding_program($breeding_program_id);
+	$folder->associate_private_company($private_company_id);
 
 	return $folder;
 }
@@ -266,6 +268,7 @@ sub list {
 	my $folder_for_trials = $args->{folder_for_trials};
 	my $folder_for_crosses = $args->{folder_for_crosses};
 	my $folder_for_genotyping_trials = $args->{folder_for_genotyping_trials};
+	my $private_company_id = $args->{private_company_id};
 
 	my $folder_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema,'trial_folder', 'project_property')->cvterm_id();
 	my $breeding_program_trial_relationship_id = SGN::Model::Cvterm->get_cvterm_row($schema,'breeding_program_trial_relationship', 'project_relationship')->cvterm_id();
@@ -293,9 +296,26 @@ sub list {
 	my $breeding_program_rel = $schema->resultset('Project::ProjectRelationship')->search(\%object_project_params)->search_related("subject_project")->search_related("projectprops", \%projectprop_params, {'+select'=>'subject_project.name', '+as'=>'name' } );
 
 	my @folders;
-	while (my $row = $breeding_program_rel->next()) {
-		push @folders, [ $row->project_id(), $row->get_column('name') ];
-	}
+    my @project_ids;
+    while (my $row = $breeding_program_rel->next()) {
+        my $project_id = $row->project_id();
+        push @folders, [ $project_id, $row->get_column('name') ];
+        push @project_ids, $project_id;
+    }
+
+    if ($private_company_id && scalar(@project_ids) > 0) {
+        my $project_ids_sql = join ',', @project_ids;
+        my $q = "SELECT project_id, name
+            FROM project
+            WHERE project_id IN($project_ids_sql) AND private_company_id=?;";
+        my $h = $schema->storage->dbh()->prepare($q);
+        $h->execute($private_company_id);
+
+        @folders = ();
+        while (my($project_id, $name) = $h->fetchrow_array()) {
+            push @folders, [$project_id, $name];
+        }
+    }
 
 	return @folders;
 }
@@ -534,7 +554,16 @@ sub associate_breeding_program {
 
     my $row = $self->bcs_schema()->resultset('Project::Project')->find( { project_id=> $project_rel_row->object_project_id() });
     $self->breeding_program($row);
+}
 
+sub associate_private_company {
+    my $self = shift;
+    my $private_company_id = shift;
+
+    my $q = "UPDATE project SET private_company_id=? WHERE project_id=?;";
+    my $h = $self->bcs_schema()->storage->dbh()->prepare($q);
+    $h->execute($private_company_id, $self->folder_id());
+    $self->private_company_id($private_company_id);
 }
 
 sub delete_folder {

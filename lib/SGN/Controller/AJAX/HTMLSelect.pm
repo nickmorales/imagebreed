@@ -204,6 +204,7 @@ sub get_trial_folder_select : Path('/ajax/html/select/folders') Args(0) {
     my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $breeding_program_id = $c->req->param("breeding_program_id");
+    my $private_company_id = $c->req->param("private_company_id");
     my $folder_for_trials = 1 ? $c->req->param("folder_for_trials") eq 'true' : 0;
     my $folder_for_crosses = 1 ? $c->req->param("folder_for_crosses") eq 'true' : 0;
     my $folder_for_genotyping_trials = 1 ? $c->req->param("folder_for_genotyping_trials") eq 'true' : 0;
@@ -214,21 +215,26 @@ sub get_trial_folder_select : Path('/ajax/html/select/folders') Args(0) {
 
 
     my @folders = CXGN::Trial::Folder->list({
-	    bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
-	    breeding_program_id => $breeding_program_id,
+        bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
+        breeding_program_id => $breeding_program_id,
         folder_for_trials => $folder_for_trials,
         folder_for_crosses => $folder_for_crosses,
-        folder_for_genotyping_trials => $folder_for_genotyping_trials
+        folder_for_genotyping_trials => $folder_for_genotyping_trials,
+        private_company_id => $private_company_id
     });
+    if (scalar(@folders) == 0) {
+        $c->stash->{rest} = { error => "No folders available! Select again!" };
+        $c->detach();
+    }
 
     if ($empty) {
-      unshift @folders, [ 0, "None" ];
+        unshift @folders, [ 0, "None" ];
     }
 
     my $html = simple_selectbox_html(
-      name => $name,
-      id => $id,
-      choices => \@folders,
+        name => $name,
+        id => $id,
+        choices => \@folders,
     );
     $c->stash->{rest} = { select => $html };
 }
