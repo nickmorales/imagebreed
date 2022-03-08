@@ -100,17 +100,11 @@ rect.bordered {
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label">Locations: (One or More)</label>
                                     <div class="col-sm-9">
-                                        <select multiple class="form-control" id="add_project_location" name="add_project_location">
-                                        <%perl>
-                                        foreach my $location_hashref (@$locations) {
-                                            my $properties = $location_hashref->{'properties'};
-                                            my $program = $properties->{'Program'};
-                                            my $name = $properties->{'Name'};
-                                            print "<option value=\"$name\" data-program=\"$program\">".$name."</option>";
-                                        }
-                                        </%perl>
-                                        </select>
-                                        <div class="well well-sm"><div id="locations_count" >No Locations Selected</div></div>
+                                        <div id="select_locations_div"></div>
+                                        <br/>
+                                        <div class="well well-sm">
+                                            <div id="locations_count" class="text-success">No Locations Selected</div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -134,25 +128,25 @@ rect.bordered {
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-3 control-label">Plot Width (m): </label>
+                                    <label class="col-sm-3 control-label">Plot Width (m) <small>(Optional)</small>: </label>
                                     <div class="col-sm-9">
                                         <input class="form-control" id="add_project_plot_width" name="add_project_plot_width" type="text" />
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-3 control-label">Plot Length (m): </label>
+                                    <label class="col-sm-3 control-label">Plot Length (m) <small>(Optional)</small>: </label>
                                     <div class="col-sm-9">
                                         <input class="form-control" id="add_project_plot_length" name="add_project_plot_length" type="text" />
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-3 control-label">Field Size (ha): </label>
+                                    <label class="col-sm-3 control-label">Field Size (ha) <small>(Optional)</small>: </label>
                                     <div class="col-sm-9">
                                         <input class="form-control" id="new_trial_field_size" name="new_trial_field_size" type="text" />
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="col-sm-3 control-label">Plants per Plot: </label>
+                                    <label class="col-sm-3 control-label">Plants per Plot <small>(Optional)</small>: </label>
                                     <div class="col-sm-9">
                                         <input class="form-control" id="add_plant_entries" name="add_plant_entries" type="number" value=0 placeholder=0 />
                                     </div>
@@ -851,13 +845,16 @@ Development Core Team, 2009).</p></center>
 jQuery(document).ready(function(){
 
     get_select_box('private_companies', 'select_private_company_div', { 'name': 'select_private_company_id', 'id': 'select_private_company_id' });
-    get_select_box('breeding_programs', 'select_breeding_program_div', { 'name' : 'select_breeding_program', 'id' : 'select_breeding_program' });
+    get_select_box('breeding_programs', 'select_breeding_program_div', { 'name' : 'select_breeding_program', 'id' : 'select_breeding_program', 'names_as_values':1 });
+    get_select_box('locations', 'select_locations_div', { 'name' : 'add_project_location', 'id' : 'add_project_location', 'multiple':1, 'names_as_values':1 });
 
     jQuery(document).on('change', '#select_private_company_id', function(){
-        get_select_box('breeding_programs', 'select_breeding_program_div', { 'name' : 'select_breeding_program', 'id' : 'select_breeding_program', 'private_company_id':jQuery(this).val() });
+        jQuery('#locations_count').html('No Locations Selected');
+        get_select_box('breeding_programs', 'select_breeding_program_div', { 'name' : 'select_breeding_program', 'id' : 'select_breeding_program', 'private_company_id':jQuery(this).val(), 'names_as_values':1 });
+        get_select_box('locations', 'select_locations_div', { 'name' : 'add_project_location', 'id' : 'add_project_location', 'multiple':1, 'private_company_id':jQuery(this).val(), 'names_as_values':1 });
     });
 
-    jQuery('#add_project_location').change(function() {
+    jQuery(document).on('change', '#add_project_location', function() {
         var number_selected = jQuery(this).val().length;
         if (number_selected > 1) {
             jQuery('#locations_count').html('Locations Selected: '+number_selected);

@@ -54,23 +54,35 @@ sub get_location_select : Path('/ajax/html/select/locations') Args(0) {
     my $self = shift;
     my $c = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
+    my $private_company_id = $c->req->param('private_company_id');
 
     my $id = $c->req->param("id") || "location_select";
     my $name = $c->req->param("name") || "location_select";
     my $empty = $c->req->param("empty") || "";
+    my $names_as_values = $c->req->param("names_as_values");
 
-    my $locations = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } )->get_all_locations();
+    my $locations = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } )->get_all_locations($user_id, $private_company_id);
+
+    if ($private_company_id && scalar(@$locations) == 0) {
+        $c->stash->{rest} = { error => "No locations available in the company you selected! Please select another company!" };
+        $c->detach();
+    }
+    elsif (scalar(@$locations) == 0) {
+        $c->stash->{rest} = { error => "No locations available! Make sure to join atleast one company first!" };
+        $c->detach();
+    }
 
     if ($empty) { unshift @$locations, [ "", "Select Location" ] }
 
     my $default = $c->req->param("default") || @$locations[0]->[0];
 
     my $html = simple_selectbox_html(
-      name => $name,
-      id => $id,
-      choices => $locations,
-      selected => $default
-	  );
+        name => $name,
+        id => $id,
+        choices => $locations,
+        selected => $default,
+        names_as_values => $names_as_values
+    );
     $c->stash->{rest} = { select => $html };
 }
 
@@ -79,6 +91,7 @@ sub get_breeding_program_select : Path('/ajax/html/select/breeding_programs') Ar
     my $c = shift;
     my $is_new_user = $c->req->param('is_new_user');
     my $private_company_id = $c->req->param('private_company_id');
+    my $names_as_values = $c->req->param("names_as_values");
 
     my $user_id;
     if (!$is_new_user) {
@@ -108,6 +121,7 @@ sub get_breeding_program_select : Path('/ajax/html/select/breeding_programs') Ar
       name => $name,
       id => $id,
       choices => $breeding_programs,
+      names_as_values => $names_as_values
 #      selected => $default
     );
     $c->stash->{rest} = { select => $html };
@@ -676,18 +690,24 @@ sub get_seedlots_select : Path('/ajax/html/select/seedlots') Args(0) {
         $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
         $c->dbic_schema("CXGN::People::Schema"),
         $c->dbic_schema("CXGN::Phenome::Schema"),
-        undef,
-        undef,
-        undef,
+        undef, #offset
+        undef, #limit
+        undef, #seedlot name
         $search_breeding_program_name,
-        undef,
-        undef,
+        undef, #location
+        undef, #minimum count
         $accessions,
         $crosses,
-        1,
-        undef,
+        1, #exact match
+        undef, #minimum weight
+        undef, #seedlot ids
+        undef, #accession ids
+        undef, #quality
+        undef, #only_good_quality
+        undef, #box name
         $user_id,
-        $c->config->{subscription_model}
+        $c->config->{subscription_model},
+        undef #private company ids
     );
     my @seedlots;
     foreach my $sl (@$list) {

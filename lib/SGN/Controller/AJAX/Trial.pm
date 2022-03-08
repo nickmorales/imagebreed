@@ -79,6 +79,10 @@ sub generate_experimental_design_POST : Args(0) {
     my $design_layout_view_html;
     my $design_info_view_html;
     my $design_map_view;
+
+    my $private_company_id = $c->req->param('private_company_id');
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial($c, 'submitter', $private_company_id, 'submitter_access');
+
     if ($c->req->param('stock_list')) {
 	@stock_names = @{_parse_list_from_json($c->req->param('stock_list'))};
     }
@@ -488,17 +492,9 @@ sub save_experimental_design_POST : Args(0) {
 
     print STDERR "Saving trial... :-)\n";
 
-    if (!$c->user()) {
-        $c->stash->{rest} = {error => "You need to be logged in to add a trial" };
-        return;
-    }
-    if (!any { $_ eq "curator" || $_ eq "submitter" } ($c->user()->roles)  ) {
-        $c->stash->{rest} = {error =>  "You have insufficient privileges to add a trial." };
-        return;
-    }
-    my $user_id = $c->user()->get_object()->get_sp_person_id();
+    my $private_company_id = $c->req->param('private_company_id');
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial($c, 'submitter', $private_company_id, 'submitter_access');
 
-    my $user_name = $c->user()->get_object()->get_username();
     my $error;
 
     my $design = _parse_design_from_json($c->req->param('design_json'));
@@ -552,6 +548,7 @@ sub save_experimental_design_POST : Args(0) {
             bcs_schema => $schema,
             parent_folder_id => $parent_folder_id,
             name => $trial_name,
+            private_company_id => $private_company_id,
             breeding_program_id => $breeding_program_id,
             folder_for_trials => 1
         });
@@ -590,6 +587,7 @@ sub save_experimental_design_POST : Args(0) {
             chado_schema => $chado_schema,
             dbh => $dbh,
             design => $trial_location_design,
+            private_company_id => $private_company_id,
             program => $breeding_program,
             trial_year => $c->req->param('year'),
             trial_description => $c->req->param('project_description'),
@@ -673,6 +671,7 @@ sub verify_trial_name_GET : Args(0) {
     my $trial_name = $c->req->param('trial_name');
     my $error;
     my %errors;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial($c, 0, 0, 0);
 
     if (!$trial_name) {
         $c->stash->{rest} = {error => "No trial name supplied"};
@@ -699,6 +698,8 @@ sub verify_stock_list_POST : Args(0) {
     my @stock_names;
     my $error;
     my %errors;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial($c, 0, 0, 0);
+
     if ($c->req->param('stock_list')) {
         @stock_names = @{_parse_list_from_json($c->req->param('stock_list'))};
     }
@@ -729,6 +730,8 @@ sub verify_cross_list_POST : Args(0) {
     my @stock_names;
     my $error;
     my %errors;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial($c, 0, 0, 0);
+
     if ($c->req->param('cross_list')) {
         @stock_names = @{_parse_list_from_json($c->req->param('cross_list'))};
     }
@@ -758,6 +761,8 @@ sub verify_family_name_list_POST : Args(0) {
     my @stock_names;
     my $error;
     my %errors;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial($c, 0, 0, 0);
+
     if ($c->req->param('family_name_list')) {
         @stock_names = @{_parse_list_from_json($c->req->param('family_name_list'))};
     }
@@ -788,6 +793,8 @@ sub verify_seedlot_list_POST : Args(0) {
     my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
     my @stock_names;
     my @seedlot_names;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial($c, 0, 0, 0);
+
     if ($c->req->param('stock_list')) {
         @stock_names = @{_parse_list_from_json($c->req->param('stock_list'))};
     }
@@ -1230,6 +1237,22 @@ sub upload_multiple_trial_designs_file_POST : Args(0) {
         return;
     }
 
+}
+
+sub _check_user_login_trial {
+    my $c = shift;
+    my $check_priv = shift;
+    my $private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
 }
 
 1;

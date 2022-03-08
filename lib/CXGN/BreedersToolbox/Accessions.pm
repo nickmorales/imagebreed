@@ -145,18 +145,24 @@ sub get_possible_seedlots {
         $schema,
         $people_schema,
         $phenome_schema,
-        undef,
-        undef,
-        undef,
-        undef,
-        undef,
-        undef,
+        undef, #offset
+        undef, #limit
+        undef, #seedlot name
+        undef, #breeding program
+        undef, #location
+        undef, #minimum count
         $accessions,
         $crosses,
-        1,
-        undef,
+        1, #exact match
+        undef, #minimum weight
+        undef, #seedlot ids
+        undef, #accession ids
+        undef, #quality
+        undef, #only good quality
+        undef, #box name
         $sp_person_id,
-        $subscription_model
+        $subscription_model,
+        undef #private company ids
     );
 
     my %seedlot_hash;

@@ -578,6 +578,7 @@ jQuery(document).ready(function ($) {
             var design_type = $('#select_multi-design_method').val();
         }
 
+        var private_company_id = jQuery('#select_private_company_id').val();
         var rep_count = $('#rep_count').val();
         var block_size = $('#block_size').val();
         var max_block_size = $('#max_block_size').val();
@@ -680,6 +681,7 @@ jQuery(document).ready(function ($) {
                 $('#working_modal').modal("show");
             },
             data: {
+                'private_company_id': private_company_id,
                 'project_name': name,
                 'project_description': desc,
                 'year': year,
@@ -2089,6 +2091,7 @@ jQuery(document).ready(function ($) {
         var start_number = jQuery('#start_number').val();
         var increment = jQuery('#increment').val();
         var breeding_program_name = jQuery('#select_breeding_program').val();
+        var private_company_id = jQuery('#select_private_company_id').val();
         var fieldmap_col_number = jQuery('#fieldMap_col_number').val();
         var fieldmap_row_number = jQuery('#fieldMap_row_number').val();
         var plot_layout_format = jQuery('#plot_layout_format').val();
@@ -2144,6 +2147,7 @@ jQuery(document).ready(function ($) {
                 'increment': increment,
                 'design_json': design_json,
                 'breeding_program_name': breeding_program_name,
+                'private_company_id': private_company_id,
                 'greenhouse_num_plants': JSON.stringify(greenhouse_num_plants),
                 'fieldmap_col_number': fieldmap_col_number,
                 'fieldmap_row_number': fieldmap_row_number,

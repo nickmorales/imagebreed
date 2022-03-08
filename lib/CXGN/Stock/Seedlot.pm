@@ -63,17 +63,27 @@ To Search Across Seedlots do:
 # This is different from CXGN::Stock::Search in that is retrieves information pertinent to seedlots like location and current count
 
 my ($list, $records_total) = CXGN::Stock::Seedlot->list_seedlots(
-    $c->dbic_schema("Bio::Chado::Schema"),
-    $offset,
-    $limit,
-    $seedlot_name,
-    $breeding_program,
-    $location,
-    $minimum_count,
-    $contents_accession,
-    $contents_cross,
-    $exact_match_uniquenames,
-    $minimum_weight
+    $schema,
+    $people_schema,
+    $phenome_schema,
+    undef, #offset
+    undef, #limit
+    undef, #seedlot name
+    undef, #breeding program
+    undef, #location
+    undef, #minimum count
+    $accessions,
+    $crosses,
+    1, #exact match
+    undef, #minimum weight
+    undef, #seedlot ids
+    undef, #accession ids
+    undef, #quality
+    undef, #only good quality
+    undef, #box name
+    $sp_person_id,
+    $subscription_model,
+    undef #private company ids
 );
 
 ------------------------------------------------------------------------------
@@ -310,6 +320,7 @@ sub list_seedlots {
     my $box_name = shift;
     my $sp_person_id = shift;
     my $subscription_model = shift;
+    my $private_company_id_list = shift;
 
     select(STDERR);
     $| = 1;
@@ -437,10 +448,11 @@ sub list_seedlots {
         stock_id_list=>\@seen_seedlot_ids,
         stock_type_id=>$type_id,
         stockprop_columns_view=>{'current_count'=>1, 'current_weight_gram'=>1, 'organization'=>1, 'location_code'=>1, 'seedlot_quality'=>1},
-        minimal_info=>1,  #for only returning stock_id and uniquenames
+        minimal_info=>0,  #for only returning stock_id and uniquenames
         display_pedigree=>0, #to calculate and display pedigree,
         sp_person_id => $sp_person_id,
-        subscription_model => $subscription_model
+        subscription_model => $subscription_model,
+        private_company_ids_list => $private_company_id_list
     });
     my ($stocksearch_result, $records_stock_total) = $stock_search->search();
     # print STDERR Dumper $stocksearch_result;
@@ -459,6 +471,8 @@ sub list_seedlots {
         }
         my $owners_string = join ', ', @owners_html;
         $unique_seedlots{$_}->{owners_string} = $owners_string;
+        $unique_seedlots{$_}->{private_company_id} = $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{private_company_id};
+        $unique_seedlots{$_}->{private_company_name} = $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{private_company_name};
         $unique_seedlots{$_}->{organization} = $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{organization} ? $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{organization} : 'NA';
         $unique_seedlots{$_}->{box} = $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{location_code} ? $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{location_code} : 'NA';
         $unique_seedlots{$_}->{seedlot_quality} = $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{seedlot_quality} ? $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{seedlot_quality} : '';

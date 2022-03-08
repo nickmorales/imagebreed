@@ -38,6 +38,7 @@ sub list_seedlots :Path('/ajax/breeders/seedlots') :Args(0) {
     my $exact_cross = $params->{exact_cross};
     my $quality = $params->{quality};
     my $only_good_quality = $params->{only_good_quality};
+    my $private_company_id_list = $params->{private_company_id} ? [$params->{private_company_id}] : [];
 
     my $rows = $params->{length} || 10;
     my $offset = $params->{start} || 0;
@@ -101,7 +102,9 @@ sub list_seedlots :Path('/ajax/breeders/seedlots') :Args(0) {
             owners_string => $sl->{owners_string},
             organization => $sl->{organization},
             box => $sl->{box},
-	    seedlot_quality => $sl->{seedlot_quality},
+            seedlot_quality => $sl->{seedlot_quality},
+            private_company_id => $sl->{private_company_id},
+            private_company_name => $sl->{private_company_name}
         };
     }
 

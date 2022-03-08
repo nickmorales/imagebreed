@@ -8,100 +8,126 @@ use SGN::Model::Cvterm;
 use Data::Dumper;
 use JSON::XS;
 
-has 'bcs_schema' => ( isa => 'Bio::Chado::Schema',
-	is => 'rw',
-	required => 1,
+has 'bcs_schema' => (
+    isa => 'Bio::Chado::Schema',
+    is => 'rw',
+    required => 1,
 );
 
-has 'folder_id' => (isa => "Int",
-	is => 'rw',
+has 'folder_id' => (
+    isa => "Int",
+    is => 'rw',
 );
 
-has 'children' => (is => 'rw',
-	lazy => 1,
-	default => sub {
-		my $self = shift;
-		$self->_get_children();
-	}
+has 'children' => (
+    is => 'rw',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        $self->_get_children();
+    }
 );
 
-has 'is_folder' => (isa => 'Bool',
-	is => 'rw',
-	default => 0,
+has 'is_folder' => (
+    isa => 'Bool',
+    is => 'rw',
+    default => 0,
 );
 
-has 'folder_type' => (isa => 'Str',
-	is => 'rw',
+has 'folder_type' => (
+    isa => 'Str',
+    is => 'rw',
 );
 
-has 'name' => (isa => 'Str',
-	is => 'rw',
-	default => 'Untitled',
+has 'name' => (
+    isa => 'Str',
+    is => 'rw',
+    default => 'Untitled',
 );
 
 has 'description' => (
-	isa => 'Str',
-	is  => 'rw'
+    isa => 'Str',
+    is  => 'rw'
 );
 
-has 'folder_for_trials' => (isa => 'Bool',
-	is => 'rw',
-	default => 0,
+has 'private_company_id' => (
+    isa => "Int",
+    is => 'rw',
 );
 
-has 'folder_for_crosses' => (isa => 'Bool',
-	is => 'rw',
-	default => 0,
+has 'folder_for_trials' => (
+    isa => 'Bool',
+    is => 'rw',
+    default => 0,
 );
 
-has 'folder_for_genotyping_trials' => (isa => 'Bool',
-	is => 'rw',
-	default => 0,
+has 'folder_for_crosses' => (
+    isa => 'Bool',
+    is => 'rw',
+    default => 0,
 );
 
-has 'location_id' => (isa => 'Int',
-	is => 'rw',
+has 'folder_for_genotyping_trials' => (
+    isa => 'Bool',
+    is => 'rw',
+    default => 0,
 );
 
-has 'location_name' => (isa => 'Str',
-	is => 'rw',
+has 'location_id' => (
+    isa => 'Int',
+    is => 'rw',
 );
 
-has 'breeding_program_trial_relationship_id' =>  (isa => 'Int',
-	is => 'rw',
+has 'location_name' => (
+    isa => 'Str',
+    is => 'rw',
 );
 
-has 'project_parent' => (isa => 'Bio::Chado::Schema::Result::Project::Project',
-	is => 'rw',
+has 'breeding_program_trial_relationship_id' =>  (
+    isa => 'Int',
+    is => 'rw',
 );
 
-has 'breeding_program' => (isa => 'Bio::Chado::Schema::Result::Project::Project',
-	is => 'rw',
+has 'project_parent' => (
+    isa => 'Bio::Chado::Schema::Result::Project::Project',
+    is => 'rw',
 );
 
-has 'breeding_program_cvterm_id' => (isa => 'Int',
-	is => 'rw',
+has 'breeding_program' => (
+    isa => 'Bio::Chado::Schema::Result::Project::Project',
+    is => 'rw',
 );
 
-has 'folder_cvterm_id' => (isa => 'Int',
-	is => 'rw',
+has 'breeding_program_cvterm_id' => (
+    isa => 'Int',
+    is => 'rw',
+);
+
+has 'folder_cvterm_id' => (
+    isa => 'Int',
+    is => 'rw',
 );
 
 has 'additional_info' => (
-	is  => 'rw'
+    is  => 'rw'
 );
 
 sub BUILD {
 	my $self = shift;
 
-	my $row = $self->bcs_schema()->resultset('Project::Project')->find( { project_id=>$self->folder_id() });
+    my $q = "SELECT project_id, name, description, type_id, private_company_id, is_private
+        FROM project WHERE project_id=?;";
+    my $h = $self->bcs_schema()->storage->dbh()->prepare($q);
+    $h->execute($self->folder_id());
+    my ($folder_id, $name, $description, $project_type_id, $private_company_id, $private_company_project_is_private) = $h->fetchrow_array();
 
-	if (!$row) {
+	if (!$name) {
 		die "The specified folder with id ".$self->folder_id()." does not exist!";
 	}
 
-	$self->name($row->name());
-    $self->description($row->description());
+	$self->name($name);
+    $self->description($description);
+    $self->private_company_id($private_company_id);
 
 	my $breeding_program_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'breeding_program', 'project_property')->cvterm_id();
 	my $folder_for_trials_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'folder_for_trials', 'project_property')->cvterm_id();

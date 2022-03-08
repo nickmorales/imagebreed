@@ -23,6 +23,7 @@ Will do the following:
         operator => $c->user()->get_object()->get_username(),
         design_type => 'CRD',
         design => $design_hash,
+        private_company_id => $private_company_id,
         program => $breeding_program->name(),
         trial_year => $year,
         trial_description => $project_description,
@@ -52,6 +53,7 @@ Will do the following:
         operator => $c->user()->get_object()->get_username(),
         trial_year => $year,
         trial_location => $location->name(),
+        private_company_id => $private_company_id,
         program => $breeding_program->name(),
         trial_description => $description,
         design_type => 'genotyping_plate',
@@ -144,6 +146,7 @@ has 'chado_schema' => (
 
 has 'dbh' => (is  => 'rw',predicate => 'has_dbh', required => 1,);
 has 'trial_id' => (isa => 'Maybe[Int]', is => 'rw', predicate => 'has_trial_id');
+has 'private_company_id' => (isa =>'Int', is => 'rw', predicate => 'has_private_company_id', required => 1,);
 has 'program' => (isa =>'Str', is => 'rw', predicate => 'has_program', required => 1,);
 has 'trial_year' => (isa => 'Maybe[Str]', is => 'rw', predicate => 'has_trial_year', required => 0,);
 has 'trial_description' => (isa => 'Maybe[Str]', is => 'rw', predicate => 'has_trial_description', required => 0,);
@@ -234,6 +237,7 @@ sub save_trial {
     my $self = shift;
     my $chado_schema = $self->get_chado_schema();
     my %design = %{$self->get_design()};
+    my $private_company_id = $self->get_private_company_id();
     my $trial_name = $self->get_trial_name();
     $trial_name =~ s/^\s+|\s+$//g; #trim whitespace from both ends
 
@@ -241,23 +245,29 @@ sub save_trial {
     # created by other means, so use that trial_id
 
     if (! $self->has_trial_id()) {
+        if (!$trial_name) {
+            print STDERR "Trial not saved: Can't create trial without a trial name\n";
+            return { error => "Trial not saved: Can't create trial without a trial name" };
+        }
 
-	if (!$trial_name) {
-		print STDERR "Trial not saved: Can't create trial without a trial name\n";
-		return { error => "Trial not saved: Can't create trial without a trial name" };
-	}
+        if ($self->trial_name_already_exists()) {
+            print STDERR "Can't create trial: Trial name already exists\n";
+            return { error => "Trial not saved: Trial name already exists" };
+        }
 
-    if ($self->trial_name_already_exists()) {
-		print STDERR "Can't create trial: Trial name already exists\n";
-		return { error => "Trial not saved: Trial name already exists" };
-	}
-
-	if (!$self->get_breeding_program_id()) {
-		print STDERR "Can't create trial: Breeding program does not exist\n";
-		return { error => "Trial not saved: breeding program does not exist" };
-	}
-
+        if (!$self->get_breeding_program_id()) {
+            print STDERR "Can't create trial: Breeding program does not exist\n";
+            return { error => "Trial not saved: breeding program does not exist" };
+        }
     }
+
+    my $private_company = CXGN::PrivateCompany->new({
+        schema => $chado_schema,
+        private_company_id => $private_company_id
+    });
+    my $company_type_cvterm_name = $private_company->private_company_type_name();
+    my $private_company_project_is_private = $company_type_cvterm_name eq 'private_access' ? 1 : 0;
+
 	my $geolocation;
 	my $geolocation_lookup = CXGN::Location::LocationLookup->new(schema => $chado_schema);
 	$geolocation_lookup->set_location_name($self->get_trial_location());
@@ -292,11 +302,10 @@ sub save_trial {
         if (! $project) {  die "The specified project id ".$self->get_trial_id()." does not exit in the database\n"; }
     }
     else {
-        $project = $chado_schema->resultset('Project::Project')
-        ->create({
-            name => $trial_name,
-            description => $self->get_trial_description(),
-        });
+        my $q = "INSERT INTO project (name, description, private_company_id, is_private) VALUES (?,?,?,?);";
+        my $h = $chado_schema->storage->dbh()->prepare($q);
+        $h->execute($trial_name, $self->get_trial_description(), $private_company_id, $private_company_project_is_private);
+        $project = $chado_schema->resultset('Project::Project')->find( { name => $trial_name });
     }
 
     my $t = CXGN::Trial->new({

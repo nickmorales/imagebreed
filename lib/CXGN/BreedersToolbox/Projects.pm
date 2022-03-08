@@ -289,18 +289,32 @@ sub get_genotyping_trials_by_breeding_program {
 }
 
 sub get_all_locations {
-     my $self = shift;
-     my $c = shift;
+    my $self = shift;
+    my $sp_person_id = shift;
+    my $private_company_id = shift;
 
-     my $rs = $self->schema() -> resultset("NaturalDiversity::NdGeolocation")->search( {}, { order_by => 'description' } );
-     my @locations = ();
+    my $company_ids_sql = '';
+    if ($private_company_id) {
+        $company_ids_sql = $private_company_id;
+    }
+    else {
+        my $private_companies = CXGN::PrivateCompany->new( { schema=> $self->schema } );
+        my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
+        $company_ids_sql = join ',', @$private_companies_ids;
+    }
 
-     foreach my $loc ($rs->all()) {
-         push @locations, [ $loc->nd_geolocation_id(), $loc->description() ];
-     }
+    my @locations = ();
+    my $q = "SELECT nd_geolocation_id, description
+        FROM nd_geolocation
+        WHERE private_company_id IN($company_ids_sql)
+        ORDER BY description;";
+    my $h = $self->schema->storage->dbh()->prepare($q);
+    $h->execute();
+    while (my ($nd_geolocation_id, $desc) = $h->fetchrow_array()) {
+        push @locations, [ $nd_geolocation_id, $desc ];
+    }
 
-     return \@locations;
-
+    return \@locations;
  }
 
 

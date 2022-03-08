@@ -54,15 +54,16 @@ sub search {
         $minimum_count,
         \@accession_names,
         \@cross_ids,
-        undef,
+        undef, #exact match
         $minimum_weight,
         $seedlot_id,
         $accession_id,
-        undef,
-        undef,
-        undef,
+        undef, #quality
+        undef, #only good quality
+        undef, #box name
         $sp_person_id,
-        $subscription_model
+        $subscription_model,
+        undef #private_company_ids
     );
 
     foreach (@$list){
@@ -408,23 +409,24 @@ sub store_seedlots {
         $self->bcs_schema,
         $people_schema,
         $phenome_schema,
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        [],
-        [],
-        undef,
-        '',
+        '', #offset
+        '', #limit
+        '', #seedlot name
+        '', #breeding program
+        '', #location
+        '', #minimum count
+        [], #accession names
+        [], #cross ids
+        undef, #exact match
+        '', #minimum weight
         $seedlot_ids,
-        '',
-        undef,
-        undef,
-        undef,
+        '', #accession ids
+        undef, #quality
+        undef, #only good quality
+        undef, #box name
         $sp_person_id,
-        $subscription_model
+        $subscription_model,
+        undef #private company ids
     );
 
     foreach (@$list){
