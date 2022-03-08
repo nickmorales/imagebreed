@@ -8,7 +8,7 @@ $check_vendor_role
 
 <& /page/page_title.mas, title => "Your Orders" &>
 
-<a href="/catalog/view"><button class="btn btn-primary btn-sm">Go to Catalog Page</button></a>
+<a href="/catalog/view"><button class="btn btn-primary btn-sm">Go to Catalog Page (Vendors Only)</button></a>
 <hr>
 
 % if ($check_vendor_role == 1) {

@@ -349,6 +349,9 @@ jQuery(document).ready(function ($) {
                 alert("Please select a file");
                 return;
             }
+
+            get_select_box('private_companies', 'private_company_name_input', { 'name': 'add_accessions_list_private_company_select', 'id': 'add_accessions_list_private_company_select', 'selected':jQuery('add_accessions_file_private_company_select').val() });
+
             jQuery("#upload_new_accessions_form").submit();
         }
         jQuery('#add_accessions_dialog').modal("hide");
