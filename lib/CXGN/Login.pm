@@ -40,7 +40,7 @@ John Binns <zombieite@gmail.com>
 package CXGN::Login;
 use strict;
 use warnings;
-
+use Data::Dumper;
 use Digest::MD5 qw(md5);
 use String::Random;
 use CXGN::Cookie;

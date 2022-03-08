@@ -30,16 +30,29 @@ sub trial_exists {
 sub get_breeding_programs {
     my $self = shift;
     my $sp_person_id = shift;
+    my $private_company_id = shift;
+    my $is_new_user = shift;
 
-    my $private_companies = CXGN::PrivateCompany->new( { schema=> $self->schema } );
-    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
-    my $company_ids_sql = join ',', @$private_companies_ids;
+    my $company_ids_sql = '';
+    if ($private_company_id) {
+        $company_ids_sql = $private_company_id;
+    }
+    else {
+        my $private_companies = CXGN::PrivateCompany->new( { schema=> $self->schema } );
+        my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
+        $company_ids_sql = join ',', @$private_companies_ids;
+    }
+
+    my $is_new_user_sql = '';
+    if ($is_new_user) {
+        $is_new_user_sql = "project.is_private='f' OR";
+    }
 
     my $breeding_program_cvterm_id = $self->get_breeding_program_cvterm_id();
     my $q = "SELECT project.project_id, project.name, project.description
         FROM project
         JOIN projectprop ON(project.project_id=projectprop.project_id AND projectprop.type_id=$breeding_program_cvterm_id)
-        WHERE project.is_private='f' OR (project.is_private='t' AND project.private_company_id IN ($company_ids_sql));";
+        WHERE $is_new_user_sql project.private_company_id IN ($company_ids_sql);";
     my $h = $self->schema->storage->dbh()->prepare($q);
     $h->execute();
     my @projects;

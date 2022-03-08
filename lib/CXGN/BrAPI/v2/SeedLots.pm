@@ -26,6 +26,8 @@ sub search {
     my $accession_id = $params->{germplasmDbId} || '';
     my $accession_name = $params->{germplasmName} || '';
     my $cross_id = $params->{crossDbId} || '';
+    my @accession_names = $accession_name ? ($accession_name) : ();
+    my @cross_ids = $cross_id ? ($cross_id) : ();
 
     my $reference_ids_arrayref = $params->{externalReferenceID} || ();
     my $reference_sources_arrayref = $params->{externalReferenceSource} || ();
@@ -50,12 +52,15 @@ sub search {
         $breeding_program,
         $location,
         $minimum_count,
-        $accession_name,
-        $cross_id,
-        1,
+        \@accession_names,
+        \@cross_ids,
+        undef,
         $minimum_weight,
         $seedlot_id,
         $accession_id,
+        undef,
+        undef,
+        undef,
         $sp_person_id,
         $subscription_model
     );
@@ -357,6 +362,7 @@ sub store_seedlots {
             $sl->organization_name($organization);
             $sl->breeding_program_id($breeding_program_id);
             $sl->description($description);
+            $sl->private_company_id(1);
             my $return = $sl->store();
             $seedlot_id = $return->{seedlot_id};
 
@@ -408,12 +414,15 @@ sub store_seedlots {
         '',
         '',
         '',
-        '',
-        '',
-        1,
+        [],
+        [],
+        undef,
         '',
         $seedlot_ids,
         '',
+        undef,
+        undef,
+        undef,
         $sp_person_id,
         $subscription_model
     );

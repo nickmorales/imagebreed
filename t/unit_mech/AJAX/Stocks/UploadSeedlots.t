@@ -38,6 +38,7 @@ $response = $ua->post(
             "upload_seedlot_breeding_program_id"=>$breeding_program_id,
             "upload_seedlot_location"=>'test_location',
             "upload_seedlot_organization_name"=>"testorg1",
+            "upload_seedlot_private_company_id"=>1,
             "sgn_session_id"=>$sgn_session_id
         ]
     );
@@ -61,7 +62,8 @@ $response = $ua->post(
             "upload_seedlot_breeding_program_id"=>$breeding_program_id,
             "upload_seedlot_location"=>'test_location',
             "upload_seedlot_organization_name"=>"testorg1",
-            "sgn_session_id"=>$sgn_session_id
+            "sgn_session_id"=>$sgn_session_id,
+            "upload_seedlot_private_company_id"=>1
         ]
     );
 

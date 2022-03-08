@@ -227,7 +227,7 @@ has 'get_plate' => (
 
 =head2 Accessor get_source_plot()
 
-If the tissue sample is linked to a plot (meaning the setter source_observation_unit_stock_id was either a plot,plant,or tissue_sample) this 
+If the tissue sample is linked to a plot (meaning the setter source_observation_unit_stock_id was either a plot,plant,or tissue_sample) this
 Returns an ArrayRef of [$stock_id, $uniquename] for the plot
 
 =cut
@@ -241,7 +241,7 @@ has 'get_source_plot' => (
 
 =head2 Accessor get_source_plant()
 
-If the tissue sample is linked to a plant (meaning the setter source_observation_unit_stock_id was either a plant or tissue_sample) this 
+If the tissue sample is linked to a plant (meaning the setter source_observation_unit_stock_id was either a plant or tissue_sample) this
 Returns an ArrayRef of [$stock_id, $uniquename] for the plant
 
 =cut
@@ -256,7 +256,7 @@ has 'get_source_plant' => (
 
 =head2 Accessor get_source_tissue_sample()
 
-If the tissue sample is linked to another tissue_sample (meaning the setter source_observation_unit_stock_id was a tissue_sample) this 
+If the tissue sample is linked to another tissue_sample (meaning the setter source_observation_unit_stock_id was a tissue_sample) this
 Returns an ArrayRef of [$stock_id, $uniquename] for the source tissue_sample
 
 =cut
@@ -432,7 +432,7 @@ sub _retrieve_plate_sample_type {
 #     my $plant_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->schema, "plant", "stock_type")->cvterm_id();
 #     my $plot_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->schema, "plot", "stock_type")->cvterm_id();
 #     my $source_unit_stock = $self->schema->resultset("Stock::Stock")->find({stock_id=>$self->source_observation_unit_stock_id});
-#     
+#
 # }
 
 =head2 store()
@@ -453,28 +453,30 @@ sub _retrieve_plate_sample_type {
 # sub store {
 #     my $self = shift;
 #     my $error;
-# 
+#
 #     my $coderef = sub {
 #         #Creating new seedlot
 #         if(!$self->stock){
 #             $self->name($self->uniquename());
 #             my $type_id = SGN::Model::Cvterm->get_cvterm_row($self->schema, 'tissue_sample', 'stock_type')->cvterm_id();
 #             $self->type_id($type_id);
-#             my $id = $self->SUPER::store();
+#             my $new_stock = $self->SUPER::store();
+#             my $id = $new_stock->{stock_id};
 #             print STDERR "Saving seedlot returned ID $id.".localtime."\n";
 #             $self->tissue_sample_id($id);
 #             #$error = $self->_store_tissue_sample_relationships();
 #             #if ($error){
 #             #    die $error;
 #             #}
-# 
+#
 #         } else { #Updating tissue_sample
-# 
-#             my $id = $self->SUPER::store();
+#
+#             my $new_stock = $self->SUPER::store();
+#             my $id = $new_stock->{stock_id};
 #             print STDERR "Updating tissue_sample returned ID $id.".localtime."\n";
 #             $self->tissue_sample_id($id);
 #         }
-# 
+#
 #         if ($self->acquisition_date){
 #             $self->_update_stockprop('acquisition date', $self->acquisition_date());
 #         }
@@ -509,7 +511,7 @@ sub _retrieve_plate_sample_type {
 #             $self->_update_stockprop('is_blank', $self->is_blank());
 #         }
 #     };
-# 
+#
 #     my $transaction_error;
 #     try {
 #         $self->schema->txn_do($coderef);

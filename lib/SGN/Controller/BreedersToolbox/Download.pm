@@ -75,19 +75,13 @@ sub download_phenotypes_action : Path('/breeders/trials/phenotype/download') Arg
     my $c = shift;
     print STDERR Dumper $c->req->params();
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    my $sgn_session_id = $c->req->param("sgn_session_id");
-    my $user = $c->user();
-    if (!$user && !$sgn_session_id) {
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, 0, 0, 0);
+    if ($login_check_return->{error}) {
         $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
         return;
-    } elsif (!$user && $sgn_session_id) {
-        my $login = CXGN::Login->new($schema->storage->dbh);
-        my $logged_in = $login->query_from_cookie($sgn_session_id);
-        if (!$logged_in){
-            $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-            return;
-        }
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     my $has_header = defined($c->req->param('has_header')) ? $c->req->param('has_header') : 1;
     my $format = $c->req->param("format") && $c->req->param("format") ne 'null' ? $c->req->param("format") : "xls";
@@ -287,19 +281,12 @@ sub download_action : Path('/breeders/download_action') Args(0) {
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
-    my $sgn_session_id = $c->req->param("sgn_session_id");
-    my $user = $c->user();
-    if (!$user && !$sgn_session_id) {
+    my $login_check_return = CXGN::Login::_check_user_login($c, 0, 0, 0);
+    if ($login_check_return->{error}) {
         $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
         return;
-    } elsif (!$user && $sgn_session_id) {
-        my $login = CXGN::Login->new($schema->storage->dbh);
-        my $logged_in = $login->query_from_cookie($sgn_session_id);
-        if (!$logged_in){
-            $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-            return;
-        }
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     my $accession_list_id = $c->req->param("accession_list_list_select");
     my $trait_list_id     = $c->req->param("trait_list_list_select");
@@ -543,6 +530,13 @@ sub download_accession_properties_action : Path('/breeders/download_accession_pr
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $dbh = $schema->storage->dbh;
 
+    my $login_check_return = CXGN::Login::_check_user_login($c, 0, 0, 0);
+    if ($login_check_return->{error}) {
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
     # Get request params
     my $accession_list_id = $c->req->param("accession_properties_accession_list_list_select");
     my $file_format = $c->req->param("file_format") || ".xls";
@@ -720,19 +714,12 @@ sub download_pedigree_action : Path('/breeders/download_pedigree_action') {
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
-    my $sgn_session_id = $c->req->param("sgn_session_id");
-    my $user = $c->user();
-    if (!$user && !$sgn_session_id) {
+    my $login_check_return = CXGN::Login::_check_user_login($c, 0, 0, 0);
+    if ($login_check_return->{error}) {
         $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
         return;
-    } elsif (!$user && $sgn_session_id) {
-        my $login = CXGN::Login->new($schema->storage->dbh);
-        my $logged_in = $login->query_from_cookie($sgn_session_id);
-        if (!$logged_in){
-            $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-            return;
-        }
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     my $input_format = $c->req->param("input_format") || 'list_id';
     my @accession_ids = [];
@@ -809,19 +796,12 @@ sub download_gbs_action : Path('/breeders/download_gbs_action') {
     my ($self, $c) = @_;
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
-    my $sgn_session_id = $c->req->param("sgn_session_id");
-    my $user = $c->user();
-    if (!$user && !$sgn_session_id) {
+    my $login_check_return = CXGN::Login::_check_user_login($c, 0, 0, 0);
+    if ($login_check_return->{error}) {
         $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
         return;
-    } elsif (!$user && $sgn_session_id) {
-        my $login = CXGN::Login->new($schema->storage->dbh);
-        my $logged_in = $login->query_from_cookie($sgn_session_id);
-        if (!$logged_in){
-            $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-            return;
-        }
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     # print STDERR Dumper $c->req->params();
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
@@ -939,19 +919,12 @@ sub download_grm_action : Path('/breeders/download_grm_action') {
     # print STDERR Dumper $c->req->params();
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
-    my $sgn_session_id = $c->req->param("sgn_session_id");
-    my $user = $c->user();
-    if (!$user && !$sgn_session_id) {
+    my $login_check_return = CXGN::Login::_check_user_login($c, 0, 0, 0);
+    if ($login_check_return->{error}) {
         $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
         return;
-    } elsif (!$user && $sgn_session_id) {
-        my $login = CXGN::Login->new($schema->storage->dbh);
-        my $logged_in = $login->query_from_cookie($sgn_session_id);
-        if (!$logged_in){
-            $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-            return;
-        }
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $download_format = $c->req->param("download_format") || 'matrix';
@@ -1032,19 +1005,12 @@ sub download_gwas_action : Path('/breeders/download_gwas_action') {
     # print STDERR Dumper $c->req->params();
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
-    my $sgn_session_id = $c->req->param("sgn_session_id");
-    my $user = $c->user();
-    if (!$user && !$sgn_session_id) {
+    my $login_check_return = CXGN::Login::_check_user_login($c, 0, 0, 0);
+    if ($login_check_return->{error}) {
         $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
         return;
-    } elsif (!$user && $sgn_session_id) {
-        my $login = CXGN::Login->new($schema->storage->dbh);
-        my $logged_in = $login->query_from_cookie($sgn_session_id);
-        if (!$logged_in){
-            $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-            return;
-        }
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $minor_allele_frequency = $c->req->param("minor_allele_frequency") ? $c->req->param("minor_allele_frequency") + 0 : 0.05;
@@ -1134,19 +1100,12 @@ sub gbs_qc_action : Path('/breeders/gbs_qc_action') Args(0) {
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
-    my $sgn_session_id = $c->req->param("sgn_session_id");
-    my $user = $c->user();
-    if (!$user && !$sgn_session_id) {
+    my $login_check_return = CXGN::Login::_check_user_login($c, 0, 0, 0);
+    if ($login_check_return->{error}) {
         $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
         return;
-    } elsif (!$user && $sgn_session_id) {
-        my $login = CXGN::Login->new($schema->storage->dbh);
-        my $logged_in = $login->query_from_cookie($sgn_session_id);
-        if (!$logged_in){
-            $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-            return;
-        }
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     my $accession_list_id = $c->req->param("genotype_qc_accession_list_list_select");
     my $trial_list_id     = $c->req->param("genotype_trial_list_list_select");

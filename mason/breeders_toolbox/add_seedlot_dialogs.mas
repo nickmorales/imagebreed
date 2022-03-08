@@ -22,6 +22,12 @@ $cross_uniquename => ''
                     </div>
                 </div>
                 <div class="form-group">
+                    <label class="col-sm-3 control-label">Company: </label>
+                    <div class="col-sm-9" >
+                        <div id="seedlot_private_company_div"></div>
+                    </div>
+                </div>
+                <div class="form-group">
                     <label class="col-sm-3 control-label">Breeding Program: </label>
                     <div class="col-sm-9" >
                         <div id="seedlot_breeding_program_div"></div>
@@ -167,7 +173,13 @@ jQuery(document).ready(function(){
 
     jQuery('[name="add_seedlot_button"]').click( function() {
         jQuery('#add_seedlot_dialog').modal('show');
+        get_select_box('private_companies', 'seedlot_private_company_div', { 'name' : 'seedlot_private_company_id', 'id' : 'seedlot_private_company_id' });
         get_select_box('breeding_programs', 'seedlot_breeding_program_div', { 'name' : 'seedlot_breeding_program_id', 'id' : 'seedlot_breeding_program_id' });
+    });
+
+    jQuery(document).on('change', '#seedlot_private_company_id', function(){
+        var private_company_id = jQuery(this).val();
+        get_select_box('breeding_programs', 'seedlot_breeding_program_div', { 'name' : 'seedlot_breeding_program_id', 'id' : 'seedlot_breeding_program_id', 'private_company_id':private_company_id });
     });
 
     jQuery('#create_new_seedlot_button').click( function() {
@@ -184,6 +196,7 @@ jQuery(document).ready(function(){
         var description = jQuery('#seedlot_description').val();
         var breeding_program_id = jQuery('#seedlot_breeding_program_id').val();
         var seedlot_quality = jQuery('#seedlot_quality').val();
+        var private_company_id = jQuery('#seedlot_private_company_id').val();
 
         if (name == '') { alert("Please provide a name"); return; }
         else if (location == '') { alert("Please provide a location"); return; }
@@ -213,7 +226,8 @@ jQuery(document).ready(function(){
                     'seedlot_timestamp':timestamp,
                     'seedlot_description':description,
                     'seedlot_breeding_program_id':breeding_program_id,
-                    'seedlot_quality' : seedlot_quality
+                    'seedlot_quality' : seedlot_quality,
+                    'private_company_id' : private_company_id
 
                 },
                 beforeSend: function(response){

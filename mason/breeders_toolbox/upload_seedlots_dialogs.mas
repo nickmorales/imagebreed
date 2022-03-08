@@ -70,6 +70,12 @@
                             <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_seedlot_form" name="upload_seedlot_form">
 
                                 <div class="form-group">
+                                    <label class="col-sm-3 control-label">Company: </label>
+                                    <div class="col-sm-9" >
+                                        <div id="upload_seedlot_private_company_div"></div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
                                     <label class="col-sm-3 control-label">Breeding Program: </label>
                                     <div class="col-sm-9" >
                                         <div id="upload_seedlot_breeding_program_div"></div>
@@ -346,7 +352,7 @@
 		      <li>quality (brief description of quality, e.g.,  "ok", "moldy", "insect damage", etc)</li>
 		      <li>source (an alternate source, such as a plot or plant identifier from which the seed was sourced if no specific cross experiment was entered in the database)</li>
 		    </ul>
-		    
+
 
                 </div>
             </div>
@@ -391,7 +397,13 @@ jQuery(document).ready(function(){
 
     jQuery('[name="seedlot_bulk_upload"]').click( function() {
         jQuery('#upload_seedlot_dialog').modal('show');
+        get_select_box('private_companies', 'upload_seedlot_private_company_div', { 'name' : 'upload_seedlot_private_company_id', 'id' : 'upload_seedlot_private_company_id' });
         get_select_box('breeding_programs', 'upload_seedlot_breeding_program_div', { 'name' : 'upload_seedlot_breeding_program_id', 'id' : 'upload_seedlot_breeding_program_id' });
+    });
+
+    jQuery(document).on('change', '#upload_seedlot_private_company_id', function(){
+        var private_company_id = jQuery(this).val();
+        get_select_box('breeding_programs', 'upload_seedlot_breeding_program_div', { 'name' : 'upload_seedlot_breeding_program_id', 'id' : 'upload_seedlot_breeding_program_id', 'private_company_id':private_company_id });
     });
 
     jQuery("[name='guided_help_seedlot_upload_format_button']").click( function () {

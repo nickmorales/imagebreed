@@ -26,18 +26,21 @@ my $sl1 = CXGN::Stock::Seedlot->new( schema => $schema);
 $sl1->uniquename('blabla');
 $sl1->location_code('box1');
 $sl1->breeding_program_id(134);
+$sl1->private_company_id(1);
 $sl1->store();
 
 my $sl2 = CXGN::Stock::Seedlot->new( schema => $schema);
 $sl2->uniquename('boff');
 $sl2->location_code('box2');
 $sl2->breeding_program_id(134);
+$sl2->private_company_id(1);
 $sl2->store();
 
 my $sl3 = CXGN::Stock::Seedlot->new( schema => $schema );
 $sl3->uniquename('asdf');
 $sl3->location_code('box3');
 $sl3->breeding_program_id(134);
+$sl3->private_company_id(1);
 $sl3->store();
 
 # add a corresponding list

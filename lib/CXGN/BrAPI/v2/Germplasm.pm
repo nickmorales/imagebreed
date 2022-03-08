@@ -729,7 +729,8 @@ sub store {
                     locationCode=>$locationCode,
                     sp_person_id => $user_id,
                     user_name => $user_name,
-                    modification_note => 'Bulk load of accession information'
+                    modification_note => 'Bulk load of accession information',
+                    private_company_id => 1
                 });
                 my $added_stock_id = $stock->store();
                 push @added_stocks, $added_stock_id;

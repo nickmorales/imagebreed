@@ -73,6 +73,7 @@ foreach (@{$final_response->{'names_to_add'}}){
         'germplasmName'=>$_,
         'organizationName'=>'test',
         'populationName'=>'population_ajax_test_1',
+        'private_company_id'=>1
     };
 }
 
@@ -110,7 +111,8 @@ $response = $ua->post(
         Content => [
             new_accessions_upload_file => [ $file, 'test_accession_upload', Content_Type => 'application/vnd.ms-excel', ],
             "sgn_session_id"=>$sgn_session_id,
-            "fuzzy_check_upload_accessions"=>1
+            "fuzzy_check_upload_accessions"=>1,
+            "add_accessions_file_private_company_select"=>1
         ]
     );
 
@@ -120,7 +122,7 @@ my $message = $response->decoded_content;
 my $message_hash = decode_json $message;
 print STDERR Dumper $message_hash;
 
-is_deeply($message_hash->{'full_data'}, {'new_test_accession03' => {'accessionNumber' => 'ITC00003','germplasmName' => 'new_test_accession03','populationName' => 'test_population','defaultDisplayName' => 'new_test_accession03','organizationName' => 'test_organization','countryOfOriginCode' => 'Nigeria','synonyms' => ['new_test_accession3_synonym1'],'species' => 'Manihot esculenta'},'IITA-TMS-IBA010749' => {'populationName' => 'test_population','species' => 'Manihot esculenta','organizationName' => undef,'defaultDisplayName' => 'IITA-TMS-IBA010749','germplasmName' => 'IITA-TMS-IBA010749','synonyms' => ['IITA-TMS-IBA010746_synonym1','IITA-TMS-IBA010746_synonym2']},'new_test_accession02' => {'populationName' => 'test_population','defaultDisplayName' => 'new_test_accession02','organizationName' => 'test_organization','accessionNumber' => 'ITC00002','germplasmName' => 'new_test_accession02','species' => 'Manihot esculenta','countryOfOriginCode' => 'Nigeria','synonyms' => []},'new_test_accession04' => {'defaultDisplayName' => 'new_test_accession04','organizationName' => 'test_organization','populationName' => 'test_population','germplasmName' => 'new_test_accession04','accessionNumber' => 'ITC00004','species' => 'Manihot esculenta','synonyms' => [],'countryOfOriginCode' => 'Nigeria'},'new_test_accession01' => {'organizationName' => 'test_organization','defaultDisplayName' => 'new_test_accession01','populationName' => 'test_population','germplasmName' => 'new_test_accession01','locationCode' => 'ITH','accessionNumber' => 'ITC00001','ploidyLevel' => '2','species' => 'Manihot esculenta','synonyms' => ['new_test_accession_synonym1','new_test_accession_synonym2','new_test_accession_synonym3'],'countryOfOriginCode' => 'Nigeria'}}, 'check parse accession file');
+is_deeply($message_hash->{'full_data'}, {'new_test_accession01' => {'private_company_id' => 1,'locationCode' => 'ITH','countryOfOriginCode' => 'Nigeria','defaultDisplayName' => 'new_test_accession01','accessionNumber' => 'ITC00001','species' => 'Manihot esculenta','organizationName' => 'test_organization','germplasmName' => 'new_test_accession01','populationName' => 'test_population','ploidyLevel' => '2','synonyms' => ['new_test_accession_synonym1','new_test_accession_synonym2','new_test_accession_synonym3']},'new_test_accession04' => {'organizationName' => 'test_organization','species' => 'Manihot esculenta','accessionNumber' => 'ITC00004','countryOfOriginCode' => 'Nigeria','defaultDisplayName' => 'new_test_accession04','private_company_id' => 1,'synonyms' => [],'populationName' => 'test_population','germplasmName' => 'new_test_accession04'},'new_test_accession03' => {'countryOfOriginCode' => 'Nigeria','defaultDisplayName' => 'new_test_accession03','accessionNumber' => 'ITC00003','species' => 'Manihot esculenta','organizationName' => 'test_organization','private_company_id' => 1,'synonyms' => ['new_test_accession3_synonym1'],'germplasmName' => 'new_test_accession03','populationName' => 'test_population'},'IITA-TMS-IBA010749' => {'synonyms' => ['IITA-TMS-IBA010746_synonym1','IITA-TMS-IBA010746_synonym2'],'germplasmName' => 'IITA-TMS-IBA010749','populationName' => 'test_population','organizationName' => undef,'species' => 'Manihot esculenta','defaultDisplayName' => 'IITA-TMS-IBA010749','private_company_id' => 1},'new_test_accession02' => {'germplasmName' => 'new_test_accession02','populationName' => 'test_population','synonyms' => [],'private_company_id' => 1,'countryOfOriginCode' => 'Nigeria','defaultDisplayName' => 'new_test_accession02','accessionNumber' => 'ITC00002','species' => 'Manihot esculenta','organizationName' => 'test_organization'}}, 'check parse accession file');
 is(scalar @{$message_hash->{'fuzzy'}}, 1, 'check verify fuzzy match response content');
 is_deeply($message_hash->{'found'}, [], 'check verify fuzzy match response content');
 is(scalar @{$message_hash->{'absent'}}, 4, 'check verify fuzzy match response content');
@@ -131,7 +133,7 @@ foreach (keys %{$message_hash->{'full_data'}}){
     push @full_info, $message_hash->{'full_data'}->{$_};
 }
 
-$mech->post_ok('http://localhost:3010/ajax/accession_list/add', [ 'full_info'=>$json->encode(\@full_info), 'allowed_organisms'=>$json->encode(['Manihot esculenta']) ]);
+$mech->post_ok('http://localhost:3010/ajax/accession_list/add?sgn_session_id='.$sgn_session_id, [ 'full_info'=>$json->encode(\@full_info), 'allowed_organisms'=>$json->encode(['Manihot esculenta']) ]);
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
 
@@ -150,6 +152,7 @@ is($stock->ploidyLevel, '2');
 is($stock->locationCode, 'ITH');
 is($stock->countryOfOriginCode, 'Nigeria');
 is($stock->accessionNumber, 'ITC00001');
+is($stock->private_company_id, 1);
 is_deeply($stock->synonyms, ['new_test_accession_synonym1','new_test_accession_synonym2','new_test_accession_synonym3']);
 $stock->is_obsolete(1) ;
 $stock->store();

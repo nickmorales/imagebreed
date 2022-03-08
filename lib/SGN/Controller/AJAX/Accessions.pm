@@ -54,31 +54,13 @@ sub verify_accession_list_GET : Args(0) {
 
 sub verify_accession_list_POST : Args(0) {
     my ($self, $c) = @_;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this seedlot info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else {
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this seedlot info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
+    my $login_check_return = CXGN::Login::_check_user_login($c, 'submitter', 0, 0);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     my $accession_list_json = $c->req->param('accession_list');
     my $organism_list_json = $c->req->param('organism_list');
@@ -206,31 +188,12 @@ sub verify_accessions_file : Path('/ajax/accessions/verify_accessions_file') : A
 sub verify_accessions_file_POST : Args(0) {
     my ($self, $c) = @_;
 
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
-
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this seedlot info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else {
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this seedlot info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
+    my $login_check_return = CXGN::Login::_check_user_login($c, 'submitter', 0, 0);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $private_company_id = $c->req->param('add_accessions_file_private_company_select');
@@ -384,17 +347,12 @@ sub add_accession_list_POST : Args(0) {
     my %allowed_organisms = map {$_=>1} @$allowed_organisms;
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
 
-    if (!$c->user()) {
-        $c->stash->{rest} = {error => "You need to be logged in to submit accessions." };
-        return;
+    my $login_check_return = CXGN::Login::_check_user_login($c, 'submitter', 0, 0);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
     }
-    my $user_id = $c->user()->get_object()->get_sp_person_id();
-    my $user_name = $c->user()->get_object()->get_username();
-
-    if (!any { $_ eq "curator" || $_ eq "submitter" } ($c->user()->roles)  ) {
-        $c->stash->{rest} = {error =>  "You have insufficient privileges to submit accessions." };
-        return;
-    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
     my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
@@ -402,11 +360,11 @@ sub add_accession_list_POST : Args(0) {
     foreach (@$full_info){
         if (!exists($allowed_private_company_ids_hash->{$_->{private_company_id}})) {
             $c->stash->{rest} = {error =>  "You are not a member of this company!" };
-            return;
+            $c->detach();
         }
         elsif ($allowed_private_company_access_hash->{$_->{private_company_id}} ne 'curator_access' && $allowed_private_company_access_hash->{$_->{private_company_id}} ne 'submitter_access') {
             $c->stash->{rest} = {error =>  "You do not have submitter or curator access in this company!" };
-            return;
+            $c->detach();
         }
     }
 
@@ -497,7 +455,7 @@ sub add_accession_list_POST : Args(0) {
         success => "1",
         added => \@added_fullinfo_stocks
     };
-    return;
+    $c->detach();
 }
 
 sub possible_seedlots : Path('/ajax/accessions/possible_seedlots') : ActionClass('REST') { }

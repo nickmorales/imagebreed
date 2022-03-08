@@ -313,7 +313,7 @@ sub list_seedlots {
 
     select(STDERR);
     $| = 1;
-    #$schema->storage->debug(1);
+    # $schema->storage->debug(1);
 
     my %unique_seedlots;
 
@@ -413,7 +413,7 @@ sub list_seedlots {
     while (my $row = $rs->next()) {
         $seen_seedlot_ids{$row->stock_id}++;
 
-	$unique_seedlots{$row->uniquename}->{seedlot_stock_id} = $row->stock_id;
+        $unique_seedlots{$row->uniquename}->{seedlot_stock_id} = $row->stock_id;
         $unique_seedlots{$row->uniquename}->{seedlot_stock_uniquename} = $row->uniquename;
         $unique_seedlots{$row->uniquename}->{seedlot_stock_description} = $row->description;
         $unique_seedlots{$row->uniquename}->{breeding_program_name} = $row->get_column('breeding_program_name');
@@ -423,6 +423,8 @@ sub list_seedlots {
 
         push @{$unique_seedlots{$row->uniquename}->{source_stocks}}, [$row->get_column('source_stock_id'), $row->get_column('source_uniquename'), $source_types_hash{$row->get_column('source_type_id')}];
     }
+    # print STDERR Dumper \%unique_seedlots;
+    # print STDERR Dumper \%seen_seedlot_ids;
 
     my @seen_seedlot_ids = keys %seen_seedlot_ids;
     my $stock_lookup = CXGN::Stock::StockLookup->new({ schema => $schema} );
@@ -441,6 +443,7 @@ sub list_seedlots {
         subscription_model => $subscription_model
     });
     my ($stocksearch_result, $records_stock_total) = $stock_search->search();
+    # print STDERR Dumper $stocksearch_result;
 
     my %stockprop_hash;
     foreach (@$stocksearch_result){
@@ -458,14 +461,14 @@ sub list_seedlots {
         $unique_seedlots{$_}->{owners_string} = $owners_string;
         $unique_seedlots{$_}->{organization} = $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{organization} ? $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{organization} : 'NA';
         $unique_seedlots{$_}->{box} = $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{location_code} ? $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{location_code} : 'NA';
-	$unique_seedlots{$_}->{seedlot_quality} = $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{seedlot_quality} ? $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{seedlot_quality} : '';
+        $unique_seedlots{$_}->{seedlot_quality} = $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{seedlot_quality} ? $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{seedlot_quality} : '';
         $unique_seedlots{$_}->{current_count} = $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{current_count} ? $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{current_count} : 'NA';
         $unique_seedlots{$_}->{current_weight_gram} = $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{current_weight_gram} ? $stockprop_hash{$unique_seedlots{$_}->{seedlot_stock_id}}->{current_weight_gram} : 'NA';
 
-	push @seedlots, $unique_seedlots{$_};
-
+        push @seedlots, $unique_seedlots{$_};
     }
 
+    # print STDERR Dumper \@seedlots;
     return (\@seedlots, $records_total);
 }
 
@@ -1237,7 +1240,8 @@ sub store {
                 }
             }
 
-            my $id = $self->SUPER::store();
+            my $new_stock = $self->SUPER::store();
+            my $id = $new_stock->{stock_id};
             print STDERR "Updating seedlot returned ID $id.".localtime."\n";
             $self->seedlot_id($id);
             if($self->breeding_program_id){

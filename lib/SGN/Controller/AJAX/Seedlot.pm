@@ -288,6 +288,7 @@ sub create_seedlot :Path('/ajax/breeders/seedlot-create/') :Args(0) {
     my $cross_uniquename = $c->req->param("seedlot_cross_uniquename");
     my $plot_uniquename = $c->req->param("seedlot_plot_uniquename");
     my $seedlot_quality = $c->req->param("seedlot_quality");
+    my $private_company_id = $c->req->param("private_company_id");
     my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'accession', 'stock_type')->cvterm_id();
     my $seedlot_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'seedlot', 'stock_type')->cvterm_id();
     my $cross_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'cross', 'stock_type')->cvterm_id();
@@ -376,7 +377,8 @@ sub create_seedlot :Path('/ajax/breeders/seedlot-create/') :Args(0) {
         $sl->organization_name($organization);
         $sl->population_name($population_name);
         $sl->breeding_program_id($breeding_program_id);
-	$sl->quality($seedlot_quality);
+        $sl->quality($seedlot_quality);
+        $sl->private_company_id($private_company_id);
         my $return = $sl->store();
         my $seedlot_id = $return->{seedlot_id};
 
@@ -434,6 +436,7 @@ sub upload_seedlots_POST : Args(0) {
     my $location = $c->req->param("upload_seedlot_location");
     my $population = $c->req->param("upload_seedlot_population_name");
     my $organization = $c->req->param("upload_seedlot_organization_name");
+    my $private_company_id = $c->req->param("upload_seedlot_private_company_id");
     my $upload_from_accessions = $c->req->upload('seedlot_uploaded_file');
     my $upload_harvested_from_crosses = $c->req->upload('seedlot_harvested_uploaded_file');
     if (!$upload_from_accessions && !$upload_harvested_from_crosses){
@@ -521,6 +524,7 @@ sub upload_seedlots_POST : Args(0) {
             $sl->breeding_program_id($breeding_program_id);
             $sl->quality($val->{quality});
             $sl->check_name_exists(0); #already validated
+            $sl->private_company_id($private_company_id);
             my $return = $sl->store();
             if ( defined $return->{error} ) {
                 print STDERR "SEEDLOT STORE ERROR:\n";

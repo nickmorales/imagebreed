@@ -749,9 +749,9 @@ sub search {
         $result_hash{$stock_id}{donors} = \@donor_array;
 
         # add organism props for each stock
-        $result_hash{$stock_id}{speciesAuthority} = defined($organism_props{$organism_id}) ? $organism_props{$organism_id}->{'species authority'} : undef;
-        $result_hash{$stock_id}{subtaxa} = defined($organism_props{$organism_id}) ? $organism_props{$organism_id}->{'subtaxa'} : undef;
-        $result_hash{$stock_id}{subtaxaAuthority} = defined($organism_props{$organism_id}) ? $organism_props{$organism_id}->{'subtaxa authority'} : undef;
+        $result_hash{$stock_id}{speciesAuthority} = $organism_id && defined($organism_props{$organism_id}) ? $organism_props{$organism_id}->{'species authority'} : undef;
+        $result_hash{$stock_id}{subtaxa} = $organism_id && defined($organism_props{$organism_id}) ? $organism_props{$organism_id}->{'subtaxa'} : undef;
+        $result_hash{$stock_id}{subtaxaAuthority} = $organism_id && defined($organism_props{$organism_id}) ? $organism_props{$organism_id}->{'subtaxa authority'} : undef;
     }
 
     if ($self->stockprop_columns_view && scalar(keys %{$self->stockprop_columns_view})>0 && scalar(@result_stock_ids)>0){

@@ -279,8 +279,8 @@ jQuery(document).ready( function() {
         jQuery('#site_login_new_user_dialog').modal('show');
     });
     jQuery("#site_login_new_user_dialog").on('shown.bs.modal', function() {
-        get_select_box('breeding_programs', 'breeding_programs_div', { 'name': 'breeding_programs', 'id': 'breeding_programs', 'default': -1, 'multiple': 1 });
-        get_select_box('private_companies', 'private_companies_div', { 'name': 'private_companies', 'id': 'private_companies', 'default': -1, 'multiple': 1 });
+        get_select_box('breeding_programs', 'breeding_programs_div', { 'name': 'breeding_programs', 'id': 'breeding_programs', 'default': -1, 'multiple': 1, 'is_new_user':1 });
+        get_select_box('private_companies', 'private_companies_div', { 'name': 'private_companies', 'id': 'private_companies', 'default': -1, 'multiple': 1, 'is_new_user':1 });
     });
 
     jQuery('#new_account_form').submit(function(event) {

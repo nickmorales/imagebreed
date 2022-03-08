@@ -77,13 +77,29 @@ sub get_location_select : Path('/ajax/html/select/locations') Args(0) {
 sub get_breeding_program_select : Path('/ajax/html/select/breeding_programs') Args(0) {
     my $self = shift;
     my $c = shift;
-    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
+    my $is_new_user = $c->req->param('is_new_user');
+    my $private_company_id = $c->req->param('private_company_id');
+
+    my $user_id;
+    if (!$is_new_user) {
+        my ($user_id_checked, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
+        $user_id = $user_id_checked
+    }
 
     my $id = $c->req->param("id") || "breeding_program_select";
     my $name = $c->req->param("name") || "breeding_program_select";
     my $empty = $c->req->param("empty") || "";
 
-    my $breeding_programs = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } )->get_breeding_programs($user_id);
+    my $breeding_programs = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } )->get_breeding_programs($user_id, $private_company_id, $is_new_user);
+
+    if ($private_company_id && scalar(@$breeding_programs) == 0) {
+        $c->stash->{rest} = { error => "No breeding programs available in the company you selected! Please select another company!" };
+        $c->detach();
+    }
+    elsif (scalar(@$breeding_programs) == 0) {
+        $c->stash->{rest} = { error => "No breeding programs available! Make sure to join atleast one company first!" };
+        $c->detach();
+    }
 
     my $default = $c->req->param("default") || @$breeding_programs[0]->[0];
     if ($empty) { unshift @$breeding_programs, [ "", "Please select a program" ]; }
@@ -101,7 +117,12 @@ sub get_private_companies_select : Path('/ajax/html/select/private_companies') A
     my $self = shift;
     my $c = shift;
     # print STDERR Dumper $c->req->params();
-    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
+
+    my $user_id;
+    if (!$c->req->param('is_new_user')) {
+        my ($user_id_checked, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
+        $user_id = $user_id_checked
+    }
 
     my $id = $c->req->param("id") || "private_companies_select";
     my $name = $c->req->param("name") || "private_companies_select";
