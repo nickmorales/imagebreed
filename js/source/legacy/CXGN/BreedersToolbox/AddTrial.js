@@ -45,6 +45,7 @@ jQuery(document).ready(function ($) {
 
     jQuery('#create_trial_validate_form_button').click(function(){
         create_trial_validate_form();
+        populate_trial_linkage_selects();
     });
 
     function create_trial_validate_form(){
@@ -2198,12 +2199,12 @@ jQuery(document).ready(function ($) {
     });
 
     function open_project_dialog() {
-        $('#add_project_dialog').modal("show");
+        jQuery('#add_project_dialog').modal("show");
 
         //add a blank line to location select dropdown that dissappears when dropdown is opened
-        $("#add_project_location").prepend("<option value=''></option>").val('');
-        $("#add_project_location").one('mousedown', function () {
-            $("option:first", this).remove();
+        jQuery("#add_project_location").prepend("<option value=''></option>").val('');
+        jQuery("#add_project_location").one('mousedown', function () {
+            jQuery("option:first", this).remove();
         });
 
         //add a blank line to list select dropdown that dissappears when dropdown is opened
@@ -2275,7 +2276,6 @@ jQuery(document).ready(function ($) {
     $('#add_project_link').click(function () {
         get_select_box('years', 'add_project_year', {'auto_generate': 1 });
         get_select_box('trial_types', 'add_project_type', {'empty':1} );
-        populate_trial_linkage_selects();
 
         // preselect user's program and filter locations
 
