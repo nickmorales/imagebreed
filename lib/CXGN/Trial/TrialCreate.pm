@@ -146,7 +146,7 @@ has 'chado_schema' => (
 
 has 'dbh' => (is  => 'rw',predicate => 'has_dbh', required => 1,);
 has 'trial_id' => (isa => 'Maybe[Int]', is => 'rw', predicate => 'has_trial_id');
-has 'private_company_id' => (isa =>'Int', is => 'rw', predicate => 'has_private_company_id', required => 1,);
+has 'private_company_id' => (isa =>'Int', is => 'rw', predicate => 'has_private_company_id', default => 1);
 has 'program' => (isa =>'Str', is => 'rw', predicate => 'has_program', required => 1,);
 has 'trial_year' => (isa => 'Maybe[Str]', is => 'rw', predicate => 'has_trial_year', required => 0,);
 has 'trial_description' => (isa => 'Maybe[Str]', is => 'rw', predicate => 'has_trial_description', required => 0,);

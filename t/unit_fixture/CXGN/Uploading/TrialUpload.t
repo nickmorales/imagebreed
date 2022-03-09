@@ -800,7 +800,8 @@ my $plate_data = {
     breeding_program => $project->project_id,
     genotyping_facility => 'igd',
     sample_type => 'DNA',
-    plate_format => '96'
+    plate_format => '96',
+    private_company_id => 1
 };
 
 $mech->post_ok('http://localhost:3010/ajax/breeders/storegenotypetrial', [ "sgn_session_id"=>$sgn_session_id, plate_data => encode_json($plate_data) ]);
@@ -925,7 +926,8 @@ my $plate_data = {
     breeding_program => $project->project_id,
     genotyping_facility => 'igd',
     sample_type => 'DNA',
-    plate_format => '96'
+    plate_format => '96',
+    private_company_id => 1
 };
 
 $mech->post_ok('http://localhost:3010/ajax/breeders/storegenotypetrial', [ "sgn_session_id"=>$sgn_session_id, plate_data => encode_json($plate_data) ]);
@@ -1066,7 +1068,8 @@ my $plate_data = {
     breeding_program => $project->project_id,
     genotyping_facility => 'igd',
     sample_type => 'DNA',
-    plate_format => '96'
+    plate_format => '96',
+    private_company_id => 1
 };
 
 $mech->post_ok('http://localhost:3010/ajax/breeders/storegenotypetrial', [ "sgn_session_id"=>$sgn_session_id, plate_data => encode_json($plate_data) ]);
@@ -1320,7 +1323,8 @@ my $trial_create_with_management_factor = CXGN::Trial::TrialCreate
 	   program => "test",
 	   upload_trial_file => $management_factor_archived_filename_with_path,
 	   operator => "janedoe",
-       owner_id => 41
+       owner_id => 41,
+       private_company_id => 1
 	  });
 
 my $save_with_management_factor = $trial_create_with_management_factor->save_trial();

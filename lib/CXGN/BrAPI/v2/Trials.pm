@@ -92,7 +92,7 @@ sub search {
 
     if($continue < 1) {
         my $p = CXGN::BreedersToolbox::Projects->new( { schema => $schema  } );
-        my $programs = $p->get_breeding_programs();
+        my $programs = $p->get_breeding_programs($self->sp_person_id);
 
         foreach my $program (@$programs) {
             unless (%program_id_list && !exists($program_id_list{$program->[0]}) || %program_name_list && !exists($program_name_list{$program->[1]})) { # for each program not excluded, retrieve folders and studies
@@ -228,7 +228,7 @@ sub store {
     if (scalar(@stored_ids)>0){
         %trial_id_list = map { $_ => 1} @stored_ids;
         my $p = CXGN::BreedersToolbox::Projects->new( { schema => $schema  } );
-        my $programs = $p->get_breeding_programs();
+        my $programs = $p->get_breeding_programs($self->sp_person_id);
 
         foreach my $program (@$programs) {
             $program = { "id" => $program->[0], "name" => $program->[1], "program_id" => $program->[0], "program_name" => $program->[1],  "program_description" => $program->[2] };

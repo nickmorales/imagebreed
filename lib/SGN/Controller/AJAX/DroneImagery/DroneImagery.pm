@@ -5067,6 +5067,7 @@ sub drone_imagery_calculate_statistics_store_analysis_POST : Args(0) {
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
+    my $private_company_id = $c->req->param('private_company_id') || 1;
     my $analysis_name = $c->req->param('analysis_name');
     my $analysis_description = $c->req->param('analysis_description');
     my $analysis_model_type = $c->req->param('statistics_select');
@@ -5082,6 +5083,7 @@ sub drone_imagery_calculate_statistics_store_analysis_POST : Args(0) {
         metadata_schema => $metadata_schema,
         phenome_schema => $phenome_schema,
         name => $analysis_name,
+        private_company_id => $private_company_id
     });
 
     $a->description($analysis_description);

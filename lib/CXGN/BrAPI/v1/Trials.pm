@@ -33,7 +33,7 @@ sub search {
     }
 
     my $p = CXGN::BreedersToolbox::Projects->new( { schema => $schema  } );
-    my $programs = $p->get_breeding_programs();
+    my $programs = $p->get_breeding_programs($self->sp_person_id);
 
     foreach my $program (@$programs) {
         unless (%program_id_list && !exists($program_id_list{$program->[0]})) { # for each program not excluded, retrieve folders and studies

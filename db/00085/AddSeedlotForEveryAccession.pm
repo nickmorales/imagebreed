@@ -125,12 +125,12 @@ sub patch {
 	print STDOUT "Determining if an accession has an organization associated that is actually a breeding program. If so, this breeding program will be assigned to the new seedlot.\n";
 
 	my $p = CXGN::BreedersToolbox::Projects->new({schema=>$schema});
-	my $breeding_programs = $p->get_breeding_programs();
+	my $breeding_programs = $p->get_breeding_programs(41);
 	my %available_breeding_program_names;
 	foreach (@$breeding_programs){
 		$available_breeding_program_names{$_->[1]}++;
 	}
-	
+
 	my $organization_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'organization', 'stock_property')->cvterm_id();
 	my $organization_accession_rs = $schema->resultset("Stock::Stock")->search(
 		{
@@ -202,7 +202,7 @@ sub patch {
 		$transaction->store();
 		$sl->set_current_count_property();
 	}
-	
+
 
 	print "You're done!\n";
 }

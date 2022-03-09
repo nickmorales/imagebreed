@@ -525,7 +525,8 @@ my $new_trial = CXGN::Trial::TrialCreate->new(
 	trial_name => "anothertrial",
 	design => $trial_design,
     operator => 'janedoe',
-    owner_id => 41
+    owner_id => 41,
+    private_company_id => 1
     });
 
 my $save = $new_trial->save_trial();
@@ -547,7 +548,7 @@ if (!$trial_id) { die "Test failed... could not retrieve trial\n"; }
 my $trial = CXGN::Trial->new( { bcs_schema => $f->bcs_schema(),
 				trial_id => $trial_id });
 
-my $breeding_programs = $trial->get_breeding_programs();
+my $breeding_programs = $trial->get_breeding_programs(41);
 #print STDERR Dumper $breeding_programs;
 my @breeding_program_names;
 foreach (@$breeding_programs){
@@ -682,6 +683,7 @@ my $folder = CXGN::Trial::Folder->create({
   parent_folder_id => 0,
   name => 'F1',
   breeding_program_id => $breeding_program_row->project_id(),
+  private_company_id => 1
 });
 my $folder_id = $folder->folder_id();
 

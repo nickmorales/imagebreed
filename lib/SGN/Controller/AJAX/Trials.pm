@@ -29,13 +29,12 @@ sub get_trials : Path('/ajax/breeders/get_trials') Args(0) {
 
     my $p = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } );
 
-    my $projects = $p->get_breeding_programs();
+    my $projects = $p->get_breeding_programs($user_id);
 
     my %data = ();
     foreach my $project (@$projects) {
         my $trials = $p->get_trials_by_breeding_program($project->[0]);
         $data{$project->[1]} = $trials;
-
     }
 
     $c->stash->{rest} = \%data;
@@ -55,7 +54,7 @@ sub get_trials_with_folders : Path('/ajax/breeders/get_trials_with_folders') Arg
     }
     my $filename = $dir."/entire_jstree_html_$tree_type.txt";
 
-    _write_cached_folder_tree($schema, $tree_type, $filename);
+    _write_cached_folder_tree($schema, $tree_type, $filename, $user_id);
 
     $c->stash->{rest} = { status => 1 };
 }
@@ -82,7 +81,7 @@ sub get_trials_with_folders_cached : Path('/ajax/breeders/get_trials_with_folder
     close($fh);
 
     if (!$html) {
-        $html = _write_cached_folder_tree($schema, $tree_type, $filename);
+        $html = _write_cached_folder_tree($schema, $tree_type, $filename, $user_id);
     }
 
     #print STDERR $html;
@@ -93,9 +92,10 @@ sub _write_cached_folder_tree {
     my $schema = shift;
     my $tree_type = shift;
     my $filename = shift;
-    my $p = CXGN::BreedersToolbox::Projects->new( { schema => $schema  } );
+    my $user_id = shift;
 
-    my $projects = $p->get_breeding_programs();
+    my $p = CXGN::BreedersToolbox::Projects->new( { schema => $schema  } );
+    my $projects = $p->get_breeding_programs($user_id);
 
     my $html = "";
     my $folder_obj = CXGN::Trial::Folder->new( { bcs_schema => $schema, folder_id => @$projects[0]->[0] });

@@ -52,7 +52,7 @@ has 'description' => (
 
 has 'private_company_id' => (
     isa => "Int",
-    is => 'rw',
+    is => 'rw'
 );
 
 has 'folder_for_trials' => (

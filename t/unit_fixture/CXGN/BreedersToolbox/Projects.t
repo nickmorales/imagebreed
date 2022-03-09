@@ -17,14 +17,16 @@ my $p = CXGN::BreedersToolbox::Projects->new({schema=>$schema});
 my $trial_id = $schema->resultset('Project::Project')->find({name=>'test_trial'})->project_id();
 ok($p->trial_exists($trial_id));
 
-my $projects = $p->get_breeding_programs();
-#print STDERR Dumper $projects;
+my $projects = $p->get_breeding_programs(41);
+print STDERR Dumper $projects;
 is_deeply($projects, [
-          [
-            134,
-            'test',
-            'test'
-          ]
+        [
+          134,
+          'test',
+          'test',
+          1,
+          'ImageBreed'
+        ]
         ], 'test get bps');
 
 my $bp_project_id = $p->get_breeding_program_by_name('test');
@@ -180,7 +182,7 @@ is_deeply($genotyping_trials, undef, 'test get geno trials');
 
 my $locations = $p->get_location_geojson();
 print STDERR Dumper $locations;
-is($locations, '[{"geometry":{"coordinates":[-115.86428,32.61359],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":109,"Code":"USA","Country":"United States","Id":"23","Latitude":32.61359,"Longitude":-115.86428,"NOAAStationID":null,"Name":"test_location","Program":"test","Trials":"<a href=\"/search/trials?location_id=23\">5 trials</a>","Type":null},"type":"Feature"},{"geometry":{"coordinates":[-76.4735,42.45345],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":274,"Code":"USA","Country":"United States","Id":"24","Latitude":42.45345,"Longitude":-76.4735,"NOAAStationID":null,"Name":"Cornell Biotech","Program":"test","Trials":"<a href=\"/search/trials?location_id=24\">0 trials</a>","Type":null},"type":"Feature"},{"geometry":{"coordinates":[null,null],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":null,"Code":null,"Country":null,"Id":"25","Latitude":null,"Longitude":null,"NOAAStationID":null,"Name":"NA","Program":null,"Trials":"<a href=\"/search/trials?location_id=25\">0 trials</a>","Type":null},"type":"Feature"},{"geometry":{"coordinates":[null,null],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":null,"Code":null,"Country":null,"Id":"26","Latitude":null,"Longitude":null,"NOAAStationID":null,"Name":"[Computation]","Program":null,"Trials":"<a href=\"/search/trials?location_id=26\">2 trials</a>","Type":null},"type":"Feature"}]');
+is($locations, '[{"geometry":{"coordinates":[-115.86428,32.61359],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":109,"Code":"USA","Country":"United States","Id":"23","Latitude":32.61359,"Longitude":-115.86428,"NOAAStationID":null,"Name":"test_location","Program":"test","Trials":"<a href=\"/search/trials?location_id=23\">5 trials</a>","Type":null,"private_company_id":1,"private_company_name":"ImageBreed"},"type":"Feature"},{"geometry":{"coordinates":[-76.4735,42.45345],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":274,"Code":"USA","Country":"United States","Id":"24","Latitude":42.45345,"Longitude":-76.4735,"NOAAStationID":null,"Name":"Cornell Biotech","Program":"test","Trials":"<a href=\"/search/trials?location_id=24\">0 trials</a>","Type":null,"private_company_id":1,"private_company_name":"ImageBreed"},"type":"Feature"},{"geometry":{"coordinates":[null,null],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":null,"Code":null,"Country":null,"Id":"25","Latitude":null,"Longitude":null,"NOAAStationID":null,"Name":"NA","Program":null,"Trials":"<a href=\"/search/trials?location_id=25\">0 trials</a>","Type":null,"private_company_id":1,"private_company_name":"ImageBreed"},"type":"Feature"},{"geometry":{"coordinates":[null,null],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":null,"Code":null,"Country":null,"Id":"26","Latitude":null,"Longitude":null,"NOAAStationID":null,"Name":"[Computation]","Program":null,"Trials":"<a href=\"/search/trials?location_id=26\">2 trials</a>","Type":null,"private_company_id":1,"private_company_name":"ImageBreed"},"type":"Feature"}]');
 
 
 

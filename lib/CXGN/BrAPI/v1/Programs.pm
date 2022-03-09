@@ -19,7 +19,7 @@ sub search {
 	my %program_names_q = map { $_ => 1 } @$program_names;
 
 	my $ps = CXGN::BreedersToolbox::Projects->new({ schema => $self->bcs_schema });
-	my $programs = $ps->get_breeding_programs();
+	my $programs = $ps->get_breeding_programs($self->sp_person_id);
 
 	my @available;
 	foreach (@$programs){

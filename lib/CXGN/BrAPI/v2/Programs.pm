@@ -32,7 +32,7 @@ sub search {
     }
 
 	my $ps = CXGN::BreedersToolbox::Projects->new({ schema => $self->bcs_schema });
-	my $programs = $ps->get_breeding_programs();
+	my $programs = $ps->get_breeding_programs($self->sp_person_id);
 
 	my @available;
 	my %program_names = map { $_ => 1 } @program_names;

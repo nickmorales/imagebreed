@@ -82,13 +82,13 @@ sub get_breeding_programs_by_trial {
     my @projects;
 
     if ($trial_row) {
-	$rs = $self->schema->resultset('Project::Project')->search( { 'me.project_id' => $trial_row->object_project_id(), 'projectprops.type_id'=>$breeding_program_cvterm_id }, { join => 'projectprops' }  );
+        $rs = $self->schema->resultset('Project::Project')->search( { 'me.project_id' => $trial_row->object_project_id(), 'projectprops.type_id'=>$breeding_program_cvterm_id }, { join => 'projectprops' }  );
 
-	while (my $row = $rs->next()) {
-	    push @projects, [ $row->project_id, $row->name, $row->description ];
-	}
+        while (my $row = $rs->next()) {
+            push @projects, [ $row->project_id, $row->name, $row->description ];
+        }
     }
-    return  \@projects;
+    return \@projects;
 }
 
 

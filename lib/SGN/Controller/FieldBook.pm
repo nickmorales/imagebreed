@@ -21,9 +21,8 @@ sub field_book :Path("/fieldbook") Args(0) {
     my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
     my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
     if (!$c->user()) {
-	# redirect to login page
-	$c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
-	return;
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
     }
     my $user_id = $c->user()->get_object()->get_sp_person_id();
 
@@ -33,7 +32,7 @@ sub field_book :Path("/fieldbook") Args(0) {
     my @projects = ();
     my @file_metadata = ();
     my $bp = CXGN::BreedersToolbox::Projects->new( { schema=>$schema });
-    my $breeding_programs = $bp->get_breeding_programs();
+    my $breeding_programs = $bp->get_breeding_programs($user_id);
     my @layout_files = ();
     my @phenotype_files = ();
     my @removed_phenotype_files = ();

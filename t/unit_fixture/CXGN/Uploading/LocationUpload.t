@@ -86,7 +86,8 @@ foreach my $row (@{$parse_result->{'success'}}) {
         location_type => $data[5],
         latitude => $data[6],
         longitude => $data[7],
-        altitude => $data[8]
+        altitude => $data[8],
+        private_company_id => 1
     });
 
     my $store = $location->store_location();

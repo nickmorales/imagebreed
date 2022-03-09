@@ -318,7 +318,7 @@ sub get_projects_select : Path('/ajax/html/select/projects') Args(0) {
 
     my $projects;
     if (!$breeding_program_id && !$breeding_program_name) {
-        $projects = $p->get_breeding_programs();
+        $projects = $p->get_breeding_programs($user_id);
     } elsif ($breeding_program_id){
         push @$projects, [$breeding_program_id];
     } else {
@@ -393,7 +393,7 @@ sub get_trials_select : Path('/ajax/html/select/trials') Args(0) {
 
     my $projects;
     if (!$breeding_program_id && !$breeding_program_name) {
-        $projects = $p->get_breeding_programs();
+        $projects = $p->get_breeding_programs($user_id);
     } elsif ($breeding_program_id){
         push @$projects, [$breeding_program_id];
     } else {
@@ -488,7 +488,7 @@ sub get_genotyping_trials_select : Path('/ajax/html/select/genotyping_trials') A
 
     my $projects;
     if (!$breeding_program_id && !$breeding_program_name) {
-        $projects = $p->get_breeding_programs();
+        $projects = $p->get_breeding_programs($user_id);
     } elsif ($breeding_program_id){
         push @$projects, [$breeding_program_id];
     } else {
@@ -542,7 +542,7 @@ sub get_label_data_source_select : Path('/ajax/html/select/label_data_sources') 
     my $public_lists = CXGN::List::available_public_lists($c->dbc->dbh() );
 
     my $p = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } );
-    my $projects = $p->get_breeding_programs();
+    my $projects = $p->get_breeding_programs($user_id);
 
     my (@field_trials, @crossing_experiments, @genotyping_trials) = [];
     foreach my $project (@$projects) {
@@ -1424,7 +1424,7 @@ sub get_crosses_select : Path('/ajax/html/select/crosses') Args(0) {
 
     my $projects;
     if (!$breeding_program_id && !$breeding_program_name) {
-        $projects = $p->get_breeding_programs();
+        $projects = $p->get_breeding_programs($user_id);
     } elsif ($breeding_program_id){
         push @$projects, [$breeding_program_id];
     } else {

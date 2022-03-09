@@ -23,6 +23,7 @@ my $folder = CXGN::Trial::Folder->create({
   parent_folder_id => 0,
   name => 'Ftest',
   breeding_program_id => $test_breeding_program->project_id(),
+  private_company_id => 1
 });
 
 my $F1_id = $folder->folder_id;
@@ -81,6 +82,7 @@ my $parent_folder = CXGN::Trial::Folder->create({
   parent_folder_id => 0,
   name => 'F2',
   breeding_program_id => $test_breeding_program->project_id(),
+  private_company_id => 1
 });
 
 my $F2_id = $parent_folder->folder_id();
@@ -196,6 +198,7 @@ my $folder3 = CXGN::Trial::Folder->create({
   parent_folder_id => $F2_id,
   name => 'F3',
   breeding_program_id => $test_breeding_program->project_id(),
+  private_company_id => 1
 });
 
 my $folder3_id = $folder3->folder_id;
@@ -401,7 +404,7 @@ ok(scalar(@$folder_children) == 1, "folder has 1 child");
 ok(@$folder_children[0]->name eq 'F3', "folder has child named 'F3'");
 
 
-#at this point structure is 
+#at this point structure is
 #test->
 #    ->F2
 #    ->F1->F3
@@ -434,7 +437,7 @@ $folder3 = CXGN::Trial::Folder->new({
 
 $trial_folder->associate_parent($folder3->folder_id());
 
-#structure is 
+#structure is
 #test->F2->F1->F3->test_trial
 
 #move F2 into F3
@@ -546,7 +549,8 @@ my $folder4 = CXGN::Trial::Folder->create({
   name => 'F4',
   breeding_program_id => $test_breeding_program->project_id(),
   folder_for_trials => 1,
-  folder_for_crosses => 1
+  folder_for_crosses => 1,
+  private_company_id => 1
 });
 my $F4_id = $folder4->folder_id;
 

@@ -23,6 +23,7 @@ use Moose;
 use Data::Dumper;
 use Try::Tiny;
 use SGN::Model::Cvterm;
+use CXGN::PrivateCompany;
 
 has 'bcs_schema' => (
 	isa => 'Bio::Chado::Schema',
