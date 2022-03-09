@@ -1050,13 +1050,9 @@ sub upload_multiple_trial_designs_file_POST : Args(0) {
     my $dbh = $c->dbc->dbh;
     my $upload = $c->req->upload('multiple_trial_designs_upload_file');
     my $ignore_warnings = $c->req->param('upload_multiple_trials_ignore_warnings');
-    my $parser;
-    my $parsed_data;
     my $upload_original_name = $upload->filename();
     my $upload_tempfile = $upload->tempname;
     my $subdirectory = "trial_upload";
-    my $archived_filename_with_path;
-    my $md5;
     my $validate_file;
     my $parsed_file;
     my $parse_errors;
@@ -1064,9 +1060,9 @@ sub upload_multiple_trial_designs_file_POST : Args(0) {
     my %upload_metadata;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
-    my $user_id;
-    my $user_name;
     my $error;
+
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial($c, 'submitter', 0, 0);
 
     # print STDERR "Check 2: ".localtime()."\n";
     print STDERR "Ignore warnings is $ignore_warnings\n";
@@ -1075,19 +1071,6 @@ sub upload_multiple_trial_designs_file_POST : Args(0) {
         $c->stash->{rest} = {errors => "Uploaded file name must not contain spaces or slashes." };
         return;
     }
-
-    if (!$c->user()) {
-        print STDERR "User not logged in... not uploading a trial.\n";
-        $c->stash->{rest} = {errors => "You need to be logged in to upload a trial." };
-        return;
-    }
-    if (!any { $_ eq "curator" || $_ eq "submitter" } ($c->user()->roles)  ) {
-        $c->stash->{rest} = {errors =>  "You have insufficient privileges to upload a trial." };
-        return;
-    }
-
-    $user_id = $c->user()->get_object()->get_sp_person_id();
-    $user_name = $c->user()->get_object()->get_username();
 
     ## Store uploaded temporary file in archive
     my $uploader = CXGN::UploadFile->new({
@@ -1099,8 +1082,8 @@ sub upload_multiple_trial_designs_file_POST : Args(0) {
         user_id => $user_id,
         user_role => $c->user->get_object->get_user_type()
     });
-    $archived_filename_with_path = $uploader->archive();
-    $md5 = $uploader->get_md5($archived_filename_with_path);
+    my $archived_filename_with_path = $uploader->archive();
+    my $md5 = $uploader->get_md5($archived_filename_with_path);
     if (!$archived_filename_with_path) {
         $c->stash->{rest} = {errors => "Could not save file $upload_original_name in archive",};
         return;
@@ -1113,11 +1096,10 @@ sub upload_multiple_trial_designs_file_POST : Args(0) {
     $upload_metadata{'user_id'}=$user_id;
     $upload_metadata{'date'}="$timestamp";
 
-
     #parse uploaded file with appropriate plugin
-    $parser = CXGN::Trial::ParseUpload->new(chado_schema => $chado_schema, filename => $archived_filename_with_path);
+    my $parser = CXGN::Trial::ParseUpload->new(chado_schema => $chado_schema, filename => $archived_filename_with_path, sp_person_id => $user_id);
     $parser->load_plugin('MultipleTrialDesignExcelFormat');
-    $parsed_data = $parser->parse();
+    my $parsed_data = $parser->parse();
 
     if (!$parsed_data) {
         my $return_error = '';
@@ -1165,7 +1147,8 @@ sub upload_multiple_trial_designs_file_POST : Args(0) {
             program => $trial_design->{'breeding_program'},
             upload_trial_file => $upload,
             operator => $user_name,
-            owner_id => $user_id
+            owner_id => $user_id,
+            private_company_id => $trial_design->{'private_company_id'}
         );
 
         if ($trial_design->{'trial_type'}){

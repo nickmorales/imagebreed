@@ -564,6 +564,7 @@ $design_types => ()
                         <tbody>
                             <tr>
                                 <td>trial_name</td>
+                                <td>company</td>
                                 <td>breeding_program</td>
                                 <td>location</td>
                                 <td>year</td>
@@ -592,11 +593,12 @@ $design_types => ()
                     </table>
 
                     <b>Header as a string:</b><br/>
-                    <p>trial_name,breeding_program,location,year,design_type,description,trial_type,plot_width,plot_length,field_size,planting_date,harvest_date,plot_name,accession_name,plot_number,block_number,is_a_control,rep_number,range_number,row_number,col_number,seedlot_name,num_seed_per_plot,weight_gram_seed_per_plot</p>
+                    <p>trial_name,company,breeding_program,location,year,design_type,description,trial_type,plot_width,plot_length,field_size,planting_date,harvest_date,plot_name,accession_name,plot_number,block_number,is_a_control,rep_number,range_number,row_number,col_number,seedlot_name,num_seed_per_plot,weight_gram_seed_per_plot</p>
 
                     <b> Required fields:</b>
                     <ul>
                     <li>trial_name (Must be unique across entire database. It is often a concatenation of the year, purpose, unique number, and location.)</li>
+                    <li>company (The name of company to save the trial into, must exist in the database.)</li>
                     <li>breeding_program (The name of breeding program that managed the trial, must exist in the database.)</li>
                     <li>location (The name of the location where the trial was held, must exist in the database.)</li>
                     <li>year (The year the trial was held.)</li>
