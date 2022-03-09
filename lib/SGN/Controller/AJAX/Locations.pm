@@ -35,9 +35,11 @@ sub get_all_locations :Path("/ajax/location/all") Args(0) {
     my $self = shift;
     my $c = shift;
 
+    my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 0, 0, 0);
+
     my $location = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") });
 
-    my $all_locations = $location->get_location_geojson();
+    my $all_locations = $location->get_location_geojson($user_id);
     #print STDERR "Returning with all locations: ".$all_locations."\n";
     $c->stash->{rest} = { data => $all_locations };
 }
@@ -57,21 +59,15 @@ sub store_location :Path("/ajax/location/store") Args(0) {
     my $longitude   = $params->{longitude} || undef;
     my $altitude    = $params->{altitude} || undef;
     my $noaa_station_id    = $params->{noaa_station_id} || undef;
+    my $private_company_id = $params->{private_company_id};
 
-    if (! $c->user()) {
-        $c->stash->{rest} = { error => 'You must be logged in to add or edit a location.' };
-        return;
-    }
-
-    if (! $c->user->check_roles("submitter") && !$c->user->check_roles("curator")) {
-        $c->stash->{rest} = { error => 'You do not have the necessary privileges to add or edit locations.' };
-        return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 'submitter', $private_company_id, 'submitter_access');
 
     print STDERR "Creating location object\n";
 
     my $location = CXGN::Location->new( {
         bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
+        is_saving => 1,
         nd_geolocation_id => $id,
         name => $name,
         abbreviation => $abbreviation,
@@ -82,7 +78,8 @@ sub store_location :Path("/ajax/location/store") Args(0) {
         latitude => $latitude,
         longitude => $longitude,
         altitude => $altitude,
-        noaa_station_id => $noaa_station_id
+        noaa_station_id => $noaa_station_id,
+        private_company_id => $private_company_id
     });
 
     my $store = $location->store_location();
@@ -100,16 +97,7 @@ sub delete_location :Path('/ajax/location/delete') Args(1) {
     my $self = shift;
     my $c = shift;
     my $location_id = shift;
-
-    if (!$c->user) {  # require login
-        $c->stash->{rest} = { error => "You need to be logged in to delete a location." };
-        return;
-    }
-
-    if (! ($c->user->check_roles('curator') || $c->user->check_roles('submitter'))) { # require curator or submitter roles
-        $c->stash->{rest} = { error => "You don't have the privileges to delete a location." };
-        return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 'submitter', 0, 0);
 
     my $location_to_delete = CXGN::Location->new( {
         bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
@@ -120,7 +108,7 @@ sub delete_location :Path('/ajax/location/delete') Args(1) {
 	$c->stash->{rest} = { error => "The location [Computation] is needed by the system to store analyses and cannot be deleted." };
 	return;
     }
-    
+
     my $delete = $location_to_delete->delete_location();
 
     if ($delete->{'success'}) {
@@ -136,25 +124,15 @@ sub upload_locations : Path('/ajax/locations/upload') : ActionClass('REST') { }
 sub upload_locations_POST : Args(0) {
     my ($self, $c) = @_;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
-
     my $upload = $c->req->upload('locations_upload_file');
     my $upload_original_name = $upload->filename();
     my $upload_tempfile = $upload->tempname;
 
+    my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 'submitter', 0, 0);
+
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
     my (@errors, %response);
-
-
-    if (!$c->user()) {
-        print STDERR "User not logged in... not uploading locations.\n";
-        push @errors, "You need to be logged in to upload locations.";
-        $c->stash->{rest} = {filename => $upload_original_name, error => \@errors };
-        return;
-    }
-
-    my $user_id = $c->user()->get_object()->get_sp_person_id();
-    my $user_role = $c->user->get_object->get_user_type();
 
     my $uploader = CXGN::UploadFile->new({
         tempfile => $upload_tempfile,
@@ -228,11 +206,7 @@ sub get_noaa_station_id :Path("/ajax/location/get_noaa_station_id") Args(1) {
     my $self = shift;
     my $c = shift;
     my $location_id = shift;
-
-    if (! $c->user()) {
-        $c->stash->{rest} = { error => 'You must be logged in to add or edit a location.' };
-        return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
@@ -255,6 +229,7 @@ sub noaa_ncdc_gdd_cp :Path("/ajax/location/noaa_ncdc_gdd_cp") Args(0) {
     my $end_date = $c->req->param('end_date');
     my $base_temp = $c->req->param('base_temp');
     my $data_type = $c->req->param('data_type') || 'gdd';
+    my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
@@ -305,13 +280,9 @@ sub noaa_ncdc_analysis :Path("/ajax/location/noaa_ncdc_analysis") Args(0) {
     my $window_start = $c->req->param('w_start');
     my $window_end = $c->req->param('w_end');
     my $cumulative_year = $c->req->param('cumul_year') eq 'yes' ? 1 : 0;
+    my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
-
-    if (! $c->user()) {
-        $c->stash->{rest} = { error => 'You must be logged in to add or edit a location.' };
-        return;
-    }
 
     my $location = CXGN::Location->new({
         bcs_schema => $schema,
@@ -491,5 +462,20 @@ sub noaa_ncdc_analysis :Path("/ajax/location/noaa_ncdc_analysis") Args(0) {
     $c->stash->{rest} = { noaa_station_id => $station_id, plot => $stats_tempfile_plot_string, plot2 => $stats_tempfile_plot_string2 };
 }
 
+sub _check_user_login_location {
+    my $c = shift;
+    my $check_priv = shift;
+    my $private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
+}
 
 1;

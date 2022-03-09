@@ -353,11 +353,27 @@ sub get_all_locations {
 
 sub get_location_geojson {
     my $self = shift;
+    my $sp_person_id = shift;
+    my $private_company_id = shift;
+
+    my $where_clause = '';
+    my $company_ids_sql = '';
+    if ($private_company_id) {
+        $company_ids_sql = $private_company_id;
+    }
+    elsif ($private_company_id) {
+        my $private_companies = CXGN::PrivateCompany->new( { schema=> $self->schema } );
+        my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
+        $company_ids_sql = join ',', @$private_companies_ids;
+    }
+    if ($company_ids_sql) {
+        $where_clause = "WHERE geo.private_company_id IN($company_ids_sql)";
+    }
 
     my $project_location_type_id = $self ->schema->resultset('Cv::Cvterm')->search( { 'name' => 'project location' })->first->cvterm_id();
     my $noaa_station_id_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->schema, 'noaa_station_id', 'geolocation_property')->cvterm_id();
 
-    my $q = "SELECT A,B,C,D,E,string_agg(F, ' & '),G,H,I,J,K,L
+    my $q = "SELECT A,B,C,D,E,string_agg(F, ' & '),G,H,I,J,K,L,M,N
         FROM
             (SELECT geo.nd_geolocation_id as A,
                 geo.description AS B,
@@ -367,6 +383,8 @@ sub get_location_geojson {
                 breeding_program.name AS F,
                 location_type.value AS G,
                 noaa_station_id.value AS L,
+                geo.private_company_id AS M,
+                company.name AS N,
                 latitude AS H,
                 longitude AS I,
                 altitude AS J,
@@ -380,10 +398,12 @@ sub get_location_geojson {
             LEFT JOIN nd_geolocationprop AS breeding_program_id ON (geo.nd_geolocation_id = breeding_program_id.nd_geolocation_id AND breeding_program_id.type_id = (SELECT cvterm_id from cvterm where name = 'breeding_program') )
             LEFT JOIN project breeding_program ON (breeding_program.project_id=breeding_program_id.value::INT)
             LEFT JOIN projectprop ON (projectprop.value::INT = geo.nd_geolocation_id AND projectprop.type_id=?)
-            GROUP BY 1,2,3,4,5,6,7,8
+            JOIN sgn_people.private_company AS company ON(company.private_company_id=geo.private_company_id)
+            $where_clause
+            GROUP BY 1,2,3,4,5,6,7,8,9,10
             ORDER BY 2)
         AS T1
-        GROUP BY 1,2,3,4,5,7,8,9,10,11,12";
+        GROUP BY 1,2,3,4,5,7,8,9,10,11,12,13,14";
 
 
 	my $h = $self->schema()->storage()->dbh()->prepare($q);
@@ -393,7 +413,7 @@ sub get_location_geojson {
 	foreach my $d (@location_data) {
 	    ###$d = Encode::encode_utf8($d);   ## not necessary, it's already utf8
 	}
-	my ($id, $name, $abbrev, $country_name, $country_code, $prog, $type, $latitude, $longitude, $altitude, $trial_count, $noaa_station_id) = @location_data;
+	my ($id, $name, $abbrev, $country_name, $country_code, $prog, $type, $latitude, $longitude, $altitude, $trial_count, $noaa_station_id, $private_company_id, $private_company_name) = @location_data;
 
         my $lat = $latitude ? $latitude + 0 : undef;
         my $long = $longitude ? $longitude + 0 : undef;
@@ -412,7 +432,9 @@ sub get_location_geojson {
                 Longitude => $long,
                 Altitude => $alt,
                 Trials => '<a href="/search/trials?location_id='.$id.'">'.$trial_count.' trials</a>',
-                NOAAStationID => $noaa_station_id
+                NOAAStationID => $noaa_station_id,
+                private_company_id => $private_company_id,
+                private_company_name => $private_company_name,
             },
             geometry => {
                 type => "Point",

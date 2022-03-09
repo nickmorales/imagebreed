@@ -284,7 +284,12 @@ $user_id => undef
                     <option value="ZWE">ZWE Zimbabwe</option>
                   </select>
               </div>
-	    </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Company: </label>
+            <div class="col-sm-10" id="company" name="company">
+            </div>
+        </div>
         <div class="form-group">
       	      <label class="col-sm-2 control-label">Program: </label>
       	      <div class="col-sm-10" id="breeding_program" name="breeding_program">
@@ -344,48 +349,47 @@ $user_id => undef
 
 jQuery(document).ready(function() {
 
-  $('#add_location_link').click( function() {
-      $('#add_location_dialog').modal("show");
-   });
+    jQuery('#add_location_link').click( function() {
+        jQuery('#add_location_dialog').modal("show");
+    });
 
-   // get_select_box("breeding_programs", "breeding_program", {'empty':1, 'default':'please select'});
-   get_select_box('breeding_programs', 'breeding_program',
-       {
-           empty: 1,
-           id: 'breeding_program_select',
-           default: 'please select',
-           multiple: 1,
-       });
+    get_select_box('breeding_programs', 'breeding_program', { id: 'breeding_program_select', multiple: 1 });
 
-   $('#store_location_submit').click( function(event) {
-       event.preventDefault();
-       var id= $('#location_id').val();
-       var name = $('#location_name').val();
-       name = name.trim();
-       var abbreviation = $('#location_abbreviation').val();
-       var country_code = $('#location_country').val();
-       var country_text = $('#location_country option:selected').text();
-       var country_name = country_text.replace(/^[^\s]+(.*)/, '$1').trim();
-    //    var program = $('#breeding_program_select option:selected').text();
+    get_select_box('private_companies', 'company', { id: 'company_select' });
+
+    jQuery(document).on('change', '#company_select', function(){
+        get_select_box('breeding_programs', 'breeding_program', { id: 'breeding_program_select', multiple: 1, 'private_company_id':jQuery(this).val() });
+    });
+
+    jQuery('#store_location_submit').click( function(event) {
+        event.preventDefault();
+        var id= jQuery('#location_id').val();
+        var name = jQuery('#location_name').val();
+        var company_id = jQuery('#company_select').val();
+        name = name.trim();
+        var abbreviation = jQuery('#location_abbreviation').val();
+        var country_code = jQuery('#location_country').val();
+        var country_text = jQuery('#location_country option:selected').text();
+        var country_name = country_text.replace(/^[^\s]+(.*)/, '$1').trim();
         var programs = [];
-        $('#breeding_program_select option:selected').each( function() {
-            programs.push($(this).text());
+        jQuery('#breeding_program_select option:selected').each( function() {
+            programs.push(jQuery(this).text());
         });
 
         var noaa_station_id = $('#location_noaa_station_id').val();
 
         programs = programs.join("&");
-        var type = $('#location_type').val();
-        var latitude = $('#location_latitude').val();
-        var longitude = $('#location_longitude').val();
-        var altitude = $('#location_altitude').val();
+        var type = jQuery('#location_type').val();
+        var latitude = jQuery('#location_latitude').val();
+        var longitude = jQuery('#location_longitude').val();
+        var altitude = jQuery('#location_altitude').val();
         console.log("Location programs to store are "+JSON.stringify(programs));
         //console.log("Location name to store is "+name);
         //console.log("Location country name to store is "+country_name+" and country code is "+country_code);
 
         if (name == '') { alert('A location name is required.');  return; }
 
-        $.ajax({
+        jQuery.ajax({
             type: 'POST',
             url: '/ajax/location/store',
             data: {
@@ -399,7 +403,8 @@ jQuery(document).ready(function() {
                 'latitude':latitude,
                 'longitude':longitude,
                 'altitude': altitude,
-                'noaa_station_id': noaa_station_id
+                'noaa_station_id': noaa_station_id,
+                'private_company_id':company_id
             },
             success: function(response) {
                 if (response.error) { alert(response.error); }

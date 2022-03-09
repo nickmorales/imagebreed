@@ -224,6 +224,7 @@ sub store {
 
 		my $location = CXGN::Location->new( {
 			bcs_schema => $schema,
+            is_saving => 1,
 			nd_geolocation_id => $id,
 			name => $name,
 			abbreviation => $abbreviation,

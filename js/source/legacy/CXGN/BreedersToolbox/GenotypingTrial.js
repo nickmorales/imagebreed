@@ -511,6 +511,7 @@ function edit_genotyping_trial_details(){
 
     jQuery(document).on('change', '#edit_genotyping_trial_company', function(){
         get_select_box('breeding_programs', 'edit_genotyping_trial_breeding_program', { 'private_company_id':jQuery(this).val() });
+        jQuery('#edit_genotyping_trial_company').data("originalValue", default_company);
     });
 
     jQuery('#edit_genotyping_trial_details_cancel_button').click(function(){

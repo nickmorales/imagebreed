@@ -35,8 +35,28 @@ has 'location' => (
     is => 'rw',
 );
 
+has 'is_saving' => (
+	isa => 'Bool',
+	is => 'rw',
+);
+
 has 'nd_geolocation_id' => (
 	isa => 'Maybe[Int]',
+	is => 'rw',
+);
+
+has 'private_company_id' => (
+	isa => 'Maybe[Int]',
+	is => 'rw',
+);
+
+has 'private_company_name' => (
+	isa => 'Maybe[Str]',
+	is => 'rw',
+);
+
+has 'private_company_location_is_private' => (
+	isa => 'Bool',
 	is => 'rw',
 );
 
@@ -99,7 +119,7 @@ sub BUILD {
         $location = $self->bcs_schema->resultset("NaturalDiversity::NdGeolocation")->find( { nd_geolocation_id => $self->nd_geolocation_id });
         $self->location($location);
     }
-    if (defined $location) {
+    if (defined $location && !$self->is_saving) {
         $self->location( $self->location || $location );
         $self->nd_geolocation_id( $self->nd_geolocation_id || $location->nd_geolocation_id );
         $self->name( $self->name || $location->description );
@@ -112,6 +132,17 @@ sub BUILD {
         $self->longitude( $self->longitude || $location->longitude);
         $self->altitude( $self->altitude || $location->altitude);
         $self->noaa_station_id( $self->noaa_station_id || $self->_get_ndgeolocationprop('noaa_station_id', 'geolocation_property'));
+
+        my $q = "SELECT p.private_company_id, p.name, nd_geolocation.is_private
+            FROM nd_geolocation
+            JOIN sgn_people.private_company AS p ON(nd_geolocation.private_company_id=p.private_company_id)
+            WHERE nd_geolocation.nd_geolocation_id=?;";
+        my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+        $h->execute($self->nd_geolocation_id());
+        my ($private_company_id, $private_company_name, $is_private) = $h->fetchrow_array();
+        $self->private_company_id($private_company_id);
+        $self->private_company_name($private_company_name);
+        $self->private_company_location_is_private($is_private);
     }
 
     print STDERR "Breeding programs are: ".$self->breeding_programs()."\n";
@@ -135,6 +166,14 @@ sub store_location {
     my $longitude = $self->longitude();
     my $altitude = $self->altitude();
     my $noaa_station_id = $self->noaa_station_id();
+    my $private_company_id = $self->private_company_id();
+
+    my $private_company = CXGN::PrivateCompany->new({
+        schema => $schema,
+        private_company_id => $private_company_id
+    });
+    my $company_type_cvterm_name = $private_company->private_company_type_name();
+    my $private_company_location_is_private = $company_type_cvterm_name eq 'private_access' ? 1 : 0;
 
     # Validate properties
 
@@ -219,6 +258,7 @@ sub store_location {
             if ($noaa_station_id){
                 $self->_store_ndgeolocationprop('noaa_station_id', 'geolocation_property', $noaa_station_id);
             }
+            $self->_update_private_company($private_company_id, $private_company_location_is_private, $new_row->nd_geolocation_id());
         }
         catch {
             $error =  $_;
@@ -248,6 +288,7 @@ sub store_location {
             $self->_update_ndgeolocationprop('location_type', 'geolocation_property', $location_type);
             $self->_update_ndgeolocationprop('noaa_station_id', 'geolocation_property', $noaa_station_id);
             $self->_store_breeding_programs($breeding_program_ids);
+            $self->_update_private_company($private_company_id, $private_company_location_is_private, $nd_geolocation_id);
         }
         catch {
             $error =  $_;
@@ -279,14 +320,17 @@ sub delete_location {
         return { error => $error };
     }
 	else {
-	    $row->delete();
         my $location_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'project location', 'project_property')->cvterm_id();
         my $projectprop_rows = $self->bcs_schema->resultset("Project::Projectprop")->search({ value=> $self->nd_geolocation_id(), 'me.type_id'=> $location_type_id });
-        while (my $r = $projectprop_rows->next()){ # remove any links to deleted location in projectprop
-            $r->delete();
+        if ($projectprop_rows->count > 0) {
+            my $error = "Location $name cannot be deleted because there are ".$projectprop_rows->count." field trials associated with it.\n";
+            print STDERR $error;
+            return { error => $error };
+        } else {
+            $row->delete();
+            return { success => "Location $name was successfully deleted.\n" };
         }
-        return { success => "Location $name was successfully deleted.\n" };
-	}
+    }
 }
 
 sub _get_ndgeolocationprop {
@@ -317,6 +361,18 @@ sub _update_ndgeolocationprop {
     } elsif ($existing_prop) {
         $self->_remove_ndgeolocationprop($type, $cv, $existing_prop);
     }
+}
+
+sub _update_private_company {
+    my $self = shift;
+    my $private_company_id = shift;
+    my $private_company_location_is_private = shift;
+    my $nd_geolocation_id = shift;
+
+    my $q = "UPDATE nd_geolocation SET private_company_id=?, is_private=? WHERE nd_geolocation.nd_geolocation_id=?;";
+    print STDERR Dumper [$private_company_id, $private_company_location_is_private, $nd_geolocation_id];
+    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($private_company_id, $private_company_location_is_private, $nd_geolocation_id);
 }
 
 sub _store_breeding_programs {

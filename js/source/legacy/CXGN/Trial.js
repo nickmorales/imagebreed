@@ -324,6 +324,8 @@ function edit_trial_details(){
     jQuery(document).on('change', '#edit_trial_company', function(){
         get_select_box('breeding_programs', 'edit_trial_breeding_program', { 'private_company_id':jQuery(this).val() });
         get_select_box('locations', 'edit_trial_location', { 'private_company_id':jQuery(this).val() });
+        jQuery('#edit_trial_breeding_program').data("originalValue", default_bp);
+        jQuery('#edit_trial_location').data("originalValue", default_loc);
     });
 
     //create bootstrap daterangepickers for planting and harvest dates

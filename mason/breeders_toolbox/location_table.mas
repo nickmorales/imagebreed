@@ -14,6 +14,7 @@ $user_id => undef
                 <th>Abbreviation</th>
                 <th>Country</th>
                 <th>Program</th>
+                <th>Company</th>
                 <th>Type</th>
                 <th>Lat</th>
                 <th>Long</th>
@@ -62,6 +63,11 @@ jQuery(document).ready(function() {
                         }
                     },
                     { "data": "properties.Program" },
+                    { "data": "properties.Code",
+                        "render":function(data, type, full, meta){
+                           return "<a href='/company/"+full.properties.private_company_id+"'>"+full.properties.private_company_name+"</a>";
+                        }
+                    },
                     { "data": "properties.Type" },
                     { "data": "properties.Latitude" },
                     { "data": "properties.Longitude" },

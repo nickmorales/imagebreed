@@ -164,6 +164,7 @@ foreach my $location_hash (@$all_locations) {
 
         my $updated_location = CXGN::Location->new( {
             bcs_schema => $schema,
+            is_saving => 1,
             nd_geolocation_id => $id,
             country_name => $country_name,
             country_code => $country_code,
