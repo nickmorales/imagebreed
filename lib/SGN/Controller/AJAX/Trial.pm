@@ -855,12 +855,12 @@ sub upload_trial_file_POST : Args(0) {
 
     print STDERR "Check 1: ".localtime()."\n";
 
-
-    #print STDERR Dumper $c->req->params();
+    print STDERR Dumper $c->req->params();
     my $chado_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $dbh = $c->dbc->dbh;
+    my $private_company_id = $c->req->param('trial_upload_company_id');
     my $program = $c->req->param('trial_upload_breeding_program');
     my $trial_location = $c->req->param('trial_upload_location');
     my $trial_name = $c->req->param('trial_upload_name');
@@ -873,21 +873,19 @@ sub upload_trial_file_POST : Args(0) {
     my $plot_length = $c->req->param('trial_upload_plot_length');
     my $field_trial_is_planned_to_be_genotyped = $c->req->param('upload_trial_trial_will_be_genotyped');
     my $field_trial_is_planned_to_cross = $c->req->param('upload_trial_trial_will_be_crossed');
-    my @add_project_trial_source = $c->req->param('upload_trial_trial_source_select');
+    my @add_project_trial_source = $c->req->param('upload_trial_trial_source_select_value') ? split(',', $c->req->param('upload_trial_trial_source_select_value')) : ();
     my $add_project_trial_genotype_trial;
     my $add_project_trial_crossing_trial;
     my $add_project_trial_genotype_trial_select = [$add_project_trial_genotype_trial];
     my $add_project_trial_crossing_trial_select = [$add_project_trial_crossing_trial];
     my $trial_stock_type = $c->req->param('trial_upload_trial_stock_type');
 
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial($c, 'submitter', $private_company_id, 'submitter_access');
+
     my $upload = $c->req->upload('trial_uploaded_file');
-    my $parser;
-    my $parsed_data;
     my $upload_original_name = $upload->filename();
     my $upload_tempfile = $upload->tempname;
     my $subdirectory = "trial_upload";
-    my $archived_filename_with_path;
-    my $md5;
     my $validate_file;
     my $parsed_file;
     my $parse_errors;
@@ -895,8 +893,6 @@ sub upload_trial_file_POST : Args(0) {
     my %upload_metadata;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
-    my $user_id;
-    my $user_name;
     my $error;
     my $save;
 
@@ -908,19 +904,6 @@ sub upload_trial_file_POST : Args(0) {
         return;
     }
 
-    if (!$c->user()) {
-        print STDERR "User not logged in... not uploading a trial.\n";
-        $c->stash->{rest} = {error => "You need to be logged in to upload a trial." };
-        return;
-    }
-    if (!any { $_ eq "curator" || $_ eq "submitter" } ($c->user()->roles)  ) {
-        $c->stash->{rest} = {error =>  "You have insufficient privileges to upload a trial." };
-        return;
-    }
-
-    $user_id = $c->user()->get_object()->get_sp_person_id();
-    $user_name = $c->user()->get_object()->get_username();
-
     ## Store uploaded temporary file in archive
     my $uploader = CXGN::UploadFile->new({
         tempfile => $upload_tempfile,
@@ -931,8 +914,8 @@ sub upload_trial_file_POST : Args(0) {
         user_id => $user_id,
         user_role => $c->user->get_object->get_user_type()
     });
-    $archived_filename_with_path = $uploader->archive();
-    $md5 = $uploader->get_md5($archived_filename_with_path);
+    my $archived_filename_with_path = $uploader->archive();
+    my $md5 = $uploader->get_md5($archived_filename_with_path);
     if (!$archived_filename_with_path) {
         $c->stash->{rest} = {error => "Could not save file $upload_original_name in archive",};
         return;
@@ -947,9 +930,9 @@ sub upload_trial_file_POST : Args(0) {
     $upload_metadata{'date'}="$timestamp";
 
     #parse uploaded file with appropriate plugin
-    $parser = CXGN::Trial::ParseUpload->new(chado_schema => $chado_schema, filename => $archived_filename_with_path, trial_stock_type => $trial_stock_type);
+    my $parser = CXGN::Trial::ParseUpload->new(chado_schema => $chado_schema, filename => $archived_filename_with_path, trial_stock_type => $trial_stock_type);
     $parser->load_plugin('TrialExcelFormat');
-    $parsed_data = $parser->parse();
+    my $parsed_data = $parser->parse();
 
     if (!$parsed_data) {
         my $return_error = '';
@@ -1004,7 +987,8 @@ sub upload_trial_file_POST : Args(0) {
             field_trial_from_field_trial => \@add_project_trial_source,
             genotyping_trial_from_field_trial => $add_project_trial_genotype_trial_select,
             crossing_trial_from_field_trial => $add_project_trial_crossing_trial_select,
-            trial_stock_type => $trial_stock_type
+            trial_stock_type => $trial_stock_type,
+            private_company_id => $private_company_id
         );
 
         print STDERR "Trial type is ".$trial_info_hash{'trial_type'}."\n";
