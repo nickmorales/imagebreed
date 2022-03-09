@@ -49,15 +49,16 @@ sub get_breeding_programs {
     }
 
     my $breeding_program_cvterm_id = $self->get_breeding_program_cvterm_id();
-    my $q = "SELECT project.project_id, project.name, project.description
+    my $q = "SELECT project.project_id, project.name, project.description, p.private_company_id, p.name
         FROM project
         JOIN projectprop ON(project.project_id=projectprop.project_id AND projectprop.type_id=$breeding_program_cvterm_id)
+        JOIN sgn_people.private_company AS p ON(project.private_company_id=p.private_company_id)
         WHERE $is_new_user_sql project.private_company_id IN ($company_ids_sql);";
     my $h = $self->schema->storage->dbh()->prepare($q);
     $h->execute();
     my @projects;
-    while (my($project_id, $name, $description) = $h->fetchrow_array()) {
-        push @projects, [$project_id, $name, $description];
+    while (my($project_id, $name, $description, $private_company_id, $private_company_name) = $h->fetchrow_array()) {
+        push @projects, [$project_id, $name, $description, $private_company_id, $private_company_name];
     }
 
     return \@projects;

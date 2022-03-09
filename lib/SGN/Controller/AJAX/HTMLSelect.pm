@@ -762,6 +762,8 @@ sub get_ontologies : Path('/ajax/html/select/trait_variable_ontologies') Args(0)
     my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $observation_variables = CXGN::BrAPI::v1::ObservationVariables->new({
+        context => $c,
+        subscription_model => $c->config->{subscription_model},
         bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
         metadata_schema => $c->dbic_schema("CXGN::Metadata::Schema"),
         phenome_schema=>$c->dbic_schema("CXGN::Phenome::Schema"),
