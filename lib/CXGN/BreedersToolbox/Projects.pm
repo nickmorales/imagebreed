@@ -550,32 +550,33 @@ sub delete_breeding_program {
 
     # check if this project entry is of type 'breeding program'
     my $prop = $self->schema->resultset("Project::Projectprop")->search({
-	type_id => $type_id,
-	project_id => $project_id,
-	});
-
+        type_id => $type_id,
+        project_id => $project_id,
+    });
     if ($prop->count() == 0) {
-	return 0; # wrong type, return 0.
+        return {error => 'Not a breeding program!'}; # wrong type, return 0.
     }
-
     $prop->delete();
 
     my $rs = $self->schema->resultset("Project::Project")->search({
-	project_id => $project_id,
-	});
-
+        project_id => $project_id,
+    });
     if ($rs->count() > 0) {
-	my $pprs = $self->schema->resultset("Project::ProjectRelationship")->search({
-	    object_project_id => $project_id,
-	});
+        my $pprs = $self->schema->resultset("Project::ProjectRelationship")->search({
+            object_project_id => $project_id,
+        });
 
-	if ($pprs->count()>0) {
-	    $pprs->delete();
-	}
-	$rs->delete();
-	return 1;
+        if ($pprs->count()>0) {
+            return {error => 'This breeding program has '.$pprs->count().' project links! Delete the field trials first.'};
+        }
+        else {
+            $rs->delete();
+            return {success => 1};
+        }
     }
-    return 0;
+    else {
+        return {error => 'No breeding program project found!'};
+    }
 }
 
 sub get_breeding_program_with_trial {

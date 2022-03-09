@@ -278,6 +278,7 @@ is_deeply($gt_protocols, [
         ], 'get gt protocols');
 
 my $trial_id = $schema->resultset('Project::Project')->find({name=>'test_new_bp'})->project_id();
-ok($p->delete_breeding_program($trial_id));
+my $del_ret = $p->delete_breeding_program($trial_id);
+is_deeply($del_ret, {success=>1});
 
 done_testing;

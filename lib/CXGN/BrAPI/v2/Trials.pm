@@ -205,6 +205,7 @@ sub store {
             parent_folder_id             => $parent_folder_id,
             name                         => $folder_name,
             breeding_program_id          => $breeding_program_id,
+            private_company_id           => 1,
             description                  => $description,
             folder_for_trials            => $folder_for_trials,
             folder_for_crosses           => $folder_for_crosses,

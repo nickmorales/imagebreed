@@ -21,12 +21,13 @@ $mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe",
 my $response = decode_json $mech->content;
 #print STDERR Dumper $response;
 is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
+my $sgn_session_id = $response->{access_token};
 
 #test location retrieval
 $mech->post_ok('http://localhost:3010/ajax/location/all');
 $response = decode_json $mech->content;
 #print STDERR Dumper $response;
-my $expected_response = {'data' =>'[{"geometry":{"coordinates":[-115.86428,32.61359],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":109,"Code":"USA","Country":"United States","Id":"23","Latitude":32.61359,"Longitude":-115.86428,"NOAAStationID":null,"Name":"test_location","Program":"test","Trials":"<a href=\"/search/trials?location_id=23\">9 trials</a>","Type":null},"type":"Feature"},{"geometry":{"coordinates":[-76.4735,42.45345],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":274,"Code":"USA","Country":"United States","Id":"24","Latitude":42.45345,"Longitude":-76.4735,"NOAAStationID":null,"Name":"Cornell Biotech","Program":"test","Trials":"<a href=\"/search/trials?location_id=24\">0 trials</a>","Type":null},"type":"Feature"},{"geometry":{"coordinates":[-76.50604,42.417374],"type":"Point"},"properties":{"Abbreviation":"L2","Altitude":123,"Code":"PER","Country":"Peru","Id":"25","Latitude":42.417374,"Longitude":-76.50604,"NOAAStationID":"PALMIRA","Name":"Location 2","Program":"test","Trials":"<a href=\"/search/trials?location_id=25\">0 trials</a>","Type":"Field"},"type":"Feature"},{"geometry":{"coordinates":[null,null],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":null,"Code":null,"Country":null,"Id":"26","Latitude":null,"Longitude":null,"NOAAStationID":null,"Name":"[Computation]","Program":null,"Trials":"<a href=\"/search/trials?location_id=26\">0 trials</a>","Type":null},"type":"Feature"},{"geometry":{"coordinates":[-76.50604,42.417374],"type":"Point"},"properties":{"Abbreviation":"L1","Altitude":123,"Code":"PER","Country":"Peru","Id":"27","Latitude":42.417374,"Longitude":-76.50604,"NOAAStationID":"PALMIRA","Name":"Location 1","Program":"test","Trials":"<a href=\"/search/trials?location_id=27\">0 trials</a>","Type":"Field"},"type":"Feature"}]'};
+my $expected_response = {'data' =>'[{"geometry":{"coordinates":[-115.86428,32.61359],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":109,"Code":"USA","Country":"United States","Id":"23","Latitude":32.61359,"Longitude":-115.86428,"NOAAStationID":null,"Name":"test_location","Program":"test","Trials":"<a href=\"/search/trials?location_id=23\">9 trials</a>","Type":null,"private_company_id":1,"private_company_name":"ImageBreed"},"type":"Feature"},{"geometry":{"coordinates":[-76.4735,42.45345],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":274,"Code":"USA","Country":"United States","Id":"24","Latitude":42.45345,"Longitude":-76.4735,"NOAAStationID":null,"Name":"Cornell Biotech","Program":"test","Trials":"<a href=\"/search/trials?location_id=24\">0 trials</a>","Type":null,"private_company_id":1,"private_company_name":"ImageBreed"},"type":"Feature"},{"geometry":{"coordinates":[-76.50604,42.417374],"type":"Point"},"properties":{"Abbreviation":"L2","Altitude":123,"Code":"PER","Country":"Peru","Id":"25","Latitude":42.417374,"Longitude":-76.50604,"NOAAStationID":"PALMIRA","Name":"Location 2","Program":"test","Trials":"<a href=\"/search/trials?location_id=25\">0 trials</a>","Type":"Field","private_company_id":1,"private_company_name":"ImageBreed"},"type":"Feature"},{"geometry":{"coordinates":[null,null],"type":"Point"},"properties":{"Abbreviation":null,"Altitude":null,"Code":null,"Country":null,"Id":"26","Latitude":null,"Longitude":null,"NOAAStationID":null,"Name":"[Computation]","Program":null,"Trials":"<a href=\"/search/trials?location_id=26\">0 trials</a>","Type":null,"private_company_id":1,"private_company_name":"ImageBreed"},"type":"Feature"},{"geometry":{"coordinates":[-76.50604,42.417374],"type":"Point"},"properties":{"Abbreviation":"L1","Altitude":123,"Code":"PER","Country":"Peru","Id":"27","Latitude":42.417374,"Longitude":-76.50604,"NOAAStationID":"PALMIRA","Name":"Location 1","Program":"test","Trials":"<a href=\"/search/trials?location_id=27\">0 trials</a>","Type":"Field","private_company_id":1,"private_company_name":"ImageBreed"},"type":"Feature"}]' };
 is_deeply($response, $expected_response, 'retrieve all locations');
 
 #test location store
@@ -36,10 +37,12 @@ $mech->post_ok('http://localhost:3010/ajax/location/store', [
     "country_code"=> "USA",
     "country_name"=> "United States",
     "programs"=> "test",
+    "private_company_id"=>1,
     "type"=> "Lab",
     "latitude"=> 42.5,
     "longitude"=> -76,
     "altitude"=> 123,
+    "sgn_session_id"=>$sgn_session_id
     ]);
 $response = decode_json $mech->content;
 #print STDERR Dumper $response->{'success'};
@@ -52,6 +55,7 @@ my $new_geolocation_id = $response->{'nd_geolocation_id'};
 $mech->post_ok('http://localhost:3010/breeders/program/new', [
     "name"=> 'test2',
     "desc"=> "added for Locations.t",
+    "private_company_id" => 1
 ]);
 $response = decode_json $mech->content;
 #print STDERR Dumper $response;
@@ -67,10 +71,12 @@ $mech->post_ok('http://localhost:3010/ajax/location/store', [
     "country_code"=> "USA",
     "country_name"=> "United States",
     "programs"=> "test&test2",
+    "private_company_id"=>1,
     "type"=> "Storage",
     "latitude"=> 42.5,
     "longitude"=> -76,
     "altitude"=> 223,
+    "sgn_session_id"=>$sgn_session_id
     ]);
 $response = decode_json $mech->content;
 #print STDERR Dumper $response->{'success'};
@@ -79,7 +85,7 @@ is_deeply($response->{'success'}, $expected_response, 'edit an existing location
 
 #test delete on location with data
 my $location_id = 23;
-$mech->post_ok('http://localhost:3010/ajax/location/delete/'.$location_id);
+$mech->post_ok('http://localhost:3010/ajax/location/delete/'.$location_id."?sgn_session_id=$sgn_session_id");
 $response = decode_json $mech->content;
 #print STDERR Dumper $response->{'error'};
 $expected_response = "Location test_location cannot be deleted because there are 3503 measurements associated with it from at least one trial.\n";
@@ -87,17 +93,16 @@ is_deeply($response->{'error'}, $expected_response, 'test error message on delet
 
 # test delete on unused location
 $location_id = $new_geolocation_id;
-$mech->post_ok('http://localhost:3010/ajax/location/delete/'.$location_id);
+$mech->post_ok('http://localhost:3010/ajax/location/delete/'.$location_id."?sgn_session_id=$sgn_session_id");
 $response = decode_json $mech->content;
 #print STDERR Dumper $response->{'success'};
 $expected_response = "Location Boyce Thompson Institute was successfully deleted.\n";
 is_deeply($response->{'success'}, $expected_response, 'test delete of unused location');
 
 # delete added breeding program
-$mech->post_ok('http://localhost:3010/breeders/program/delete/'.$new_program_id);
+$mech->post_ok('http://localhost:3010/breeders/program/delete/'.$new_program_id."?sgn_session_id=$sgn_session_id");
 $response = decode_json $mech->content;
-#print STDERR Dumper $response;
-$expected_response = [ 1 ];
-is_deeply($response, $expected_response, 'delete added breeding program');
+print STDERR Dumper $response;
+is_deeply($response, {success => 1}, 'delete added breeding program');
 
 done_testing();

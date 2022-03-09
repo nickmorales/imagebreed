@@ -309,6 +309,7 @@ sub store {
                 design_type => $trial_design_method,
                 design => {},
                 program => $program,
+                private_company_id => 1,
                 # upload_trial_file => $upload,
                 operator => $user_name,
                 trial_stock_type => 'accession', #can be cross or family name, not implemented

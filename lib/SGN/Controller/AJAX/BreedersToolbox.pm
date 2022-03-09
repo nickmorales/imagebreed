@@ -31,40 +31,32 @@ sub new_breeding_program :Path('/breeders/program/new') Args(0) {
     my $name = $c->req->param("name");
     my $desc = $c->req->param("desc");
     my $private_company_id = $c->req->param("private_company_id");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
-    if (!($c->user() || $c->user()->check_roles('submitter'))) {
-        $c->stash->{rest} = { error => 'You need to be logged in and have sufficient privileges to add a breeding program.' };
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'submitter', 0, 0);
 
-    my $p = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") });
-
+    my $p = CXGN::BreedersToolbox::Projects->new( { schema => $schema });
     my $new_program = $p->new_breeding_program($name, $desc, $private_company_id);
-
     print STDERR "New program is ".Dumper($new_program)."\n";
 
     $c->stash->{rest} = $new_program;
-
-    # if ($new_program->{'error'}) {
-	# $c->stash->{rest} = { error => $error };
-    # }
-    # else {
-	# $c->stash->{rest} =  { success => "The new breeding program $name was created.", id => };
-    # }
 }
 
 sub delete_breeding_program :Path('/breeders/program/delete') Args(1) {
     my $self = shift;
     my $c = shift;
     my $program_id = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    print STDERR Dumper $program_id;
 
-    if ($c->user && ($c->user->check_roles("curator"))) {
-	my $p = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") });
-	$p->delete_breeding_program($program_id);
-	$c->stash->{rest} = [ 1 ];
-    }
-    else {
-	$c->stash->{rest} = { error => "You don't have sufficient privileges to delete breeding programs." };
-    }
+    my $private_company_id = _get_private_company_from_project_id($schema, $program_id);
+    print STDERR Dumper $private_company_id;
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'curator', $private_company_id, 'curator_access');
+
+    my $p = CXGN::BreedersToolbox::Projects->new( { schema => $schema });
+    my $return = $p->delete_breeding_program($program_id);
+
+    $c->stash->{rest} = $return;
 }
 
 
@@ -72,80 +64,70 @@ sub get_breeding_programs_by_trial :Path('/breeders/programs_by_trial/') Args(1)
     my $self = shift;
     my $c = shift;
     my $trial_id = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
-    my $p = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } );
+    my $private_company_id = _get_private_company_from_project_id($schema, $trial_id);
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'user', $private_company_id, 'user_access');
+
+    my $p = CXGN::BreedersToolbox::Projects->new( { schema => $schema } );
 
     my $projects = $p->get_breeding_programs_by_trial($trial_id);
 
     $c->stash->{rest} =   { projects => $projects };
-
 }
 
 sub add_data_agreement :Path('/breeders/trial/add/data_agreement') Args(0) {
     my $self = shift;
     my $c = shift;
-
     my $project_id = $c->req->param('project_id');
     my $data_agreement = $c->req->param('text');
-
-    if (!$c->user()) {
-	$c->stash->{rest} = { error => 'You need to be logged in to add a data agreement' };
-	return;
-    }
-
-    if (!($c->user()->check_roles('curator') || $c->user()->check_roles('submitter'))) {
-	$c->stash->{rest} = { error => 'You do not have the required privileges to add a data agreement to this trial.' };
-	return;
-    }
-
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
+
+    my $private_company_id = _get_private_company_from_project_id($schema, $project_id);
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'submitter', $private_company_id, 'submitter_access');
 
     my $data_agreement_cvterm_id_rs = $schema->resultset('Cv::Cvterm')->search( { name => 'data_agreement' });
 
     my $type_id;
     if ($data_agreement_cvterm_id_rs->count>0) {
-	$type_id = $data_agreement_cvterm_id_rs->first()->cvterm_id();
+        $type_id = $data_agreement_cvterm_id_rs->first()->cvterm_id();
     }
 
     eval {
-	my $project_rs = $schema->resultset('Project::Project')->search(
-	    { project_id => $project_id }
-	    );
+        my $project_rs = $schema->resultset('Project::Project')->search({ project_id => $project_id });
 
-	if ($project_rs->count() == 0) {
-	    $c->stash->{rest} = { error => "No such project $project_id", };
-	    return;
-	}
+        if ($project_rs->count() == 0) {
+            $c->stash->{rest} = { error => "No such project $project_id", };
+            return;
+        }
+        my $project = $project_rs->first();
 
-	my $project = $project_rs->first();
+        my $projectprop_rs = $schema->resultset("Project::Projectprop")->search( { 'project_id' => $project_id, 'type_id'=>$type_id });
 
-	my $projectprop_rs = $schema->resultset("Project::Projectprop")->search( { 'project_id' => $project_id, 'type_id'=>$type_id });
-
-	my $projectprop;
-	if ($projectprop_rs->count() > 0) {
-	    $projectprop = $projectprop_rs->first();
-	    $projectprop->value($data_agreement);
-	    $projectprop->update();
-	    $c->stash->{rest} = { message => 'Updated data agreement.' };
-	}
-	else {
-	    $projectprop = $project->create_projectprops( { 'data_agreement' => $data_agreement,}, {autocreate=>1});
-	    $c->stash->{rest} = { message => 'Inserted new data agreement.'};
-	}
+        my $projectprop;
+        if ($projectprop_rs->count() > 0) {
+            $projectprop = $projectprop_rs->first();
+            $projectprop->value($data_agreement);
+            $projectprop->update();
+            $c->stash->{rest} = { message => 'Updated data agreement.' };
+        }
+        else {
+            $projectprop = $project->create_projectprops( { 'data_agreement' => $data_agreement,}, {autocreate=>1});
+            $c->stash->{rest} = { message => 'Inserted new data agreement.'};
+        }
     };
     if ($@) {
-	$c->stash->{rest} = { error => $@ };
-	return;
+        $c->stash->{rest} = { error => $@ };
+        return;
     }
 }
 
 sub get_data_agreement :Path('/breeders/trial/data_agreement/get') :Args(0) {
     my $self = shift;
     my $c = shift;
-
     my $project_id = $c->req->param('project_id');
-
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 0, 0, 0);
 
     my $data_agreement_cvterm_id_rs = $schema->resultset('Cv::Cvterm')->search( { name => 'data_agreement' });
 
@@ -174,6 +156,7 @@ sub get_data_agreement :Path('/breeders/trial/data_agreement/get') :Args(0) {
 sub get_all_years : Path('/ajax/breeders/trial/all_years' ) Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 0, 0, 0);
 
     my $bp = CXGN::BreedersToolbox::Projects->new({ schema => $c->dbic_schema("Bio::Chado::Schema") });
     my @years = $bp->get_all_years();
@@ -185,19 +168,21 @@ sub get_trial_location : Path('/ajax/breeders/trial/location') Args(1) {
     my $self = shift;
     my $c = shift;
     my $trial_id = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
-    my $t = CXGN::Trial->new(
-	{
-	    bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
-	    trial_id => $trial_id
-	});
+    my $private_company_id = _get_private_company_from_project_id($schema, $trial_id);
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'user', $private_company_id, 'user_access');
+
+    my $t = CXGN::Trial->new({
+        bcs_schema => $schema,
+        trial_id => $trial_id
+    });
 
     if ($t) {
-	$c->stash->{rest} = { location => $t->get_location() };
+        $c->stash->{rest} = { location => $t->get_location() };
     }
     else {
-	$c->stash->{rest} = { error => "The trial with id $trial_id does not exist" };
-
+        $c->stash->{rest} = { error => "The trial with id $trial_id does not exist" };
     }
 }
 
@@ -205,12 +190,15 @@ sub get_trial_type : Path('/ajax/breeders/trial/type') Args(1) {
     my $self = shift;
     my $c = shift;
     my $trial_id = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema");
 
-    my $t = CXGN::Trial->new(
-	{
-	    bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
-	    trial_id => $trial_id
-	});
+    my $private_company_id = _get_private_company_from_project_id($schema, $trial_id);
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'user', $private_company_id, 'user_access');
+
+    my $t = CXGN::Trial->new({
+        bcs_schema => $schema,
+        trial_id => $trial_id
+    });
 
     my $type = $t->get_project_type();
     $c->stash->{rest} = { type => $type };
@@ -231,13 +219,16 @@ sub get_accession_plots :Path('/ajax/breeders/get_accession_plots') Args(0) {
     my $c = shift;
     my $field_trial = $c->req->param("field_trial");
     my $parent_accession = $c->req->param("parent_accession");
-
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+
     my $field_layout_typeid = $c->model("Cvterm")->get_cvterm_row($schema, "field_layout", "experiment_type")->cvterm_id();
     my $dbh = $schema->storage->dbh();
 
     my $trial = $schema->resultset("Project::Project")->find ({name => $field_trial});
     my $trial_id = $trial->project_id();
+
+    my $private_company_id = _get_private_company_from_project_id($schema, $trial_id);
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'user', $private_company_id, 'user_access');
 
     my $cross_accession = $schema->resultset("Stock::Stock")->find ({uniquename => $parent_accession});
     my $cross_accession_id = $cross_accession->stock_id();
@@ -254,8 +245,7 @@ sub get_accession_plots :Path('/ajax/breeders/get_accession_plots') Args(0) {
 
     my @plots=();
     while(my ($plot_id, $plot_name) = $h->fetchrow_array()){
-
-      push @plots, [$plot_id, $plot_name];
+        push @plots, [$plot_id, $plot_name];
     }
     #print STDERR Dumper \@plots;
     $c->stash->{rest} = {data=>\@plots};
@@ -269,6 +259,7 @@ sub delete_uploaded_phenotype_files : Path('/ajax/breeders/phenotyping/delete/')
     my $schema = $c->dbic_schema('Bio::Chado::Schema');
     print STDERR "Deleting phenotypes from File ID: $file_id and making file obsolete\n";
     my $dbh = $c->dbc->dbh();
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'curator', 0, 0);
 
     my $q_search = "
         SELECT phenotype_id, nd_experiment_phenotype_bridge_id, file_id
@@ -308,33 +299,49 @@ sub delete_uploaded_phenotype_files : Path('/ajax/breeders/phenotyping/delete/')
 sub progress : Path('/ajax/progress') Args(0) {
     my $self = shift;
     my $c = shift;
-
     my $trait_id = $c->req->param("trait_id");
-
-    print STDERR "Trait id = $trait_id\n";
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
-    my $dbh = $schema->storage->dbh();
 
     my $q = "select projectprop.value, avg(phenotype.value::REAL), stddev(phenotype.value::REAL),count(*) from phenotype join cvterm on(cvalue_id=cvterm_id) join nd_experiment_phenotype using(phenotype_id) join nd_experiment_project using(nd_experiment_id) join projectprop using(project_id)  where cvterm.cvterm_id=? and phenotype.value not in ('-', 'miss','#VALUE!','..') and projectprop.type_id=(SELECT cvterm_id FROM cvterm where name='project year') group by projectprop.type_id, projectprop.value order by projectprop.value";
-
-    my $h = $dbh->prepare($q);
-
+    my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($trait_id);
 
     my $data = [];
-
     while (my ($year, $mean, $stddev, $count) = $h->fetchrow_array()) {
-	push @$data, [ $year, sprintf("%.2f", $mean), sprintf("%.2f", $stddev), $count ];
+        push @$data, [ $year, sprintf("%.2f", $mean), sprintf("%.2f", $stddev), $count ];
     }
 
-    print STDERR "Data = ".Dumper($data);
-
     $c->stash->{rest} = { data => $data };
-
-
 }
 
+sub _get_private_company_from_project_id {
+    my $schema = shift;
+    my $project_id = shift;
 
+    my $q = "SELECT private_company_id FROM project WHERE project_id=?;";
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute($project_id);
+    my ($private_company_id) = $h->fetchrow_array();
+
+    return $private_company_id;
+}
+
+sub _check_user_login_breeders_toolbox {
+    my $c = shift;
+    my $check_priv = shift;
+    my $private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
+}
 
 1;
