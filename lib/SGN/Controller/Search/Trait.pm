@@ -16,6 +16,7 @@ sub trait_search_page : Path('/search/traits/') Args(0) {
         return;
     }
 
+    $c->stash->{is_curator} = $c->user->check_roles("curator");
     $c->stash->{template} = '/search/traits.mas';
 }
 

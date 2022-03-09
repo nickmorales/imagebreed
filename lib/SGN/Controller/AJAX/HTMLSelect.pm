@@ -759,6 +759,7 @@ sub get_ontologies : Path('/ajax/html/select/trait_variable_ontologies') Args(0)
     my $cvprop_type_names = $c->req->param("cvprop_type_name") ? decode_json $c->req->param("cvprop_type_name") : ['trait_ontology', 'method_ontology', 'unit_ontology'];
     my $use_full_trait_name = $c->req->param("use_full_trait_name") || 0;
     my $hide_onts = $c->req->param("hide_protected_onts") || 0;
+    my $show_protected_status = $c->req->param("show_protected_status") || 0;
     my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $observation_variables = CXGN::BrAPI::v1::ObservationVariables->new({
@@ -789,14 +790,37 @@ sub get_ontologies : Path('/ajax/html/select/trait_variable_ontologies') Args(0)
     );
 
     my @ontos;
+    my %onto_protected_hash;
     foreach my $o (@{$result->{result}->{data}}) {
-        if (!$hide_onts || ($hide_onts && !exists($protected_onts{$o->{ontologyName}})) ) {
+        my $ontology_id = $o->{ontologyDbId};
+        my $ontology_name = $o->{ontologyName};
+        my $ontology_desc = $o->{description};
+        my $ontology_acc = $o->{ontologyDbxrefAccession};
+        my $protected = $protected_onts{$ontology_name};
+        my $protected_display = $protected ? " <b>(Protected)</b>" : "";
+
+        if (!$hide_onts || ($hide_onts && !$protected) ) {
             if ($use_full_trait_name) {
-                push @ontos, [$o->{description}."|".$o->{ontologyName}.":".$o->{ontologyDbxrefAccession}, $o->{description}."|".$o->{ontologyName}.":".$o->{ontologyDbxrefAccession} ];
+                my $display = $ontology_desc."|".$ontology_name.":".$ontology_acc;
+                if ($show_protected_status) {
+                    $display = $display.$protected_display
+                }
+                $onto_protected_hash{$display} = $protected;
+                push @ontos, [$display, $display ];
             } else {
-                push @ontos, [$o->{ontologyDbId}, $o->{ontologyName}." (".$o->{description}.")" ];
+                my $display = $ontology_name." (".$ontology_desc.")";
+                if ($show_protected_status) {
+                    $display = $display.$protected_display
+                }
+                $onto_protected_hash{$ontology_id} = $protected;
+                push @ontos, [$ontology_id, $display ];
             }
         }
+    }
+
+    if (scalar(@ontos) == 0) {
+        $c->stash->{rest} = { success => 1 };
+        $c->detach();
     }
 
     my $id = $c->req->param("id") || "html_trial_select";
@@ -809,7 +833,8 @@ sub get_ontologies : Path('/ajax/html/select/trait_variable_ontologies') Args(0)
         name => $name,
         id => $id,
         choices => \@ontos,
-        data_related => $data_related
+        data_related => $data_related,
+        data_related_hash => \%onto_protected_hash
     );
     $c->stash->{rest} = { select => $html };
 }
@@ -1560,6 +1585,11 @@ sub all_ontology_terms_select : Path('/ajax/html/select/all_ontology_terms') Arg
     my $exclude_top_term =  $c->req->param("exclude_top_term") || 1;
 
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+
+    if (!$db_id) {
+        $c->stash->{rest} = { success => 1 };
+        $c->detach();
+    }
 
     my $exclude_top_sql = '';
     if ($exclude_top_term) {

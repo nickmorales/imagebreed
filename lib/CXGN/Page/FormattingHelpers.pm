@@ -585,13 +585,14 @@ sub simple_checkbox_html {
     $params{params} ||= '';
     $params{name}   ||= '';
     my $data_related = $params{data_related} ? "data-related=".$params{data_related} : '';
-
+    my $data_related_hash = $params{data_related_hash};
     my @selected = $params{selected} ? @{$params{selected}} : ();
 
     foreach ( @{ $params{choices} } ) {
         my ( $name, $text ) = ref $_ ? @$_ : ( $_, $_ );
 
-        $retstring .= qq!<input type="checkbox" $data_related $params{multiple} $params{params} name="$params{name}" value="$name"!;
+        my $data_related_hash_string = $data_related_hash->{$name} ? "data-related_hash=".$data_related_hash->{$name} : '';
+        $retstring .= qq!<input type="checkbox" $data_related $data_related_hash_string $params{multiple} $params{params} name="$params{name}" value="$name"!;
 
         foreach my $s (@selected) {
             if (defined($s) && ($s eq $name)) {

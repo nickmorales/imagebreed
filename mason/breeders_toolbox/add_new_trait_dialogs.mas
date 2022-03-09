@@ -370,10 +370,10 @@ jQuery(document).ready(function() {
     jQuery('button[name="add_new_observation_variable_button"]').click(function(){
         jQuery('#add_new_observation_variable_dialog').modal('show');
 
-        get_select_box('trait_variable_ontologies', 'add_new_observation_variable_ontology_select_div', { 'name':'add_new_observation_variable_ontology_select',    'id':'add_new_observation_variable_ontology_select', 'empty':1, 'hide_protected_onts':1, 'cvprop_type_name':JSON.stringify(['trait_ontology','composed_trait_ontology','attribute_ontology']) });
-        get_select_box('trait_variable_ontologies', 'add_new_trait_ontology_select_div', { 'name':'add_new_trait_ontology_select', 'id':'add_new_trait_ontology_select', 'empty':1, 'hide_protected_onts':1, 'cvprop_type_name':JSON.stringify(['trait_ontology','composed_trait_ontology','attribute_ontology']) });
-        get_select_box('trait_variable_ontologies', 'add_new_trait_method_ontology_select_div', { 'name':'add_new_trait_method_ontology_select', 'id':'add_new_trait_method_ontology_select', 'empty':1, 'hide_protected_onts':1, 'cvprop_type_name':JSON.stringify(['method_ontology']) });
-        get_select_box('trait_variable_ontologies', 'add_new_trait_scale_ontology_select_div', { 'name':'add_new_trait_scale_ontology_select', 'id':'add_new_trait_scale_ontology_select', 'empty':1, 'hide_protected_onts':1, 'cvprop_type_name':JSON.stringify(['unit_ontology']) });
+        get_select_box('trait_variable_ontologies', 'add_new_observation_variable_ontology_select_div', { 'name':'add_new_observation_variable_ontology_select',    'id':'add_new_observation_variable_ontology_select', 'empty':1, 'hide_protected_onts':1, 'show_protected_status':1, 'cvprop_type_name':JSON.stringify(['trait_ontology','composed_trait_ontology','attribute_ontology']) });
+        get_select_box('trait_variable_ontologies', 'add_new_trait_ontology_select_div', { 'name':'add_new_trait_ontology_select', 'id':'add_new_trait_ontology_select', 'empty':1, 'show_protected_status':1, 'cvprop_type_name':JSON.stringify(['trait_ontology','composed_trait_ontology','attribute_ontology']) });
+        get_select_box('trait_variable_ontologies', 'add_new_trait_method_ontology_select_div', { 'name':'add_new_trait_method_ontology_select', 'id':'add_new_trait_method_ontology_select', 'empty':1, 'show_protected_status':1, 'cvprop_type_name':JSON.stringify(['method_ontology']) });
+        get_select_box('trait_variable_ontologies', 'add_new_trait_scale_ontology_select_div', { 'name':'add_new_trait_scale_ontology_select', 'id':'add_new_trait_scale_ontology_select', 'empty':1, 'show_protected_status':1, 'cvprop_type_name':JSON.stringify(['unit_ontology']) });
 
     });
 
@@ -471,8 +471,12 @@ jQuery(document).ready(function() {
             return false;
         }
         var selected = [];
+        var selected_protected = 0;
         jQuery('input[name="add_new_trait_ontology_select"]:checked').each(function(){
             selected.push(jQuery(this).val());
+            if (jQuery(this).data('related_hash')) {
+                selected_protected = 1;
+            }
         });
         if (selected.length < 1) {
             alert('Please select one trait ontology!');
@@ -480,7 +484,10 @@ jQuery(document).ready(function() {
             alert('Only select one trait ontology!');
         } else {
             if (add_new_trait_selected_trait_val == '') {
-                if (jQuery('#add_new_trait_name').val() == ''){
+                if (selected_protected == 1) {
+                    alert('Please do not add new terms to protected ontologies!');
+                }
+                else if (jQuery('#add_new_trait_name').val() == ''){
                     alert('Please give a new trait name!');
                 }
                 else if (jQuery('#add_new_trait_definition').val() == ''){
@@ -518,8 +525,12 @@ jQuery(document).ready(function() {
             return false;
         }
         var selected = [];
+        var selected_protected = 0;
         jQuery('input[name="add_new_trait_method_ontology_select"]:checked').each(function(){
             selected.push(jQuery(this).val());
+            if (jQuery(this).data('related_hash')) {
+                selected_protected = 1;
+            }
         });
         if (selected.length < 1) {
             alert('Please select one method ontology!');
@@ -527,7 +538,10 @@ jQuery(document).ready(function() {
             alert('Only select one method ontology!');
         } else {
             if (add_new_trait_selected_method_val == '') {
-                if (jQuery('#add_new_trait_method_name').val() == ''){
+                if (selected_protected == 1) {
+                    alert('Please do not add new terms to protected ontologies!');
+                }
+                else if (jQuery('#add_new_trait_method_name').val() == ''){
                     alert('Please give a new method name!');
                 }
                 else if (jQuery('#add_new_trait_method_definition').val() == ''){
@@ -570,8 +584,12 @@ jQuery(document).ready(function() {
             return false;
         }
         var selected = [];
+        var selected_protected = 0;
         jQuery('input[name="add_new_trait_scale_ontology_select"]:checked').each(function(){
             selected.push(jQuery(this).val());
+            if (jQuery(this).data('related_hash')) {
+                selected_protected = 1;
+            }
         });
         if (selected.length < 1) {
             alert('Please select one scale ontology!');
@@ -579,7 +597,10 @@ jQuery(document).ready(function() {
             alert('Only select one scale ontology!');
         } else {
             if (add_new_trait_selected_scale_val == '') {
-                if (jQuery('#add_new_trait_scale_name').val() == ''){
+                if (selected_protected == 1) {
+                    alert('Please do not add new terms to protected ontologies!');
+                }
+                else if (jQuery('#add_new_trait_scale_name').val() == ''){
                     alert('Please give a new scale name!');
                 }
                 else if (jQuery('#add_new_trait_scale_definition').val() == ''){
