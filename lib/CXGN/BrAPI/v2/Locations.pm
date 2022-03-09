@@ -235,7 +235,8 @@ sub store {
 			latitude => $latitude,
 			longitude => $longitude,
 			altitude => $altitude,
-			noaa_station_id => $noaa_station_id
+			noaa_station_id => $noaa_station_id,
+            private_company_id => 1
 		});
 
 		my $store = $location->store_location();
