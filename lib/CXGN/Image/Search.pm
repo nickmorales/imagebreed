@@ -55,6 +55,7 @@ use Try::Tiny;
 use Data::Dumper;
 use SGN::Model::Cvterm;
 use JSON;
+use CXGN::PrivateCompany;
 
 has 'bcs_schema' => ( isa => 'Bio::Chado::Schema',
     is => 'rw',
@@ -235,6 +236,17 @@ has 'offset' => (
     is => 'rw'
 );
 
+has 'subscription_model' => (
+    isa => 'Bool',
+    is => 'rw',
+    required => 1
+);
+
+has 'sp_person_id' => (
+    isa => 'Int|Undef',
+    is => 'rw'
+);
+
 sub search {
     my $self = shift;
     my $schema = $self->bcs_schema();
@@ -267,6 +279,7 @@ sub search {
     my $include_obsolete_tags = $self->include_obsolete_tags;
     my $include_obsolete_image_tags = $self->include_obsolete_image_tags;
     my $private_company_id_list = $self->private_company_id_list;
+    my $sp_person_id = $self->sp_person_id;
 
     my @where_clause;
     my @or_clause;
@@ -412,11 +425,17 @@ sub search {
         push @where_clause, "image.obsolete = 'f'";
     }
 
-    if ($private_company_id_list && scalar(@$private_company_id_list)>0) {
-        my $sql = join ("," , @$private_company_id_list);
-        push @where_clause, "image.private_company_id in ($sql)";
-        push @where_clause, "project.private_company_id in ($sql)";
-        push @where_clause, "phenotype.private_company_id in ($sql)";
+    if (scalar(@$private_company_id_list)==0 && $sp_person_id) {
+        my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+        my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
+        $private_company_id_list = $private_companies_ids;
+    }
+    if ($self->subscription_model && scalar(@$private_company_id_list) == 0) {
+        die "Images Search cannot be done without knowing private company ids when subscription_model is set in the conf! Provide sp_person_id to CXGN::Image::Search\n";
+    }
+    if (scalar(@$private_company_id_list)>0) {
+        my $private_company_ids_sql = join ',', @$private_company_id_list;
+        push @where_clause, "image.private_company_id IN ($private_company_ids_sql)";
     }
 
     if (scalar(@or_clause)>0) {

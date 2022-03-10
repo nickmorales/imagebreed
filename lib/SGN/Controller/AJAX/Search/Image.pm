@@ -29,6 +29,8 @@ sub image_search :Path('/ajax/search/images') Args(0) {
     my $show_observations = $c->req->param('show_observations');
     my $must_be_linked_to_stock = $c->req->param('must_be_linked_to_stock') || 0;
 
+    my ($user_id, $user_name, $user_role) = _check_user_login_image_search($c, 0, 0, 0);
+
     my @descriptors;
     if (exists($params->{image_description_filename_composite}) && $params->{image_description_filename_composite}) {
         push @descriptors, $params->{image_description_filename_composite};
@@ -88,7 +90,9 @@ sub image_search :Path('/ajax/search/images') Args(0) {
         limit=>$limit,
         offset=>$offset,
         must_be_linked_to_stock=>$must_be_linked_to_stock,
-        private_company_id_list=>\@private_companies_ids
+        private_company_id_list=>\@private_companies_ids,
+        sp_person_id=>$user_id,
+        subscription_model=>$c->config->{subscription_model}
     });
     my ($result, $records_total) = $image_search->search();
 
@@ -145,5 +149,22 @@ sub image_search :Path('/ajax/search/images') Args(0) {
     #print STDERR Dumper \@return;
     $c->stash->{rest} = { data => [ @return ], draw => $draw, recordsTotal => $records_total,  recordsFiltered => $records_total };
 }
+
+sub _check_user_login_image_search {
+    my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
+}
+
 
 1;

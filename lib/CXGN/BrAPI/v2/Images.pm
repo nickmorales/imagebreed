@@ -82,7 +82,9 @@ sub search {
         # image_location_list =>$image_location_arrayref,
         # mimetypes_list =>$mimetypes_arrayref,
         limit=>$limit,
-        offset=>$offset
+        offset=>$offset,
+        sp_person_id=>$self->sp_person_id(),
+        subscription_model=>$self->context->config->{subscription_model}
     });
     my ($result, $total_count) = $image_search->search();
 
@@ -193,7 +195,9 @@ sub detail {
         bcs_schema=>$self->bcs_schema(),
         people_schema=>$self->people_schema(),
         phenome_schema=>$self->phenome_schema(),
-        image_id_list=>\@image_ids
+        image_id_list=>\@image_ids,
+        sp_person_id=>$self->sp_person_id(),
+        subscription_model=>$self->context->config->{subscription_model}
     });
 
     my ($search_result, $total_count) = $image_search->search();
@@ -406,7 +410,9 @@ sub image_metadata_store {
         bcs_schema=>$self->bcs_schema(),
         people_schema=>$self->people_schema(),
         phenome_schema=>$self->phenome_schema(),
-        image_id_list=>\@image_ids
+        image_id_list=>\@image_ids,
+        sp_person_id=>$self->sp_person_id(),
+        subscription_model=>$self->context->config->{subscription_model}
     });
 
     my ($result, $total_count) = $image_search->search();
@@ -493,7 +499,9 @@ sub image_data_store {
      bcs_schema=>$self->bcs_schema(),
      people_schema=>$self->people_schema(),
      phenome_schema=>$self->phenome_schema(),
-     image_id_list=>\@image_ids
+     image_id_list=>\@image_ids,
+     sp_person_id=>$self->sp_person_id(),
+     subscription_model=>$self->context->config->{subscription_model}
     });
 
     my ($search_result, $total_count) = $image_search->search();

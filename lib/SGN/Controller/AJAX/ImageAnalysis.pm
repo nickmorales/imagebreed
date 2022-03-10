@@ -79,7 +79,9 @@ sub image_analysis_submit_POST : Args(0) {
         people_schema=>$people_schema,
         phenome_schema=>$phenome_schema,
         image_id_list=>$image_ids,
-        must_be_linked_to_stock=>1
+        must_be_linked_to_stock=>1,
+        sp_person_id=>$user_id,
+        subscription_model=>$c->config->{subscription_model}
     });
 
     my ($result, $records_total) = $image_search->search();

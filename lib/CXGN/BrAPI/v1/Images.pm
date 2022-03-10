@@ -47,7 +47,9 @@ sub search {
         # still need to implement in the search
         # phenotype_id_list=>$phenotype_ids_arrayref,
         limit=>$limit,
-        offset=>$offset
+        offset=>$offset,
+        sp_person_id=>$self->sp_person_id(),
+        subscription_model=>$self->context->config->{subscription_model}
     });
     my ($result, $total_count) = $image_search->search();
 
@@ -144,7 +146,9 @@ sub detail {
         bcs_schema=>$self->bcs_schema(),
         people_schema=>$self->people_schema(),
         phenome_schema=>$self->phenome_schema(),
-        image_id_list=>\@image_ids
+        image_id_list=>\@image_ids,
+        sp_person_id=>$self->sp_person_id(),
+        subscription_model=>$self->context->config->{subscription_model}
     });
 
     my ($search_result, $total_count) = $image_search->search();
@@ -351,7 +355,9 @@ sub detail {
         bcs_schema=>$self->bcs_schema(),
         people_schema=>$self->people_schema(),
         phenome_schema=>$self->phenome_schema(),
-        image_id_list=>\@image_ids
+        image_id_list=>\@image_ids,
+        sp_person_id=>$self->sp_person_id(),
+        subscription_model=>$self->context->config->{subscription_model}
     });
 
     my ($search_result, $total_count) = $image_search->search();
@@ -433,7 +439,9 @@ sub detail {
      bcs_schema=>$self->bcs_schema(),
      people_schema=>$self->people_schema(),
      phenome_schema=>$self->phenome_schema(),
-     image_id_list=>\@image_ids
+     image_id_list=>\@image_ids,
+     sp_person_id=>$self->sp_person_id(),
+     subscription_model=>$self->context->config->{subscription_model}
     });
 
     my ($search_result, $total_count) = $image_search->search();
