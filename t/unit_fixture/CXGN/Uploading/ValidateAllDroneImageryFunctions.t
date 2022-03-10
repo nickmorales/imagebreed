@@ -41,7 +41,7 @@ is_deeply($message_hash, {'success' => 1});
 
 my $field_trial_id = $schema->resultset("Project::Project")->search({name => 'test_trial'})->first->project_id();
 
-$response = $ua->get('http://localhost:3010/api/drone_imagery/new_imaging_vehicle?sgn_session_id='.$sgn_session_id.'&vehicle_name=Drone1&vehicle_description=dronedesc&battery_names=blue,green');
+$response = $ua->post('http://localhost:3010/api/drone_imagery/new_imaging_vehicle?sgn_session_id='.$sgn_session_id.'&vehicle_name=Drone1&vehicle_description=dronedesc&battery_names=blue,green');
 ok($response->is_success);
 my $message = $response->decoded_content;
 my $message_hash = decode_json $message;

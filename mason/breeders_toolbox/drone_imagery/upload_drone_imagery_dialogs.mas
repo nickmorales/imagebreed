@@ -41,6 +41,12 @@
                         <& /page/page_title.mas, title=>"Select your field trial" &>
 
                         <div class="form-group">
+                            <label class="col-sm-3 control-label">Company: </label>
+                            <div class="col-sm-9" >
+                                <div id="upload_drone_image_company_select_div"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <label class="col-sm-3 control-label">Field Trial: </label>
                             <div class="col-sm-9" >
                                 <div id="upload_drone_image_trial_select_div"></div>
@@ -259,6 +265,7 @@
                 <input type="hidden" name="drone_run_id" value=""/>
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
 
+                <input type="hidden" name="private_company_id" value="" />
                 <input type="hidden" name="drone_run_name" value="" />
                 <input type="hidden" name="drone_run_type" value="" />
                 <input type="hidden" name="drone_image_upload_camera_info" value="" />
@@ -325,6 +332,7 @@
                 <input type="hidden" name="drone_run_id" value=""/>
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
 
+                <input type="hidden" name="private_company_id" value="" />
                 <input type="hidden" name="drone_run_name" value="" />
                 <input type="hidden" name="drone_run_type" value="" />
                 <input type="hidden" name="drone_image_upload_camera_info" value="" />
@@ -409,6 +417,7 @@
                 <input type="hidden" name="drone_run_id" value=""/>
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
 
+                <input type="hidden" name="private_company_id" value="" />
                 <input type="hidden" name="drone_run_name" value="" />
                 <input type="hidden" name="drone_run_type" value="" />
                 <input type="hidden" name="drone_image_upload_camera_info" value="" />
@@ -515,6 +524,7 @@
                 <input type="hidden" name="drone_run_id" value=""/>
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
 
+                <input type="hidden" name="private_company_id" value="" />
                 <input type="hidden" name="drone_run_name" value="" />
                 <input type="hidden" name="drone_run_type" value="" />
                 <input type="hidden" name="drone_image_upload_camera_info" value="" />
@@ -660,6 +670,7 @@
                 <input type="hidden" name="drone_run_id" value=""/>
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
 
+                <input type="hidden" name="private_company_id" value="" />
                 <input type="hidden" name="drone_run_name" value="" />
                 <input type="hidden" name="drone_run_type" value="" />
                 <input type="hidden" name="drone_image_upload_camera_info" value="" />
@@ -845,6 +856,7 @@
                 <input type="hidden" name="drone_run_id" value=""/>
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
 
+                <input type="hidden" name="private_company_id" value="" />
                 <input type="hidden" name="drone_run_name" value="" />
                 <input type="hidden" name="drone_run_type" value="" />
                 <input type="hidden" name="drone_image_upload_camera_info" value="" />
@@ -1070,6 +1082,7 @@
                 <input type="hidden" name="drone_run_id" value=""/>
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
 
+                <input type="hidden" name="private_company_id" value="" />
                 <input type="hidden" name="drone_run_name" value="" />
                 <input type="hidden" name="drone_run_type" value="" />
                 <input type="hidden" name="drone_image_upload_camera_info" value="" />
@@ -1335,6 +1348,7 @@
                 <input type="hidden" name="drone_run_id" value=""/>
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
 
+                <input type="hidden" name="private_company_id" value="" />
                 <input type="hidden" name="drone_run_name" value="" />
                 <input type="hidden" name="drone_run_type" value="" />
                 <input type="hidden" name="drone_image_upload_camera_info" value="" />
@@ -1640,6 +1654,7 @@
                 <input type="hidden" name="drone_run_id" value=""/>
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
 
+                <input type="hidden" name="private_company_id" value="" />
                 <input type="hidden" name="drone_run_name" value="" />
                 <input type="hidden" name="drone_run_type" value="" />
                 <input type="hidden" name="drone_image_upload_camera_info" value="" />
@@ -1985,6 +2000,7 @@
                 <input type="hidden" name="drone_run_id" value=""/>
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
 
+                <input type="hidden" name="private_company_id" value="" />
                 <input type="hidden" name="drone_run_name" value="" />
                 <input type="hidden" name="drone_run_type" value="" />
                 <input type="hidden" name="drone_image_upload_camera_info" value="" />
@@ -2688,6 +2704,14 @@
                         <input class="form-control" id="drone_run_new_imaging_vehicle_name" name="drone_run_new_imaging_vehicle_name" type="text" placeholder="e.g. MyLabDrone1" />
                     </div>
                 </div>
+                <div id="new_imaging_vehicle_company_hide_div" style="display:none">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">Company: </label>
+                        <div class="col-sm-9" >
+                            <div id="drone_run_new_imaging_vehicle_company_div"></div>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="col-sm-3 control-label">Imaging Vehicle Description: </label>
                     <div class="col-sm-9" >
@@ -2718,13 +2742,25 @@
 
 jQuery(document).ready(function() {
 
-    get_select_box('trials', 'upload_drone_image_trial_select_div', { 'name' : 'drone_run_field_trial_id', 'id' : 'drone_run_field_trial_id', 'empty':1, 'multiple':1 });
+    get_select_box('private_companies', 'drone_run_new_imaging_vehicle_company_div', { 'name' : 'drone_run_new_imaging_vehicle_company_id', 'id' : 'drone_run_new_imaging_vehicle_company_id' });
 
+    get_select_box('private_companies', 'upload_drone_image_company_select_div', { 'name' : 'drone_run_company_id', 'id' : 'drone_run_company_id' });
+    get_select_box('trials', 'upload_drone_image_trial_select_div', { 'name' : 'drone_run_field_trial_id', 'id' : 'drone_run_field_trial_id', 'empty':1, 'multiple':1, 'private_company_id':1 });
+
+    var private_company_id;
     var upload_drone_imagery_vehicle_id;
+    jQuery(document).on('change', '#drone_run_company_id', function(){
+        private_company_id = jQuery(this).val();
+
+        get_select_box('imaging_event_vehicles', 'drone_run_imaging_vehicle_div', {'id':'drone_run_imaging_vehicle_id', 'name':'drone_run_imaging_vehicle_id', 'private_company_id':private_company_id});
+
+        get_select_box('trials', 'upload_drone_image_trial_select_div', { 'name' : 'drone_run_field_trial_id', 'id' : 'drone_run_field_trial_id', 'empty':1, 'multiple':1, 'private_company_id':private_company_id });
+    });
+
     jQuery('#upload_drone_imagery_link').click( function() {
         jQuery('#upload_drone_imagery_dialog').modal("show");
-        upload_drone_imagery_vehicle_id = jQuery('#drone_run_imaging_vehicle_id').val();
 
+        upload_drone_imagery_vehicle_id = jQuery('#drone_run_imaging_vehicle_id').val();
         if (upload_drone_imagery_vehicle_id) {
             _show_vehicle_battery_select();
         }
@@ -2801,6 +2837,12 @@ jQuery(document).ready(function() {
                 alert('Please give an imaging event date!');
             }
             else {
+                jQuery('#new_imaging_vehicle_company_hide_div').hide();
+                upload_drone_imagery_vehicle_id = jQuery('#drone_run_imaging_vehicle_id').val();
+                if (upload_drone_imagery_vehicle_id) {
+                    _show_vehicle_battery_select();
+                }
+
                 var field_trial_names_generated = [];
                 var drone_run_date = jQuery('#drone_run_date').val();
                 var drone_run_date_gen = drone_run_date.replace(/\//g, '');
@@ -2867,8 +2909,6 @@ jQuery(document).ready(function() {
     //    }
     //);
 
-    get_select_box('imaging_event_vehicles', 'drone_run_imaging_vehicle_div', {'id':'drone_run_imaging_vehicle_id', 'name':'drone_run_imaging_vehicle_id'});
-
     function _show_vehicle_battery_select() {
         jQuery.ajax({
             url : '/api/drone_imagery/get_vehicle?vehicle_id='+upload_drone_imagery_vehicle_id,
@@ -2899,6 +2939,10 @@ jQuery(document).ready(function() {
 
     jQuery('button[name="drone_run_imaging_vehicle_add_new"]').click(function(e){
         e.preventDefault();
+        if (!private_company_id) {
+            jQuery('#new_imaging_vehicle_company_hide_div').show();
+        }
+
         jQuery('#drone_run_imaging_vehicle_add_new_modal').modal('show');
     });
 
@@ -2907,6 +2951,10 @@ jQuery(document).ready(function() {
         var vehicle_name = jQuery('#drone_run_new_imaging_vehicle_name').val();
         var vehicle_desc = jQuery('#drone_run_new_imaging_vehicle_desc').val();
         var vehicle_batteries = jQuery('#drone_run_new_imaging_vehicle_battery_names').val();
+
+        if (!private_company_id) {
+            private_company_id = jQuery('#drone_run_new_imaging_vehicle_company_id').val();
+        }
 
         if (vehicle_name == '' || vehicle_desc == '') {
             alert('Please give a vehicle name and description!');
@@ -2918,7 +2966,14 @@ jQuery(document).ready(function() {
         }
 
         jQuery.ajax({
-            url : '/api/drone_imagery/new_imaging_vehicle?vehicle_name='+vehicle_name+'&vehicle_description='+vehicle_desc+'&battery_names='+vehicle_batteries,
+            url : '/api/drone_imagery/new_imaging_vehicle',
+            type : 'POST',
+            data : {
+                'vehicle_name': vehicle_name,
+                'vehicle_description': vehicle_desc,
+                'battery_names': vehicle_batteries,
+                'private_company_id': private_company_id
+            },
             success: function(response){
                 console.log(response);
                 if (response.error) {
@@ -3005,6 +3060,7 @@ jQuery(document).ready(function() {
         var drone_run_camera_info = jQuery('#drone_image_upload_camera_info').val();
         var drone_run_id = jQuery('#drone_run_id').val();
         var drone_run_name = jQuery('#drone_run_name').val();
+        var drone_run_company_id = jQuery('#drone_run_company_id').val();
         var drone_run_description = jQuery('#drone_run_description').val();
         var drone_run_date = jQuery('#drone_run_date').val();
         var drone_run_type = jQuery('#drone_run_type').val();
@@ -3036,6 +3092,7 @@ jQuery(document).ready(function() {
         console.log(drone_run_camera_info);
 
         jQuery('input[name="drone_run_field_trial_id"]').val(upload_drone_imagery_field_trial_ids_string);
+        jQuery('input[name="private_company_id"]').val(drone_run_company_id);
         jQuery('input[name="drone_run_name"]').val(drone_run_name);
         jQuery('input[name="drone_run_type"]').val(drone_run_type);
         jQuery('input[name="drone_image_upload_camera_info"]').val(drone_run_camera_info);

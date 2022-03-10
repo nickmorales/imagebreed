@@ -334,7 +334,7 @@ sub get_projects_select : Path('/ajax/html/select/projects') Args(0) {
 
     my @projects;
     foreach my $project (@$projects) {
-        my ($field_trials, $cross_trials, $genotyping_trials, $genotyping_data_projects, $field_management_factor_projects, $drone_run_projects, $drone_run_band_projects, $analyses_projects) = $p->get_trials_by_breeding_program($project->[0]);
+        my ($field_trials, $cross_trials, $genotyping_trials, $genotyping_data_projects, $field_management_factor_projects, $drone_run_projects, $drone_run_band_projects, $analyses_projects) = $p->get_trials_by_breeding_program($project->[0], $user_id, undef);
         if ($get_field_trials){
             if ($field_trials && scalar(@$field_trials)>0){
                 my @trials = sort { $a->[1] cmp $b->[1] } @$field_trials;
@@ -384,12 +384,14 @@ sub get_projects_select : Path('/ajax/html/select/projects') Args(0) {
 sub get_trials_select : Path('/ajax/html/select/trials') Args(0) {
     my $self = shift;
     my $c = shift;
+    # print STDERR Dumper $c->req->params();
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $p = CXGN::BreedersToolbox::Projects->new( { schema => $schema } );
+    my $private_company_id = $c->req->param("private_company_id");
     my $breeding_program_id = $c->req->param("breeding_program_id");
     my $breeding_program_name = $c->req->param("breeding_program_name");
     my $trial_name_values = $c->req->param("trial_name_values") || 0;
-    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 'user', $private_company_id, 'user_access');
 
     my $projects;
     if (!$breeding_program_id && !$breeding_program_name) {
@@ -412,7 +414,7 @@ sub get_trials_select : Path('/ajax/html/select/trials') Args(0) {
     my @trials;
     if ($include_lists) { push @trials, [ "", "----INDIVIDUAL TRIALS----" ]; }
     foreach my $project (@$projects) {
-      my ($field_trials, $cross_trials, $genotyping_trials) = $p->get_trials_by_breeding_program($project->[0]);
+      my ($field_trials, $cross_trials, $genotyping_trials) = $p->get_trials_by_breeding_program($project->[0], $user_id, $private_company_id);
       foreach (@$field_trials) {
           my $trial_id = $_->[0];
           my $trial_name = $_->[1];
@@ -466,6 +468,7 @@ sub get_trials_select : Path('/ajax/html/select/trials') Args(0) {
 
     if ($empty) { unshift @trials, [ "", "Please select a trial" ]; }
 
+    # print STDERR Dumper \@trials;
     my $html = simple_selectbox_html(
       multiple => $multiple,
       live_search => $live_search,
@@ -504,7 +507,7 @@ sub get_genotyping_trials_select : Path('/ajax/html/select/genotyping_trials') A
 
     my @trials;
     foreach my $project (@$projects) {
-      my ($field_trials, $cross_trials, $genotyping_trials) = $p->get_trials_by_breeding_program($project->[0]);
+      my ($field_trials, $cross_trials, $genotyping_trials) = $p->get_trials_by_breeding_program($project->[0], $user_id, undef);
       foreach (@$genotyping_trials) {
           push @trials, $_;
       }
@@ -546,7 +549,7 @@ sub get_label_data_source_select : Path('/ajax/html/select/label_data_sources') 
 
     my (@field_trials, @crossing_experiments, @genotyping_trials) = [];
     foreach my $project (@$projects) {
-      my ($field_trials, $crossing_experiments, $genotyping_trials) = $p->get_trials_by_breeding_program($project->[0]);
+      my ($field_trials, $crossing_experiments, $genotyping_trials) = $p->get_trials_by_breeding_program($project->[0], $user_id, undef);
       foreach (@$field_trials) {
           push @field_trials, $_;
       }
@@ -1148,7 +1151,19 @@ sub get_imaging_event_vehicles : Path('/ajax/html/select/imaging_event_vehicles'
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
+    my $private_company_id = $c->req->param('private_company_id');
+
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 'user', $private_company_id, 'user_access');
+
+    my $private_companies_sql = '';
+    if ($private_company_id) {
+        $private_companies_sql = $private_company_id;
+    }
+    else {
+        my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+        my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
+        $private_companies_sql = join ',', @$private_companies_ids;
+    }
 
     my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle', 'stock_type')->cvterm_id();
     my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
@@ -1156,7 +1171,8 @@ sub get_imaging_event_vehicles : Path('/ajax/html/select/imaging_event_vehicles'
     my $q = "SELECT stock.stock_id, stock.uniquename, stock.description, stockprop.value
         FROM stock
         JOIN stockprop ON(stock.stock_id=stockprop.stock_id AND stockprop.type_id=$imaging_vehicle_properties_cvterm_id)
-        WHERE stock.type_id=$imaging_vehicle_cvterm_id;";
+        WHERE stock.type_id=$imaging_vehicle_cvterm_id AND stock.private_company_id IN($private_companies_sql);";
+    # print STDERR Dumper $q;
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute();
     my @imaging_vehicles;
@@ -1437,7 +1453,7 @@ sub get_crosses_select : Path('/ajax/html/select/crosses') Args(0) {
     my $size = $c->req->param("size");
     my @crosses;
     foreach my $project (@$projects) {
-      my ($field_trials, $cross_trials, $genotyping_trials) = $p->get_trials_by_breeding_program($project->[0]);
+      my ($field_trials, $cross_trials, $genotyping_trials) = $p->get_trials_by_breeding_program($project->[0], $user_id, undef);
       foreach (@$cross_trials) {
           push @crosses, $_;
       }

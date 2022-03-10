@@ -84,7 +84,7 @@
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label">Location of seedlot storage: </label>
                                     <div class="col-sm-9" >
-                                        <input class="form-control" name="upload_seedlot_location" id="upload_seedlot_location" placeholder="Required">
+                                        <div id="upload_seedlot_location_div"></div>
                                     </div>
                                 </div>
                                 <!--
@@ -368,10 +368,6 @@
 <script>
 jQuery(document).ready(function(){
 
-    jQuery("#upload_seedlot_location").autocomplete({
-       source: '/ajax/stock/geolocation_autocomplete',
-    });
-
     jQuery('#upload_seedlots_type_select').change(function(){
         if (jQuery(this).val() != ''){
             jQuery('#seedlot_upload_type_select_button').attr('disabled', false);
@@ -398,12 +394,14 @@ jQuery(document).ready(function(){
     jQuery('[name="seedlot_bulk_upload"]').click( function() {
         jQuery('#upload_seedlot_dialog').modal('show');
         get_select_box('private_companies', 'upload_seedlot_private_company_div', { 'name' : 'upload_seedlot_private_company_id', 'id' : 'upload_seedlot_private_company_id' });
-        get_select_box('breeding_programs', 'upload_seedlot_breeding_program_div', { 'name' : 'upload_seedlot_breeding_program_id', 'id' : 'upload_seedlot_breeding_program_id' });
+        get_select_box('breeding_programs', 'upload_seedlot_breeding_program_div', { 'name' : 'upload_seedlot_breeding_program_id', 'id' : 'upload_seedlot_breeding_program_id', 'private_company_id':1 });
+        get_select_box('locations', 'upload_seedlot_location_div', { 'name' : 'upload_seedlot_location', 'id' : 'upload_seedlot_location', 'names_as_values':1, 'private_company_id':1 });
     });
 
     jQuery(document).on('change', '#upload_seedlot_private_company_id', function(){
         var private_company_id = jQuery(this).val();
         get_select_box('breeding_programs', 'upload_seedlot_breeding_program_div', { 'name' : 'upload_seedlot_breeding_program_id', 'id' : 'upload_seedlot_breeding_program_id', 'private_company_id':private_company_id });
+        get_select_box('locations', 'upload_seedlot_location_div', { 'name' : 'upload_seedlot_location', 'id' : 'upload_seedlot_location', 'names_as_values':1, 'private_company_id':private_company_id });
     });
 
     jQuery("[name='guided_help_seedlot_upload_format_button']").click( function () {

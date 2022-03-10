@@ -845,7 +845,7 @@ Development Core Team, 2009).</p></center>
 jQuery(document).ready(function(){
 
     get_select_box('private_companies', 'select_private_company_div', { 'name': 'select_private_company_id', 'id': 'select_private_company_id' });
-    get_select_box('breeding_programs', 'select_breeding_program_div', { 'name' : 'select_breeding_program', 'id' : 'select_breeding_program', 'names_as_values':1 });
+    get_select_box('breeding_programs', 'select_breeding_program_div', { 'name' : 'select_breeding_program', 'id' : 'select_breeding_program', 'names_as_values':1, 'private_company_id':1 });
     get_select_box('locations', 'select_locations_div', { 'name' : 'add_project_location', 'id' : 'add_project_location', 'multiple':1, 'names_as_values':1 });
 
     jQuery(document).on('change', '#select_private_company_id', function(){

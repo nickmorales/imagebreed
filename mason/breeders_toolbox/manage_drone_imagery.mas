@@ -2512,6 +2512,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                     <tr>
                         <th>Vehicles Name</th>
                         <th>Description</th>
+                        <th>Company</th>
                         <th>Battery Usage</th>
                     </tr>
                 </thead>

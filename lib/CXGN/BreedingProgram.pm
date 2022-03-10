@@ -26,33 +26,45 @@ has 'schema' => (
     required => 1,
 );
 
-sub BUILD {
-    my $self = shift;
-    my $breeding_program_cvterm_id = $self->get_breeding_program_cvterm_id;
-    my $row = $self->schema->resultset("Project::Project")->find(
-	{ project_id             => $self->get_program_id(),
-	  'projectprops.type_id' => $breeding_program_cvterm_id },
-	{ join => 'projectprops' }
-	);
-    $self->set_project_object($row);
-    if (!$row) {
-	die "The breeding program  ".$self->get_program_id()." does not exist";
-    }
-}
-
 =head2 accessors get_program_id()
 
  Desc: get the breeding program project_id
 
 =cut
 
-has 'program_id' => (isa => 'Int',
-		     is => 'rw',
-		     reader => 'get_program_id',
-		     writer => 'set_program_id',
+has 'program_id' => (
+    isa => 'Int',
+    is => 'rw',
+    reader => 'get_program_id',
+    writer => 'set_program_id',
+);
+
+has 'private_company_id' => (
+    isa => 'Int',
+    is => 'rw',
+);
+
+
+sub BUILD {
+    my $self = shift;
+    my $breeding_program_cvterm_id = $self->get_breeding_program_cvterm_id;
+    my $row = $self->schema->resultset("Project::Project")->find({
+        project_id => $self->get_program_id(),
+        'projectprops.type_id' => $breeding_program_cvterm_id },
+        { join => 'projectprops' }
     );
+    $self->set_project_object($row);
 
+    if (!$row) {
+        die "The breeding program  ".$self->get_program_id()." does not exist";
+    }
 
+    my $q = "SELECT private_company_id FROM project WHERE project_id=?;";
+    my $h = $self->schema->storage->dbh()->prepare($q);
+    $h->execute($self->get_program_id());
+    my ($private_company_id) = $h->fetchrow_array();
+    $self->private_company_id($private_company_id);
+}
 
 =head2 accessors get_name, set_name
 
@@ -69,7 +81,7 @@ sub get_name {
     my $project_obj = $self->get_project_object;
 
     if ($project_obj) {
-	return $project_obj->name();
+        return $project_obj->name();
     }
 }
 
@@ -78,19 +90,19 @@ sub set_name {
     my $name = shift;
     my $project_obj = $self->get_project_object;
     if ($project_obj) {
-	$project_obj->name($name);
-	$project_obj->update();
+        $project_obj->name($name);
+        $project_obj->update();
     }
 }
 
 sub get_project_object {
-  my $self = shift;
-  return $self->{project_object};
+    my $self = shift;
+    return $self->{project_object};
 }
 
 sub set_project_object {
-  my $self = shift;
-  $self->{project_object} = shift;
+    my $self = shift;
+    $self->{project_object} = shift;
 }
 
 
@@ -105,13 +117,13 @@ sub set_project_object {
 =cut
 
 sub get_description {
-  my $self = shift;
-  return $self->{description};
+    my $self = shift;
+    return $self->{description};
 }
 
 sub set_description {
-  my $self = shift;
-  $self->{description} = shift;
+    my $self = shift;
+    $self->{description} = shift;
 }
 
 
@@ -137,6 +149,7 @@ sub get_accession_cvterm_id {
     my $accession_cvterm_row = SGN::Model::Cvterm->get_cvterm_row( $self->schema, 'accession', 'stock_type' );
     return $accession_cvterm_row->cvterm_id();
 }
+
 =head2 get_trials
 
  Usage: $self->get_trials
@@ -157,16 +170,16 @@ sub get_trials {
     my $trial_rel_rs = $project_obj->project_relationship_object_projects;
 
     if ($trial_rel_rs) {
-	my $design_cvterm = SGN::Model::Cvterm->get_cvterm_row($self->schema, 'design', 'project_property');
-	$trials_rs = $trial_rel_rs->search_related('subject_project');
-	$trials_fetched = $trials_rs->search(
-	    {
-		'projectprops.type_id' => $design_cvterm->cvterm_id
-	    },
-	    {
-		join => 'projectprops'
-	    }
-	    );
+        my $design_cvterm = SGN::Model::Cvterm->get_cvterm_row($self->schema, 'design', 'project_property');
+        $trials_rs = $trial_rel_rs->search_related('subject_project');
+        $trials_fetched = $trials_rs->search(
+            {
+                'projectprops.type_id' => $design_cvterm->cvterm_id
+            },
+            {
+                join => 'projectprops'
+            }
+        );
     }
     return $trials_fetched;
 }
@@ -181,6 +194,7 @@ sub get_trials {
  Example:
 
 =cut
+
 sub get_traits_assayed {
     my $self= shift;
     my $dbh = $self->schema->storage()->dbh();
@@ -406,9 +420,6 @@ sub get_seedlots {
     return \@seedlots;
 
 }
-
-
-
 
 ####
 1;##

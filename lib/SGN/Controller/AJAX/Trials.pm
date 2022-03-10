@@ -33,7 +33,7 @@ sub get_trials : Path('/ajax/breeders/get_trials') Args(0) {
 
     my %data = ();
     foreach my $project (@$projects) {
-        my $trials = $p->get_trials_by_breeding_program($project->[0]);
+        my $trials = $p->get_trials_by_breeding_program($project->[0], $user_id, undef);
         $data{$project->[1]} = $trials;
     }
 

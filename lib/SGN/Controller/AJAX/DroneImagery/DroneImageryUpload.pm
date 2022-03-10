@@ -1370,16 +1370,21 @@ sub upload_drone_imagery_POST : Args(0) {
 }
 
 sub upload_drone_imagery_new_vehicle : Path('/api/drone_imagery/new_imaging_vehicle') : ActionClass('REST') { }
-sub upload_drone_imagery_new_vehicle_GET : Args(0) {
+sub upload_drone_imagery_new_vehicle_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     $c->response->headers->header( "Access-Control-Allow-Origin" => '*' );
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $private_company_id = $c->req->param('private_company_id');
     my $vehicle_name = $c->req->param('vehicle_name');
     my $vehicle_desc = $c->req->param('vehicle_description');
     my $battery_names_string = $c->req->param('battery_names');
     my @battery_names = split ',', $battery_names_string;
-    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', 0, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', $private_company_id, 'submitter_access');
+
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
+    my $company_is_private = $private_company_access_is_private_hash->{$private_company_id} ? 1 : 0;
 
     my $vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle', 'stock_type')->cvterm_id();
     my $vehicle_prop_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
@@ -1407,7 +1412,14 @@ sub upload_drone_imagery_new_vehicle_GET : Args(0) {
     });
     my $new_vehicle_id = $new_vehicle->stock_id();
 
-    $c->stash->{rest} = {success => 1, new_vehicle_id => $new_vehicle_id};
+    my $q_priv = "UPDATE stock SET private_company_id=?, is_private=? WHERE stock_id=?;";
+    my $h_priv = $schema->storage->dbh()->prepare($q_priv);
+    $h_priv->execute($private_company_id, $company_is_private, $new_vehicle_id);
+
+    $c->stash->{rest} = {
+        success => 1,
+        new_vehicle_id => $new_vehicle_id
+    };
 }
 
 sub _check_user_login_drone_imagery_upload {

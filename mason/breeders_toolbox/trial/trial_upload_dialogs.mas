@@ -646,7 +646,7 @@ $design_types => ()
 jQuery(document).ready(function(){
 
     get_select_box('private_companies', 'trial_upload_company_div', { 'name': 'trial_upload_company_id', 'id': 'trial_upload_company_id' });
-    get_select_box('breeding_programs', 'trial_upload_breeding_program_div', { 'name' : 'trial_upload_breeding_program', 'id' : 'trial_upload_breeding_program', 'names_as_values':1 });
+    get_select_box('breeding_programs', 'trial_upload_breeding_program_div', { 'name' : 'trial_upload_breeding_program', 'id' : 'trial_upload_breeding_program', 'names_as_values':1, 'private_company_id':1 });
     get_select_box('locations', 'trial_upload_location_div', { 'name' : 'trial_upload_location', 'id' : 'trial_upload_location', 'names_as_values':1 });
 
     jQuery(document).on('change', '#trial_upload_company_id', function(){

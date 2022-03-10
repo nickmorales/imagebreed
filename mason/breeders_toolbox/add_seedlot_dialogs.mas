@@ -171,8 +171,8 @@ jQuery(document).ready(function(){
     jQuery('[name="add_seedlot_button"]').click( function() {
         jQuery('#add_seedlot_dialog').modal('show');
         get_select_box('private_companies', 'seedlot_private_company_div', { 'name' : 'seedlot_private_company_id', 'id' : 'seedlot_private_company_id' });
-        get_select_box('breeding_programs', 'seedlot_breeding_program_div', { 'name' : 'seedlot_breeding_program_id', 'id' : 'seedlot_breeding_program_id' });
-        get_select_box('locations', 'seedlot_location_div', { 'name' : 'seedlot_location', 'id' : 'seedlot_location', 'names_as_values':1 });
+        get_select_box('breeding_programs', 'seedlot_breeding_program_div', { 'name' : 'seedlot_breeding_program_id', 'id' : 'seedlot_breeding_program_id', 'private_company_id':1 });
+        get_select_box('locations', 'seedlot_location_div', { 'name' : 'seedlot_location', 'id' : 'seedlot_location', 'names_as_values':1, 'private_company_id':1 });
     });
 
     jQuery(document).on('change', '#seedlot_private_company_id', function(){

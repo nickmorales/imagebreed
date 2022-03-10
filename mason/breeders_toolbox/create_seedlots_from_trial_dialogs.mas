@@ -506,11 +506,15 @@ $timestamp => localtime()
                 // Get the trial details
                 getTrialDetails(trial_id, function(breeding_program_id, accessions, plots, traits) {
                     if ( breeding_program_id && accessions && plots ) {
+                        console.log(breeding_program_id);
+                        console.log(accessions);
+                        console.log(plots);
+                        console.log(traits);
                         BREEDING_PROGRAM_ID = breeding_program_id;
                         ACCESSIONS = accessions;
                         PLOTS = plots;
                         TRAITS = traits ? traits : [];
-                        if ( traits ) {
+                        if ( traits.length > 0 ) {
                             getTraitData(function() {
                                 _finish(true);
                             });
@@ -1215,6 +1219,7 @@ $timestamp => localtime()
                 type: "GET",
                 url: '/ajax/breeders/trial/' + trial_id + '/layout',
                 success: function(response) {
+                    console.log(response);
                     if (response.error) {
                         alert(response.error);
                     }

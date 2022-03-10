@@ -113,26 +113,43 @@ sub get_breeding_program_by_name {
 sub _get_all_trials_by_breeding_program {
     my $self = shift;
     my $breeding_project_id = shift;
+    my $sp_person_id = shift;
+    my $private_company_id = shift;
+
     my $dbh = $self->schema->storage->dbh();
     my $breeding_program_cvterm_id = $self->get_breeding_program_cvterm_id();
+
+    my $company_ids_sql = '';
+    if ($private_company_id) {
+        $company_ids_sql = $private_company_id;
+    }
+    else {
+        my $private_companies = CXGN::PrivateCompany->new( { schema=> $self->schema } );
+        my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
+        $company_ids_sql = join ',', @$private_companies_ids;
+    }
 
     my $trials = [];
     my $h;
     if ($breeding_project_id) {
-	# need to convert to dbix class.... good luck!
-	#my $q = "SELECT trial.project_id, trial.name, trial.description FROM project LEFT join project_relationship ON (project.project_id=object_project_id) LEFT JOIN project as trial ON (subject_project_id=trial.project_id) LEFT JOIN projectprop ON (trial.project_id=projectprop.project_id) WHERE (project.project_id=? AND (projectprop.type_id IS NULL OR projectprop.type_id != ?))";
-	my $q = "SELECT trial.project_id, trial.name, trial.description, projectprop.type_id, projectprop.value FROM project LEFT join project_relationship ON (project.project_id=object_project_id) LEFT JOIN project as trial ON (subject_project_id=trial.project_id) LEFT JOIN projectprop ON (trial.project_id=projectprop.project_id) WHERE (project.project_id = ?)";
+        my $q = "SELECT trial.project_id, trial.name, trial.description, projectprop.type_id, projectprop.value
+            FROM project
+            LEFT join project_relationship ON (project.project_id=object_project_id)
+            LEFT JOIN project as trial ON (subject_project_id=trial.project_id)
+            LEFT JOIN projectprop ON (trial.project_id=projectprop.project_id)
+            WHERE project.project_id = ? AND project.private_company_id IN($company_ids_sql);";
 
-	$h = $dbh->prepare($q);
-	#$h->execute($breeding_project_id, $cross_cvterm_id);
-	$h->execute($breeding_project_id);
-
+        $h = $dbh->prepare($q);
+        $h->execute($breeding_project_id);
     }
     else {
-	# get trials that are not associated with any project
-	my $q = "SELECT project.project_id, project.name, project.description , projectprop.type_id, projectprop.value FROM project JOIN projectprop USING(project_id) LEFT JOIN project_relationship ON (subject_project_id=project.project_id) WHERE project_relationship_id IS NULL and projectprop.type_id != ?";
-	$h = $dbh->prepare($q);
-	$h->execute($breeding_program_cvterm_id);
+        my $q = "SELECT project.project_id, project.name, project.description , projectprop.type_id, projectprop.value
+            FROM project
+            JOIN projectprop USING(project_id)
+            LEFT JOIN project_relationship ON (subject_project_id=project.project_id)
+            WHERE project_relationship_id IS NULL AND projectprop.type_id != ? AND project.private_company_id IN($company_ids_sql);";
+        $h = $dbh->prepare($q);
+        $h->execute($breeding_program_cvterm_id);
     }
 
     return $h;
@@ -141,6 +158,8 @@ sub _get_all_trials_by_breeding_program {
 sub get_trials_by_breeding_program {
     my $self = shift;
     my $breeding_project_id = shift;
+    my $sp_person_id = shift;
+    my $private_company_id = shift;
 
     my $field_trials;
     my $cross_trials;
@@ -152,7 +171,7 @@ sub get_trials_by_breeding_program {
     my $analyses_projects;
     my $sampling_trial_projects;
 
-    my $h = $self->_get_all_trials_by_breeding_program($breeding_project_id);
+    my $h = $self->_get_all_trials_by_breeding_program($breeding_project_id, $sp_person_id, $private_company_id);
     my $crossing_trial_cvterm_id = $self->get_crossing_trial_cvterm_id();
     my $project_year_cvterm_id = $self->get_project_year_cvterm_id();
     my $analysis_metadata_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->schema(), 'analysis_metadata_json', 'project_property')->cvterm_id();
@@ -242,8 +261,11 @@ sub get_trials_by_breeding_program {
 sub get_genotyping_trials_by_breeding_program {
     my $self = shift;
     my $breeding_project_id = shift;
+    my $sp_person_id = shift;
+    my $private_company_id = shift;
+
     my $trials;
-    my $h = $self->_get_all_trials_by_breeding_program($breeding_project_id);
+    my $h = $self->_get_all_trials_by_breeding_program($breeding_project_id, $sp_person_id, $private_company_id);
     my $cross_cvterm_id = $self->get_cross_cvterm_id();
     my $project_year_cvterm_id = $self->get_project_year_cvterm_id();
 

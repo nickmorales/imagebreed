@@ -40,8 +40,20 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', 0, 0);
     print STDERR Dumper $c->req->params();
+
+    my $private_company_id = $c->req->param('private_company_id');
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', $private_company_id, 'submitter_access');
+
+    if (!$private_company_id) {
+        $c->stash->{message} = "Please select a company first!";
+        $c->stash->{template} = 'generic_message.mas';
+        return;
+    }
+
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
+    my $company_is_private = $private_company_access_is_private_hash->{$private_company_id} ? 1 : 0;
 
     my $selected_trial_ids = $c->req->param('drone_run_field_trial_id');
     if (!$selected_trial_ids) {
@@ -161,6 +173,9 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
     if ($c->config->{error_log}){
         $log_file_path = "--log_file_path '".$c->config->{error_log}."'";
     }
+
+    my $q_priv = "UPDATE project SET private_company_id=?, is_private=? WHERE project_id=?;";
+    my $h_priv = $schema->storage->dbh()->prepare($q_priv);
 
     my @selected_drone_run_infos;
     my @selected_drone_run_ids;
@@ -319,6 +334,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 nd_experiment_projects => \@drone_run_nd_experiment_projects
             });
             $selected_drone_run_id = $project_rs->project_id();
+
+            $h_priv->execute($private_company_id, $company_is_private, $selected_drone_run_id);
 
             push @selected_drone_run_infos, {
                 drone_run_name => $new_drone_run_name,
@@ -628,6 +645,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                     project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $drone_run_id}]
                 });
                 my $selected_drone_run_band_id = $project_rs->project_id();
+
+                $h_priv->execute($private_company_id, $company_is_private, $selected_drone_run_band_id);
 
                 if ($iterator == 0) {
                     my $ret = $image->process_image($archived_filename_with_path, 'project', $selected_drone_run_band_id, $linking_table_type_id);
@@ -1173,6 +1192,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $drone_run_id}]
                     });
                     my $selected_drone_run_band_id = $project_rs->project_id();
+
+                    $h_priv->execute($private_company_id, $company_is_private, $selected_drone_run_band_id);
 
                     if ($iterator == 0) {
                         my $ret = $image->process_image($archived_filename_with_path, 'project', $selected_drone_run_band_id, $linking_table_type_id);

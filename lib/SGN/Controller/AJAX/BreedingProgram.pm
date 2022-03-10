@@ -66,7 +66,8 @@ sub ajax_breeding_program : Chained('/')  PathPart('ajax/breeders/program')  Cap
 
     $c->stash->{schema} = $schema;
     $c->stash->{program} = $program;
-
+    $c->stash->{program_id} = $program_id;
+    $c->stash->{private_company_id} = $program->private_company_id();
 }
 
 
@@ -74,6 +75,8 @@ sub program_trials :Chained('ajax_breeding_program') PathPart('trials') Args(0) 
     my $self = shift;
     my $c = shift;
     my $program = $c->stash->{program};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'user', $private_company_id, 'user_access');
 
     my $trials = $program->get_trials();
 
@@ -93,23 +96,27 @@ sub phenotype_summary : Chained('ajax_breeding_program') PathPart('phenotypes') 
     my $self = shift;
     my $c = shift;
     my $program = $c->stash->{program};
-    my $program_id = $program->get_program_id;
+    my $program_id = $c->stash->{program_id};
     my $schema = $c->stash->{schema};
+
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'user', $private_company_id, 'user_access');
+
     my $round = Math::Round::Var->new(0.01);
     my $dbh = $c->dbc->dbh();
 
     my $trials = $program->get_trials;
     my @trial_ids;
     while (my $trial = $trials->next() ) {
-	my $trial_id = $trial->project_id;
-	push @trial_ids , $trial_id;
+        my $trial_id = $trial->project_id;
+        push @trial_ids , $trial_id;
     }
     my $trial_ids = join ',', map { "?" } @trial_ids;
     my @phenotype_data;
     my @trait_list;
 
     if ( $trial_ids ) {
-	my $h = $dbh->prepare("SELECT (((cvterm.name::text || '|'::text) || db.name::text) || ':'::text) || dbxref.accession::text AS trait,
+        my $h = $dbh->prepare("SELECT (((cvterm.name::text || '|'::text) || db.name::text) || ':'::text) || dbxref.accession::text AS trait,
         cvterm.cvterm_id,
         count(phenotype.value),
         to_char(avg(phenotype.value::real), 'FM999990.990'),
@@ -131,27 +138,26 @@ sub phenotype_summary : Chained('ajax_breeding_program') PathPart('phenotypes') 
         ORDER BY cvterm.name ASC
        ;");
 
-	my $numeric_regex = '^-?[0-9]+([,.][0-9]+)?$';
-	$h->execute( @trial_ids , $numeric_regex);
+        my $numeric_regex = '^-?[0-9]+([,.][0-9]+)?$';
+        $h->execute( @trial_ids , $numeric_regex);
 
         while (my ($trait, $trait_id, $count, $average, $max, $min, $stddev) = $h->fetchrow_array()) {
-	    push @trait_list, [$trait_id, $trait];
-	    my $cv = 0;
-	    if ($stddev && $average != 0) {
-		$cv = ($stddev /  $average) * 100;
-		$cv = $round->round($cv) . '%';
-	    }
-	    if ($average) { $average = $round->round($average); }
-	    if ($min) { $min = $round->round($min); }
-	    if ($max) { $max = $round->round($max); }
-	    if ($stddev) { $stddev = $round->round($stddev); }
+            push @trait_list, [$trait_id, $trait];
+            my $cv = 0;
+            if ($stddev && $average != 0) {
+                $cv = ($stddev /  $average) * 100;
+                $cv = $round->round($cv) . '%';
+            }
+            if ($average) { $average = $round->round($average); }
+            if ($min) { $min = $round->round($min); }
+            if ($max) { $max = $round->round($max); }
+            if ($stddev) { $stddev = $round->round($stddev); }
 
-	    my @return_array;
+            my @return_array;
 
-
-	    push @return_array, ( qq{<a href="/cvterm/$trait_id/view">$trait</a>}, $average, $min, $max, $stddev, $cv, $count, qq{<a href="#raw_data_histogram_well" onclick="trait_summary_hist_change($program_id, $trait_id)"><span class="glyphicon glyphicon-stats"></span></a>} );
-	    push @phenotype_data, \@return_array;
-	}
+            push @return_array, ( qq{<a href="/cvterm/$trait_id/view">$trait</a>}, $average, $min, $max, $stddev, $cv, $count, qq{<a href="#raw_data_histogram_well" onclick="trait_summary_hist_change($program_id, $trait_id)"><span class="glyphicon glyphicon-stats"></span></a>} );
+            push @phenotype_data, \@return_array;
+        }
     }
     $c->stash->{trait_list} = \@trait_list;
     $c->stash->{rest} = { data => \@phenotype_data };
@@ -162,6 +168,9 @@ sub traits_assayed : Chained('ajax_breeding_program') PathPart('traits_assayed')
     my $self = shift;
     my $c = shift;
     my $program = $c->stash->{program};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'user', $private_company_id, 'user_access');
+
     my @traits_assayed  =  $program->get_traits_assayed;
     $c->stash->{rest} = { traits_assayed => \@traits_assayed };
 }
@@ -170,15 +179,10 @@ sub trait_phenotypes : Chained('ajax_breeding_program') PathPart('trait_phenotyp
     my $self = shift;
     my $c = shift;
     my $program = $c->stash->{program};
-    #get userinfo from db
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
-    #my $user = $c->user();
-    #if (! $c->user) {
-    #  $c->stash->{rest} = {
-    #    status => "not logged in"
-    #  };
-    #  return;
-    #}
+    my $schema = $c->stash->{schema};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'user', $private_company_id, 'user_access');
+
     my $display = $c->req->param('display') || 'plot' ;
     my $trials = $program->get_trials;
     my @trial_ids;
@@ -204,20 +208,21 @@ sub trait_phenotypes : Chained('ajax_breeding_program') PathPart('trait_phenotyp
 
 sub accessions : Chained('ajax_breeding_program') PathPart('accessions') Args(0) {
     my ($self, $c) = @_;
+    my $schema = $c->stash->{schema};
     my $program = $c->stash->{program};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'user', $private_company_id, 'user_access');
+
     my $accessions = $program->get_accessions;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my @formatted_accessions;
 
 
     foreach my $id ( @$accessions ) {
-	my $acc =  my $row = $schema->resultset("Stock::Stock")->find(
-	    { stock_id => $id , }
-	    );
+        my $acc =  my $row = $schema->resultset("Stock::Stock")->find({ stock_id => $id });
 
-	my $name        = $acc->uniquename;
-	my $description = $acc->description;
-	push @formatted_accessions, [ '<a href="/stock/' .$id. '/view">'.$name.'</a>', $description ];
+        my $name        = $acc->uniquename;
+        my $description = $acc->description;
+        push @formatted_accessions, [ '<a href="/stock/' .$id. '/view">'.$name.'</a>', $description ];
     }
     $c->stash->{rest} = { data => \@formatted_accessions };
 }
@@ -227,9 +232,11 @@ sub program_locations :Chained('ajax_breeding_program') PathPart('locations') Ar
     my $self = shift;
     my $c = shift;
     my $program = $c->stash->{program};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'user', $private_company_id, 'user_access');
+
     my $program_locations = $program->get_locations_with_details();
     $c->stash->{rest} = {data => $program_locations};
-
 }
 
 
@@ -237,11 +244,13 @@ sub program_field_trials :Chained('ajax_breeding_program') PathPart('field_trial
     my $self = shift;
     my $c = shift;
     my $program = $c->stash->{program};
-    my $program_id = $program->get_program_id;
     my $schema = $c->stash->{schema};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'user', $private_company_id, 'user_access');
+    my $program_id = $program->get_program_id;
 
     my $projects = CXGN::BreedersToolbox::Projects->new({schema => $schema});
-    my @all_trials = $projects->get_trials_by_breeding_program($program_id);
+    my @all_trials = $projects->get_trials_by_breeding_program($program_id, $user_id, $private_company_id);
     my $field_trials_ref = $all_trials[0];
 
     my @field_trials;
@@ -256,19 +265,21 @@ sub program_field_trials :Chained('ajax_breeding_program') PathPart('field_trial
     }
 
     $c->stash->{rest} = {data => \@field_trial_data};
-
 }
 
 
 sub program_genotyping_plates :Chained('ajax_breeding_program') PathPart('genotyping_plates') Args(0){
     my $self = shift;
     my $c = shift;
-    my $program = $c->stash->{program};
-    my $program_id = $program->get_program_id;
     my $schema = $c->stash->{schema};
+    my $program = $c->stash->{program};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'user', $private_company_id, 'user_access');
+
+    my $program_id = $program->get_program_id;
 
     my $projects = CXGN::BreedersToolbox::Projects->new({schema => $schema});
-    my @all_trials = $projects->get_trials_by_breeding_program($program_id);
+    my @all_trials = $projects->get_trials_by_breeding_program($program_id, $user_id, $private_company_id);
     my $genotyping_plates_ref = $all_trials[2];
 
     my @genotyping_plates;
@@ -283,7 +294,6 @@ sub program_genotyping_plates :Chained('ajax_breeding_program') PathPart('genoty
     }
 
     $c->stash->{rest} = {data => \@genotyping_plate_data};
-
 }
 
 
@@ -291,11 +301,13 @@ sub program_crossing_experiments :Chained('ajax_breeding_program') PathPart('cro
     my $self = shift;
     my $c = shift;
     my $program = $c->stash->{program};
-    my $program_id = $program->get_program_id;
     my $schema = $c->stash->{schema};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'user', $private_company_id, 'user_access');
+    my $program_id = $program->get_program_id;
 
     my $projects = CXGN::BreedersToolbox::Projects->new({schema => $schema});
-    my @all_trials = $projects->get_trials_by_breeding_program($program_id);
+    my @all_trials = $projects->get_trials_by_breeding_program($program_id, $user_id, $private_company_id);
     my $crossing_experiment_ref = $all_trials[1];
 
     my @crossing_experiments;
@@ -310,7 +322,6 @@ sub program_crossing_experiments :Chained('ajax_breeding_program') PathPart('cro
     }
 
     $c->stash->{rest} = {data => \@crossing_experiment_data};
-
 }
 
 
@@ -318,6 +329,9 @@ sub program_crosses :Chained('ajax_breeding_program') PathPart('crosses') Args(0
     my $self = shift;
     my $c = shift;
     my $program = $c->stash->{program};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'user', $private_company_id, 'user_access');
+
     my $result = $program->get_crosses;
 
     my @cross_data;
@@ -337,8 +351,11 @@ sub program_seedlots :Chained('ajax_breeding_program') PathPart('seedlots') Args
     my $self = shift;
     my $c = shift;
     my $program = $c->stash->{program};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'user', $private_company_id, 'user_access');
+
     my $result = $program->get_seedlots;
-#    print STDERR "SEEDLOTS =".Dumper($result)."\n";
+
     my @seedlot_data;
     foreach my $r (@$result){
         my ($seedlot_id, $seedlot_name, $content_id, $content_name, $content_type) = @$r;
@@ -352,17 +369,18 @@ sub program_seedlots :Chained('ajax_breeding_program') PathPart('seedlots') Args
     }
 
     $c->stash->{rest} = {data => \@seedlot_data};
-
 }
 
-
-sub add_product_profile : Path('/ajax/breeders/program/add_product_profile') : ActionClass('REST') { }
+sub add_product_profile :Chained('ajax_breeding_program') PathPart('add_product_profile') : ActionClass('REST') { }
 
 sub add_product_profile_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    my $program_id = $c->req->param('profile_program_id');
+    my $schema = $c->stash->{schema};
+    my $program_id = $c->stash->{program_id};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'submitter', $private_company_id, 'submitter_access');
+
     my $product_profile_name = $c->req->param('product_profile_name');
     my $product_profile_scope = $c->req->param('product_profile_scope');
     my $trait_list_json = $c->req->param('trait_list_json');
@@ -398,8 +416,10 @@ sub get_product_profiles :Chained('ajax_breeding_program') PathPart('product_pro
     my $self = shift;
     my $c = shift;
     my $program = $c->stash->{program};
-    my $program_id = $program->get_program_id;
     my $schema = $c->stash->{schema};
+    my $program_id = $c->stash->{program_id};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'user', $private_company_id, 'user_access');
 
     my $profile_obj = CXGN::BreedersToolbox::ProductProfile->new({ bcs_schema => $schema, parent_id => $program_id });
     my $profiles = $profile_obj->get_product_profile_info();
@@ -432,7 +452,6 @@ sub get_product_profiles :Chained('ajax_breeding_program') PathPart('product_pro
 #    print STDERR "TRAIT LIST =".Dumper(\@profile_summary)."\n";
 
     $c->stash->{rest} = {data => \@profile_summary};
-
 }
 
 
@@ -442,7 +461,9 @@ sub get_profile_detail :Path('/ajax/breeders/program/profile_detail') :Args(1) {
     my $profile_id = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
 
-    my $profile_json_type_id = SGN::Model::Cvterm->get_cvterm_row($c->dbic_schema("Bio::Chado::Schema"), 'product_profile_json', 'project_property')->cvterm_id();
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 0, 0, 0);
+
+    my $profile_json_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'product_profile_json', 'project_property')->cvterm_id();
     my $profile_rs = $schema->resultset("Project::Projectprop")->search({ projectprop_id => $profile_id, type_id => $profile_json_type_id });
 
     my $profile_row = $profile_rs->next();
@@ -499,7 +520,6 @@ sub get_profile_detail :Path('/ajax/breeders/program/profile_detail') :Args(1) {
     }
 #    print STDERR "ALL DETAILS =".Dumper(\@all_details)."\n";
     $c->stash->{rest} = {data => \@all_details};
-
 }
 
 
@@ -508,19 +528,11 @@ sub create_profile_template : Path('/ajax/program/create_profile_template') : Ac
 sub create_profile_template_POST : Args(0) {
     my ($self, $c) = @_;
 
-    if (!$c->user()) {
-        $c->stash->{rest} = {error => "You need to be logged in to create a product profile template" };
-        return;
-    }
-    if (!any { $_ eq "curator" || $_ eq "submitter" } ($c->user()->roles)  ) {
-        $c->stash->{rest} = {error =>  "You have insufficient privileges to create a product profile template." };
-        return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'submitter', 0, 0);
+
     my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
 
     my $template_file_name = $c->req->param('template_file_name');
-    my $user_id = $c->user()->get_object()->get_sp_person_id();
-    my $user_name = $c->user()->get_object()->get_username();
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
     my $subdirectory_name = "profile_template_files";
@@ -534,6 +546,7 @@ sub create_profile_template_POST : Args(0) {
 
     my %errors;
     my @error_messages;
+    my $dir = $c->tempfiles_subdir('/other');
     my $tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'other/excelXXXX');
     my $wb = Spreadsheet::WriteExcel->new($tempfile);
     if (!$wb) {
@@ -605,48 +618,21 @@ sub create_profile_template_POST : Args(0) {
         file => $file_destination,
         file_id => $file_id,
     };
-
 }
 
 
-sub upload_profile : Path('/ajax/breeders/program/upload_profile') : ActionClass('REST') { }
+sub upload_profile :Chained('ajax_breeding_program') PathPart('upload_profile') : ActionClass('REST') { }
+
 sub upload_profile_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $user_id;
-    my $user_name;
-    my $user_role;
-    my $session_id = $c->req->param("sgn_session_id");
+    my $program = $c->stash->{program};
+    my $schema = $c->stash->{schema};
+    my $program_id = $c->stash->{program_id};
+    my $private_company_id = $c->stash->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_breeding_program($c, 'submitter', $private_company_id, 'submitter_access');
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload product profile!'};
-            return;
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload product profile!'};
-            return;
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
-
-    if (!any { $_ eq 'curator' || $_ eq 'submitter' } ($user_role)) {
-        $c->stash->{rest} = {error =>  'You have insufficient privileges to upload product profile.' };
-        return;
-    }
-
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-    my $program_id = $c->req->param('profile_program_id');
     my $new_profile_name = $c->req->param('new_profile_name');
     my $new_profile_scope = $c->req->param('new_profile_scope');
     $new_profile_name =~ s/^\s+|\s+$//g;
@@ -755,6 +741,20 @@ sub _parse_list_from_json {
     }
 }
 
+sub _check_user_login_breeding_program {
+    my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
 
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
+}
 
 1;

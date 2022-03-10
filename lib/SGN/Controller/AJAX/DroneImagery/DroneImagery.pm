@@ -9090,19 +9090,31 @@ sub drone_imagery_get_vehicles_GET : Args(0) {
     my $c = shift;
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
-    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 0, 0, 0);
+    my $private_company_id = $c->req->param('private_company_id');
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'user', $private_company_id, 'user_access');
+
+    my $private_companies_sql = '';
+    if ($private_company_id) {
+        $private_companies_sql = $private_company_id;
+    }
+    else {
+        my $private_companies = CXGN::PrivateCompany->new( { schema => $bcs_schema } );
+        my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
+        $private_companies_sql = join ',', @$private_companies_ids;
+    }
 
     my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'imaging_event_vehicle', 'stock_type')->cvterm_id();
     my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
 
-    my $q = "SELECT stock.stock_id, stock.uniquename, stock.description, stockprop.value
+    my $q = "SELECT stock.stock_id, stock.uniquename, stock.description, stock.private_company_id, company.name, stockprop.value
         FROM stock
+        JOIN sgn_people.private_company AS company ON(stock.private_company_id=company.private_company_id)
         JOIN stockprop ON(stock.stock_id=stockprop.stock_id AND stockprop.type_id=$imaging_vehicle_properties_cvterm_id)
-        WHERE stock.type_id=$imaging_vehicle_cvterm_id;";
+        WHERE stock.type_id=$imaging_vehicle_cvterm_id AND stock.private_company_id IN($private_companies_sql);";
     my $h = $bcs_schema->storage->dbh()->prepare($q);
     $h->execute();
     my @vehicles;
-    while (my ($stock_id, $name, $description, $prop) = $h->fetchrow_array()) {
+    while (my ($stock_id, $name, $description, $private_company_id, $private_company_name, $prop) = $h->fetchrow_array()) {
         my $prop_hash = decode_json $prop;
         my @batt_info;
         foreach (sort keys %{$prop_hash->{batteries}}) {
@@ -9110,7 +9122,8 @@ sub drone_imagery_get_vehicles_GET : Args(0) {
             push @batt_info, "$_: Usage = ".$p->{usage}." Obsolete = ".$p->{obsolete};
         }
         my $batt_info_string = join '<br/>', @batt_info;
-        push @vehicles, [$name, $description, $batt_info_string]
+        my $private_company = "<a href='/company/$private_company_id'>$private_company_name</a>";
+        push @vehicles, [$name, $description, $private_company, $batt_info_string]
     }
 
     $c->stash->{rest} = { data => \@vehicles };

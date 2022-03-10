@@ -32,7 +32,7 @@ is_deeply($projects, [
 my $bp_project_id = $p->get_breeding_program_by_name('test');
 ok($bp_project_id);
 
-my ($field_trials, $cross_trials, $genotyping_trials) = $p->get_trials_by_breeding_program($bp_project_id->project_id);
+my ($field_trials, $cross_trials, $genotyping_trials) = $p->get_trials_by_breeding_program($bp_project_id->project_id, 41, undef);
 my @sorted_field_trials = sort {$a->[0] cmp $b->[0]} @$field_trials;
 print STDERR Dumper \@sorted_field_trials;
 is_deeply(\@sorted_field_trials, [
