@@ -49,6 +49,11 @@ sub image_search :Path('/ajax/search/images') Args(0) {
         push @project_name_list, $params->{image_project_name};
     }
 
+    my @private_companies_ids;
+    if (exists($params->{private_company_id}) && $params->{private_company_id}) {
+        push @private_companies_ids, $params->{private_company_id};
+    }
+
     my @first_names;
     my @last_names;
     if (exists($params->{image_person} ) && $params->{image_person} ) {
@@ -82,7 +87,8 @@ sub image_search :Path('/ajax/search/images') Args(0) {
         tag_list=>\@tags,
         limit=>$limit,
         offset=>$offset,
-        must_be_linked_to_stock=>$must_be_linked_to_stock
+        must_be_linked_to_stock=>$must_be_linked_to_stock,
+        private_company_id_list=>\@private_companies_ids
     });
     my ($result, $records_total) = $image_search->search();
 
@@ -122,6 +128,7 @@ sub image_search :Path('/ajax/search/images') Args(0) {
         }
         push @line, (
             $colorbox,
+            "<a href='/company/".$_->{private_company_id}."' >".$_->{private_company_name}."</a>",
             "<a href='/image/view/".$_->{image_id}."' >".$_->{image_original_filename}."</a>",
             $_->{image_description},
             "<a href='/solpeople/personal-info.pl?sp_person_id=".$_->{image_sp_person_id}."' >".$_->{image_username}."</a>",

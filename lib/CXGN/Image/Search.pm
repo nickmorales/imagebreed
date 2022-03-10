@@ -166,6 +166,11 @@ has 'submitter_id_list' => (
     is => 'rw',
 );
 
+has 'private_company_id_list' => (
+    isa => 'ArrayRef[Int]|Undef',
+    is => 'rw',
+);
+
 has 'stock_type' => (
     isa => 'Str|Undef',
     is => 'rw',
@@ -261,6 +266,7 @@ sub search {
     my $include_obsolete_images = $self->include_obsolete_images;
     my $include_obsolete_tags = $self->include_obsolete_tags;
     my $include_obsolete_image_tags = $self->include_obsolete_image_tags;
+    my $private_company_id_list = $self->private_company_id_list;
 
     my @where_clause;
     my @or_clause;
@@ -406,6 +412,13 @@ sub search {
         push @where_clause, "image.obsolete = 'f'";
     }
 
+    if ($private_company_id_list && scalar(@$private_company_id_list)>0) {
+        my $sql = join ("," , @$private_company_id_list);
+        push @where_clause, "image.private_company_id in ($sql)";
+        push @where_clause, "project.private_company_id in ($sql)";
+        push @where_clause, "phenotype.private_company_id in ($sql)";
+    }
+
     if (scalar(@or_clause)>0) {
         my $w = " ( ".(join (" OR ", @or_clause) )." ) ";
         push @where_clause, $w;
@@ -429,7 +442,7 @@ sub search {
     my $q = "SELECT image.image_id, image.name, image.description, image.original_filename, image.file_ext, image.sp_person_id, submitter.username,
         to_char (image.create_date::timestamp at time zone current_setting('TIMEZONE'), 'YYYY-MM-DD\"T\"HH24:MI:SSOF00') as create_date,
         to_char (image.modified_date::timestamp at time zone current_setting('TIMEZONE'), 'YYYY-MM-DD\"T\"HH24:MI:SSOF00') as modified_date,
-        image.obsolete, image.md5sum, stock.stock_id, stock.uniquename, stock_type.name, project.project_id, project.name, project_image.project_md_image_id, project_image_type.name,
+        image.obsolete, image.md5sum, stock.stock_id, stock.uniquename, stock_type.name, project.project_id, project.name, project_image.project_md_image_id, project_image_type.name, company.private_company_id, company.name,
         COALESCE(
             json_agg(json_build_object('tag_id', tags.tag_id, 'name', tags.name, 'description', tags.description, 'sp_person_id', tags.sp_person_id, 'modified_date', tags.modified_date, 'create_date', tags.create_date, 'obsolete', tags.obsolete))
             FILTER (WHERE tags.tag_id IS NOT NULL), '[]'
@@ -441,6 +454,7 @@ sub search {
         count(image.image_id) OVER() AS full_count
         FROM metadata.md_image AS image
         JOIN sgn_people.sp_person AS submitter ON (submitter.sp_person_id=image.sp_person_id)
+        JOIN sgn_people.private_company AS company ON (company.private_company_id=image.private_company_id)
         LEFT JOIN metadata.md_tag_image AS image_tag ON (image.image_id=image_tag.image_id)
         LEFT JOIN metadata.md_tag AS tags ON (image_tag.tag_id=tags.tag_id)
         LEFT JOIN phenome.stock_image AS stock_image ON (image.image_id=stock_image.image_id)
@@ -453,7 +467,7 @@ sub search {
         LEFT JOIN phenotype ON (nd_experiment_phenotype_bridge.phenotype_id = phenotype.phenotype_id)
         LEFT JOIN cvterm AS phenotype_variable ON (phenotype.cvalue_id=phenotype_variable.cvterm_id)
         $where_clause
-        GROUP BY(image.image_id, image.name, image.description, image.original_filename, image.file_ext, image.sp_person_id, submitter.username, image.create_date, image.modified_date, image.obsolete, image.md5sum, stock.stock_id, stock.uniquename, stock_type.name, project.project_id, project.name, project_image.project_md_image_id, project_image_type.name)
+        GROUP BY(image.image_id, image.name, image.description, image.original_filename, image.file_ext, image.sp_person_id, submitter.username, image.create_date, image.modified_date, image.obsolete, image.md5sum, stock.stock_id, stock.uniquename, stock_type.name, project.project_id, project.name, project_image.project_md_image_id, project_image_type.name, company.private_company_id, company.name)
         ORDER BY image.image_id
         $limit_clause
         $offset_clause;";
@@ -464,7 +478,7 @@ sub search {
 
     my @result;
     my $total_count = 0;
-    while (my ($image_id, $image_name, $image_description, $image_original_filename, $image_file_ext, $image_sp_person_id, $image_username, $image_create_date, $image_modified_date, $image_obsolete, $image_md5sum, $stock_id, $stock_uniquename, $stock_type_name, $project_id, $project_name, $project_md_image_id, $project_image_type_name, $tags, $observations, $full_count) = $h->fetchrow_array()) {
+    while (my ($image_id, $image_name, $image_description, $image_original_filename, $image_file_ext, $image_sp_person_id, $image_username, $image_create_date, $image_modified_date, $image_obsolete, $image_md5sum, $stock_id, $stock_uniquename, $stock_type_name, $project_id, $project_name, $project_md_image_id, $project_image_type_name, $private_company_id, $private_company_name, $tags, $observations, $full_count) = $h->fetchrow_array()) {
         push @result, {
             image_id => $image_id,
             image_name => $image_name,
@@ -484,6 +498,8 @@ sub search {
             project_name => $project_name,
             project_md_image_id => $project_md_image_id,
             project_image_type_name => $project_image_type_name,
+            private_company_id => $private_company_id,
+            private_company_name => $private_company_name,
             tags_array => decode_json $tags,
             observations_array => decode_json $observations,
         };

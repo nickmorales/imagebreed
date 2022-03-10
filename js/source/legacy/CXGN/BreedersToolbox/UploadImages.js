@@ -147,6 +147,7 @@ function showImagePreview(imageFiles) {
 
 
 function reportVerifyResult(result) {
+    console.log(result);
     if (result.success) {
         jQuery('#upload_images_submit_store').attr('disabled', false);
         jQuery('#upload_images_status').html(

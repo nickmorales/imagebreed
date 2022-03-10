@@ -3317,14 +3317,14 @@ $mech->get_ok('http://localhost:3010/ajax/search/images?image_description_filena
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
 is($response->{recordsTotal}, 1);
-is($response->{data}[0][4], 'Stock (plot): <a href=\'/stock/38858/view\' >test_trial22</a>');
+is($response->{data}[0][5], 'Stock (plot): <a href=\'/stock/38858/view\' >test_trial22</a>');
 
 $mech->get_ok('http://localhost:3010/ajax/search/images');
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
 is($response->{recordsTotal}, 2);
-is($response->{data}[0][4], 'Stock (plot): <a href=\'/stock/38858/view\' >test_trial22</a>');
-is($response->{data}[1][4], 'Stock (plot): <a href=\'/stock/38857/view\' >test_trial21</a>');
+is($response->{data}[0][5], 'Stock (plot): <a href=\'/stock/38858/view\' >test_trial22</a>');
+is($response->{data}[1][5], 'Stock (plot): <a href=\'/stock/38857/view\' >test_trial21</a>');
 
 $parser = CXGN::Phenotypes::ParseUpload->new();
 $filename = "t/data/phenotypes_associated_images/4picsimagephenotypespreadsheet.xls";
@@ -3378,9 +3378,9 @@ $mech->get_ok('http://localhost:3010/ajax/search/images');
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
 is($response->{recordsTotal}, 6);
-is($response->{data}[0][4], 'Stock (plot): <a href=\'/stock/38858/view\' >test_trial22</a>');
-is($response->{data}[1][4], 'Stock (plot): <a href=\'/stock/38857/view\' >test_trial21</a>');
-is($response->{data}[2][4], 'Stock (plot): <a href=\'/stock/38858/view\' >test_trial22</a><br/>Project (phenotype_spreadsheet_associated_images): <a href=\'/breeders/trial/137\' >test_trial</a>');
+is($response->{data}[0][5], 'Stock (plot): <a href=\'/stock/38858/view\' >test_trial22</a>');
+is($response->{data}[1][5], 'Stock (plot): <a href=\'/stock/38857/view\' >test_trial21</a>');
+is($response->{data}[2][5], 'Stock (plot): <a href=\'/stock/38858/view\' >test_trial22</a><br/>Project (phenotype_spreadsheet_associated_images): <a href=\'/breeders/trial/137\' >test_trial</a>');
 
 my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
 	search_type=>'MaterializedViewTable',
