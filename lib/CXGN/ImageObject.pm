@@ -227,22 +227,23 @@ sub image_subpath {
 
 sub get_associated_object_links {
     my $self = shift;
-    my $s = "";
+    my $s = "<ul>";
     foreach my $assoc ($self->get_associated_objects()) {
 
         if ($assoc->[0] eq "stock") {
-            $s .= "<a href=\"/stock/$assoc->[1]/view\">Stock name: $assoc->[2].</a>";
+            $s .= "<li><a href=\"/stock/$assoc->[1]/view\">Stock name: $assoc->[2].</a></li>";
         }
         if ($assoc->[0] eq "organism" ) {
-            $s .= qq { <a href="/organism/$assoc->[1]/view/">Organism name:$assoc->[2]</a> };
+            $s .= qq { <li><a href="/organism/$assoc->[1]/view/">Organism name:$assoc->[2]</a></li> };
         }
         if ($assoc->[0] eq "cvterm" ) {
-            $s .= qq { <a href="/cvterm/$assoc->[1]/view/">Cvterm: $assoc->[2]</a> };
+            $s .= qq { <li><a href="/cvterm/$assoc->[1]/view/">Cvterm: $assoc->[2]</a></li> };
         }
         if ($assoc->[0] eq "project" ) {
-            $s .= qq { <a href="/breeders_toolbox/trial/$assoc->[1]">Project: $assoc->[2]</a> };
+            $s .= qq { <li><a href="/breeders_toolbox/trial/$assoc->[1]">Project: $assoc->[2]</a></li> };
         }
     }
+    $s .= "</ul>";
     return $s;
 }
 

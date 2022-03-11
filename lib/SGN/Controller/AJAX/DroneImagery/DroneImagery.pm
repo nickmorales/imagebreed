@@ -5159,22 +5159,24 @@ sub drone_imagery_calculate_statistics_store_analysis_POST : Args(0) {
 
 # DEPRECATED. USE standard_process functions
 sub drone_imagery_rotate_image : Path('/api/drone_imagery/rotate_image') : ActionClass('REST') { }
-sub drone_imagery_rotate_image_GET : Args(0) {
+sub drone_imagery_rotate_image_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $image_id = $c->req->param('image_id');
     my $drone_run_band_project_id = $c->req->param('drone_run_band_project_id');
+    my $company_id = $c->req->param('company_id') || 1;
+    my $is_private = $c->req->param('is_private');
     my $angle_rotation = $c->req->param('angle');
     my $view_only = $c->req->param('view_only');
-    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', 0, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', $company_id, 'submitter_access');
 
     my $dir = $c->tempfiles_subdir('/drone_imagery_rotate');
     my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
     $archive_rotate_temp_image .= '.png';
 
-    my $return = _perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $angle_rotation, $view_only, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
+    my $return = _perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $angle_rotation, $view_only, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0, $company_id, $is_private);
 
     $c->stash->{rest} = $return;
 }
@@ -6090,20 +6092,22 @@ sub drone_imagery_save_plot_polygons_template_separated_POST : Args(0) {
 }
 
 sub drone_imagery_denoise : Path('/api/drone_imagery/denoise') : ActionClass('REST') { }
-sub drone_imagery_denoise_GET : Args(0) {
+sub drone_imagery_denoise_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $image_id = $c->req->param('image_id');
     my $drone_run_band_project_id = $c->req->param('drone_run_band_project_id');
-    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', 0, 0);
+    my $company_id = $c->req->param('company_id') || 1;
+    my $company_is_private = $c->req->param('is_private');
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', $company_id, 'submitter_access');
 
     my $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
     my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
     $archive_denoise_temp_image .= '.png';
 
-    my $return = _perform_image_denoise($c, $schema, $metadata_schema, $image_id, $drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+    my $return = _perform_image_denoise($c, $schema, $metadata_schema, $image_id, $drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image, $company_id, $company_is_private);
 
     $c->stash->{rest} = $return;
 }
@@ -6195,6 +6199,8 @@ sub drone_imagery_remove_background_display_POST : Args(0) {
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $image_id = $c->req->param('image_id');
+    my $company_id = $c->req->param('company_id') || 1;
+    my $company_is_private = $c->req->param('is_private');
     my $drone_run_band_project_id = $c->req->param('drone_run_band_project_id');
     my $lower_threshold = $c->req->param('lower_threshold');
     my $upper_threshold = $c->req->param('upper_threshold');
@@ -6236,7 +6242,7 @@ sub drone_imagery_remove_background_display_POST : Args(0) {
         $previous_image->delete(); #Sets to obsolete
     }
 
-    my $ret = $image->process_image($archive_remove_background_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
+    my $ret = $image->process_image($archive_remove_background_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id, $company_id, $company_is_private);
     my $removed_background_image_fullpath = $image->get_filename('original_converted', 'full');
     my $removed_background_image_url = $image->get_image_url('original');
 
@@ -6251,6 +6257,8 @@ sub drone_imagery_remove_background_save_POST : Args(0) {
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $image_id = $c->req->param('image_id');
     my $image_type = $c->req->param('image_type');
+    my $company_id = $c->req->param('company_id') || 1;
+    my $company_is_private = $c->req->param('is_private');
     my $drone_run_band_project_id = $c->req->param('drone_run_band_project_id');
     my $lower_threshold = $c->req->param('lower_threshold');
     my $upper_threshold = $c->req->param('upper_threshold') || '255';
@@ -6269,7 +6277,7 @@ sub drone_imagery_remove_background_save_POST : Args(0) {
     my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
     $archive_remove_background_temp_image .= '.png';
 
-    my $return = _perform_image_background_remove_threshold($c, $schema, $image_id, $drone_run_band_project_id, $image_type, $lower_threshold, $upper_threshold, $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+    my $return = _perform_image_background_remove_threshold($c, $schema, $image_id, $drone_run_band_project_id, $image_type, $lower_threshold, $upper_threshold, $user_id, $user_name, $user_role, $archive_remove_background_temp_image, $company_id, $company_is_private);
 
     $c->stash->{rest} = $return;
 }
@@ -6286,6 +6294,8 @@ sub _perform_image_background_remove_threshold {
     my $user_name = shift;
     my $user_role = shift;
     my $archive_remove_background_temp_image = shift;
+    my $company_id = shift;
+    my $company_is_private = shift;
     print STDERR "Background Remove Threshold Image Type: $image_type\n";
 
     my $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, $image_type, 'project_md_image')->cvterm_id();
@@ -6321,7 +6331,7 @@ sub _perform_image_background_remove_threshold {
         $previous_image->delete(); #Sets to obsolete
     }
 
-    my $ret = $image->process_image($archive_remove_background_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
+    my $ret = $image->process_image($archive_remove_background_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id, $company_id, $company_is_private);
     my $removed_background_image_fullpath = $image->get_filename('original_converted', 'full');
     my $removed_background_image_url = $image->get_image_url('original');
     my $removed_background_image_id = $image->get_image_id();
@@ -6349,6 +6359,8 @@ sub drone_imagery_remove_background_percentage_save_POST : Args(0) {
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $image_id = $c->req->param('image_id');
     my $image_type_list = $c->req->param('image_type_list');
+    my $company_id = $c->req->param('company_id') || 1;
+    my $company_is_private = $c->req->param('is_private');
     my $drone_run_band_project_id = $c->req->param('drone_run_band_project_id');
     my $lower_threshold_percentage = $c->req->param('lower_threshold_percentage');
     my $upper_threshold_percentage = $c->req->param('upper_threshold_percentage');
@@ -6370,7 +6382,7 @@ sub drone_imagery_remove_background_percentage_save_POST : Args(0) {
         my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
         $archive_remove_background_temp_image .= '.png';
 
-        my $return = _perform_image_background_remove_threshold_percentage($c, $schema, $image_id, $drone_run_band_project_id, [], $image_type, $lower_threshold_percentage, $upper_threshold_percentage, $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+        my $return = _perform_image_background_remove_threshold_percentage($c, $schema, $image_id, $drone_run_band_project_id, [], $image_type, $lower_threshold_percentage, $upper_threshold_percentage, $user_id, $user_name, $user_role, $archive_remove_background_temp_image, $company_id, $company_is_private);
         push @returns, $return;
     }
 
@@ -7322,6 +7334,8 @@ sub standard_process_apply_POST : Args(0) {
     my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
     my $apply_drone_run_band_project_ids_input = decode_json $c->req->param('apply_drone_run_band_project_ids');
     my $field_trial_id = $c->req->param('field_trial_id');
+    my $private_company_id = $c->req->param('company_id') || 1;
+    my $private_company_is_private = $c->req->param('is_private');
     my $drone_run_band_project_id_input = $c->req->param('drone_run_band_project_id');
     my $drone_run_project_id_input = $c->req->param('drone_run_project_id');
     my $time_cvterm_id_input = $c->req->param('time_cvterm_id');
@@ -7337,7 +7351,7 @@ sub standard_process_apply_POST : Args(0) {
     my $polygon_templates_deleted = $c->req->param('polygon_templates_deleted') ? decode_json $c->req->param('polygon_templates_deleted') : [];
     my $polygon_removed_numbers = $c->req->param('polygon_removed_numbers') ? decode_json $c->req->param('polygon_removed_numbers') : [];
     my $polygons_to_plot_names = $c->req->param('polygons_to_plot_names') ? decode_json $c->req->param('polygons_to_plot_names') : {};
-    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', 0, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', $private_company_id, 'submitter_access');
 
     my $project = CXGN::Trial->new({ bcs_schema => $bcs_schema, trial_id => $drone_run_project_id_input });
     my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto,  $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
@@ -7542,21 +7556,21 @@ sub standard_process_apply_POST : Args(0) {
             my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
             $archive_rotate_temp_image .= '.png';
 
-            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
+            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0, $private_company_id, $private_company_is_private);
             my $rotated_image_id = $rotate_return->{rotated_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
             my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
             $archive_temp_image .= '.png';
 
-            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
+            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio, $private_company_id, $private_company_is_private);
             my $cropped_image_id = $cropping_return->{cropped_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
             my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
             $archive_denoise_temp_image .= '.png';
 
-            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $user_id, $user_name, $user_role, $archive_denoise_temp_image, $private_company_id, $private_company_is_private);
             my $denoised_image_id = $denoise_return->{denoised_image_id};
 
             $drone_run_band_info{$drone_run_band_project_id} = {
@@ -7577,7 +7591,7 @@ sub standard_process_apply_POST : Args(0) {
             my @denoised_background_threshold_removed_plot_polygon_types = @{$term_map->{$drone_run_band_type}->{observation_unit_plot_polygon_types}->{threshold_background}};
 
             foreach (@denoised_plot_polygon_type) {
-                my $plot_polygon_original_denoised_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $plot_polygons_value, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square', 0, 0);
+                my $plot_polygon_original_denoised_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $plot_polygons_value, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square', 0, 0, $private_company_id, $private_company_is_private);
             }
 
             for my $iterator (0..(scalar(@denoised_background_threshold_removed_imagery_types)-1)) {
@@ -7585,18 +7599,18 @@ sub standard_process_apply_POST : Args(0) {
                 my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
                 $archive_remove_background_temp_image .= '.png';
 
-                my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $denoised_background_threshold_removed_imagery_types[$iterator], $drone_imagery_remove_background_lower_percentage, $drone_imagery_remove_background_upper_percentage, $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+                my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $denoised_background_threshold_removed_imagery_types[$iterator], $drone_imagery_remove_background_lower_percentage, $drone_imagery_remove_background_upper_percentage, $user_id, $user_name, $user_role, $archive_remove_background_temp_image, $private_company_id, $private_company_is_private);
 
                 my $threshold_values = _get_image_background_remove_threshold_percentage($bcs_schema, $drone_run_band_project_id);
 
-                my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square', 0, 0);
+                my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square', 0, 0, $private_company_id, $private_company_is_private);
             }
         }
 
         print STDERR Dumper \%selected_drone_run_band_types;
         print STDERR Dumper \%vegetative_indices_hash;
 
-        _perform_minimal_vi_standard_process($c, $bcs_schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_square');
+        _perform_minimal_vi_standard_process($c, $bcs_schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_square', $private_company_id, $private_company_is_private);
 
         foreach (@drone_run_project_ids_array) {
             my $drone_run_process_in_progress = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
@@ -7646,7 +7660,7 @@ sub standard_process_apply_POST : Args(0) {
                     key=>'projectprop_c1'
                 });
 
-                my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $_, $time_cvterm_id_save, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
+                my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $_, $time_cvterm_id_save, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role, $private_company_id, $private_company_is_private);
             }
         }
     }
@@ -10264,13 +10278,15 @@ sub drone_imagery_remove_image_GET : Args(0) {
 }
 
 sub drone_imagery_crop_image : Path('/api/drone_imagery/crop_image') : ActionClass('REST') { }
-sub drone_imagery_crop_image_GET : Args(0) {
+sub drone_imagery_crop_image_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $image_id = $c->req->param('image_id');
     my $drone_run_band_project_id = $c->req->param('drone_run_band_project_id');
+    my $company_id = $c->req->param('company_id') || 1;
+    my $company_is_private = $c->req->param('is_private');
     my $polygon = $c->req->param('polygon');
     my $polygon_obj = decode_json $polygon;
     if (scalar(@$polygon_obj) != 4){
@@ -10278,14 +10294,14 @@ sub drone_imagery_crop_image_GET : Args(0) {
         $c->detach();
     }
     my $polygons = encode_json [$polygon_obj];
-    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', 0, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', $company_id, 'submitter_access');
 
 
     my $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
     my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
     $archive_temp_image .= '.png';
 
-    my $return = _perform_image_cropping($c, $schema, $drone_run_band_project_id, [], $image_id, $polygons, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
+    my $return = _perform_image_cropping($c, $schema, $drone_run_band_project_id, [], $image_id, $polygons, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1, $company_id, $company_is_private);
 
     $c->stash->{rest} = $return;
 }

@@ -237,7 +237,7 @@ is($message_hash_get_image->{image_height}, 960);
 
 
 $ua = LWP::UserAgent->new;
-my $response_denoised = $ua->get('http://localhost:3010/api/drone_imagery/denoise?sgn_session_id='.$sgn_session_id.'&image_id='.$message_hash_raster->{drone_run_band_image_ids}->[0].'&drone_run_band_project_id='.$message_hash_raster->{drone_run_band_project_ids}->[0]);
+my $response_denoised = $ua->post('http://localhost:3010/api/drone_imagery/denoise?sgn_session_id='.$sgn_session_id.'&image_id='.$message_hash_raster->{drone_run_band_image_ids}->[0].'&drone_run_band_project_id='.$message_hash_raster->{drone_run_band_project_ids}->[0]);
 ok($response_denoised->is_success);
 my $message_denoised = $response_denoised->decoded_content;
 my $message_hash_denoised = decode_json $message_denoised;
@@ -249,7 +249,7 @@ my $sp_rotate_angle = "2.1";
 my $sp_rotate_angle_rad = $sp_rotate_angle*0.0174533;
 
 $ua = LWP::UserAgent->new;
-my $response_rotate = $ua->get('http://localhost:3010/api/drone_imagery/rotate_image?sgn_session_id='.$sgn_session_id.'&image_id='.$message_hash_denoised->{denoised_image_id}.'&drone_run_band_project_id='.$message_hash_raster->{drone_run_band_project_ids}->[0].'&angle='.$sp_rotate_angle.'&view_only=0');
+my $response_rotate = $ua->post('http://localhost:3010/api/drone_imagery/rotate_image?sgn_session_id='.$sgn_session_id.'&image_id='.$message_hash_denoised->{denoised_image_id}.'&drone_run_band_project_id='.$message_hash_raster->{drone_run_band_project_ids}->[0].'&angle='.$sp_rotate_angle.'&view_only=0');
 ok($response_rotate->is_success);
 my $message_rotate = $response_rotate->decoded_content;
 my $message_hash_rotate = decode_json $message_rotate;
@@ -260,7 +260,7 @@ ok($message_hash_rotate->{rotated_image_url});
 my $crop_polygon = [{'x'=>100, 'y'=>100}, {'x'=>120, 'y'=>100}, {'x'=>120, 'y'=>80}, {'x'=>100, 'y'=>70}];
 my $polygon_crop = encode_json $crop_polygon;
 $ua = LWP::UserAgent->new;
-my $response_crop = $ua->get('http://localhost:3010/api/drone_imagery/crop_image?sgn_session_id='.$sgn_session_id.'&image_id='.$message_hash_rotate->{rotated_image_id}.'&drone_run_band_project_id='.$message_hash_raster->{drone_run_band_project_ids}->[0].'&polygon='.$polygon_crop);
+my $response_crop = $ua->post('http://localhost:3010/api/drone_imagery/crop_image?sgn_session_id='.$sgn_session_id.'&image_id='.$message_hash_rotate->{rotated_image_id}.'&drone_run_band_project_id='.$message_hash_raster->{drone_run_band_project_ids}->[0].'&polygon='.$polygon_crop);
 ok($response_crop->is_success);
 my $message_crop = $response_crop->decoded_content;
 my $message_hash_crop = decode_json $message_crop;

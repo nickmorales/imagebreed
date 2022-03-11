@@ -94,10 +94,11 @@ background: white;
 <&| /page/info_section.mas, title=>"Associated tags" &>
 <br><b>Associated tags</b> [<a href="/tag/index.pl?image_id=<% $image_id %>&amp;action=new">add/remove</a>]: <% $tag_count %>
 
-
+<ul>
 % foreach my $tag (@$image_tags) {
-%    print $tag->[1]."  ";
+%    print "<li>".$tag->[1]."</li>";
 % }
+</ul>
 
 </&>
 

@@ -24,6 +24,7 @@ use URI::Encode qw(uri_encode uri_decode);
 use CXGN::Calendar;
 use Image::Size;
 use CXGN::DroneImagery::ImageTypes;
+use CXGN::PrivateCompany;
 #use Inline::Python;
 
 BEGIN { extends 'Catalyst::Controller::REST' }
@@ -39,6 +40,12 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_main_display($c, 0, 0, 0);
+
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
+    my $private_company_ids_sql = join ',', @$private_companies_ids;
 
     my $drone_run_field_trial_project_relationship_type_id_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
     my $drone_run_band_drone_run_project_relationship_type_id_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
@@ -87,7 +94,8 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
         LEFT JOIN projectprop AS drone_run_camera_rig ON(drone_run_camera_rig.project_id = drone_run_project.project_id AND drone_run_camera_rig.type_id = $drone_run_camera_rig_cvterm_id)
         LEFT JOIN projectprop AS drone_run_base_date ON(drone_run_base_date.project_id = drone_run_project.project_id AND drone_run_base_date.type_id = $drone_run_base_date_cvterm_id)
         JOIN project_relationship AS field_trial_rel ON (drone_run_project.project_id = field_trial_rel.subject_project_id AND field_trial_rel.type_id=$drone_run_field_trial_project_relationship_type_id_cvterm_id)
-        JOIN project AS field_trial ON (field_trial_rel.object_project_id = field_trial.project_id);";
+        JOIN project AS field_trial ON (field_trial_rel.object_project_id = field_trial.project_id)
+        WHERE company.private_company_id IN($private_company_ids_sql);";
     my $h = $schema->storage->dbh()->prepare($drone_run_q);
     $h->execute();
 
@@ -110,6 +118,7 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{bands}->{$drone_run_band_project_id}->{drone_run_band_geoparam_coordinates_type} = $drone_run_band_geoparam_coordinates_type;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{bands}->{$drone_run_band_project_id}->{drone_run_band_geoparam_polygons} = $drone_run_band_geoparam_polygons;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{private_company_id} = $private_company_id;
+        $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{private_company_is_private} = $private_company_access_is_private_hash->{$private_company_id};
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{private_company_name} = $private_company_name;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{trial_id} = $field_trial_project_id;
         $unique_drone_runs{$field_trial_project_name}->{$drone_run_project_id}->{trial_name} = $field_trial_project_name;
@@ -258,7 +267,7 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
                 # }
                 # else {
                     if (!$v->{drone_run_processed}) {
-                        $drone_run_html .= '<button class="btn btn-primary btn-sm" name="project_drone_imagery_standard_process" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" >Run Standard Process For<br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
+                        $drone_run_html .= '<button class="btn btn-primary btn-sm" name="project_drone_imagery_standard_process" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Run Standard Process For<br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
                     } elsif (!$v->{drone_run_processed_minimal_vi}) {
                         $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_standard_process_minimal_vi" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Run Minimal Vegetitative Index Standard Process For<br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
                     } elsif (!$v->{drone_run_processed_extended}) {
@@ -331,6 +340,9 @@ sub raw_drone_imagery_drone_run_band_summary_GET : Args(0) {
     my $c = shift;
     my $drone_run_band_project_id = $c->req->param('drone_run_band_project_id');
     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_main_display($c, 0, 0, 0);
+
     my $calendar_funcs = CXGN::Calendar->new({});
 
     my $main_image_types = CXGN::DroneImagery::ImageTypes::get_all_project_md_image_types_whole_images($schema);
@@ -612,7 +624,6 @@ sub raw_drone_imagery_drone_run_band_summary_GET : Args(0) {
                         $drone_run_band_table_html .= '<button class="btn btn-default btn-sm disabled">Cropped imagery not found. The standard process should have covered all supported image cases. Please try again or contact us.</button><br/><br/>';
                     }
                 } else {
-                    #$drone_run_band_table_html .= '<button class="btn btn-primary btn-sm" name="project_drone_imagery_rotate_image" data-stitched_image_id="'.$d->{stitched_image_id}.'" data-field_trial_id="'.$v->{trial_id}.'" data-stitched_image="'.uri_encode($d->{stitched_image_original}).'" data-drone_run_project_id="'.$k.'" data-drone_run_band_project_id="'.$drone_run_band_project_id.'" >Rotate Stitched Image</button><br/><br/>';
                     $drone_run_band_table_html .= '<button class="btn btn-default btn-sm disabled">Rotated imagery not found. The standard process should have covered all supported image cases. Please try again or contact us.</button><br/><br/>';
                 }
             } else {
@@ -697,6 +708,22 @@ sub _draw_plot_polygon_images_panel {
         $html .= $plot_polygon_images;
     $html .= '</div></div>';
     return $html;
+}
+
+sub _check_user_login_drone_imagery_main_display {
+    my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
 }
 
 1;
