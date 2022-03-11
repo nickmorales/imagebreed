@@ -1,11 +1,13 @@
 package SGN::Controller::Image;
 
 use Moose;
+
+use Data::Dumper;
 use namespace::autoclean;
 use File::Basename;
 use SGN::Image;
 use CXGN::Login;
-
+use CXGN::ImageObject;
 
 use URI::FromHash 'uri';
 
@@ -13,24 +15,36 @@ BEGIN { extends 'Catalyst::Controller'; }
 
 sub view :Path('/image/view/') Args(1) {
     my ( $self, $c, $image_id ) = @_;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+    my $size = $c->req->param("size");
 
-    my $dbh = $c->dbc->dbh;
+    my $image_obj = CXGN::ImageObject->new({
+        schema => $schema,
+        image_id => $image_id+0,
+        static_datasets_url => $c->config->{static_datasets_url},
+        image_dir => $c->config->{image_dir},
+    });
+    if (!$image_obj->original_filename()) {
+        $c->stash->{message} = "Image $image_id does not exist";
+        $c->stash->{template} = 'generic_message.mas';
+        return;
+    }
 
-    my $image = $c->stash->{image} =
-        SGN::Image->new( $dbh, $image_id+0, $c );
+    my $private_company_id = $image_obj->{private_company_id};
+    my ($user_id, $user_name, $user_role) = _check_user_login_image($c, 'user', $private_company_id, 'user_access');
 
-    $image->get_original_filename
-        or $c->throw_404('Image not found.');
+    $c->stash->{thumbnail_img} = $image_obj->get_img_src_tag("thumbnail");
+    $c->stash->{small_img} = $image_obj->get_img_src_tag("small");
+    $c->stash->{medium_img} = $image_obj->get_img_src_tag("medium");
+    $c->stash->{large_img} = $image_obj->get_img_src_tag("large");
+    $c->stash->{original_img} = $image_obj->get_img_src_tag("original_converted");
 
-    $c->forward('get_user');
-
-    $c->stash(
-        template  => '/image/index.mas',
-
-        object_id => $image_id,
-        dbh       => $dbh,
-        size      => $c->req->param("size")
-       );
+    $c->stash->{associated_object_links} = $image_obj->get_associated_object_links();
+    $c->stash->{image_tags} = $image_obj->get_tags();
+    $c->stash->{image_name} = $image_obj->name();
+    $c->stash->{size} = $size;
+    $c->stash->{image_id} = $image_obj->image_id();
+    $c->stash->{template} = '/image/index.mas';
 }
 
 sub add :Path('/image/add') Args(0) {
@@ -61,7 +75,7 @@ sub confirm :Path('/image/confirm') {
     if (! -e $tempfile) {
         die "No tempfile $tempfile\n";
     }
-    
+
     my $filename_validation_msg =  $self->validate_image_filename(basename($filename));
     if ( $filename_validation_msg )  { #if non-blank, there is a problem with Filename, print messages
 
@@ -123,19 +137,14 @@ sub store :Path('/image/store') {
 
     $image->store();
 
-   # send_image_email($c, "store", $image, $sp_person_id, $refering_page, $type, $type_id);
-    #remove the temp_file
-    #
     unlink $temp_image_dir."/".$tempfile;
 
     my $image_id = $image->get_image_id();
 
-    # go to the image detail page
-    # open for editing.....
     $c->res->redirect( $c->uri_for('view',$image_id )->relative() );
 }
 
-sub image_display_order :Path('/image/display_order') Args(0) { 
+sub image_display_order :Path('/image/display_order') Args(0) {
     my $self  = shift;
     my $c = shift;
 
@@ -143,9 +152,9 @@ sub image_display_order :Path('/image/display_order') Args(0) {
     $c->stash->{type} = $c->req->param("type");
     $c->stash->{id} = $c->req->param("id");
     $c->stash->{display_order} = $c->req->param("display_order");
-    
+
     print STDERR "image_id = ".$c->stash->{image_id}."\n";
-    
+
     $c->stash->{template} = '/image/display_order.mas';
 }
 
@@ -183,56 +192,6 @@ sub validate_image_filename :Private {
     return 0;  # FALSE, if passes all tests
 }
 
-sub send_image_email :Private {
-    my $self = shift;
-    my $c = shift;
-    my $action = shift;
-    my $image = shift;
-    my $sp_person_id = shift;
-    my $refering_page=shift;
-    my $type= shift;  #locus or...?
-    my $type_id = shift; #the database id of the refering object (locus..)
-
-    my $image_id = $image->get_image_id();
-
-    my $person= CXGN::People::Person->new($c->dbc->dbh, $sp_person_id);
-    my $user=$person->get_first_name()." ".$person->get_last_name();
-
-    my $type_link;
-
-
-    my $user_link = qq | http://sgn.cornell.edu/solpeople/personal-info.pl?sp_person_id=$sp_person_id|;
-    my $usermail=$person->get_contact_email();
-    my $image_link = qq |http://sgn.cornell.edu/image/?image_id=$image_id|;
-    if ($type eq 'locus') {
-        $type_link = qq | http://sgn.cornell.edu/phenome/locus_display.pl?locus_id=$type_id|;
-    }
-#    elsif ($type eq 'allele') {
-#       $type_link = qq | http://sgn.cornell.edu/phenome/allele.pl?allele_id=$type_id|;
-#     }
-#     elsif ($type eq 'population') {
-#       $type_link = qq | http://sgn.cornell.edu/phenome/population.pl?population_id=$type_id|;
-#     }
-
-    my $fdbk_body;
-    my $subject;
-
-    if ($action eq 'store') {
-
-        $subject="[New image associated with $type: $type_id]";
-        $fdbk_body="$user ($user_link) has associated image $image_link \n with $type: $type_link";
-   }
-    elsif($action eq 'delete') {
-
-
-        $subject="[A image-$type association removed from $type: $type_id]";
-        $fdbk_body="$user ($user_link) has removed publication $image_link \n from $type: $type_link";
-    }
-
-    CXGN::Contact::send_email($subject,$fdbk_body, 'sgn-db-curation@sgn.cornell.edu');
-
-}
-
 sub get_user : Private{
     my ( $self, $c ) = @_;
 
@@ -261,5 +220,21 @@ sub require_logged_in : Private {
     return 1;
 }
 
+sub _check_user_login_image {
+    my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{message} = $login_check_return;
+        $c->stash->{template} = 'generic_message.mas';
+        return;
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
+}
 
 1;

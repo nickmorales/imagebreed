@@ -178,6 +178,9 @@ sub trial_info : Chained('trial_init') PathPart('') Args(0) {
         $c->stash->{drone_run_date} = $trial->get_drone_run_date;
         $c->stash->{template} = '/breeders_toolbox/drone_run_project.mas';
     }
+    elsif ($design_type eq "drone_run_band") {
+        $c->stash->{template} = '/breeders_toolbox/drone_run_band_project.mas';
+    }
     elsif ($trial_type_name eq "crossing_trial"){
         print STDERR "It's a crossing trial!\n\n";
         my $program_name = $breeding_program_data->[0]->[1];

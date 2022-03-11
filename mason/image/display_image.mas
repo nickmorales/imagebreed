@@ -8,24 +8,6 @@
 
 =head1 DESCRIPTION
 
-parameters:
-
-=over 5
-
-=item $image
-
-a CXGN::Image object for the image to be displayed.
-
-=item $person_id
-
-the user who is currently logged in.
-
-=item $size
-
-The size of the image to display initially
-
-=back
-
 =head1 AUTHOR
 
 Lukas Mueller <lam87@cornell.edu>
@@ -37,29 +19,21 @@ Lukas Mueller <lam87@cornell.edu>
 
 
 <%args>
-$image => undef
-$person_id => undef
+$image_id => undef
 $size => 'medium'
+$image_tags => []
+$associated_object_links => ''
+$thumbnail_img => undef
+$small_img => undef
+$medium_img => undef
+$large_img => undef
+$original_img => undef
 $display_order => undef
 </%args>
 
 <& /util/import_javascript.mas, classes => [ 'CXGN.Image', 'jquery', 'jqueryui' ] &>
 
-
-
 <%perl>
-
-#use JSON;
-use SGN::Image;
-use CXGN::Phenome::Individual;
-
-my $thumbnail_img = $image->get_img_src_tag("thumbnail");
-my $small_img = $image->get_img_src_tag("small");
-my $medium_img = $image->get_img_src_tag("medium");
-my $large_img = $image->get_img_src_tag("large");
-my $original_img = $image->get_img_src_tag("original");
-
-my $object_id = $image->get_image_id();
 
 if ($size!~/thumbnail|small|medium|large|original/i ) { $size="medium"; }
 
@@ -77,7 +51,7 @@ if ($size eq "original") { $active = 4; }
 {
 background: white;
 }
-.ui-tabs { 
+.ui-tabs {
   border: none;
 }
 
@@ -115,14 +89,14 @@ background: white;
 <center><table><tr><td class="boxbgcolor5"><b>Note:</b> The above image may be subject to copyright. Please contact the submitter about permissions to use the image.</td></tr></table></center><br />
 
 
-% my $tag_count = scalar($image->get_tags());
+% my $tag_count = scalar(@$image_tags);
 
 <&| /page/info_section.mas, title=>"Associated tags" &>
-<br><b>Associated tags</b> [<a href="/tag/index.pl?image_id=<% $object_id %>&amp;action=new">add/remove</a>]: <% $tag_count %>
+<br><b>Associated tags</b> [<a href="/tag/index.pl?image_id=<% $image_id %>&amp;action=new">add/remove</a>]: <% $tag_count %>
 
 
-% foreach my $tag ($image->get_tags()) { 
-%    print $tag->get_name()."  ";
+% foreach my $tag (@$image_tags) {
+%    print $tag->[1]."  ";
 % }
 
 </&>
@@ -130,40 +104,40 @@ background: white;
 
 <&| /page/info_section.mas, title=>"Associated objects" &>
 
-% print $image->get_associated_object_links();
+<% $associated_object_links %>
 
 </&>
 
 <&| /page/info_section.mas, title=>"Display properties",  collapsible => 1, collapsed => 1 &>
-  
+
   <div id="display_properties_div">
-    
-          
+
+
   </div>
-  
-  
+
+
 </&>
 
 
 
 <script>
-  
-  jQuery(window).ready( function() { 
-    jQuery('#image_tabs').tabs({ active: <% $active %> }); 
+
+  jQuery(window).ready( function() {
+    jQuery('#image_tabs').tabs({ active: <% $active %> });
 
     // fetch display order data
-    jQuery.ajax( { 
-       url: '/ajax/image/<% $object_id %>',
+    jQuery.ajax( {
+       url: '/ajax/image/<% $image_id %>',
        error: function(r,x,error) { alert('An error occurred retrieving the image display order data.'+r.status+' '+error); },
-       success: function(r)  { 
+       success: function(r)  {
           if (r.error) { alert('Error: '+r.error); return; }
           var html = "";
-          for (var i=0; i<r.display_order.length; i++) { 
+          for (var i=0; i<r.display_order.length; i++) {
 	    html += r.display_order[i]['name']+'&nbsp;<b>'+r.display_order[i]['display_order']+'</b>&nbsp;<a href="/image/display_order?image_id='+r.display_order[i].image_id+'&amp;type='+r.display_order[i].type+'&amp;id='+r.display_order[i].id+'&amp;display_order='+r.display_order[i].display_order+'">change</button></a><br />';
-	    
+
           }
           jQuery('#display_properties_div').html(html);
-	  
+
        }
     });
 

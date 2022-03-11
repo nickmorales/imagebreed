@@ -2604,6 +2604,7 @@ jQuery(document).ready(function() {
     // Standard Process for Imaging Events
     //
 
+    var manage_drone_imagery_standard_process_private_company_id;
     var manage_drone_imagery_standard_process_field_trial_id;
     var manage_drone_imagery_standard_process_field_trial_name;
     var manage_drone_imagery_standard_process_drone_run_project_id;
@@ -2643,6 +2644,7 @@ jQuery(document).ready(function() {
     jQuery(document).on('click', 'button[name="project_drone_imagery_standard_process"]', function(){
         showManageDroneImagerySection('manage_drone_imagery_standard_process_div');
 
+        manage_drone_imagery_standard_process_private_company_id = jQuery(this).data('private_company_id');
         manage_drone_imagery_standard_process_drone_run_project_id = jQuery(this).data('drone_run_project_id');
         manage_drone_imagery_standard_process_field_trial_id = jQuery(this).data('field_trial_id');
         manage_drone_imagery_standard_process_field_trial_name = jQuery(this).data('field_trial_name');

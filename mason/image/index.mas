@@ -7,28 +7,6 @@
 
 =head1 DESCRIPTION
 
-parameters:
-
-=over 5
-
-=item $object_id
-
-The id of the image in the database
-
-=item $dbh
-
-a database handle
-
-=item $person_id
-
-the person logged into the system right now
-
-=item size
-
-the size of the image to display initially
-
-=back
-
 =head1 AUTHOR
 
 Lukas Mueller
@@ -38,33 +16,26 @@ Lukas Mueller
 </%doc>
 
 <%args>
-$object_id => undef
-$dbh
-$person_id => undef
+$image_id => undef
 $size => 'medium'
+$image_name => undef
+$image_tags => []
+$associated_object_links => ''
+$thumbnail_img => undef
+$small_img => undef
+$medium_img => undef
+$large_img => undef
+$original_img => undef
 </%args>
 
-<%perl> 
-
-use SGN::Image;
-
-if (!$object_id) { 
-   print "<br /><br />No image is available with these parameters."; 
-   return; 
- }
-
-my $image = SGN::Image->new($dbh, $object_id);
-
-</%perl>
-
-<& /page/page_title.mas, title=>"SGN Image ".$image->get_name() &>
+<& /page/page_title.mas, title=>"SGN Image $image_name" &>
 
 <&| /page/info_section.mas, title=>"Image data" &>
 
-    <& /page/form.mas, object_type=>'image', object_id=>"$object_id", form_name=> 'image_form', server_side_script => '/image/ajax/image_ajax_form.pl', form_div_name=>'image_info_div', js_object_name=> 'image_form', page_url => '/image/index.pl', alternate_new_button => '' &>
+    <& /page/form.mas, object_type=>'image', object_id=>"$image_id", form_name=> 'image_form', server_side_script => '/image/ajax/image_ajax_form.pl', form_div_name=>'image_info_div', js_object_name=> 'image_form', page_url => '/image/index.pl', alternate_new_button => '' &>
 
 </&>
 
 <&| /page/info_section.mas, title=>"Image" &>
-    <& /image/display_image.mas, image=>$image, size=>$size &>
+    <& /image/display_image.mas, image_id=>$image_id, size=>$size, image_tags => $image_tags, associated_object_links=>$associated_object_links, thumbnail_img=>$thumbnail_img, medium_img=>$medium_img, small_img=>$small_img, medium_img=>$medium_img, large_img=>$large_img, original_img=>$original_img &>
 </&>
