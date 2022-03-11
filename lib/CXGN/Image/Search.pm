@@ -278,7 +278,7 @@ sub search {
     my $include_obsolete_images = $self->include_obsolete_images;
     my $include_obsolete_tags = $self->include_obsolete_tags;
     my $include_obsolete_image_tags = $self->include_obsolete_image_tags;
-    my $private_company_id_list = $self->private_company_id_list;
+    my $private_company_id_list = $self->private_company_id_list || [];
     my $sp_person_id = $self->sp_person_id;
 
     my @where_clause;

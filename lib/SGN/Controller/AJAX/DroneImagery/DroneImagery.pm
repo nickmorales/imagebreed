@@ -5196,6 +5196,8 @@ sub _perform_image_rotate {
     my $dont_check_for_previous = shift;
     my $check_resize = shift;
     my $keep_original_size_rotate = shift;
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
 
     my $image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
     my $image_url = $image->get_image_url("original");
@@ -5305,7 +5307,7 @@ sub _perform_image_rotate {
     my $image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
     if ($dont_check_for_previous) {
         $image_store->set_sp_person_id($user_id);
-        my $ret = $image_store->process_image($archive_rotate_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
+        my $ret = $image_store->process_image($archive_rotate_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id, $private_company_id, $private_company_is_private);
         $rotated_image_fullpath = $image_store->get_filename('original_converted', 'full');
         $rotated_image_url = $image_store->get_image_url('original');
         $rotated_image_id = $image_store->get_image_id();
@@ -5327,7 +5329,7 @@ sub _perform_image_rotate {
             $rotated_image_id = $image_store->get_image_id();
         } else {
             $image_store->set_sp_person_id($user_id);
-            my $ret = $image_store->process_image($archive_rotate_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
+            my $ret = $image_store->process_image($archive_rotate_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id, $private_company_id, $private_company_is_private);
             $rotated_image_fullpath = $image_store->get_filename('original_converted', 'full');
             $rotated_image_url = $image_store->get_image_url('original');
             $rotated_image_id = $image_store->get_image_id();
@@ -5530,6 +5532,8 @@ sub _perform_plot_polygon_assign {
     my $cropping_type = shift || 'rectangular_square';
     my $preview_only = shift;
     my $preview_only_count = shift || 5;
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
 
     my %drone_run_band_plot_hash;
     my @drone_run_band_project_ids_all = ($drone_run_band_project_id_input);
@@ -5719,7 +5723,7 @@ sub _perform_plot_polygon_assign {
 
                 $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
                 $image->set_sp_person_id($user_id);
-                my $ret = $image->process_image($archive_plot_polygons_temp_image, "test");
+                my $ret = $image->process_image($archive_plot_polygons_temp_image, "test", undef, undef, $private_company_id, $private_company_is_private);
                 my $plot_polygon_image_fullpath = $image->get_filename('original_converted', 'full');
                 my $plot_polygon_image_url = $image->get_image_url('original');
                 my ($image_width, $image_height) = imgsize($plot_polygon_image_fullpath);
@@ -5763,7 +5767,7 @@ sub _perform_plot_polygon_assign {
                     $plot_polygon_image_url = $image->get_image_url('original');
                 } else {
                     $image->set_sp_person_id($user_id);
-                    my $ret = $image->process_image($archive_plot_polygons_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
+                    my $ret = $image->process_image($archive_plot_polygons_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id, $private_company_id, $private_company_is_private);
                     my $stock_associate = $image->associate_stock($stock_id, $user_name);
                     $plot_polygon_image_fullpath = $image->get_filename('original_converted', 'full');
                     $plot_polygon_image_url = $image->get_image_url('original');
@@ -6115,6 +6119,8 @@ sub _perform_image_denoise {
     my $user_name = shift;
     my $user_role = shift;
     my $archive_denoise_temp_image = shift;
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
 
     my $image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
     my $image_url = $image->get_image_url("original");
@@ -6156,7 +6162,7 @@ sub _perform_image_denoise {
         $denoised_image_id = $image_store->get_image_id();
     } else {
         $image_store->set_sp_person_id($user_id);
-        my $ret = $image_store->process_image($archive_denoise_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
+        my $ret = $image_store->process_image($archive_denoise_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id, $private_company_id, $private_company_is_private);
         $denoised_image_fullpath = $image_store->get_filename('original_converted', 'full');
         $denoised_image_url = $image_store->get_image_url('original');
         $denoised_image_id = $image_store->get_image_id();
@@ -6384,6 +6390,9 @@ sub _perform_image_background_remove_threshold_percentage {
     my $user_name = shift;
     my $user_role = shift;
     my $archive_remove_background_temp_image = shift;
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
+
     print STDERR "Remove background threshold percentage $image_type\n";
 
     my @drone_run_band_project_ids_all = ($drone_run_band_project_id);
@@ -6437,7 +6446,7 @@ sub _perform_image_background_remove_threshold_percentage {
     my $iterator = 0;
     foreach (@drone_run_band_project_ids_all) {
         if ($iterator == 0) {
-            my $ret = $image_store->process_image($archive_remove_background_temp_image, 'project', $_, $linking_table_type_id);
+            my $ret = $image_store->process_image($archive_remove_background_temp_image, 'project', $_, $linking_table_type_id, $private_company_id, $private_company_is_private);
 
             $removed_background_image_fullpath = $image_store->get_filename('original_converted', 'full');
             $removed_background_image_url = $image_store->get_image_url('original');
@@ -9698,14 +9707,16 @@ sub _perform_standard_process_minimal_vi_calc {
     my $vi = shift;
     my $bands = shift;
     my $cropping_polygon_type = shift || 'rectangular_square';
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
 
     my $vi_map_hash = CXGN::DroneImagery::ImageTypes::get_vegetative_index_image_type_term_map();
     my %vi_map = %$vi_map_hash;
 
-    my $index_return = _perform_vegetative_index_calculation($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $vi, 0, $bands, $user_id, $user_name, $user_role);
+    my $index_return = _perform_vegetative_index_calculation($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $vi, 0, $bands, $user_id, $user_name, $user_role, $private_company_id, $private_company_is_private);
     my $index_image_id = $index_return->{index_image_id};
 
-    my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $index_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $plot_polygons_value, $vi_map{$vi}->{index}->{(%{$vi_map{$vi}->{index}})[0]}->[0], $user_id, $user_name, $user_role, 0, 0, 1, 1, $cropping_polygon_type, 0, 0);
+    my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $index_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $plot_polygons_value, $vi_map{$vi}->{index}->{(%{$vi_map{$vi}->{index}})[0]}->[0], $user_id, $user_name, $user_role, 0, 0, 1, 1, $cropping_polygon_type, 0, 0, $private_company_id, $private_company_is_private);
 }
 
 sub _perform_standard_process_extended_vi_calc {
@@ -9942,6 +9953,8 @@ sub _perform_minimal_vi_standard_process {
     my $user_name = shift;
     my $user_role = shift;
     my $cropping_polygon_type = shift || 'rectangular_square';
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
 
     # $selected_drone_run_band_types{$drone_run_band_type} = $drone_run_band_project_id;
 
@@ -9961,7 +9974,7 @@ sub _perform_minimal_vi_standard_process {
 
     if (exists($vegetative_indices->{'TGI'}) || exists($vegetative_indices->{'VARI'}) || exists($vegetative_indices->{'CCC'}) ) {
         if(exists($selected_drone_run_band_types->{'Blue (450-520nm)'}) && exists($selected_drone_run_band_types->{'Green (515-600nm)'}) && exists($selected_drone_run_band_types->{'Red (600-690nm)'}) ) {
-            my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{drone_run_project_name}, $drone_run_band_project_ids_and_names_same_ortho, $selected_drone_run_band_types->{'Blue (450-520nm)'}, $selected_drone_run_band_types->{'Green (515-600nm)'}, $selected_drone_run_band_types->{'Red (600-690nm)'}, 'BGR', $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{threshold_values}, $user_id, $user_name, $user_role);
+            my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{drone_run_project_name}, $drone_run_band_project_ids_and_names_same_ortho, $selected_drone_run_band_types->{'Blue (450-520nm)'}, $selected_drone_run_band_types->{'Green (515-600nm)'}, $selected_drone_run_band_types->{'Red (600-690nm)'}, 'BGR', $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{threshold_values}, $user_id, $user_name, $user_role, $private_company_id, $private_company_is_private);
             my $merged_image_id = $merged_return->{merged_image_id};
             my $merged_drone_run_band_project_id = $merged_return->{merged_drone_run_band_project_id};
             my $merged_drone_run_band_project_ids_same_ortho = $merged_return->{merged_drone_run_band_project_ids_same_ortho};
@@ -9970,7 +9983,7 @@ sub _perform_minimal_vi_standard_process {
             my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
             $archive_rotate_temp_image .= '.png';
 
-            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $merged_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{rotate_value}, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image,0,0, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{check_resize}, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{keep_original_size_rotate});
+            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $merged_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{rotate_value}, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image,0,0, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{check_resize}, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{keep_original_size_rotate}, $private_company_id, $private_company_is_private);
             my $rotated_image_id = $rotate_return->{rotated_image_id};
             print STDERR Dumper $rotate_return;
 
@@ -9978,45 +9991,45 @@ sub _perform_minimal_vi_standard_process {
             my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
             $archive_temp_image .= '.png';
 
-            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $rotated_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{cropping_value}, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
+            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $rotated_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{cropping_value}, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1, $private_company_id, $private_company_is_private);
             my $cropped_image_id = $cropping_return->{cropped_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
             my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
             $archive_denoise_temp_image .= '.png';
 
-            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $archive_denoise_temp_image, $private_company_id, $private_company_is_private);
             my $denoised_image_id = $denoise_return->{denoised_image_id};
 
-            my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{plot_polygons_value}, 'observation_unit_polygon_rgb_imagery', $user_id, $user_name, $user_role, 0, 0, 1, 1, $cropping_polygon_type, 0, 0);
+            my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{plot_polygons_value}, 'observation_unit_polygon_rgb_imagery', $user_id, $user_name, $user_role, 0, 0, 1, 1, $cropping_polygon_type, 0, 0, $private_company_id, $private_company_is_private);
 
             if (exists($vegetative_indices->{'TGI'})) {
-                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{plot_polygons_value}, 'TGI', 'BGR', $cropping_polygon_type);
+                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{plot_polygons_value}, 'TGI', 'BGR', $cropping_polygon_type, $private_company_id, $private_company_is_private);
             }
             if (exists($vegetative_indices->{'VARI'})) {
-                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{plot_polygons_value}, 'VARI', 'BGR', $cropping_polygon_type);
+                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{plot_polygons_value}, 'VARI', 'BGR', $cropping_polygon_type, $private_company_id, $private_company_is_private);
             }
             if (exists($vegetative_indices->{'CCC'})) {
-                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{plot_polygons_value}, 'CCC', 'BGR', $cropping_polygon_type);
+                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'Blue (450-520nm)'}}->{plot_polygons_value}, 'CCC', 'BGR', $cropping_polygon_type, $private_company_id, $private_company_is_private);
             }
         }
         if (exists($selected_drone_run_band_types->{'RGB Color Image'})) {
             my $drone_run_band_ids_same_orthophoto = $drone_run_band_project_ids_type_hash_same_ortho->{'RGB Color Image'} || [];
 
             if (exists($vegetative_indices->{'TGI'})) {
-                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{denoised_image_id}, $selected_drone_run_band_types->{'RGB Color Image'}, $drone_run_band_ids_same_orthophoto, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{plot_polygons_value}, 'TGI', 'BGR', $cropping_polygon_type);
+                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{denoised_image_id}, $selected_drone_run_band_types->{'RGB Color Image'}, $drone_run_band_ids_same_orthophoto, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{plot_polygons_value}, 'TGI', 'BGR', $cropping_polygon_type, $private_company_id, $private_company_is_private);
             }
             if (exists($vegetative_indices->{'VARI'})) {
-                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{denoised_image_id}, $selected_drone_run_band_types->{'RGB Color Image'}, $drone_run_band_ids_same_orthophoto, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{plot_polygons_value}, 'VARI', 'BGR', $cropping_polygon_type);
+                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{denoised_image_id}, $selected_drone_run_band_types->{'RGB Color Image'}, $drone_run_band_ids_same_orthophoto, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{plot_polygons_value}, 'VARI', 'BGR', $cropping_polygon_type, $private_company_id, $private_company_is_private);
             }
             if (exists($vegetative_indices->{'CCC'})) {
-                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{denoised_image_id}, $selected_drone_run_band_types->{'RGB Color Image'}, $drone_run_band_ids_same_orthophoto, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{plot_polygons_value}, 'CCC', 'BGR', $cropping_polygon_type);
+                _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{denoised_image_id}, $selected_drone_run_band_types->{'RGB Color Image'}, $drone_run_band_ids_same_orthophoto, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'RGB Color Image'}}->{plot_polygons_value}, 'CCC', 'BGR', $cropping_polygon_type, $private_company_id, $private_company_is_private);
             }
         }
     }
     if (exists($vegetative_indices->{'NDVI'})) {
         if(exists($selected_drone_run_band_types->{'NIR (780-3000nm)'}) && exists($selected_drone_run_band_types->{'Red (600-690nm)'}) ) {
-            my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_name}, $drone_run_band_project_ids_and_names_same_ortho, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, $selected_drone_run_band_types->{'Red (600-690nm)'}, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, 'NRN', $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{threshold_values}, $user_id, $user_name, $user_role);
+            my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_name}, $drone_run_band_project_ids_and_names_same_ortho, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, $selected_drone_run_band_types->{'Red (600-690nm)'}, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, 'NRN', $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{threshold_values}, $user_id, $user_name, $user_role, $private_company_id, $private_company_is_private);
             my $merged_image_id = $merged_return->{merged_image_id};
             my $merged_drone_run_band_project_id = $merged_return->{merged_drone_run_band_project_id};
             my $merged_drone_run_band_project_ids_same_ortho = $merged_return->{merged_drone_run_band_project_ids_same_ortho};
@@ -10025,31 +10038,31 @@ sub _perform_minimal_vi_standard_process {
             my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
             $archive_rotate_temp_image .= '.png';
 
-            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $merged_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{rotate_value}, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{check_resize}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{keep_original_size_rotate});
+            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $merged_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{rotate_value}, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{check_resize}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{keep_original_size_rotate}, $private_company_id, $private_company_is_private);
             my $rotated_image_id = $rotate_return->{rotated_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
             my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
             $archive_temp_image .= '.png';
 
-            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $rotated_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{cropping_value}, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
+            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $rotated_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{cropping_value}, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1, $private_company_id, $private_company_is_private);
             my $cropped_image_id = $cropping_return->{cropped_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
             my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
             $archive_denoise_temp_image .= '.png';
 
-            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $archive_denoise_temp_image, $private_company_id, $private_company_is_private);
             my $denoised_image_id = $denoise_return->{denoised_image_id};
 
-            my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{plot_polygons_value}, 'observation_unit_polygon_nrn_imagery', $user_id, $user_name, $user_role, 0, 0, 1, 1, $cropping_polygon_type, 0, 0);
+            my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{plot_polygons_value}, 'observation_unit_polygon_nrn_imagery', $user_id, $user_name, $user_role, 0, 0, 1, 1, $cropping_polygon_type, 0, 0, $private_company_id, $private_company_is_private);
 
-            _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{plot_polygons_value}, 'NDVI', 'NRN', $cropping_polygon_type);
+            _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{plot_polygons_value}, 'NDVI', 'NRN', $cropping_polygon_type, $private_company_id, $private_company_is_private);
         }
     }
     if (exists($vegetative_indices->{'NDRE'})) {
         if(exists($selected_drone_run_band_types->{'NIR (780-3000nm)'}) && exists($selected_drone_run_band_types->{'Red Edge (690-750nm)'}) ) {
-            my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_name}, $drone_run_band_project_ids_and_names_same_ortho, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, $selected_drone_run_band_types->{'Red Edge (690-750nm)'}, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, 'NReN', $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{threshold_values}, $user_id, $user_name, $user_role);
+            my $merged_return = _perform_image_merge($c, $bcs_schema, $metadata_schema, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_id}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{drone_run_project_name}, $drone_run_band_project_ids_and_names_same_ortho, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, $selected_drone_run_band_types->{'Red Edge (690-750nm)'}, $selected_drone_run_band_types->{'NIR (780-3000nm)'}, 'NReN', $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{threshold_values}, $user_id, $user_name, $user_role, $private_company_id, $private_company_is_private);
             my $merged_image_id = $merged_return->{merged_image_id};
             my $merged_drone_run_band_project_id = $merged_return->{merged_drone_run_band_project_id};
             my $merged_drone_run_band_project_ids_same_ortho = $merged_return->{merged_drone_run_band_project_ids_same_ortho};
@@ -10058,26 +10071,26 @@ sub _perform_minimal_vi_standard_process {
             my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
             $archive_rotate_temp_image .= '.png';
 
-            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $merged_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{rotate_value}, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{check_resize}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{keep_original_size_rotate});
+            my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $merged_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{rotate_value}, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{check_resize}, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{keep_original_size_rotate}, $private_company_id, $private_company_is_private);
             my $rotated_image_id = $rotate_return->{rotated_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
             my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
             $archive_temp_image .= '.png';
 
-            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $rotated_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{cropping_value}, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
+            my $cropping_return = _perform_image_cropping($c, $bcs_schema, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $rotated_image_id, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{cropping_value}, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1, $private_company_id, $private_company_is_private);
             my $cropped_image_id = $cropping_return->{cropped_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
             my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
             $archive_denoise_temp_image .= '.png';
 
-            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+            my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $archive_denoise_temp_image, $private_company_id, $private_company_is_private);
             my $denoised_image_id = $denoise_return->{denoised_image_id};
 
-            my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{plot_polygons_value}, 'observation_unit_polygon_nren_imagery', $user_id, $user_name, $user_role, 0, 0, 1, 1, $cropping_polygon_type, 0, 0);
+            my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{plot_polygons_value}, 'observation_unit_polygon_nren_imagery', $user_id, $user_name, $user_role, 0, 0, 1, 1, $cropping_polygon_type, 0, 0, $private_company_id, $private_company_is_private);
 
-            _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{plot_polygons_value}, 'NDRE', 'NReN', $cropping_polygon_type);
+            _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{plot_polygons_value}, 'NDRE', 'NReN', $cropping_polygon_type, $private_company_id, $private_company_is_private);
         }
     }
 }
@@ -10290,6 +10303,8 @@ sub _perform_image_cropping {
     my $archive_temp_image = shift;
     my $apply_image_width_ratio = shift;
     my $apply_image_height_ratio = shift;
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
 
     my $polygons_array = decode_json $polygons;
     my @polygons_rescaled = ();
@@ -10328,7 +10343,7 @@ sub _perform_image_cropping {
         $previous_image->delete(); #Sets to obsolete
     }
 
-    my $ret = $image_store->process_image($archive_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id);
+    my $ret = $image_store->process_image($archive_temp_image, 'project', $drone_run_band_project_id, $linking_table_type_id, $private_company_id, $private_company_is_private);
     my $cropped_image_fullpath = $image_store->get_filename('original_converted', 'full');
     my $cropped_image_url = $image_store->get_image_url('original');
     my $cropped_image_id = $image_store->get_image_id();
@@ -10497,6 +10512,8 @@ sub _perform_vegetative_index_calculation {
     my $user_id = shift;
     my $user_name = shift;
     my $user_role = shift;
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
 
     my $index_script = '';
     my $linking_table_type_id;
@@ -10603,7 +10620,7 @@ sub _perform_vegetative_index_calculation {
 
             if ($iterator == 0) {
                 $image_store->set_sp_person_id($user_id);
-                my $ret = $image_store->process_image($archive_temp_image, 'project', $drone_run_band_project_id_save, $linking_table_type_id);
+                my $ret = $image_store->process_image($archive_temp_image, 'project', $drone_run_band_project_id_save, $linking_table_type_id, $private_company_id, $private_company_is_private);
                 $index_image_fullpath = $image_store->get_filename('original_converted', 'full');
                 $index_image_url = $image_store->get_image_url('original');
                 $index_image_id = $image_store->get_image_id();
@@ -10762,6 +10779,8 @@ sub _perform_image_merge {
     my $user_id = shift;
     my $user_name = shift;
     my $user_role = shift;
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
 
     if (!$band_1_drone_run_band_project_id || !$band_2_drone_run_band_project_id || !$band_3_drone_run_band_project_id) {
         $c->stash->{rest} = { error => 'Please select 3 drone run bands' };
@@ -10831,6 +10850,9 @@ sub _perform_image_merge {
 
     #print STDERR Dumper \@all_drone_runs;
 
+    my $q_priv = "UPDATE project SET private_company_id=?, is_private=? WHERE project_id=?;";
+    my $h_priv = $schema->storage->dbh()->prepare($q_priv);
+
     my $iterator = 0;
     foreach my $drone_run (@all_drone_runs) {
         my $drone_run_project_id_save = $drone_run->[0];
@@ -10854,11 +10876,13 @@ sub _perform_image_merge {
                 project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $drone_run_project_id_save}]
             });
             $merged_drone_run_band_id = $project_rs->project_id();
+
+            $h_priv->execute($private_company_id, $private_company_is_private, $merged_drone_run_band_id);
         }
 
         if ($iterator == 0) {
             $selected_merged_drone_run_band_id = $merged_drone_run_band_id;
-            my $ret = $image->process_image($archive_temp_image, 'project', $merged_drone_run_band_id, $linking_table_type_id);
+            my $ret = $image->process_image($archive_temp_image, 'project', $merged_drone_run_band_id, $linking_table_type_id, $private_company_id, $private_company_is_private);
             $merged_image_fullpath = $image->get_filename('original_converted', 'full');
             $merged_image_url = $image->get_image_url('original');
             $merged_image_id = $image->get_image_id();
@@ -10901,6 +10925,8 @@ sub _perform_phenotype_automated {
     my $user_id = shift;
     my $user_name = shift;
     my $user_role = shift;
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
 
     my $number_system_cores = `getconf _NPROCESSORS_ONLN` or die "Could not get number of system cores!\n";
     chomp($number_system_cores);
@@ -10968,7 +10994,7 @@ sub _perform_phenotype_automated {
             #my $pm = Parallel::ForkManager->new(floor(int($number_system_cores)*0.5));
             foreach my $plot_polygon_type (@{$project_observation_unit_plot_polygons_types{$drone_run_band_project_type}->{$standard_process_type}}) {
                 #my $pid = $pm->start and next;
-                my $return = _perform_phenotype_calculation($c, $schema, $metadata_schema, $phenome_schema, $drone_run_band_project_id, $drone_run_band_project_type, $phenotype_method, $time_cvterm_id, $plot_polygon_type, $user_id, $user_name, $user_role, \@allowed_composed_cvs, $composable_cvterm_delimiter, $composable_cvterm_format, 1, $ignore_new_phenotype_values, $overwrite_phenotype_values, $plot_margin_top_bottom, $plot_margin_left_right);
+                my $return = _perform_phenotype_calculation($c, $schema, $metadata_schema, $phenome_schema, $drone_run_band_project_id, $drone_run_band_project_type, $phenotype_method, $time_cvterm_id, $plot_polygon_type, $user_id, $user_name, $user_role, \@allowed_composed_cvs, $composable_cvterm_delimiter, $composable_cvterm_format, 1, $ignore_new_phenotype_values, $overwrite_phenotype_values, $plot_margin_top_bottom, $plot_margin_left_right, $private_company_id, $private_company_is_private);
                 if ($return->{error}){
                     print STDERR Dumper $return->{error};
                 }
@@ -11911,6 +11937,8 @@ sub _perform_phenotype_calculation {
     my $overwrite_phenotype_values = shift;
     my $plot_margin_top_bottom = shift;
     my $plot_margin_left_right = shift;
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
 
     print STDERR Dumper [$drone_run_band_project_id, $drone_run_band_project_type, $phenotype_method, $time_cvterm_id, $plot_polygons_type];
 
@@ -12273,7 +12301,9 @@ sub _perform_phenotype_calculation {
                 trait_list=>\@traits_seen,
                 values_hash=>\%zonal_stat_phenotype_data,
                 has_timestamps=>1,
-                metadata_hash=>\%phenotype_metadata
+                metadata_hash=>\%phenotype_metadata,
+                private_company_id=>$private_company_id,
+                private_company_phenotype_is_private=>$private_company_is_private,
             };
 
             if ($overwrite_phenotype_values) {
@@ -12322,7 +12352,7 @@ sub _perform_phenotype_calculation {
                 $image_source_tag_small = $image->get_img_src_tag("tiny");
             } else {
                 $image->set_sp_person_id($user_id);
-                my $ret = $image->process_image($_, 'project', $drone_run_band_project_id, $linking_table_type_id);
+                my $ret = $image->process_image($_, 'project', $drone_run_band_project_id, $linking_table_type_id, $private_company_id, $private_company_is_private);
                 $ret = $image->associate_stock($stock->{stock_id}, $user_name);
                 $image_fullpath = $image->get_filename('original_converted', 'full');
                 $image_url = $image->get_image_url('original');

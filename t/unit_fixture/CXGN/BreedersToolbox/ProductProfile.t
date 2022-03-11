@@ -39,7 +39,8 @@ $response = $ua->post(
         "profile_program_id" => $program_id,
         "new_profile_name" => 'product_profile_1',
         "new_profile_scope" => 'test_upload',
-        "sgn_session_id" => $session_id
+        "sgn_session_id" => $session_id,
+        'private_company_id' => 1
     ]
 );
 

@@ -2405,6 +2405,7 @@
                             <tbody>
                                 <tr>
                                     <th>Imaging Event Name</th>
+                                    <th>Company</th>
                                     <th>Type</th>
                                     <th>Description</th>
                                     <th>Date</th>
@@ -2424,6 +2425,7 @@
 
                         <ul>
                             <li><b>Imaging Event Name</b>: (required) The globally unique name of the imaging event name (e.g. Field1Ortho01012020)</li>
+                            <li><b>Company</b>: (required) The company name. This must already exist in the database.</li>
                             <li><b>Type</b>: (required) Either "Aerial Medium to High Res" or "Aerial Low Res" to indicate high or low resolution imagery.</li>
                             <li><b>Description</b>: (required) Free-text description of the imaging event and how it was flown and/or processed.</li>
                             <li><b>Date</b>: (required) The date and time of the imaging event in YYYY/MM/DD hh:mm:ss format (e.g. 2021/03/02 12:00:00)</li>
@@ -2595,6 +2597,7 @@
                             <tbody>
                                 <tr>
                                     <th>Imaging Event Name</th>
+                                    <th>Company</th>
                                     <th>Type</th>
                                     <th>Description</th>
                                     <th>Date</th>
@@ -2612,6 +2615,7 @@
 
                         <ul>
                             <li><b>Imaging Event Name</b>: (required) The globally unique name of the imaging event name (e.g. Field1Ortho01012020)</li>
+                            <li><b>Company</b>: (required) The company name. This must already exist in the database.</li>
                             <li><b>Type</b>: (required) Either "Aerial Medium to High Res" or "Aerial Low Res" to indicate high or low resolution imagery.</li>
                             <li><b>Description</b>: (required) Free-text description of the imaging event and how it was flown and/or processed.</li>
                             <li><b>Date</b>: (required) The date and time of the imaging event in YYYY/MM/DD hh:mm:ss format (e.g. 2021/03/02 12:00:00)</li>

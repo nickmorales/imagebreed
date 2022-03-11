@@ -41,7 +41,7 @@ is_deeply($message_hash, {'success' => 1});
 
 my $field_trial_id = $schema->resultset("Project::Project")->search({name => 'test_trial'})->first->project_id();
 
-$response = $ua->post('http://localhost:3010/api/drone_imagery/new_imaging_vehicle?sgn_session_id='.$sgn_session_id.'&vehicle_name=Drone1&vehicle_description=dronedesc&battery_names=blue,green');
+$response = $ua->post('http://localhost:3010/api/drone_imagery/new_imaging_vehicle?sgn_session_id='.$sgn_session_id.'&vehicle_name=Drone1&vehicle_description=dronedesc&battery_names=blue,green&private_company_id=1');
 ok($response->is_success);
 my $message = $response->decoded_content;
 my $message_hash = decode_json $message;
@@ -65,6 +65,7 @@ my $response_micasense_stitch = $ua->post(
             upload_drone_images_zipfile => [ $file_micasense5channel_image_zip, 'upload_drone_images_zipfile' ],
             upload_drone_images_panel_zipfile => [ $micasense5bandpanelzipfile, 'upload_drone_images_panel_zipfile' ],
             "drone_run_field_trial_id"=>$field_trial_id,
+            "private_company_id"=>1,
             "drone_run_name"=>"NewMicasenseUnstitchedDroneRunProject",
             "drone_run_type"=>"Aerial Medium to High Res",
             "drone_run_date"=>"2019/01/03 12:12:12",
@@ -117,6 +118,7 @@ my $response_rgb_stitch = $ua->post(
             "sgn_session_id"=>$sgn_session_id,
             upload_drone_images_zipfile => [ $rgbrawimageszipfile, 'upload_drone_images_zipfile' ],
             "drone_run_field_trial_id"=>$field_trial_id,
+            "private_company_id"=>1,
             "drone_run_name"=>"NewRGBUnstitchedDroneRunProject",
             "drone_run_type"=>"Aerial Medium to High Res",
             "drone_run_date"=>"2019/01/02 12:12:12",
@@ -367,7 +369,7 @@ $ua = LWP::UserAgent->new;
 $ua->timeout(1200);
 my $apply_drone_run_band_project_ids = encode_json $message_hash_raster->{drone_run_band_project_ids};
 my $vegetative_indices = encode_json ['TGI','VARI','NDVI','NDRE','CCC'];
-my $response_standard_process = $ua->post('http://localhost:3010/api/drone_imagery/standard_process_apply?sgn_session_id='.$sgn_session_id.'&apply_drone_run_band_project_ids='.$apply_drone_run_band_project_ids.'&drone_run_band_project_id='.$message_hash_raster->{drone_run_band_project_ids}->[0].'&drone_run_project_id='.$message_hash_raster->{drone_run_project_id}.'&vegetative_indices='.$vegetative_indices.'&field_trial_id='.$field_trial_id);
+my $response_standard_process = $ua->post('http://localhost:3010/api/drone_imagery/standard_process_apply?sgn_session_id='.$sgn_session_id.'&apply_drone_run_band_project_ids='.$apply_drone_run_band_project_ids.'&drone_run_band_project_id='.$message_hash_raster->{drone_run_band_project_ids}->[0].'&drone_run_project_id='.$message_hash_raster->{drone_run_project_id}.'&vegetative_indices='.$vegetative_indices.'&field_trial_id='.$field_trial_id.'&private_company_id=1');
 ok($response_standard_process->is_success);
 my $message_standard_process = $response_standard_process->decoded_content;
 my $message_hash_standard_process = decode_json $message_standard_process;
@@ -677,6 +679,7 @@ my $response_raster = $ua->post(
         Content_Type => 'form-data',
         Content => [
             "sgn_session_id"=>$sgn_session_id,
+            "private_company_id"=>1,
             "drone_run_field_trial_id"=>$field_trial_id,
             "drone_run_name"=>"NewStitchedMicasense5BandDroneRunProjectTESTING",
             "drone_run_type"=>"Aerial Medium to High Res",

@@ -1420,21 +1420,36 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
     }
 
     if ($worksheet->get_cell(0,0)->value() ne 'Imaging Event Name' ||
-        $worksheet->get_cell(0,1)->value() ne 'Type' ||
-        $worksheet->get_cell(0,2)->value() ne 'Description' ||
-        $worksheet->get_cell(0,3)->value() ne 'Date' ||
-        $worksheet->get_cell(0,4)->value() ne 'Vehicle Name' ||
-        $worksheet->get_cell(0,5)->value() ne 'Vehicle Battery Set' ||
-        $worksheet->get_cell(0,6)->value() ne 'Sensor' ||
-        $worksheet->get_cell(0,7)->value() ne 'Field Trial Name' ||
-        $worksheet->get_cell(0,8)->value() ne 'Image Filenames' ||
-        $worksheet->get_cell(0,9)->value() ne 'Coordinate System' ||
-        $worksheet->get_cell(0,10)->value() ne 'Base Date' ||
-        $worksheet->get_cell(0,11)->value() ne 'Camera Rig') {
-            $c->stash->{message} = "The header row in the CSV spreadsheet must be 'Imaging Event Name,Type,Description,Date,Vehicle Name,Vehicle Battery Set,Sensor,Field Trial Name,GeoJSON Filename,Image Filenames,Coordinate System,Base Date,Camera Rig'.";
+        $worksheet->get_cell(0,1)->value() ne 'Company' ||
+        $worksheet->get_cell(0,2)->value() ne 'Type' ||
+        $worksheet->get_cell(0,3)->value() ne 'Description' ||
+        $worksheet->get_cell(0,4)->value() ne 'Date' ||
+        $worksheet->get_cell(0,5)->value() ne 'Vehicle Name' ||
+        $worksheet->get_cell(0,6)->value() ne 'Vehicle Battery Set' ||
+        $worksheet->get_cell(0,7)->value() ne 'Sensor' ||
+        $worksheet->get_cell(0,8)->value() ne 'Field Trial Name' ||
+        $worksheet->get_cell(0,9)->value() ne 'Image Filenames' ||
+        $worksheet->get_cell(0,10)->value() ne 'Coordinate System' ||
+        $worksheet->get_cell(0,11)->value() ne 'Base Date' ||
+        $worksheet->get_cell(0,12)->value() ne 'Camera Rig') {
+            $c->stash->{message} = "The header row in the CSV spreadsheet must be 'Imaging Event Name,Company,Type,Description,Date,Vehicle Name,Vehicle Battery Set,Sensor,Field Trial Name,GeoJSON Filename,Image Filenames,Coordinate System,Base Date,Camera Rig'.";
             $c->stash->{template} = 'generic_message.mas';
             return;
     }
+
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
+
+    my $q_comp = "SELECT private_company_id FROM sgn_people.private_company WHERE name=?;";
+    my $h_comp = $schema->storage->dbh()->prepare($q_comp);
+    my %company_name_lookup;
+    my %company_name_is_private_lookup;
+
+    my $q_project = "SELECT private_company_id FROM project WHERE project_id=?;";
+    my $h_project = $schema->storage->dbh()->prepare($q_project);
+
+    my $q_stock = "SELECT private_company_id FROM stock WHERE stock_id=?;";
+    my $h_stock = $schema->storage->dbh()->prepare($q_stock);
 
     my %seen_upload_dates;
     for my $row ( 1 .. $row_max ) {
@@ -1442,54 +1457,84 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
         if ($worksheet->get_cell($row,0)) {
             $imaging_event_name = $worksheet->get_cell($row,0)->value();
         }
-        my $imaging_event_type;
+        my $company_name;
         if ($worksheet->get_cell($row,1)) {
-            $imaging_event_type = $worksheet->get_cell($row,1)->value();
+            $company_name = $worksheet->get_cell($row,1)->value();
+        }
+        my $imaging_event_type;
+        if ($worksheet->get_cell($row,2)) {
+            $imaging_event_type = $worksheet->get_cell($row,2)->value();
         }
         my $imaging_event_desc;
-        if ($worksheet->get_cell($row,2)) {
-            $imaging_event_desc = $worksheet->get_cell($row,2)->value();
+        if ($worksheet->get_cell($row,3)) {
+            $imaging_event_desc = $worksheet->get_cell($row,3)->value();
         }
         my $imaging_event_date;
-        if ($worksheet->get_cell($row,3)) {
-            $imaging_event_date = $worksheet->get_cell($row,3)->value();
+        if ($worksheet->get_cell($row,4)) {
+            $imaging_event_date = $worksheet->get_cell($row,4)->value();
         }
         my $vehicle_name;
-        if ($worksheet->get_cell($row,4)) {
-            $vehicle_name = $worksheet->get_cell($row,4)->value();
+        if ($worksheet->get_cell($row,5)) {
+            $vehicle_name = $worksheet->get_cell($row,5)->value();
         }
         my $vehicle_battery = 'default_battery';
-        if ($worksheet->get_cell($row,5)) {
-            $vehicle_battery = $worksheet->get_cell($row,5)->value();
+        if ($worksheet->get_cell($row,6)) {
+            $vehicle_battery = $worksheet->get_cell($row,6)->value();
         }
         my $sensor;
-        if ($worksheet->get_cell($row,6)) {
-            $sensor = $worksheet->get_cell($row,6)->value();
+        if ($worksheet->get_cell($row,7)) {
+            $sensor = $worksheet->get_cell($row,7)->value();
         }
         my $field_trial_name;
-        if ($worksheet->get_cell($row,7)) {
-            $field_trial_name = $worksheet->get_cell($row,7)->value();
+        if ($worksheet->get_cell($row,8)) {
+            $field_trial_name = $worksheet->get_cell($row,8)->value();
         }
         my $image_filenames;
-        if ($worksheet->get_cell($row,8)) {
-            $image_filenames = $worksheet->get_cell($row,8)->value();
+        if ($worksheet->get_cell($row,9)) {
+            $image_filenames = $worksheet->get_cell($row,9)->value();
         }
         my $coordinate_system;
-        if ($worksheet->get_cell($row,9)) {
-            $coordinate_system = $worksheet->get_cell($row,9)->value();
+        if ($worksheet->get_cell($row,10)) {
+            $coordinate_system = $worksheet->get_cell($row,10)->value();
         }
         my $base_date;
-        if ($worksheet->get_cell($row,10)) {
-            $base_date = $worksheet->get_cell($row,10)->value();
+        if ($worksheet->get_cell($row,11)) {
+            $base_date = $worksheet->get_cell($row,11)->value();
         }
         my $rig_desc;
-        if ($worksheet->get_cell($row,11)) {
-            $rig_desc = $worksheet->get_cell($row,11)->value();
+        if ($worksheet->get_cell($row,12)) {
+            $rig_desc = $worksheet->get_cell($row,12)->value();
         }
 
         if (!$imaging_event_name){
             push @parse_csv_errors, "Please give a new imaging event name!";
         }
+
+        my $private_company_id_current;
+        if (!$company_name){
+            push @parse_csv_errors, "Please give a company name!";
+        }
+        else {
+            $h_comp->execute($company_name);
+            my ($private_company_id) = $h_comp->fetchrow_array();
+            if (!$private_company_id) {
+                push @parse_csv_errors, "The company $company_name does not exist in the database!";
+            }
+            else {
+                $private_company_id_current = $private_company_id;
+                my $company_is_private = $private_company_access_is_private_hash->{$private_company_id} ? 1 : 0;
+
+                if (!exists($allowed_private_company_ids_hash->{$private_company_id})) {
+                    push @parse_csv_errors, "You do not belong to the company $company_name!";
+                }
+                if ($allowed_private_company_access_hash->{$private_company_id} ne 'curator_access' && $allowed_private_company_access_hash->{$private_company_id} ne 'submitter_access') {
+                    push @parse_csv_errors, "You do not have submitter access or greater in company $company_name!";
+                }
+                $company_name_lookup{$company_name} = $private_company_id;
+                $company_name_is_private_lookup{$company_name} = $company_is_private;
+            }
+        }
+
         if (!$imaging_event_type){
             push @parse_csv_errors, "Please give an imaging event type!";
         }
@@ -1528,6 +1573,12 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
         $field_trial_ids_seen{$field_trial_id}++;
         $field_trial_name_lookup{$field_trial_name} = $field_trial_id;
 
+        $h_project->execute($field_trial_id);
+        my ($trial_private_company_id) = $h_project->fetchrow_array();
+        if ($private_company_id_current && $trial_private_company_id != $private_company_id_current) {
+            push @parse_csv_errors, "The field trial $field_trial_name is not in the company $company_name! Cannot add an imaging event to a company that is different from the field trial.";
+        }
+
         if ($imaging_event_date !~ /^\d{4}\/\d{2}\/\d{2}\s\d\d:\d\d:\d\d$/){
             $c->stash->{message} = "Please give a new imaging event date in the format YYYY/MM/DD HH:mm:ss! The provided $imaging_event_date is not correct!";
             $c->stash->{template} = 'generic_message.mas';
@@ -1548,12 +1599,21 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
         if ($project_rs->count > 0) {
             push @parse_csv_errors, "Please use a globally unique imaging event name! The name you specified $imaging_event_name has already been used.";
         }
+
         my $vehicle_prop = $schema->resultset("Stock::Stock")->search({uniquename => $vehicle_name, type_id=>$imaging_vehicle_cvterm_id});
         if ($vehicle_prop->count != 1) {
             push @parse_csv_errors, "Imaging event vehicle $vehicle_name is not already in the database! Please add it first!";
         }
         else {
-            $vehicle_name_lookup{$vehicle_name} = $vehicle_prop->first->stock_id;
+            my $vehicle_id = $vehicle_prop->first->stock_id;
+
+            # $h_stock->execute($vehicle_id);
+            # my ($vehicle_private_company_id) = $h_stock->fetchrow_array();
+            # if ($private_company_id_current && $vehicle_private_company_id != $private_company_id_current) {
+            #     push @parse_csv_errors, "The vehicle $vehicle_name is not in the company $company_name! Only use vehicles part of the same company!";
+            # }
+
+            $vehicle_name_lookup{$vehicle_name} = $vehicle_id;
         }
 
         my $trial = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $field_trial_id });
@@ -1634,22 +1694,28 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
         return;
     }
 
+    my $q_priv = "UPDATE project SET private_company_id=?, is_private=? WHERE project_id=?;";
+    my $h_priv = $schema->storage->dbh()->prepare($q_priv);
+
     my @drone_run_project_ids;
     my %drone_run_band_hash;
     for my $row ( 1 .. $row_max ) {
         my $imaging_event_name = $worksheet->get_cell($row,0)->value();
-        my $imaging_event_type = $worksheet->get_cell($row,1)->value();
-        my $imaging_event_desc = $worksheet->get_cell($row,2)->value();
-        my $imaging_event_date = $worksheet->get_cell($row,3)->value();
-        my $vehicle_name = $worksheet->get_cell($row,4)->value();
-        my $vehicle_battery = $worksheet->get_cell($row,5) ? $worksheet->get_cell($row,5)->value() : 'default_battery';
-        my $sensor = $worksheet->get_cell($row,6)->value();
-        my $field_trial_name = $worksheet->get_cell($row,7)->value();
-        my $image_filenames = $worksheet->get_cell($row,8)->value();
-        my $coordinate_system = $worksheet->get_cell($row,9)->value();
-        my $base_date = $worksheet->get_cell($row,10) ? $worksheet->get_cell($row,10)->value() : '';
-        my $rig_desc = $worksheet->get_cell($row,11) ? $worksheet->get_cell($row,11)->value() : '';
+        my $company_name = $worksheet->get_cell($row,2)->value();
+        my $imaging_event_type = $worksheet->get_cell($row,3)->value();
+        my $imaging_event_desc = $worksheet->get_cell($row,4)->value();
+        my $imaging_event_date = $worksheet->get_cell($row,5)->value();
+        my $vehicle_name = $worksheet->get_cell($row,6)->value();
+        my $vehicle_battery = $worksheet->get_cell($row,7) ? $worksheet->get_cell($row,7)->value() : 'default_battery';
+        my $sensor = $worksheet->get_cell($row,8)->value();
+        my $field_trial_name = $worksheet->get_cell($row,8)->value();
+        my $image_filenames = $worksheet->get_cell($row,9)->value();
+        my $coordinate_system = $worksheet->get_cell($row,10)->value();
+        my $base_date = $worksheet->get_cell($row,11) ? $worksheet->get_cell($row,11)->value() : '';
+        my $rig_desc = $worksheet->get_cell($row,12) ? $worksheet->get_cell($row,12)->value() : '';
 
+        my $private_company_id = $company_name_lookup{$company_name};
+        my $private_company_is_private = $company_name_is_private_lookup{$company_name};
         my $new_drone_run_vehicle_id = $vehicle_name_lookup{$vehicle_name};
         my $selected_trial_id = $field_trial_name_lookup{$field_trial_name};
         my $new_drone_run_camera_info = $sensor_map{$sensor};
@@ -1742,6 +1808,8 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
         my $selected_drone_run_id = $project_rs->project_id();
         push @drone_run_project_ids, $selected_drone_run_id;
 
+        $h_priv->execute($private_company_id, $private_company_is_private, $selected_drone_run_id);
+
         my $vehicle_prop = decode_json $schema->resultset("Stock::Stockprop")->search({stock_id => $new_drone_run_vehicle_id, type_id=>$imaging_vehicle_properties_cvterm_id})->first()->value();
         $vehicle_prop->{batteries}->{$vehicle_battery}->{usage}++;
         my $vehicle_prop_update = $schema->resultset('Stock::Stockprop')->update_or_create({
@@ -1821,6 +1889,8 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
                 project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $selected_drone_run_id}]
             });
             my $selected_drone_run_band_id = $project_rs->project_id();
+
+            $h_priv->execute($private_company_id, $private_company_is_private, $selected_drone_run_band_id);
 
             my $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
             $image->set_sp_person_id($user_id);
@@ -2077,6 +2147,20 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         close($fh_geojson_check);
     }
 
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
+
+    my $q_comp = "SELECT private_company_id FROM sgn_people.private_company WHERE name=?;";
+    my $h_comp = $schema->storage->dbh()->prepare($q_comp);
+    my %company_name_lookup;
+    my %company_name_is_private_lookup;
+
+    my $q_project = "SELECT private_company_id FROM project WHERE project_id=?;";
+    my $h_project = $schema->storage->dbh()->prepare($q_project);
+
+    my $q_stock = "SELECT private_company_id FROM stock WHERE stock_id=?;";
+    my $h_stock = $schema->storage->dbh()->prepare($q_stock);
+
     my @parse_csv_errors;
     my %field_trial_name_lookup;
     my %field_trial_layout_lookup;
@@ -2105,20 +2189,21 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     }
 
     if ($worksheet->get_cell(0,0)->value() ne 'Imaging Event Name' ||
-        $worksheet->get_cell(0,1)->value() ne 'Type' ||
-        $worksheet->get_cell(0,2)->value() ne 'Description' ||
-        $worksheet->get_cell(0,3)->value() ne 'Date' ||
-        $worksheet->get_cell(0,4)->value() ne 'Vehicle Name' ||
-        $worksheet->get_cell(0,5)->value() ne 'Vehicle Battery Set' ||
-        $worksheet->get_cell(0,6)->value() ne 'Sensor' ||
-        $worksheet->get_cell(0,7)->value() ne 'Field Trial Name' ||
-        $worksheet->get_cell(0,8)->value() ne 'GeoJSON Filename' ||
-        $worksheet->get_cell(0,9)->value() ne 'Image Filenames' ||
-        $worksheet->get_cell(0,10)->value() ne 'Coordinate System' ||
-        $worksheet->get_cell(0,11)->value() ne 'Rotation Angle' ||
-        $worksheet->get_cell(0,12)->value() ne 'Base Date' ||
-        $worksheet->get_cell(0,13)->value() ne 'Camera Rig') {
-            $c->stash->{message} = "The header row in the CSV spreadsheet must be 'Imaging Event Name,Type,Description,Date,Vehicle Name,Vehicle Battery Set,Sensor,Field Trial Name,GeoJSON Filename,Image Filenames,Coordinate System,Rotation Angle,Base Date,Camera Rig'.";
+        $worksheet->get_cell(0,1)->value() ne 'Company' ||
+        $worksheet->get_cell(0,2)->value() ne 'Type' ||
+        $worksheet->get_cell(0,3)->value() ne 'Description' ||
+        $worksheet->get_cell(0,4)->value() ne 'Date' ||
+        $worksheet->get_cell(0,5)->value() ne 'Vehicle Name' ||
+        $worksheet->get_cell(0,6)->value() ne 'Vehicle Battery Set' ||
+        $worksheet->get_cell(0,7)->value() ne 'Sensor' ||
+        $worksheet->get_cell(0,8)->value() ne 'Field Trial Name' ||
+        $worksheet->get_cell(0,9)->value() ne 'GeoJSON Filename' ||
+        $worksheet->get_cell(0,10)->value() ne 'Image Filenames' ||
+        $worksheet->get_cell(0,11)->value() ne 'Coordinate System' ||
+        $worksheet->get_cell(0,12)->value() ne 'Rotation Angle' ||
+        $worksheet->get_cell(0,13)->value() ne 'Base Date' ||
+        $worksheet->get_cell(0,14)->value() ne 'Camera Rig') {
+            $c->stash->{message} = "The header row in the CSV spreadsheet must be 'Imaging Event Name,Company,Type,Description,Date,Vehicle Name,Vehicle Battery Set,Sensor,Field Trial Name,GeoJSON Filename,Image Filenames,Coordinate System,Rotation Angle,Base Date,Camera Rig'.";
             $c->stash->{template} = 'generic_message.mas';
             return;
     }
@@ -2129,62 +2214,92 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         if ($worksheet->get_cell($row,0)) {
             $imaging_event_name = $worksheet->get_cell($row,0)->value();
         }
-        my $imaging_event_type;
+        my $company_name;
         if ($worksheet->get_cell($row,1)) {
-            $imaging_event_type = $worksheet->get_cell($row,1)->value();
+            $company_name = $worksheet->get_cell($row,1)->value();
+        }
+        my $imaging_event_type;
+        if ($worksheet->get_cell($row,2)) {
+            $imaging_event_type = $worksheet->get_cell($row,2)->value();
         }
         my $imaging_event_desc;
-        if ($worksheet->get_cell($row,2)) {
-            $imaging_event_desc = $worksheet->get_cell($row,2)->value();
+        if ($worksheet->get_cell($row,3)) {
+            $imaging_event_desc = $worksheet->get_cell($row,3)->value();
         }
         my $imaging_event_date;
-        if ($worksheet->get_cell($row,3)) {
-            $imaging_event_date = $worksheet->get_cell($row,3)->value();
+        if ($worksheet->get_cell($row,4)) {
+            $imaging_event_date = $worksheet->get_cell($row,4)->value();
         }
         my $vehicle_name;
-        if ($worksheet->get_cell($row,4)) {
-            $vehicle_name = $worksheet->get_cell($row,4)->value();
+        if ($worksheet->get_cell($row,5)) {
+            $vehicle_name = $worksheet->get_cell($row,5)->value();
         }
         my $vehicle_battery = 'default_battery';
-        if ($worksheet->get_cell($row,5)) {
-            $vehicle_battery = $worksheet->get_cell($row,5)->value();
+        if ($worksheet->get_cell($row,6)) {
+            $vehicle_battery = $worksheet->get_cell($row,6)->value();
         }
         my $sensor;
-        if ($worksheet->get_cell($row,6)) {
-            $sensor = $worksheet->get_cell($row,6)->value();
+        if ($worksheet->get_cell($row,7)) {
+            $sensor = $worksheet->get_cell($row,7)->value();
         }
         my $field_trial_name;
-        if ($worksheet->get_cell($row,7)) {
-            $field_trial_name = $worksheet->get_cell($row,7)->value();
+        if ($worksheet->get_cell($row,8)) {
+            $field_trial_name = $worksheet->get_cell($row,8)->value();
         }
         my $geojson_filename;
-        if ($worksheet->get_cell($row,8)) {
-            $geojson_filename = $worksheet->get_cell($row,8)->value();
+        if ($worksheet->get_cell($row,9)) {
+            $geojson_filename = $worksheet->get_cell($row,9)->value();
         }
         my $image_filenames;
-        if ($worksheet->get_cell($row,9)) {
-            $image_filenames = $worksheet->get_cell($row,9)->value();
+        if ($worksheet->get_cell($row,10)) {
+            $image_filenames = $worksheet->get_cell($row,10)->value();
         }
         my $coordinate_system;
-        if ($worksheet->get_cell($row,10)) {
-            $coordinate_system = $worksheet->get_cell($row,10)->value();
+        if ($worksheet->get_cell($row,11)) {
+            $coordinate_system = $worksheet->get_cell($row,11)->value();
         }
         my $rotation_angle;
-        if ($worksheet->get_cell($row,11)) {
-            $rotation_angle = $worksheet->get_cell($row,11)->value();
+        if ($worksheet->get_cell($row,12)) {
+            $rotation_angle = $worksheet->get_cell($row,12)->value();
         }
         my $base_date;
-        if ($worksheet->get_cell($row,12)) {
-            $base_date = $worksheet->get_cell($row,12)->value();
+        if ($worksheet->get_cell($row,13)) {
+            $base_date = $worksheet->get_cell($row,13)->value();
         }
         my $rig_desc;
-        if ($worksheet->get_cell($row,13)) {
-            $rig_desc = $worksheet->get_cell($row,13)->value();
+        if ($worksheet->get_cell($row,14)) {
+            $rig_desc = $worksheet->get_cell($row,14)->value();
         }
 
         if (!$imaging_event_name){
             push @parse_csv_errors, "Please give a new imaging event name!";
         }
+
+        my $private_company_id_current;
+        if (!$company_name){
+            push @parse_csv_errors, "Please give a company name!";
+        }
+        else {
+            $h_comp->execute($company_name);
+            my ($private_company_id) = $h_comp->fetchrow_array();
+            if (!$private_company_id) {
+                push @parse_csv_errors, "The company $company_name does not exist in the database!";
+            }
+            else {
+                $private_company_id_current = $private_company_id;
+                my $company_is_private = $private_company_access_is_private_hash->{$private_company_id} ? 1 : 0;
+
+                if (!exists($allowed_private_company_ids_hash->{$private_company_id})) {
+                    push @parse_csv_errors, "You do not belong to the company $company_name!";
+                }
+                if ($allowed_private_company_access_hash->{$private_company_id} ne 'curator_access' && $allowed_private_company_access_hash->{$private_company_id} ne 'submitter_access') {
+                    push @parse_csv_errors, "You do not have submitter access or greater in company $company_name!";
+                }
+                $company_name_lookup{$company_name} = $private_company_id;
+                $company_name_is_private_lookup{$company_name} = $company_is_private;
+            }
+        }
+
         if (!$imaging_event_type){
             push @parse_csv_errors, "Please give an imaging event type!";
         }
@@ -2224,6 +2339,12 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         my $field_trial_id = $field_trial_rs->first->project_id();
         $field_trial_name_lookup{$field_trial_name} = $field_trial_id;
 
+        $h_project->execute($field_trial_id);
+        my ($trial_private_company_id) = $h_project->fetchrow_array();
+        if ($private_company_id_current && $trial_private_company_id != $private_company_id_current) {
+            push @parse_csv_errors, "The field trial $field_trial_name is not in the company $company_name! Cannot add an imaging event to a company that is different from the field trial.";
+        }
+
         if ($imaging_event_date !~ /^\d{4}\/\d{2}\/\d{2}\s\d\d:\d\d:\d\d$/){
             $c->stash->{message} = "Please give a new imaging event date in the format YYYY/MM/DD HH:mm:ss! The provided $imaging_event_date is not correct!";
             $c->stash->{template} = 'generic_message.mas';
@@ -2244,12 +2365,21 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         if ($project_rs->count > 0) {
             push @parse_csv_errors, "Please use a globally unique imaging event name! The name you specified $imaging_event_name has already been used.";
         }
+
         my $vehicle_prop = $schema->resultset("Stock::Stock")->search({uniquename => $vehicle_name, type_id=>$imaging_vehicle_cvterm_id});
         if ($vehicle_prop->count != 1) {
             push @parse_csv_errors, "Imaging event vehicle $vehicle_name is not already in the database! Please add it first!";
         }
         else {
-            $vehicle_name_lookup{$vehicle_name} = $vehicle_prop->first->stock_id;
+            my $vehicle_id = $vehicle_prop->first->stock_id;
+
+            # $h_stock->execute($vehicle_id);
+            # my ($vehicle_private_company_id) = $h_stock->fetchrow_array();
+            # if ($private_company_id_current && $vehicle_private_company_id != $private_company_id_current) {
+            #     push @parse_csv_errors, "The vehicle $vehicle_name is not in the company $company_name! Only use vehicles part of the same company!";
+            # }
+
+            $vehicle_name_lookup{$vehicle_name} = $vehicle_id;
         }
 
         my $trial = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $field_trial_id });
@@ -2316,6 +2446,9 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         return;
     }
 
+    my $q_priv = "UPDATE project SET private_company_id=?, is_private=? WHERE project_id=?;";
+    my $h_priv = $schema->storage->dbh()->prepare($q_priv);
+
     my $dir = $c->tempfiles_subdir('/upload_drone_imagery_bulk_previous');
 
     my @drone_run_project_ids;
@@ -2323,20 +2456,23 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     my %drone_run_project_info;
     for my $row ( 1 .. $row_max ) {
         my $imaging_event_name = $worksheet->get_cell($row,0)->value();
-        my $imaging_event_type = $worksheet->get_cell($row,1)->value();
-        my $imaging_event_desc = $worksheet->get_cell($row,2)->value();
-        my $imaging_event_date = $worksheet->get_cell($row,3)->value();
-        my $vehicle_name = $worksheet->get_cell($row,4)->value();
-        my $vehicle_battery = $worksheet->get_cell($row,5) ? $worksheet->get_cell($row,5)->value() : 'default_battery';
-        my $sensor = $worksheet->get_cell($row,6)->value();
-        my $field_trial_name = $worksheet->get_cell($row,7)->value();
-        my $geojson_filename = $worksheet->get_cell($row,8)->value();
-        my $image_filenames = $worksheet->get_cell($row,9)->value();
-        my $coordinate_system = $worksheet->get_cell($row,10)->value();
-        my $rotation_angle = $worksheet->get_cell($row,11) ? $worksheet->get_cell($row,11)->value() : 0;
-        my $base_date = $worksheet->get_cell($row,12) ? $worksheet->get_cell($row,12)->value() : '';
-        my $rig_desc = $worksheet->get_cell($row,13) ? $worksheet->get_cell($row,13)->value() : '';
+        my $company_name = $worksheet->get_cell($row,1)->value();
+        my $imaging_event_type = $worksheet->get_cell($row,2)->value();
+        my $imaging_event_desc = $worksheet->get_cell($row,3)->value();
+        my $imaging_event_date = $worksheet->get_cell($row,4)->value();
+        my $vehicle_name = $worksheet->get_cell($row,5)->value();
+        my $vehicle_battery = $worksheet->get_cell($row,6) ? $worksheet->get_cell($row,6)->value() : 'default_battery';
+        my $sensor = $worksheet->get_cell($row,7)->value();
+        my $field_trial_name = $worksheet->get_cell($row,8)->value();
+        my $geojson_filename = $worksheet->get_cell($row,9)->value();
+        my $image_filenames = $worksheet->get_cell($row,10)->value();
+        my $coordinate_system = $worksheet->get_cell($row,11)->value();
+        my $rotation_angle = $worksheet->get_cell($row,12) ? $worksheet->get_cell($row,12)->value() : 0;
+        my $base_date = $worksheet->get_cell($row,13) ? $worksheet->get_cell($row,13)->value() : '';
+        my $rig_desc = $worksheet->get_cell($row,14) ? $worksheet->get_cell($row,14)->value() : '';
 
+        my $private_company_id = $company_name_lookup{$company_name};
+        my $private_company_is_private = $company_name_is_private_lookup{$company_name};
         my $new_drone_run_vehicle_id = $vehicle_name_lookup{$vehicle_name};
         my $selected_trial_id = $field_trial_name_lookup{$field_trial_name};
         my $new_drone_run_camera_info = $sensor_map{$sensor};
@@ -2428,6 +2564,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         });
         my $selected_drone_run_id = $project_rs->project_id();
         push @drone_run_project_ids, $selected_drone_run_id;
+
+        $h_priv->execute($private_company_id, $private_company_is_private, $selected_drone_run_id);
 
         my $vehicle_prop = decode_json $schema->resultset("Stock::Stockprop")->search({stock_id => $new_drone_run_vehicle_id, type_id=>$imaging_vehicle_properties_cvterm_id})->first()->value();
         $vehicle_prop->{batteries}->{$vehicle_battery}->{usage}++;
@@ -2607,6 +2745,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             });
             my $selected_drone_run_band_id = $project_rs->project_id();
 
+            $h_priv->execute($private_company_id, $private_company_is_private, $selected_drone_run_band_id);
+
             my $image = SGN::Image->new( $schema->storage->dbh, undef, $c );
             $image->set_sp_person_id($user_id);
             my $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'stitched_drone_imagery', 'project_md_image')->cvterm_id();
@@ -2621,6 +2761,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         }
 
         push @drone_run_projects, {
+            private_company_id => $private_company_id,
+            private_company_is_private => $private_company_is_private,
             drone_run_project_id => $selected_drone_run_id,
             drone_run_band_projects => \@drone_run_band_projects,
             drone_run_band_project_ids => \@drone_run_band_project_ids,
@@ -2644,6 +2786,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
 
     my $rad_conversion = 0.0174533;
     foreach (@drone_run_projects) {
+        my $private_company_id = $_->{private_company_id};
+        my $private_company_is_private = $_->{private_company_is_private};
         my $drone_run_project_id_in = $_->{drone_run_project_id};
         my $time_cvterm_id = $_->{time_cvterm_id};
         my $apply_drone_run_band_project_ids = $_->{drone_run_band_project_ids};
@@ -2728,7 +2872,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
             $archive_rotate_temp_image .= '.png';
 
-            my $rotate_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 1);
+            my $rotate_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 1, $private_company_id, $private_company_is_private);
             my $rotated_image_id = $rotate_return->{rotated_image_id};
 
             my $image = SGN::Image->new( $schema->storage->dbh, $rotated_image_id, $c );
@@ -2812,14 +2956,14 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
             $archive_temp_image .= '.png';
 
-            my $cropping_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_cropping($c, $schema, $drone_run_band_project_id, [], $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
+            my $cropping_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_cropping($c, $schema, $drone_run_band_project_id, [], $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio, $private_company_id, $private_company_is_private);
             my $cropped_image_id = $cropping_return->{cropped_image_id};
 
             $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
             my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
             $archive_denoise_temp_image .= '.png';
 
-            my $denoise_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_denoise($c, $schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+            my $denoise_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_denoise($c, $schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image, $private_company_id, $private_company_is_private);
             my $denoised_image_id = $denoise_return->{denoised_image_id};
 
             $drone_run_band_info{$drone_run_band_project_id} = {
@@ -2847,7 +2991,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             }
 
             foreach (@denoised_plot_polygon_type) {
-                my $plot_polygon_original_denoised_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_plot_polygon_assign($c, $schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, [], $plot_polygons_value, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, $polygon_type, 0, 0);
+                my $plot_polygon_original_denoised_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_plot_polygon_assign($c, $schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, [], $plot_polygons_value, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, $polygon_type, 0, 0, $private_company_id, $private_company_is_private);
             }
 
             for my $iterator (0..(scalar(@denoised_background_threshold_removed_imagery_types)-1)) {
@@ -2855,9 +2999,9 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                 my $archive_remove_background_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_remove_background/imageXXXX');
                 $archive_remove_background_temp_image .= '.png';
 
-                my $background_removed_threshold_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_background_remove_threshold_percentage($c, $schema, $denoised_image_id, $drone_run_band_project_id, [], $denoised_background_threshold_removed_imagery_types[$iterator], '25', '25', $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+                my $background_removed_threshold_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_background_remove_threshold_percentage($c, $schema, $denoised_image_id, $drone_run_band_project_id, [], $denoised_background_threshold_removed_imagery_types[$iterator], '25', '25', $user_id, $user_name, $user_role, $archive_remove_background_temp_image, $private_company_id, $private_company_is_private);
 
-                my $plot_polygon_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_plot_polygon_assign($c, $schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, [], $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, $polygon_type, 0, 0);
+                my $plot_polygon_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_plot_polygon_assign($c, $schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, [], $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, $polygon_type, 0, 0, $private_company_id, $private_company_is_private);
             }
 
             $drone_run_band_counter++;
@@ -2866,7 +3010,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         print STDERR Dumper \%selected_drone_run_band_types;
         print STDERR Dumper \%vegetative_indices_hash;
 
-        SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_minimal_vi_standard_process($c, $schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, [], {},  \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_polygon');
+        SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_minimal_vi_standard_process($c, $schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, [], {},  \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_polygon', $private_company_id, $private_company_is_private);
 
         $drone_run_process_in_progress = $schema->resultset('Project::Projectprop')->update_or_create({
             type_id=>$process_indicator_cvterm_id,
@@ -2901,7 +3045,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         my $plot_margin_top_bottom = 5;
         my $plot_margin_left_right = 5;
 
-        my $return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id_in, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
+        my $return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id_in, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role, $private_company_id, $private_company_is_private);
     }
 
     $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";

@@ -23,7 +23,9 @@ my $store_phenotypes = CXGN::Phenotypes::StorePhenotypes->new(
     overwrite_values=>$overwrite,
     ignore_new_values=>$ignore_new_values,
     metadata_hash=>$phenotype_metadata,
-    image_zipfile_path=>$image_zip
+    image_zipfile_path=>$image_zip,
+    private_company_id=>$private_company_id,
+    private_company_phenotype_is_private=>$private_company_is_private,
 );
 my ($verified_warning, $verified_error) = $store_phenotypes->verify();
 my ($stored_phenotype_error, $stored_Phenotype_success) = $store_phenotypes->store();
@@ -110,6 +112,16 @@ has 'user_id' => (
     isa => "Int",
     is => 'rw',
     required => 1
+);
+
+has 'private_company_id' => (
+    isa => "Int",
+    is => 'rw',
+);
+
+has 'private_company_phenotype_is_private' => (
+    isa => "Bool",
+    is => 'rw',
 );
 
 has 'stock_list' => (
@@ -439,6 +451,8 @@ sub store {
     my $phenome_schema = $self->phenome_schema;
     my $overwrite_values = $self->overwrite_values;
     my $ignore_new_values = $self->ignore_new_values;
+    my $private_company_id = $self->private_company_id || 1;
+    my $private_company_phenotype_is_private = $self->private_company_phenotype_is_private || 0;
     my $error_message;
     my $transaction_error;
     my $user_id = $self->user_id;
@@ -479,8 +493,26 @@ sub store {
         $data{$s->get_column('uniquename')} = [$s->get_column('stock_id'), $s->get_column('nd_geolocation_id'), $s->get_column('project_id') ];
     }
 
-    my $high_dim_pheno_insert_query = "INSERT INTO metadata.md_json (json_type, json) VALUES (?,?) RETURNING json_id;";
+    my $high_dim_pheno_insert_query = "INSERT INTO metadata.md_json (json_type, json, private_company_id, is_private) VALUES (?,?,?,?) RETURNING json_id;";
     my $high_dim_pheno_dbh = $self->bcs_schema->storage->dbh()->prepare($high_dim_pheno_insert_query);
+
+    my $pheno_update_query = "
+        UPDATE phenotype
+        SET collect_date = ?,
+            create_date = DEFAULT,
+            operator = ?,
+            private_company_id = ?,
+            is_private = ?
+        WHERE phenotype_id = ?
+    ";
+    my $pheno_update_h = $self->bcs_schema->storage->dbh()->prepare($pheno_update_query);
+
+    my $q_bridge = "SELECT nd_experiment_phenotype_bridge_id, phenotype_id, file_id
+    FROM phenotype
+    JOIN nd_experiment_phenotype_bridge using(phenotype_id)
+    WHERE stock_id=?
+    AND phenotype.cvalue_id=?";
+    my $h_bridge = $self->bcs_schema->storage->dbh()->prepare($q_bridge);
 
     my $nd_experiment_phenotype_bridge_q = "INSERT INTO nd_experiment_phenotype_bridge (stock_id, project_id, phenotype_id, nd_protocol_id, nd_geolocation_id, file_id, image_id, json_id, upload_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
     my $nd_experiment_phenotype_bridge_dbh = $self->bcs_schema->storage->dbh()->prepare($nd_experiment_phenotype_bridge_q);
@@ -490,7 +522,7 @@ sub store {
 
     # print STDERR "DATA: ".Dumper(\%data);
     ## Use txn_do with the following coderef so that if any part fails, the entire transaction fails.
-    my $coderef = sub {
+    # my $coderef = sub {
         my @overwritten_values;
 
         my $new_count = 0;
@@ -502,7 +534,7 @@ sub store {
 
         my $stored_file_id;
         if ($archived_file) {
-            $stored_file_id = $self->save_archived_file_metadata($archived_file, $archived_file_type);
+            $stored_file_id = $self->_save_archived_file_metadata($archived_file, $archived_file_type, $private_company_id, $private_company_phenotype_is_private);
         }
         if (!$stored_file_id) {$stored_file_id = undef;}
 
@@ -517,19 +549,19 @@ sub store {
             # Check if there is nirs data for this plot
             my $nirs_hashref = $plot_trait_value{$plot_name}->{'nirs'};
             if (defined $nirs_hashref) {
-                ($stored_json_id, $stored_protocol_id) = _store_high_dimensional_phenotype($nirs_hashref, $high_dim_pheno_dbh, 'nirs_spectra');
+                ($stored_json_id, $stored_protocol_id) = _store_high_dimensional_phenotype($nirs_hashref, $high_dim_pheno_dbh, 'nirs_spectra', $private_company_id, $private_company_phenotype_is_private);
                 $nirs_count++;
             }
             # Check if there is transcriptomics data for this plot
             my $transcriptomics_hashref = $plot_trait_value{$plot_name}->{'transcriptomics'};
             if (defined $transcriptomics_hashref) {
-                ($stored_json_id, $stored_protocol_id) = _store_high_dimensional_phenotype($transcriptomics_hashref, $high_dim_pheno_dbh, 'transcriptomics');
+                ($stored_json_id, $stored_protocol_id) = _store_high_dimensional_phenotype($transcriptomics_hashref, $high_dim_pheno_dbh, 'transcriptomics', $private_company_id, $private_company_phenotype_is_private);
                 $transcriptomics_count++;
             }
             # Check if there is metabolomics data for this plot
             my $metabolomics_hashref = $plot_trait_value{$plot_name}->{'metabolomics'};
             if (defined $metabolomics_hashref) {
-                ($stored_json_id, $stored_protocol_id) = _store_high_dimensional_phenotype($metabolomics_hashref, $high_dim_pheno_dbh, 'metabolomics');
+                ($stored_json_id, $stored_protocol_id) = _store_high_dimensional_phenotype($metabolomics_hashref, $high_dim_pheno_dbh, 'metabolomics', $private_company_id, $private_company_phenotype_is_private);
                 $metabolomics_count++;
             }
 
@@ -602,18 +634,10 @@ sub store {
                                 uniquename => $plot_trait_uniquename,
                             });
 
-                            $self->handle_timestamp($timestamp, $observation);
-                            $self->handle_operator($operator, $observation);
+                            _handle_timestamp_operator_private_company($pheno_update_h, $timestamp, $operator, $private_company_id, $private_company_phenotype_is_private, $observation);
 
-                            my $q = "SELECT nd_experiment_phenotype_bridge_id, phenotype_id, file_id
-                            FROM phenotype
-                            JOIN nd_experiment_phenotype_bridge using(phenotype_id)
-                            WHERE stock_id=?
-                            AND phenotype.cvalue_id=?";
-
-                            my $h = $self->bcs_schema->storage->dbh()->prepare($q);
-                            $h->execute($stock_id, $trait_cvterm->cvterm_id);
-                            while (my ($nd_experiment_phenotype_bridge_id, $phenotype_id, $file_id) = $h->fetchrow_array()) {
+                            $h_bridge->execute($stock_id, $trait_cvterm->cvterm_id);
+                            while (my ($nd_experiment_phenotype_bridge_id, $phenotype_id, $file_id) = $h_bridge->fetchrow_array()) {
                                 push @overwritten_values, [$file_id, $phenotype_id, $nd_experiment_phenotype_bridge_id];
                                 if ($stored_image_id) {
                                     $nd_experiment_phenotype_bridge_update_image_dbh->execute($stored_image_id, $nd_experiment_phenotype_bridge_id);
@@ -628,8 +652,7 @@ sub store {
                             });
                             $phenotype_id = $phenotype->phenotype_id;
 
-                            $self->handle_timestamp($timestamp, $phenotype_id);
-                            $self->handle_operator($operator, $phenotype_id);
+                            _handle_timestamp_operator_private_company($pheno_update_h, $timestamp, $operator, $private_company_id, $private_company_phenotype_is_private, $phenotype_id);
 
                             if (!$stored_image_id) {$stored_image_id = undef;}
                             if (!$stored_protocol_id) {$stored_protocol_id = undef;}
@@ -698,13 +721,13 @@ sub store {
                 $success_message .= " ".$_->[1];
             }
         }
-    };
-
-    try {
-        $schema->txn_do($coderef);
-    } catch {
-        $transaction_error =  $_;
-    };
+    # };
+    #
+    # try {
+    #     $schema->txn_do($coderef);
+    # } catch {
+    #     $transaction_error =  $_;
+    # };
 
     if ($transaction_error) {
         $error_message = $transaction_error;
@@ -735,12 +758,15 @@ sub _store_high_dimensional_phenotype {
     my $pheno_hashref = shift;
     my $pheno_dbh = shift;
     my $pheno_type = shift;
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
+
     my $stored_protocol_id = $pheno_hashref->{protocol_id};
     delete $pheno_hashref->{protocol_id};
 
     my $pheno_json = encode_json $pheno_hashref;
 
-    $pheno_dbh->execute($pheno_type, $pheno_json);
+    $pheno_dbh->execute($pheno_type, $pheno_json, $private_company_id, $private_company_is_private);
     my ($json_id) = $pheno_dbh->fetchrow_array();
     return ($json_id, $stored_protocol_id);
 }
@@ -808,10 +834,12 @@ sub check_overwritten_files_status {
     return \@obsoleted_files;
 }
 
-sub save_archived_file_metadata {
+sub _save_archived_file_metadata {
     my $self = shift;
     my $archived_file = shift;
     my $archived_file_type = shift;
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
     my $md5checksum;
 
     if ($archived_file ne 'none'){
@@ -821,18 +849,22 @@ sub save_archived_file_metadata {
     }
 
     my $md_row = $self->metadata_schema->resultset("MdMetadata")->create({create_person_id => $self->user_id,});
-    $md_row->insert();
-    my $file_row = $self->metadata_schema->resultset("MdFiles")
-        ->create({
-            basename => basename($archived_file),
-            dirname => dirname($archived_file),
-            filetype => $archived_file_type,
-            md5checksum => $md5checksum,
-            metadata_id => $md_row->metadata_id(),
-        });
-    $file_row->insert();
+    my $metadata_id = $md_row->metadata_id();
 
-    return $file_row->file_id();
+    my $basename = basename($archived_file);
+    my $dirname = dirname($archived_file);
+
+    my $q = "INSERT INTO metadata.md_files (basename, dirname, filetype, md5checksum, metadata_id, private_company_id, is_private) VALUES (?,?,?,?,?,?,?);";
+    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($basename, $dirname, $archived_file_type, $md5checksum, $metadata_id, $private_company_id, $private_company_is_private);
+
+    my $file_row = $self->metadata_schema->resultset("MdFiles")->search({
+        md5checksum => $md5checksum,
+        metadata_id => $metadata_id,
+    });
+    my $file_id = $file_row->first->file_id();
+
+    return $file_id;
 }
 
 sub get_linked_data {
@@ -877,35 +909,15 @@ sub get_linked_data {
     return \%data;
 }
 
-sub handle_timestamp {
-    my $self = shift;
+sub _handle_timestamp_operator_private_company {
+    my $pheno_dbh = shift;
     my $timestamp = shift || undef;
-    my $phenotype_id = shift;
-
-    my $q = "
-    UPDATE phenotype
-    SET collect_date = ?,
-        create_date = DEFAULT
-    WHERE phenotype_id = ?
-    ";
-
-    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
-    $h->execute($timestamp, $phenotype_id);
-}
-
-sub handle_operator {
-    my $self = shift;
     my $operator = shift || undef;
+    my $private_company_id = shift;
+    my $private_company_is_private = shift;
     my $phenotype_id = shift;
 
-    my $q = "
-    UPDATE phenotype
-    SET operator = ?
-    WHERE phenotype_id = ?
-    ";
-
-    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
-    $h->execute($operator, $phenotype_id);
+    $pheno_dbh->execute($timestamp, $operator, $private_company_id, $private_company_is_private, $phenotype_id);
 }
 
 ###

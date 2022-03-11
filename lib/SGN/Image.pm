@@ -130,9 +130,15 @@ sub get_image_url {
 
 sub process_image {
     my $self = shift;
-    my ($filename, $type, $type_id, $linking_table_type_id) = @_;
+    my ($filename, $type, $type_id, $linking_table_type_id, $private_company_id, $private_company_is_private) = @_;
 
-    $self->SUPER::process_image($filename);
+    my $image_id = $self->SUPER::process_image($filename);
+
+    if ($private_company_id && $private_company_is_private) {
+        my $q = "UPDATE metadata.md_image SET private_company_id=?, is_private=? WHERE image_id=?;";
+        my $h = $self->get_dbh->prepare($q);
+        $h->execute($private_company_id, $private_company_is_private, $image_id);
+    }
 
     if ( $type eq "experiment" ) {
         #print STDERR "Associating experiment $type_id...\n";
