@@ -59,7 +59,7 @@ sub store_location :Path("/ajax/location/store") Args(0) {
     my $longitude   = $params->{longitude} || undef;
     my $altitude    = $params->{altitude} || undef;
     my $noaa_station_id    = $params->{noaa_station_id} || undef;
-    my $private_company_id = $params->{private_company_id};
+    my $private_company_id = $params->{private_company_id} || 1;
 
     my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 'submitter', $private_company_id, 'submitter_access');
 
@@ -187,6 +187,7 @@ sub upload_locations_POST : Args(0) {
             longitude => $data[7],
             altitude => $data[8],
             noaa_station_id => $data[9],
+            private_company_id => 1
         });
 
         my $store = $location->store_location();
