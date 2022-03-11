@@ -1127,8 +1127,8 @@ sub get_trials {
         JOIN nd_experiment_stock ON (plot.stock_id=nd_experiment_stock.stock_id)
         JOIN nd_experiment_project USING(nd_experiment_id)
         JOIN project USING (project_id)
-        LEFT JOIN projectprop ON (project.project_id=projectprop.project_id AND projectprop.type_id=$geolocation_type_id)
-        WHERE $stock_type_table.stock_id=?
+        LEFT JOIN projectprop ON (project.project_id=projectprop.project_id)
+        WHERE $stock_type_table.stock_id=? AND projectprop.type_id=$geolocation_type_id
         GROUP BY project.project_id, project.name, projectprop.value;";
     # print STDERR Dumper $q;
     my $h = $dbh->prepare($q);

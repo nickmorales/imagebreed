@@ -32,15 +32,13 @@ my $before_adding_profile_projectprop = $schema->resultset("Project::Projectprop
 my $file = $f->config->{basepath}."/t/data/product_profile_test.xls";
 my $ua = LWP::UserAgent->new;
 $response = $ua->post(
-    'http://localhost:3010/ajax/breeders/program/upload_profile',
+    'http://localhost:3010/ajax/breeders/program/'.$program_id.'/upload_profile',
     Content_Type => 'form-data',
     Content => [
         "profile_uploaded_file" => [ $file, 'product_profile_test.xls', Content_Type => 'application/vnd.ms-excel', ],
-        "profile_program_id" => $program_id,
         "new_profile_name" => 'product_profile_1',
         "new_profile_scope" => 'test_upload',
         "sgn_session_id" => $session_id,
-        'private_company_id' => 1
     ]
 );
 

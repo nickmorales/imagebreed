@@ -7677,6 +7677,8 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
     my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
     my $field_trial_id = $c->req->param('field_trial_id');
+    my $private_company_id = $c->req->param('company_id') || 1;
+    my $private_company_is_private = $c->req->param('company_is_private') || 1;
     my $drone_run_project_id_input = $c->req->param('drone_run_project_id');
     my $drone_run_band_project_id_input = $c->req->param('drone_run_band_project_id');
     my $gcp_drone_run_project_id_input = $c->req->param('gcp_drone_run_project_id');
@@ -7684,7 +7686,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $is_test_run = $c->req->param('test_run');
     my $gcp_drag_x_diff = $c->req->param('gcp_drag_x_diff') || 0;
     my $gcp_drag_y_diff = $c->req->param('gcp_drag_y_diff') || 0;
-    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', 0, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', $private_company_id, 'submitter_access');
 
     my $phenotype_methods = ['zonal'];
     my $standard_process_type = 'minimal';
@@ -8062,7 +8064,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $dir = $c->tempfiles_subdir('/drone_imagery_rotate');
     my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
     $archive_rotate_temp_image .= '.png';
-    my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id_input, $field_trial_drone_run_band_ids_in_same_orthophoto, $check_image_id, $rotate_rad_gcp/$rad_conversion, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
+    my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id_input, $field_trial_drone_run_band_ids_in_same_orthophoto, $check_image_id, $rotate_rad_gcp/$rad_conversion, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0, $private_company_id, $private_company_is_private);
     my $rotated_image_id = $rotate_return->{rotated_image_id};
     my $rotate_resize_ratio = $rotate_return->{original_image_resize_ratio};
     my $rotate_resize_ratio_width = $rotate_resize_ratio->[0]; #original/saved
@@ -8229,7 +8231,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
     $archive_temp_image .= '.png';
 
-    my $check_cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id_input, $field_trial_drone_run_band_ids_in_same_orthophoto, $rotated_image_id, encode_json $image_crop, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1);
+    my $check_cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id_input, $field_trial_drone_run_band_ids_in_same_orthophoto, $rotated_image_id, encode_json $image_crop, $user_id, $user_name, $user_role, $archive_temp_image, 1, 1, $private_company_id, $private_company_is_private);
     my $check_cropped_image_id = $check_cropping_return->{cropped_image_id};
 
     my $crop_check_target_image = SGN::Image->new( $bcs_schema->storage->dbh, $check_cropped_image_id, $c );
@@ -8366,21 +8368,21 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
         my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
         $archive_rotate_temp_image .= '.png';
 
-        my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
+        my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0, $private_company_id, $private_company_is_private);
         my $rotated_image_id = $rotate_return->{rotated_image_id};
 
         $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
         my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
         $archive_temp_image .= '.png';
 
-        my $cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
+        my $cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $rotated_image_id, $cropping_value, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio, $private_company_id, $private_company_is_private);
         my $cropped_image_id = $cropping_return->{cropped_image_id};
 
         $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
         my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
         $archive_denoise_temp_image .= '.png';
 
-        my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+        my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $user_id, $user_name, $user_role, $archive_denoise_temp_image, $private_company_id, $private_company_is_private);
         my $denoised_image_id = $denoise_return->{denoised_image_id};
 
         $drone_run_band_info{$drone_run_band_project_id} = {
@@ -8400,7 +8402,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
         my @denoised_background_threshold_removed_plot_polygon_types = @{$term_map->{$drone_run_band_type}->{observation_unit_plot_polygon_types}->{threshold_background}};
 
         foreach (@denoised_plot_polygon_type) {
-            my $plot_polygon_original_denoised_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $plot_polygons_value, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square', 0, 0);
+            my $plot_polygon_original_denoised_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $plot_polygons_value, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square', 0, 0, $private_company_id, $private_company_is_private);
         }
 
         for my $iterator (0..(scalar(@denoised_background_threshold_removed_imagery_types)-1)) {
@@ -8412,16 +8414,16 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
 
             $drone_run_band_info{$drone_run_band_project_id}->{threshold_values} = $threshold_values->[2];
 
-            my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto,  $denoised_background_threshold_removed_imagery_types[$iterator], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+            my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto,  $denoised_background_threshold_removed_imagery_types[$iterator], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image, $private_company_id, $private_company_is_private);
 
-            my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square', 0, 0);
+            my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, $field_trial_drone_run_band_ids_in_same_orthophoto, $plot_polygons_value, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square', 0, 0, $private_company_id, $private_company_is_private);
         }
     }
 
     print STDERR Dumper \%selected_drone_run_band_types;
     print STDERR Dumper \%vegetative_indices_hash;
 
-    _perform_minimal_vi_standard_process($c, $bcs_schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_square');
+    _perform_minimal_vi_standard_process($c, $bcs_schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_square', $private_company_id, $private_company_is_private);
 
     foreach (@drone_run_project_ids_all) {
         my $drone_run_process_in_progress = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
@@ -8485,7 +8487,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
                 key=>'projectprop_c1'
             });
 
-            my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $_, $time_cvterm_id_save, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
+            my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $_, $time_cvterm_id_save, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role, $private_company_id, $private_company_is_private);
         }
     }
 
@@ -8501,11 +8503,13 @@ sub standard_process_apply_previous_imaging_event_POST : Args(0) {
     my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
     my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
     my $field_trial_id = $c->req->param('field_trial_id');
+    my $private_company_id = $c->req->param('company_id') || 1;
+    my $private_company_is_private = $c->req->param('company_is_private') || 1;
     my $drone_run_band_project_id_input = $c->req->param('drone_run_band_project_id');
     my $drone_run_project_id_input = $c->req->param('drone_run_project_id');
     my $gcp_drone_run_project_id_input = $c->req->param('previous_drone_run_project_id');
     my $time_cvterm_id = $c->req->param('time_cvterm_id');
-    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', 0, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', $private_company_id, 'submitter_access');
 
     my $phenotype_methods = ['zonal'];
     my $standard_process_type = 'minimal';
@@ -8643,21 +8647,21 @@ sub standard_process_apply_previous_imaging_event_POST : Args(0) {
         my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
         $archive_rotate_temp_image .= '.png';
 
-        my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0);
+        my $rotate_return = _perform_image_rotate($c, $bcs_schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 0, $private_company_id, $private_company_is_private);
         my $rotated_image_id = $rotate_return->{rotated_image_id};
 
         $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
         my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
         $archive_temp_image .= '.png';
 
-        my $cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id, [], $rotated_image_id, $cropping_value_json, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio);
+        my $cropping_return = _perform_image_cropping($c, $bcs_schema, $drone_run_band_project_id, [], $rotated_image_id, $cropping_value_json, $user_id, $user_name, $user_role, $archive_temp_image, $apply_image_width_ratio, $apply_image_height_ratio, $private_company_id, $private_company_is_private);
         my $cropped_image_id = $cropping_return->{cropped_image_id};
 
         $dir = $c->tempfiles_subdir('/drone_imagery_denoise');
         my $archive_denoise_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_denoise/imageXXXX');
         $archive_denoise_temp_image .= '.png';
 
-        my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image);
+        my $denoise_return = _perform_image_denoise($c, $bcs_schema, $metadata_schema, $cropped_image_id, $drone_run_band_project_id, [], $user_id, $user_name, $user_role, $archive_denoise_temp_image, $private_company_id, $private_company_is_private);
         my $denoised_image_id = $denoise_return->{denoised_image_id};
 
         $drone_run_band_info{$drone_run_band_project_id} = {
@@ -8677,7 +8681,7 @@ sub standard_process_apply_previous_imaging_event_POST : Args(0) {
         my @denoised_background_threshold_removed_plot_polygon_types = @{$term_map->{$drone_run_band_type}->{observation_unit_plot_polygon_types}->{threshold_background}};
 
         foreach (@denoised_plot_polygon_type) {
-            my $plot_polygon_original_denoised_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, [], $plot_polygons_value_json, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square', 0, 0);
+            my $plot_polygon_original_denoised_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, [], $plot_polygons_value_json, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square', 0, 0, $private_company_id, $private_company_is_private);
         }
 
         for my $iterator (0..(scalar(@denoised_background_threshold_removed_imagery_types)-1)) {
@@ -8689,16 +8693,16 @@ sub standard_process_apply_previous_imaging_event_POST : Args(0) {
 
             $drone_run_band_info{$drone_run_band_project_id}->{threshold_values} = $threshold_values->[2];
 
-            my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, [],  $denoised_background_threshold_removed_imagery_types[$iterator], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image);
+            my $background_removed_threshold_return = _perform_image_background_remove_threshold_percentage($c, $bcs_schema, $denoised_image_id, $drone_run_band_project_id, [],  $denoised_background_threshold_removed_imagery_types[$iterator], $threshold_values->[0], $threshold_values->[1], $user_id, $user_name, $user_role, $archive_remove_background_temp_image, $private_company_id, $private_company_is_private);
 
-            my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, [], $plot_polygons_value_json, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square', 0, 0);
+            my $plot_polygon_return = _perform_plot_polygon_assign($c, $bcs_schema, $metadata_schema, $background_removed_threshold_return->{removed_background_image_id}, $drone_run_band_project_id, [], $plot_polygons_value_json, $denoised_background_threshold_removed_plot_polygon_types[$iterator], $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, 'rectangular_square', 0, 0, $private_company_id, $private_company_is_private);
         }
     }
 
     print STDERR Dumper \%selected_drone_run_band_types;
     print STDERR Dumper \%vegetative_indices_hash;
 
-    _perform_minimal_vi_standard_process($c, $bcs_schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, [], {}, \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_square');
+    _perform_minimal_vi_standard_process($c, $bcs_schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, [], {}, \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_square', $private_company_id, $private_company_is_private);
 
     $drone_run_process_in_progress = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
         type_id=>$process_indicator_cvterm_id,
@@ -8743,7 +8747,7 @@ sub standard_process_apply_previous_imaging_event_POST : Args(0) {
         $plot_margin_left_right = $drone_run_process_phenotype_margins_hash->{left_right};
     }
 
-    my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
+    my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role, $private_company_id, $private_company_is_private);
 
     my @result;
     $c->stash->{rest} = { data => \@result, success => 1 };

@@ -91,6 +91,7 @@ sub _check_user_login {
     my $check_company_id = shift;
     my $check_company_id_access = shift; #curator_access, submitter_access
     my $bcs_schema = $c->dbic_schema("Bio::Chado::Schema");
+    # print STDERR Dumper [$check_priv,$check_company_id,$check_company_id_access];
 
     my $user_id;
     my $user_name;
@@ -116,8 +117,25 @@ sub _check_user_login {
         $user_role = $c->user->get_object->get_user_type();
     }
 
-    if ($check_priv && $user_role ne 'curator' && $user_role ne $check_priv && $user_role ne 'sequencer') {
-        return {error=>'You must be logged in and have privileges to do this!'};
+    if ($check_priv) {
+        if ($user_role eq 'user') {
+            if ($check_priv ne 'user') {
+                return {error=>'You must be logged in and have privileges to do this!'};
+            }
+        }
+        elsif ($user_role eq 'submitter') {
+            if ($check_priv ne 'user' && $check_priv ne 'submitter') {
+                return {error=>'You must be logged in and have privileges to do this!'};
+            }
+        }
+        elsif ($user_role eq 'sequencer') {
+            if ($check_priv ne 'user' && $check_priv ne 'submitter' && $check_priv ne 'sequencer') {
+                return {error=>'You must be logged in and have privileges to do this!'};
+            }
+        }
+        elsif ($user_role eq 'curator') {
+            #max priv
+        }
     }
 
     if ($check_company_id) {
@@ -130,9 +148,19 @@ sub _check_user_login {
 
         if ($check_company_id_access) {
             my $user_access = $allowed_private_company_access_hash->{$check_company_id};
-            #check for curator_access or submitter_access
-            if ($user_access ne 'curator_access' && $user_access ne $check_company_id_access) {
-                return {error=>"You must belong in the company and have $check_company_id_access to do this!"};
+
+            if ($user_access eq 'user_access') {
+                if ($check_company_id_access ne 'user_access') {
+                    return {error=>"You must belong in the company and have $check_company_id_access to do this!"};
+                }
+            }
+            elsif ($user_access eq 'submitter_access') {
+                if ($check_company_id_access ne 'user_access' && $check_company_id_access ne 'submitter_access') {
+                    return {error=>"You must belong in the company and have $check_company_id_access to do this!"};
+                }
+            }
+            elsif ($user_access eq 'curator_access') {
+                #max priv
             }
         }
     }

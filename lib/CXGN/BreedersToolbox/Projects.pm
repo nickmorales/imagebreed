@@ -384,7 +384,7 @@ sub get_location_geojson {
     if ($private_company_id) {
         $company_ids_sql = $private_company_id;
     }
-    elsif ($private_company_id) {
+    elsif ($sp_person_id) {
         my $private_companies = CXGN::PrivateCompany->new( { schema=> $self->schema } );
         my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
         $company_ids_sql = join ',', @$private_companies_ids;

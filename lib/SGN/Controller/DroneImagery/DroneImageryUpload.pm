@@ -1701,13 +1701,13 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
     my %drone_run_band_hash;
     for my $row ( 1 .. $row_max ) {
         my $imaging_event_name = $worksheet->get_cell($row,0)->value();
-        my $company_name = $worksheet->get_cell($row,2)->value();
-        my $imaging_event_type = $worksheet->get_cell($row,3)->value();
-        my $imaging_event_desc = $worksheet->get_cell($row,4)->value();
-        my $imaging_event_date = $worksheet->get_cell($row,5)->value();
-        my $vehicle_name = $worksheet->get_cell($row,6)->value();
-        my $vehicle_battery = $worksheet->get_cell($row,7) ? $worksheet->get_cell($row,7)->value() : 'default_battery';
-        my $sensor = $worksheet->get_cell($row,8)->value();
+        my $company_name = $worksheet->get_cell($row,1)->value();
+        my $imaging_event_type = $worksheet->get_cell($row,2)->value();
+        my $imaging_event_desc = $worksheet->get_cell($row,3)->value();
+        my $imaging_event_date = $worksheet->get_cell($row,4)->value();
+        my $vehicle_name = $worksheet->get_cell($row,5)->value();
+        my $vehicle_battery = $worksheet->get_cell($row,6) ? $worksheet->get_cell($row,6)->value() : 'default_battery';
+        my $sensor = $worksheet->get_cell($row,7)->value();
         my $field_trial_name = $worksheet->get_cell($row,8)->value();
         my $image_filenames = $worksheet->get_cell($row,9)->value();
         my $coordinate_system = $worksheet->get_cell($row,10)->value();
