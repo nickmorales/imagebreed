@@ -5,6 +5,7 @@ use Data::Dumper;
 use Try::Tiny;
 use SGN::Model::Cvterm;
 use Data::Dumper;
+use URI::FromHash 'uri';
 
 BEGIN { extends 'Catalyst::Controller'; }
 
