@@ -23,6 +23,7 @@ $trial_owner
 $company_id
 $company_name
 $company_project_is_private
+$latest_trial_activity => undef
 </%args>
 
 <div class="row">
@@ -183,6 +184,19 @@ $company_project_is_private
                     <span id="copmany_project_is_private">
                         <% $company_project_is_private %>
                     </span>
+                </td>
+            </tr>
+
+            <tr>
+                <td><b>Latest Trial Activity</b></td>
+                <td>
+                    <div id="latest_trial_activity">
+% if ($latest_trial_activity) {
+%  print "<span style = 'color:blue'>$latest_trial_activity</span>";
+% } else {
+%  print "<span class='text-danger'>[No Record]</span>";
+% }
+                    </div>
                 </td>
             </tr>
 
