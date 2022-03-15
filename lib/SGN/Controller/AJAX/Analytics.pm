@@ -3218,15 +3218,16 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     mat\$colNumber <- as.numeric(mat\$colNumber);
     mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
     mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-    mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+    mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
     if (!is.null(mix\$U)) {
     #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
     write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
     write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-    X <- with(mat, spl2D(rowNumber, colNumber));
     spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-    blups1 <- mix\$U\$\`u:rowNumber\`\$'.$trait_name_encoded_string.';
-    spatial_blup_results\$'.$trait_name_encoded_string.' <- data.matrix(X) %*% data.matrix(blups1);
+    W <- with(mat, spl2Da(rowNumber, colNumber));
+    X <- W\$Z\$\`A:all\`;
+    blups1 <- mix\$U\$\`A:all\`\$'.$trait_name_encoded_string.';
+    spatial_blup_results\$'.$trait_name_encoded_string.' <- X %*% blups1;
     write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
     }
     "';
@@ -4687,15 +4688,16 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     mat\$colNumber <- as.numeric(mat\$colNumber);
     mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
     mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-    mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+    mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
     if (!is.null(mix\$U)) {
     #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
     write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
     write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
-    X <- with(mat, spl2D(rowNumber, colNumber));
     spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-    blups1 <- mix\$U\$\`u:rowNumber\`\$'.$trait_name_encoded_string.';
-    spatial_blup_results\$'.$trait_name_encoded_string.' <- data.matrix(X) %*% data.matrix(blups1);
+    W <- with(mat, spl2Da(rowNumber, colNumber));
+    X <- W\$Z\$\`A:all\`;
+    blups1 <- mix\$U\$\`A:all\`\$'.$trait_name_encoded_string.';
+    spatial_blup_results\$'.$trait_name_encoded_string.' <- X %*% blups1;
     write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
     write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
     h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
@@ -5050,9 +5052,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         mat\$colNumber <- as.numeric(mat\$colNumber);
         mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
         mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-        mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ], tolparinv='.$tolparinv_10.');
+        mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ], tolparinv='.$tolparinv_10.');
         if (!is.null(mix1\$U)) {
-        mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ], tolparinv='.$tolparinv_10.');
+        mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ], tolparinv='.$tolparinv_10.');
         if (!is.null(mix2\$U)) {
         mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
         g_corr <- 0;

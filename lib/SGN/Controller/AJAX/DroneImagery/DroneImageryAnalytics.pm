@@ -2928,17 +2928,18 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         mat\$colNumber <- as.numeric(mat\$colNumber);
                         mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
                         mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-                        mix <- mmer('.$cbind_string_pe.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits_pe.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits_pe.')), rcov=~vs(units, Gtc=unsm('.$number_traits_pe.')), data=mat, tolparinv='.$tolparinv.');
+                        mix <- mmer('.$cbind_string_pe.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits_pe.')) + spl2Da(rowNumber, colNumber), rcov=~vs(units, Gtc=unsm('.$number_traits_pe.')), data=mat, tolparinv='.$tolparinv.');
                         if (!is.null(mix\$U)) {
                         #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-                        X <- with(mat, spl2D(rowNumber, colNumber));
                         spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
+                        W <- with(mat, spl2Da(rowNumber, colNumber));
+                        X <- W\$Z\$\`A:all\`;
                         ';
                         my $trait_index = 1;
                         foreach my $enc_trait_name (@encoded_traits_pe) {
                             $statistics_cmd_pe .= '
-                        blups'.$trait_index.' <- mix\$U\$\`u:rowNumber\`\$'.$enc_trait_name.';
-                        spatial_blup_results\$'.$enc_trait_name.' <- data.matrix(X) %*% data.matrix(blups'.$trait_index.');
+                        blups'.$trait_index.' <- mix\$U\$\`A:all\`\$'.$enc_trait_name.';
+                        spatial_blup_results\$'.$enc_trait_name.' <- X %*% blups'.$trait_index.';
                             ';
                             $trait_index++;
                         }
@@ -3139,13 +3140,14 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             mat\$colNumber <- as.numeric(mat\$colNumber);
                             mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
                             mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-                            mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.')
+                            mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.')
                             if (!is.null(mix\$U)) {
                             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
-                            X <- with(mat, spl2D(rowNumber, colNumber));
                             spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-                            blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
-                            spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
+                            W <- with(mat, spl2Da(rowNumber, colNumber));
+                            X <- W\$Z\$\`A:all\`;
+                            blups1 <- mix\$U\$\`A:all\`\$'.$t.';
+                            spatial_blup_results\$'.$t.' <- X %*% blups1;
                             write.table(spatial_blup_results, file=\''.$stats_out_pe_pheno_rel_tempfile5.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
                             }
                             "';

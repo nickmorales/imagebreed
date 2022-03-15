@@ -3064,7 +3064,7 @@ sub create_plant_entities {
         my $field_layout_experiment = $chado_schema->resultset("Project::Project")->search( { 'me.project_id' => $self->get_trial_id() }, {select=>['nd_experiment.nd_experiment_id']})->search_related('nd_experiment_projects')->search_related('nd_experiment', { 'nd_experiment.type_id' => $field_layout_cvterm })->single();
 
         foreach my $plot (keys %$design) {
-            print STDERR " ... creating plants for plot $plot...\n";
+            # print STDERR " ... creating plants for plot $plot...\n";
             my $plot_row = $chado_schema->resultset("Stock::Stock")->find( { uniquename => $design->{$plot}->{plot_name}, type_id=>$plot_cvterm });
 
             if (! $plot_row) {
@@ -3177,7 +3177,7 @@ sub save_plant_entries {
         while( my ($key, $val) = each %$parsed_data){
             my $plot_stock_id = $key;
             my $plot_name = $val->{plot_name};
-            print STDERR " ... creating plants for plot $plot_name...\n";
+            # print STDERR " ... creating plants for plot $plot_name...\n";
             my $plot_row = $chado_schema->resultset("Stock::Stock")->find( { stock_id=>$plot_stock_id });
 
             if (!$plot_row) {
@@ -3302,7 +3302,7 @@ sub create_plant_subplot_entities {
         my $field_layout_experiment = $chado_schema->resultset("Project::Project")->search( { 'me.project_id' => $self->get_trial_id() }, {select=>['nd_experiment.nd_experiment_id']})->search_related('nd_experiment_projects')->search_related('nd_experiment', { 'nd_experiment.type_id' => $field_layout_cvterm })->single();
 
         foreach my $plot (keys %$design) {
-            print STDERR " ... creating plants for plot $plot...\n";
+            # print STDERR " ... creating plants for plot $plot...\n";
 
             my $plot_row = $chado_schema->resultset("Stock::Stock")->find( { uniquename => $design->{$plot}->{plot_name}, type_id=>$plot_cvterm });
             if (! $plot_row) {
@@ -3316,7 +3316,7 @@ sub create_plant_subplot_entities {
 
             my $subplots = $design->{$plot}->{subplot_names};
             foreach my $subplot (@$subplots) {
-                print STDERR " ... ... creating plants for subplot $subplot...\n";
+                # print STDERR " ... ... creating plants for subplot $subplot...\n";
 
                 my $subplot_row = $chado_schema->resultset("Stock::Stock")->find({ uniquename => $subplot, type_id => $subplot_cvterm });
                 if ( !$subplot_row ) {
@@ -3444,7 +3444,7 @@ sub save_plant_subplot_entries {
         while( my ($key, $val) = each %$parsed_data){
             my $subplot_stock_id = $key;
             my $subplot_name = $val->{subplot_name};
-            print STDERR " ... creating plants for subplot $subplot_name...\n";
+            # print STDERR " ... creating plants for subplot $subplot_name...\n";
 
             my $subplot_row = $chado_schema->resultset("Stock::Stock")->find( { stock_id=>$subplot_stock_id });
             if (!$subplot_row) {

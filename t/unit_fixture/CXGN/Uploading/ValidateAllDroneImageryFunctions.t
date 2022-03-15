@@ -376,36 +376,6 @@ my $message_hash_standard_process = decode_json $message_standard_process;
 print STDERR Dumper $message_hash_standard_process;
 ok($message_hash_standard_process->{success});
 
-my $tn = CXGN::Trial->new({
-    bcs_schema => $f->bcs_schema(),
-    trial_id => $field_trial_id
-});
-
-my $traits_assayed  = $tn->get_traits_assayed();
-my @traits_assayed_sorted = sort {$a->[0] cmp $b->[0]} @$traits_assayed;
-print STDERR Dumper \@traits_assayed_sorted;
-is_deeply(\@traits_assayed_sorted, [
-    [70666,'fresh root weight|CO_334:0000012',[],88,undef,undef],
-    [70668,'harvest index variable|CO_334:0000015',[],59,undef,undef],
-    [70672,'plant stands harvested counting|CO_334:0000010',[],1,137,'test_trial'],
-    [70681,'top yield|CO_334:0000017',[],15,undef,undef],
-    [70691,'fresh root yield|CO_334:0000013',[],1,137,'test_trial'],
-    [70700,'sprouting proportion|CO_334:0000008',[],1,137,'test_trial'],
-    [70700,'sprouting proportion|CO_334:0000008',[],14,undef,undef],
-    [70706,'root number counting|CO_334:0000011',[],1,137,'test_trial'],
-    [70706,'root number counting|CO_334:0000011',[],13,undef,undef],
-    [70713,'flower|CO_334:0000111',[],15,undef,undef],
-    [70727,'dry yield|CO_334:0000014',[],19,undef,undef],
-    [70741,'dry matter content percentage|CO_334:0000092',[],122,undef,undef],
-    [70773,'fresh shoot weight measurement in kg|CO_334:0000016',[],61,undef,undef],
-    [76547,'root weight in air|CO_334:0000157',[],8,undef,undef],
-    [76575,'number of planted stakes counting|CO_334:0000159',[],9,undef,undef],
-    [76825,'sprout count at one-month|CO_334:0000213',[],7,undef,undef],
-    [76827,'root weight in water|CO_334:0000158',[],5,undef,undef],
-    [77107,'fieldbook_image|CO_334:0010472',[],2,undef,undef]
-    ], 'check traits assayed after standard process' );
-die;
-
 $ua = LWP::UserAgent->new;
 my $response_check_vi = $ua->get('http://localhost:3010/api/drone_imagery/check_available_applicable_vi?sgn_session_id='.$sgn_session_id.'&drone_run_project_id='.$message_hash_raster->{drone_run_project_id}.'&field_trial_id='.$field_trial_id.'&atleast_one_image=1');
 ok($response_check_vi->is_success);
@@ -747,5 +717,52 @@ ok($response_raster->is_success);
 my $message_raster = $response_raster->decoded_content;
 print STDERR Dumper $message_raster;
 ok($message_raster =~ /Successfully uploaded!/);
+
+my $tn = CXGN::Trial->new({
+    bcs_schema => $f->bcs_schema(),
+    trial_id => $field_trial_id
+});
+
+my $traits_assayed  = $tn->get_traits_assayed();
+my @traits_assayed_sorted = sort {$a->[0] cmp $b->[0]} @$traits_assayed;
+# print STDERR Dumper \@traits_assayed_sorted;
+# 79076 Total Pixel Sum|Black and White Image|Black and White Denoised Original Image|day 1384.52638888889|COMP:0000408, 15 phenos
+# 79077 Harmonic Mean Pixel Value|Black and White Image|Thresholded Black and White Denoised Original Image|day 1384.52638888889|COMP:0000409, 15 phenos
+
+$ua = LWP::UserAgent->new;
+$ua->timeout(3600);
+my $response_raster = $ua->post(
+        'http://localhost:3010/api/drone_imagery/calculate_analytics',
+        Content_Type => 'form-data',
+        Content => [
+            "sgn_session_id" => $sgn_session_id,
+            "observation_variable_id_list" => encode_json([79076]),
+            "field_trial_id_list" => encode_json([$field_trial_id]),
+            "statistics_select" => "sommer_grm_univariate_spatial_pure_2dspl_genetic_blups",
+            "analytics_protocol_name" => "test_2dspluni_1NDVI_analytics1",
+            "analytics_protocol_desc" => "test desc",
+            "analytics_select" => "minimize_local_env_effect",
+            "number_iterations" => "2",
+            "relationship_matrix_type" => "", #identity
+            "tolparinv" => "0.05",
+            "legendre_order_number" => "3",
+            "use_area_under_curve" => "no",
+            "permanent_environment_structure" => "identity",
+            "sim_env_change_over_time" => "",
+            "env_variance_percent" => "0.2",
+            "simulated_environment_real_data_trait_id" => "79077",
+            "sim_env_change_over_time_correlation" => "0.9",
+            "fixed_effect_type" => "replicate",
+            "fixed_effect_trait_id" => undef,
+            "fixed_effect_quantiles" => "4",
+            "simulations_to_run" => "none" #or 6sims
+        ]
+    );
+
+ok($response_raster->is_success);
+my $message_raster = $response_raster->decoded_content;
+my $message_hash = decode_json $message_raster;
+print STDERR Dumper $message_hash;
+ok($message_hash->{analytics_protocol_id});
 
 done_testing();
