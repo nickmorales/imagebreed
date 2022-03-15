@@ -7,7 +7,7 @@ $editable_stock_props => {}
 $editable_stock_props_definitions => {}
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'bootstrap_min.js', 'jquery.iframe-post-form','CXGN.List','CXGN.BreedersToolbox.Accessions', 'CXGN.BreedersToolbox.UploadPedigrees' ] &>
+<& /util/import_javascript.mas, classes => [ 'bootstrap_min.js', 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.Accessions03152022', 'CXGN.BreedersToolbox.UploadPedigrees03152022' ] &>
 
 <& /page/page_title.mas, title=>"Manage Accessions" &>
 

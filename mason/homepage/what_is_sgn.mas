@@ -13,7 +13,7 @@ takes a what parameter. Either 'textbox' or 'link'. Will result in different ren
 
 Lukas Mueller
 
-=cut 
+=cut
 
 </%doc>
 
@@ -22,7 +22,7 @@ Lukas Mueller
 $what
 </%args>
 
-<& /util/import_javascript.mas, classes=>["CXGN.Effects"] &>
+<& /util/import_javascript.mas, classes=>[ ] &>
 
 <%perl>
 
@@ -40,14 +40,14 @@ my ($what_is_link, $what_is_content) = collapser({
 
 </%perl>
 
-% if ($what eq "textbox") { 
+% if ($what eq "textbox") {
 
 <div class="boxbgcolor1">
   <div class="boxheading"><% $what_is_link %></div>
 </div>
 <% $what_is_content %>
 
-% } elsif($what eq "link")  { 
+% } elsif($what eq "link")  {
 
  <% $what_is_link %>
 

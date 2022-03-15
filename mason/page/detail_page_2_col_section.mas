@@ -150,7 +150,7 @@ $company_members => []
 </%args>
 
 <& /util/import_javascript.mas,
-   classes => ["jquery", "jqueryui", "thickbox", "CXGN.Page.FormattingHelpers", "jquery.cookie", "CXGN.Stock", "d3.d3v4Min" ],
+   classes => ["thickbox", "CXGN.Stock03152022", "d3.d3v4Min" ],
   entries => ["sequenced_accessions"]
 &>
 
@@ -337,7 +337,7 @@ $company_members => []
 
 
 % if ($info_section_id eq 'crossingtrial_details'){
-                                <& /breeders_toolbox/cross/crossingtrial_details.mas, trial_id=>$trial_id, trial_name=>$trial_name, breeding_program_name=>$breeding_program_name, breeding_program_id=>$breeding_program_id, location_name=>$location_name, country_name=>$country_name, year=>$year, planting_date=>$planting_date, harvest_date=>$harvest_date, trial_description=>$trial_description, folder_name=>$folder_name, folder_id=>$folder_id, identifier_prefix=>$identifier_prefix &>
+                                <& /breeders_toolbox/cross/crossingtrial_details.mas, trial_id=>$trial_id, trial_name=>$trial_name, breeding_program_name=>$breeding_program_name, breeding_program_id=>$breeding_program_id, location_name=>$location_name, country_name=>$country_name, year=>$year, planting_date=>$planting_date, harvest_date=>$harvest_date, trial_description=>$trial_description, folder_name=>$folder_name, folder_id=>$folder_id, identifier_prefix=>$identifier_prefix, company_id => $company_id, company_name => $company_name, company_project_is_private => $company_project_is_private &>
 % } #End crossingtrial_details
 
 % if ($info_section_id eq 'crosses_in_crossingtrial_section'){

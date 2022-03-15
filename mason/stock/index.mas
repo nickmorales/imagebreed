@@ -114,7 +114,7 @@ my $jbrowse_url = $jbrowse_path . "%2Faccessions%2F" . $stock_id . "&tracks=DNA%
 </%perl>
 
 <& /util/import_javascript.mas,
-   classes => ["jquery", "jqueryui", "thickbox", "CXGN.Page.FormattingHelpers", "jquery.cookie", "CXGN.Stock", "d3.d3v4Min" ],
+   classes => ["thickbox", "CXGN.Stock03152022", "d3.d3v4Min" ],
   entries => ["sequenced_accessions"]
 &>
 

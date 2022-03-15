@@ -1,4 +1,4 @@
-<& /util/import_javascript.mas, classes => [ 'CXGN.List'] &>
+<& /util/import_javascript.mas, classes => [ ] &>
 <!-- Lists dialog -->
 
 <div class="modal fade" id="list_dialog" name="list_dialog" tabindex="-1" role="dialog" aria-labelledby="listDialog">

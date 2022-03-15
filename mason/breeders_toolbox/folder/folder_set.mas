@@ -21,7 +21,7 @@ $folder_for_genotyping_trials => undef
 % if ($project_type eq 'crossing_experiment') { $get_crossing_trials = 1; $folder_for_crosses = 1; $dialog_type = 'Crossing Experiment' }
 % if (!$project_type) { $dialog_type = 'Trial(s)' }
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.TrialTreeFolders' ] &>
+<& /util/import_javascript.mas, classes => [ 'CXGN.TrialTreeFolders03152022' ] &>
 
 <div class="modal fade" id="set_folder_dialog" name="set_folder_dialog" tabindex="-1" role="dialog" aria-labelledby="setFolderDialog">
   <div class="modal-dialog" role="document">

@@ -20,7 +20,7 @@
 <& /util/import_css.mas, paths => ['/js/jqplot/jquery.jqplot.css','/js/jqplot/jquery.jqplot.min.css'] &>
 
 
-<& /util/import_javascript.mas, classes => ['Text.Markup', 'sprintf', 'jquery', 'jqueryui', 'CXGN.List'] &>
+<& /util/import_javascript.mas, classes => ['Text.Markup', 'sprintf' ] &>
 
 <& /page/page_title.mas, title=>"Expression Tool" &>
 
@@ -32,7 +32,7 @@
 <div id="status_wheel" style="display:none"><img src="/static/documents/img/wheel.gif" /></div>
 <br />
 
-<span title="query gene">Select a gene:</span> 
+<span title="query gene">Select a gene:</span>
 <input class="input" id="gene" type="input" value="Solyc04g014530.1" name="input_gene" size="15" />&nbsp; &nbsp; &nbsp;
 
 <button class="input" id="run_tool" value="Run Expression Tool">Get Expression</button>
@@ -75,7 +75,7 @@
 </&>
 
 <&| /page/info_section.mas, title=>"Interactive Control Panel", collapsible => 1, collapsed => 0, is_subsection=>"1" &>
-    Choose a experiment:&nbsp; &nbsp; 
+    Choose a experiment:&nbsp; &nbsp;
 	<select id="exp_list">
 		<option>BTI Slyc RNA-Seq</option>
 		<option>Other experiment</option>
@@ -138,7 +138,7 @@ jQuery(document).ready(function () {
     var data_array_obj;
     //var expression_table_info;
     var error_var = 1;
-    var perl_hash_obj = new Object();    
+    var perl_hash_obj = new Object();
 
     jQuery('#run_tool').click(function () {
 		//alert("clicking");
@@ -153,16 +153,16 @@ jQuery(document).ready(function () {
             data: { 'gene': query_gene },
             success: function(response) {
 				enable_ui();
-				
-                if (response.error) { 
+
+                if (response.error) {
                     alert("ERROR: "+response.error);
 		    		error_var = 1;
                 } else {
 					error_var = 0;
 					data_array_obj = response.all_exp_design;
-			  
+
 				// alert(dump(data_array_obj));
-			  
+
 		      //perl_hash_obj = response.hash;
 
 		      //alert("hash_name: "+perl_hash_obj["name"]);
@@ -175,12 +175,12 @@ jQuery(document).ready(function () {
 				enable_ui();
 			}
         });
-	
+
 
 
 
 		if (!error_var) {
-	    
+
 	//	    var designs_array = Object.keys(data_array_obj);
 	//	    for (var n=0; n<designs_array.length; n=n+1) {
 	//	    	    jQuery('#exp_list').append('<option>'+designs_array[n]+'</option>')
@@ -194,19 +194,19 @@ jQuery(document).ready(function () {
 		    var experiment_desc = data_array_obj[0]["description"];
 		    var experiment_pubs = data_array_obj[0]["pub"];
 		    var experiment_dbxrefs = data_array_obj[0]["dbxref"];
-			
-			
+
+
 	        jQuery('#exp_title').html("<b>Name:</b> "+experiment_name+"<br/><b>Description:</b> "+experiment_desc);
 	        jQuery('#exp_dbxref').html("<b>External Links:</b> "+experiment_dbxrefs);
 	        jQuery('#exp_pub').html("<b>Publications:</b> "+experiment_pubs);
-			
+
 			// alert(dump(data_array));
-			
+
 		    hide_ui();
 		    show_hiden_divs();
 		    display_pictures();
 		    print_bar_chart(data_array);
-	    
+
 		    var expression_table_info = "";
 		    var experiment_info = "";
 		    //alert("data: "+data_array.length);
@@ -230,7 +230,7 @@ jQuery(document).ready(function () {
 	        jQuery('#exp_info_table').html(experiment_info);
 		}
     });
-	
+
 	function disable_ui() {
 		$('#working').dialog("open");
 	}
@@ -256,41 +256,41 @@ jQuery(document).ready(function () {
 
     function print_bar_chart(data_a) {
 		jQuery("#bar_graph").empty();
-		
+
 		var exp_cond = [];
 	    var bar_data = [];
 	    var error_bar_obj = new Object(); //the error values must be the percentage of the expression 0.1=10%
 	    var error_bar_data = [];
 		var min_serie = [];
 		var max_serie = [];
-		
+
 	    for (var i=0; i<data_a.length; i=i+1) {
 			var one_exp = []
-			var one_mean = parseFloat(data_a[i]["fpkm"]); 
-			
+			var one_mean = parseFloat(data_a[i]["fpkm"]);
+
 			exp_cond.push(data_a[i]["name"]);
 			bar_data.push(one_mean);
-			
+
 			var one_sd =(parseFloat(data_a[i]["fpkm_lo"]));
 			var one_cv =(parseFloat(data_a[i]["fpkm_hi"]));
 			// var min_ser = (one_mean - one_sd).toFixed(2);
 			// var max_ser = (one_mean + one_sd).toFixed(2);
 			// min_serie.push(parseFloat(min_ser));
 			// max_serie.push(parseFloat(max_ser));
-			
+
 			var min_err = ((one_mean - one_sd)/one_mean).toFixed(2);
 			var max_err = ((one_cv - one_mean)/one_mean).toFixed(2);
-			
+
 			// var min_err = (one_sd/one_mean).toFixed(2);
 			// var max_err = (one_sd/one_mean).toFixed(2);
-			
+
 		    error_bar_obj = new Object();
 			error_bar_obj.min=parseFloat(min_err);
 			error_bar_obj.max=parseFloat(max_err);
 
 			error_bar_data.push(error_bar_obj);
 		}
-		
+
 
 		// alert(dump(error_bar_data));
 
@@ -357,15 +357,15 @@ jQuery(document).ready(function () {
 				show: true,
 				showMarker:false,
 				tooltipAxes: 'y',
-				
-				
+
+
 				formatString:'<div id="bar_tooltip" class="jqplot-highlighter"><table>\
 				<tr><td>Expression val:</td><td>%s</td></tr> \
 								  </table></div>'
 		    }
 	    });
-		
-		
+
+
     }
 
 
@@ -374,15 +374,15 @@ jQuery(document).ready(function () {
 function dump(arr,level) {
 	var dumped_text = "";
 	if(!level) level = 0;
-	
+
 	//The padding given at the beginning of the line.
 	var level_padding = "";
 	for(var j=0;j<level+1;j++) level_padding += "    ";
-	
-	if(typeof(arr) == 'object') { //Array/Hashes/Objects 
+
+	if(typeof(arr) == 'object') { //Array/Hashes/Objects
 		for(var item in arr) {
 			var value = arr[item];
-			
+
 			if(typeof(value) == 'object') { //If it is an array,
 				dumped_text += level_padding + "'" + item + "' ...\n";
 				dumped_text += dump(value,level+1);

@@ -7,6 +7,9 @@ $year
 $planting_date
 $harvest_date
 $trial_description
+$company_id
+$company_name
+$company_project_is_private
 </%args>
 
 <div class="modal fade" id="crossingtrial_details_edit_dialog" tabindex="-1" role="dialog" aria-labelledby="crossingtrialDetailsEditDialog">
@@ -26,6 +29,14 @@ $trial_description
                                         <input class="form-control col-sm-8" id="edit_trial_name" title="name" type="text" value="<%$trial_name%>" aria-describedby="edit_trial_name_status"/>
                                     </div>
                                 </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="edit_trial_company">Company: </label>
+                            <div class="col-sm-8">
+                              <div class="input-group">
+                                <select class="form-control" id="edit_trial_company" title="company" value="<%$company_id%>"></select>
+                              </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-3 control-label" for="edit_trial_breeding_program">Breeding Program: </label>

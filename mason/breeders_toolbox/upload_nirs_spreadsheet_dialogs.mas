@@ -1,7 +1,7 @@
 <%args>
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery', 'jqueryui', 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.UploadPhenotype', 'CXGN.BreederSearch', 'CXGN.Trial' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.UploadPhenotype03152022', 'CXGN.Trial03152022' ] &>
 
 <!--button class="btn btn-primary" id="upload_spreadsheet_phenotypes_link">Upload NIRS</button-->
 

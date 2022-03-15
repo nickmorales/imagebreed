@@ -62,14 +62,14 @@ my %info; # hash of term names, since we can have multiple phenotypes of the sam
 my $graph_icon = qq |<img src="/documents/img/pop_graph.png"/> |;
 
 ####
-if ($phenotypes) { ###  && UNIVERSAL::isa($phenotypes,"UNIVERSAL"))  { 
+if ($phenotypes) { ###  && UNIVERSAL::isa($phenotypes,"UNIVERSAL"))  {
 foreach my $phenotype (@$phenotypes) {
-  ###while ( my $phenotype = $phenotypes->next ) { 
+  ###while ( my $phenotype = $phenotypes->next ) {
    #$phenotype is a list of row objects with the following column values
-   # qw/ stock_id value observable observable_id definition method_name type_name  accession db_name project_description cv_name unit_name ##  
-  
+   # qw/ stock_id value observable observable_id definition method_name type_name  accession db_name project_description cv_name unit_name ##
+
   #first make sure phenotype_cvterm is a unit.ontology# Not sure this is necessary, since all we have (now) in phenotype_cvterm is units
-  ##### if $phenotype->get_column('cv_name') ne 'unit.ontology' || undef ;    
+  ##### if $phenotype->get_column('cv_name') ne 'unit.ontology' || undef ;
   my $unit_name = $phenotype->get_column('unit_name');
   my $type_name = $phenotype->get_column('type_name');
   my $method_name;
@@ -78,7 +78,7 @@ foreach my $phenotype (@$phenotypes) {
   } elsif ( !$type_name ) {
      $method_name =  'Trait' ;
   } else { next; } #skip the row if a phenotypeprop was fetched , but it is not a 'mehtod' type.
- 
+
   #push @ { $info{$observable->name."|". $observable->cvterm_id ."|". $definition . "|" . $unit} } , $phenotype;
 
 
@@ -115,7 +115,7 @@ foreach my $method(sort keys %info ) {
     my $mean_value =  sprintf("%.2f", $stat->mean);
     my $min = sprintf("%.2f", $stat->min);
     my $max = sprintf("%.2f", $stat->max);
-    
+
     if (scalar(@values) ) {
        no warnings 'uninitialized';
        push  @ { $data{$method}{phen} } ,  [map {$_}
@@ -131,7 +131,7 @@ foreach my $method(sort keys %info ) {
   }
      @ { $data{$method}{headings} } = ("$method" , "Average", "Min", "Max", "Lines/repeats");
      push @ { $data{$method}{headings} } , 'QTL(s)' if $has_qtl;
-}      
+}
 
 </%perl>
 
@@ -139,7 +139,7 @@ foreach my $method(sort keys %info ) {
 
 </script>
 
-<& /util/import_javascript.mas, classes => [ "CXGN.Phenome.Qtl" ] &>
+<& /util/import_javascript.mas, classes => [ ] &>
 
 <div id = "$div">
 

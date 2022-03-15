@@ -376,6 +376,36 @@ my $message_hash_standard_process = decode_json $message_standard_process;
 print STDERR Dumper $message_hash_standard_process;
 ok($message_hash_standard_process->{success});
 
+my $tn = CXGN::Trial->new({
+    bcs_schema => $f->bcs_schema(),
+    trial_id => $field_trial_id
+});
+
+my $traits_assayed  = $tn->get_traits_assayed();
+my @traits_assayed_sorted = sort {$a->[0] cmp $b->[0]} @$traits_assayed;
+print STDERR Dumper \@traits_assayed_sorted;
+is_deeply(\@traits_assayed_sorted, [
+    [70666,'fresh root weight|CO_334:0000012',[],88,undef,undef],
+    [70668,'harvest index variable|CO_334:0000015',[],59,undef,undef],
+    [70672,'plant stands harvested counting|CO_334:0000010',[],1,137,'test_trial'],
+    [70681,'top yield|CO_334:0000017',[],15,undef,undef],
+    [70691,'fresh root yield|CO_334:0000013',[],1,137,'test_trial'],
+    [70700,'sprouting proportion|CO_334:0000008',[],1,137,'test_trial'],
+    [70700,'sprouting proportion|CO_334:0000008',[],14,undef,undef],
+    [70706,'root number counting|CO_334:0000011',[],1,137,'test_trial'],
+    [70706,'root number counting|CO_334:0000011',[],13,undef,undef],
+    [70713,'flower|CO_334:0000111',[],15,undef,undef],
+    [70727,'dry yield|CO_334:0000014',[],19,undef,undef],
+    [70741,'dry matter content percentage|CO_334:0000092',[],122,undef,undef],
+    [70773,'fresh shoot weight measurement in kg|CO_334:0000016',[],61,undef,undef],
+    [76547,'root weight in air|CO_334:0000157',[],8,undef,undef],
+    [76575,'number of planted stakes counting|CO_334:0000159',[],9,undef,undef],
+    [76825,'sprout count at one-month|CO_334:0000213',[],7,undef,undef],
+    [76827,'root weight in water|CO_334:0000158',[],5,undef,undef],
+    [77107,'fieldbook_image|CO_334:0010472',[],2,undef,undef]
+    ], 'check traits assayed after standard process' );
+die;
+
 $ua = LWP::UserAgent->new;
 my $response_check_vi = $ua->get('http://localhost:3010/api/drone_imagery/check_available_applicable_vi?sgn_session_id='.$sgn_session_id.'&drone_run_project_id='.$message_hash_raster->{drone_run_project_id}.'&field_trial_id='.$field_trial_id.'&atleast_one_image=1');
 ok($response_check_vi->is_success);

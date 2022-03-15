@@ -4,7 +4,7 @@
 
 </%doc>
 
-<%args> 
+<%args>
 
 </%args>
 
@@ -12,7 +12,7 @@
 
 <& /util/import_css.mas, paths => ['tools/trial_comparison.css'] &>
 
-<& '/util/import_javascript.mas', classes => [ 'jquery', 'jqueryui', 'popup', 'CXGN.List', 'CXGN.Login', 'd3.d3v4Min','brapi.BrAPI','brapi.StudyComparison'] &>
+<& '/util/import_javascript.mas', classes => ['popup', 'd3.d3v4Min','brapi.BrAPI','brapi.StudyComparison'] &>
 
 <style>
 #tc-grid, #tc-histogram{
@@ -104,7 +104,7 @@
       if (require_login === '1'){
           auth_token = "<%  CXGN::Login->new($c->dbc->dbh)->get_login_cookie() %>";
           if (!auth_token){ alert("Login required to display graphical filtering"); }
-      } 
+      }
       BrAPI("/brapi/v2",'v2.0',auth_token)
         .search_observationunits({
             "studyDbIds" : ids,
@@ -124,7 +124,7 @@
       });
       var sharedVars = scomp.loadData(data);
       console.log("vars",sharedVars);
-      
+
       var varOpts = d3.select("#trait_select")
               .selectAll("option:not([disabled])")
               .data(sharedVars);
@@ -133,8 +133,8 @@
               .attr("value",function(d){return d})
               .text(function(d){return d})
               .raise();
-              
-      
+
+
       $("#trait_select").change(function(){
         $("#tc-grid").show();
         $("#tc-histogram").show();

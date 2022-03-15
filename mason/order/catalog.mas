@@ -4,7 +4,7 @@ $check_vendor_role
 
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'jquery', 'jquery.dataTables', 'CXGN.List'] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form' ] &>
 
 <& /page/page_title.mas, title => "Catalog" &>
 

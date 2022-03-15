@@ -802,7 +802,11 @@ sub download_grm {
             foreach my $c (@$all_accession_stock_ids) {
                 if (!defined($seen_accession_stock_ids_relatedness->{$s}->{$c}) && $row_num>1 && defined($grm_hash{$s}->{$c})) {
                     my $val = $grm_hash{$s}->{$c};
-                    $relatedness_fill_h->execute($s, $c, $val);
+
+                    if ($protocol_id) {
+                        $relatedness_fill_h->execute($s, $c, $val);
+                        $relatedness_fill_h->execute($c, $s, $val);
+                    }
                 }
             }
         }

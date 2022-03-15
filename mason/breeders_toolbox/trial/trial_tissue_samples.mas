@@ -3,7 +3,7 @@
 $trial_id
 </%args>
 
-<& /util/import_javascript.mas, classes => [ "CXGN.List", "CXGN.BreederSearch" ] &>
+<& /util/import_javascript.mas, classes => [ ] &>
 
 
 <div id="trial_tissue_samples_html">
@@ -37,10 +37,10 @@ jQuery(document).ready(function () {
 
                 trial_tissue_samples_html = format_options_list(trial_tissue_samples);
                 jQuery('#trial_tissue_samples_data').html(trial_tissue_samples_html);
- 
+
                 var data = jQuery('#trial_tissue_samples_data').val() || [];
                 show_list_counts('trial_tissue_samples_data_count', response.trial_tissue_samples.length, data.length);
- 
+
                 if (jQuery('#trial_tissue_samples_data').length) {
                       addToListMenu('trial_tissue_samples_to_list_menu', 'trial_tissue_samples_data', {
                       selectText: true,

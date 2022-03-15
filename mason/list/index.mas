@@ -3,14 +3,14 @@
 $user_id
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.List' ] &>
+<& /util/import_javascript.mas, classes => [ ] &>
 
 <& /page/page_title.mas, title=>"Available lists" &>
 <div id="list_div">
 
 </div>
 
-% if (! $user_id) { 
+% if (! $user_id) {
   <& /generic_message.mas, message=>"Login required for viewing your lists" &>
 % return;
 % }
@@ -41,7 +41,5 @@ Create new list <input type="text" id="new_list_name" on/>
 </textarea>
 <script>
 addToListMenu('add_to_list');
-			    
-</script>
 
-  
+</script>

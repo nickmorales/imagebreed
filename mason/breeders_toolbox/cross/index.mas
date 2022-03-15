@@ -10,7 +10,7 @@ $user_id => undef
 $identifier_prefix => ''
 </%args>
 
-<& /util/import_javascript.mas, classes => ["jquery", "jqueryui", "thickbox", "CXGN.Phenome.Tools", "CXGN.Page.FormattingHelpers", "jquery.cookie", "CXGN.List", "CXGN.BreederSearch", "CXGN.BreedersToolbox.CrossDetailPage" ] &>
+<& /util/import_javascript.mas, classes => ["CXGN.BreedersToolbox.CrossDetailPage03152022" ] &>
 
 % use utf8;
 % $cross_name ||= "Untitled cross";

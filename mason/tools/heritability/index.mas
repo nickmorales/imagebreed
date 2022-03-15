@@ -13,7 +13,7 @@
 </%perl>
 
 
-<& '/util/import_javascript.mas', classes => ['jquery', 'jqueryui', 'CXGN.Login', 'd3.d3v4Min.js', 'CXGN.BreedersToolbox.HTMLSelect'] &>
+<& '/util/import_javascript.mas', classes => ['d3.d3v4Min.js'] &>
 
 <script src="https://cdn.jsdelivr.net/npm/vega@3"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@2"></script>
@@ -48,7 +48,7 @@
         <div id="trait_histogram_plot">
         </div>
       </center>
-    
+
       <br>
       <br>
       <br>

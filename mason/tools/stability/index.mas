@@ -13,7 +13,7 @@
 </%perl>
 
 
-<& '/util/import_javascript.mas', classes => ['jquery', 'jqueryui', 'CXGN.Login', 'd3.d3v4Min.js', 'CXGN.BreedersToolbox.HTMLSelect'] &>
+<& '/util/import_javascript.mas', classes => ['d3.d3v4Min.js'] &>
 
 <script src="https://cdn.jsdelivr.net/npm/vega@3"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@2"></script>
@@ -45,9 +45,9 @@
       </div>
       <button class="btn btn-primary" id="method_btn" type="submit" name="method_btn" value="method_btn">Select Method</button>
       <br>
-    
+
     <br>
-    <br>    
+    <br>
 
       <div class="form-group form-inline">
         <label class="blast_select_label" for="pheno_select">Available&nbspTraits:&nbsp; </label>
@@ -60,7 +60,7 @@
         <div id="trait_histogram_plot">
         </div>
       </center>
-    
+
       <br>
       <br>
       <br>
@@ -168,14 +168,14 @@ jQuery(document).ready(function() {
   });
 
 
-  
+
 
   jQuery('#method_btn').on('click', function() {
     var method_id = jQuery('#select_method').val();
     $.ajax({
         url: '/ajax/Stability/get_method',
         data: {'method_id': method_id  },
-      }); // end .ajax    // }; // end else statement 
+      }); // end .ajax    // }; // end else statement
   });
 
 

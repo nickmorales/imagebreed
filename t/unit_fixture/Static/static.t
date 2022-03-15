@@ -208,14 +208,6 @@ $mech->get_ok($_) for
 #         /js/CXGN/BreedersToolbox/FieldBook.js
 #     );
 
-#Called by application from sgn/mason/genefamily/manual*.mas
-# $mech->get_ok($_) for
-#     qw(
-#         /js/popup.js
-#         /js/CXGN/Phenome/Locus.js
-#         /js/CXGN/Sunshine/NetworkBrowser.js
-#     );
-
 #Called by application from sgn/mason/solgs*.mas
 # $mech->get_ok($_) for
 #     qw(
@@ -239,12 +231,6 @@ $mech->get_ok($_) for
 #         /js/solGS/ajaxAutocomplete.js
 #         /js/solGS/selectionPopulations.js
 #         /js/solGS/gebvPhenoRegression.js
-#         /js/flot/flot.js
-#         /js/flot/categories.js
-#         /js/flot/tooltip.js
-#         /js/flot/navigate.js
-#         /js/flot/selection.js
-#         /js/flot/axisLabels.js
 #         /js/statistics/simple_statistics.js
 #     );
 $mech->get_ok($_) for

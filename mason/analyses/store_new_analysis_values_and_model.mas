@@ -167,7 +167,7 @@ The trait names will be post-composed with the analysis_statistical_ontology_ter
 
 </%args>
 
-<& /util/import_javascript.mas, classes => ['jquery', 'CXGN.BreedersToolbox.HTMLSelect'], entries => [ ] &>
+<& /util/import_javascript.mas, classes => [ ], entries => [ ] &>
 
 <div class="modal fade" id="generic_save_analysis_dialog" name="generic_save_analysis_dialog" tabindex="-1" role="dialog" aria-labelledby="genericStoreAnalysisDialog" data-backdrop="static">
     <div class="modal-dialog modal-xl" role="document">

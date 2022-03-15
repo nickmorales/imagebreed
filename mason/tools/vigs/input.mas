@@ -10,7 +10,7 @@ $f_size => 0
 </%args>
 
 <!-- import javascript libraries-->
-<& /util/import_javascript.mas, classes => ['Text.Markup', 'sprintf', 'jquery', 'jqueryui', 'jquery.iframe-post-form', 'CXGN.List', 'tools/vigs'] &>
+<& /util/import_javascript.mas, classes => ['Text.Markup', 'sprintf', 'jquery.iframe-post-form', 'tools/vigs'] &>
 
 <& /page/page_title.mas, title=>"VIGS Tool" &>
 
@@ -27,11 +27,11 @@ Sequence:
 
 	document.write("(<a href=\"javascript:example()\" title=\"Paste an example sequence\" >example sequence</a>)");
 
-	function example() { 
+	function example() {
 	    document.getElementById("sequence").value=seq;
 	}
-	
-	
+
+
 	//use JQueryIu to define tooltip style
     $(function() {
 	   $( document ).tooltip({
@@ -49,7 +49,7 @@ Sequence:
 		   }
 	   });
    });
-	
+
 </script>
 <div id="status_wheel" style="display:none"><img src="/static/documents/img/wheel.gif" /></div>
 <br />
@@ -59,13 +59,13 @@ Sequence:
 <br />
 <br />
 
-<span title="siRNA selected size">n-mer size</span> 
+<span title="siRNA selected size">n-mer size</span>
 <input class="input" id="si_rna" type="input" value="21" name="fragment_size" size="2" />&nbsp; &nbsp; &nbsp;
 
-<span title="Desired VIGS construct length">Fragment length</span> 
+<span title="Desired VIGS construct length">Fragment length</span>
 <input class="input" id="f_length" type="input" value="300" name="seq_fragment" size="3" />&nbsp; &nbsp; &nbsp;
 
-<span title="Number of mismatches allowed in Bowtie alignment">mismatches</span> 
+<span title="Number of mismatches allowed in Bowtie alignment">mismatches</span>
 <input class="input" id="mm" type="input" value="0" name="mismatch" size="1" />
 <br />
 <br />
@@ -77,7 +77,7 @@ Database <select class="input" id='bt2_db' name="database" title="Select plant s
 foreach my $d (@databases) {
 	my $db_name = $d;
 	$db_name =~ s/_/ /g;
-	
+
 	if ($default_db) {
 		if ($d eq $default_db) {
 			print "<option value=\"".$d."\" selected='selected'>".$db_name."</option><br />";
@@ -129,7 +129,7 @@ foreach my $d (@databases) {
         <span style="background-color:#DCDCDC;">&nbsp;&nbsp;ATGGATCAGTCGGTGTTGGCGATCT&nbsp;&nbsp;</span><br />
         &nbsp;&nbsp;Or paste the <b>gene ID</b>:<br />
         <span style="background-color:#DCDCDC;">&nbsp;&nbsp;Solyc10g047140.1.1&nbsp;&nbsp;</span><br />
-         
+
         2. Choose <b>n-mer size</b>, nucleotide stretch size in bp, used to identify targeted regions (18-24, Default=21)<br />
         3. Choose <b>Fragment length</b>, desired VIGS fragment length in bp (100-Sequence length, Default=300)<br />
         4. Choose <b>mismatches</b>, number of mismatches allowed in the alignment (0-2, Default=0)<br />
@@ -382,5 +382,3 @@ box-shadow: 0px 0px 0px 0px #fff;
 }
 
 </style>
-
-

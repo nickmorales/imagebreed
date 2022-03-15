@@ -1,7 +1,7 @@
 <%args>
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery', 'jqueryui', 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.UploadPhenotype', 'CXGN.BreederSearch' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery', 'jqueryui', 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.UploadPhenotype03152022', 'CXGN.BreederSearch03152022' ] &>
 
 <div class="modal fade" id="upload_datacollector_phenotypes_dialog" name="upload_datacollector_phenotypes_dialog" tabindex="-1" role="dialog" aria-labelledby="addDatacollectorPhenotypeDialog">
   <div class="modal-dialog" role="document">
@@ -12,7 +12,7 @@
       </div>
       <div class="modal-body">
         <div class="container-fluid">
-        
+
             <&| /page/explanation.mas, title=>'Template Information' &>
                 <p>
                 <b>File format information</b>
@@ -20,7 +20,7 @@
                 <a id="phenotype_upload_datacollector_format_info">Datacollector Format</a>
                 </p>
             </&>
-        
+
             <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_datacollector_phenotype_file_form" name="upload_datacollector_phenotype_file_form">
                 <div class="form-group">
                     <label class="col-sm-3 control-label">Timestamps Included: </label>
@@ -48,13 +48,13 @@
 
         </div>
       </div>
-      
+
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button type="button" class="btn btn-info" name="upload_datacollector_phenotype_submit_verify" id="upload_datacollector_phenotype_submit_verify">Verify</button>
         <button disabled type="button" class="btn btn-primary" name="upload_datacollector_phenotype_submit_store" id="upload_datacollector_phenotype_submit_store" title="First Verify Your File">Store</button>
       </div>
-      
+
     </div>
   </div>
 </div>
@@ -69,7 +69,7 @@
       </div>
       <div class="modal-body">
         <div class="container-fluid">
-        
+
             <h4>Must be in .xls excel file format</h4>
             <p>(tab-delimited text formats are NOT supported)</p>
             <hr>
@@ -180,7 +180,7 @@ jQuery(document).ready(function() {
         jQuery('#upload_datacollector_phenotypes_dialog').modal("show");
     });
 
-    jQuery("#phenotype_upload_datacollector_format_info").click( function () { 
+    jQuery("#phenotype_upload_datacollector_format_info").click( function () {
         jQuery("#phenotype_upload_datacollector_info_dialog" ).modal("show");
     });
 

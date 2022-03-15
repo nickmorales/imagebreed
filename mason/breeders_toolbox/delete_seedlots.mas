@@ -3,16 +3,16 @@
 $user_role => undef
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery', 'jqueryui', 'CXGN.BreedersToolbox.HTMLSelect', 'CXGN.List' ] &>
-  
+<& /util/import_javascript.mas, classes => [ ] &>
+
 
   <&| /page/info_section.mas, title=>"Delete seedlots using a list",  collapsible => 1, collapsed=>1 &>
-    
 
-% if ($user_role eq "curator" ) { 
+
+% if ($user_role eq "curator" ) {
     <div style="margin-left:20px">
-      
-      
+
+
       <p><strong>Select a list of type "seedlot" to delete from the database</strong></p>
       Note:
       <ul><li>Only seedlots that are not associated with crosses or trials can be deleted.</li>
@@ -61,7 +61,7 @@ You need to be logged in or you do not have sufficient privileges to delete seed
 
 <script>
 
-jQuery(window).ready( function() { 
+jQuery(window).ready( function() {
     jQuery("#seedlots_to_delete_html").append(list.listSelect("seedlots_to_delete_html_select", [ 'seedlots' ], 'None', undefined, undefined));
 });
 
@@ -122,4 +122,3 @@ function display_seedlot_deletion_info(r) {
 }
 
 </script>
-

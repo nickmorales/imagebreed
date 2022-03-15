@@ -1,6 +1,6 @@
 <%doc>
 
-=head1 NAME 
+=head1 NAME
 qtl/population/stat_tools.mas - a mason component for the interactive qtl analysis interface
 
 =AUTHOR
@@ -19,37 +19,37 @@ $userid
 
 </%args>
 
-<& /util/import_javascript.mas, classes => [ "CXGN.Phenome.Qtl" ] &>
+<& /util/import_javascript.mas, classes => [ ] &>
 
 <div id="statTools">
   <form>
-    <table>      
+    <table>
       <tr>
         <td>
-          <input type="radio" 
+          <input type="radio"
                  onclick="Qtl.toggleStatOptions('default');Qtl.setUserStatOption(<% $pop_id %>, 'default')"
                  name="stat_options"
                  value="default qtl parameters"> Use default QTL parameters
         </td>
         <td>
-          <input type="radio" 
+          <input type="radio"
                  onclick="Qtl.setUserStatOption(<% $pop_id %>, 'user_params');Qtl.logUser(<% $userid %>)"
                  name="stat_options"
                  value="user qtl parameters"> Set your own QTL analysis parameters
         </td>
-% if (0) 
+% if (0)
 %{
        <td>
-          <input type="radio" 
+          <input type="radio"
                  onclick="Qtl.toggleStatOptions('diagnosticTests')"
                  name="stat_options"
                  value="diagnostic tests"> Diagnostic tests
      </td>
-%}       
-      </tr>            
+%}
+      </tr>
     </table>
-  </form> 
- 
+  </form>
+
   <div id="default"  style="display:none; color:blue">
        Please proceed with your QTL analysis of your trait of interest.<br />
        The default parameters for QTL analysis are <br />
@@ -64,23 +64,23 @@ $userid
       </tr>
     </table>
 
-    <& /qtl/qtl_form/stat_form.mas,  
-     pop_id  => $pop_id, 
-     referer => $referer, 
-     guide   => $guideline 
+    <& /qtl/qtl_form/stat_form.mas,
+     pop_id  => $pop_id,
+     referer => $referer,
+     guide   => $guideline
   &>
  </div>
 
 % if (0)
 %{
-  <div id="diagnosticTests" 
-       style="display:none; 
-              color:blue; 
+  <div id="diagnosticTests"
+       style="display:none;
+              color:blue;
               text-align:right
               ">
     Under development.
   </div>
 %}
 </div>
- 
- <& /qtl/waitmessage.mas &> 
+
+ <& /qtl/waitmessage.mas &>

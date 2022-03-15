@@ -8,7 +8,7 @@ $management_factor_types => ()
 $design_types => ()
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery', 'jqueryui', 'jquery.iframe-post-form','CXGN.List','CXGN.BreedersToolbox.AddTrial','CXGN.BreedersToolbox.UploadTrial','CXGN.BreedersToolbox.Trial'] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.AddTrial03152022', 'CXGN.BreedersToolbox.UploadTrial03152022', 'CXGN.BreedersToolbox.Trial03152022'] &>
 
  <style>
   /* IE has layout issues when sorting (see #5413) */

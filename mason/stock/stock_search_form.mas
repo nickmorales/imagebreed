@@ -9,7 +9,7 @@
 </%args>
 
 <& /util/import_javascript.mas,
- classes=>[qw[CXGN.Effects jquery jqueryui popup] ]
+ classes=>[qw[popup] ]
 &>
 <style>
 

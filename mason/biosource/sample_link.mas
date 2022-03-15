@@ -1,7 +1,0 @@
-<%args>
-  $sample
-</%args>
-<a class="biosource biosource_sample" href="/data_source/<% $sample->sample_id |u %>/view"><% $sample->sample_name |h %></a>\
-<%init>
-  $sample = $sample->get_bssample_row unless $sample->can('type');
-</%init>

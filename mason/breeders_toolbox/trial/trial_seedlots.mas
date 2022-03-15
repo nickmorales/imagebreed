@@ -3,7 +3,7 @@
 $trial_id
 </%args>
 
-<& /util/import_javascript.mas, classes => [ "jquery", "jqueryui", "thickbox", "CXGN.Page.FormattingHelpers", "jquery.cookie", "CXGN.List", "CXGN.BreederSearch" ] &>
+<& /util/import_javascript.mas, classes => [ ] &>
 
 
 <div id="trial_seedlots_html">
@@ -41,10 +41,10 @@ jQuery(document).ready(function () {
 
                 var seedlot_html = format_options_list(seedlot);
                 jQuery('#seedlot_data').html(seedlot_html);
- 
+
                 var data = jQuery('#seedlot_data').val() || [];
                 show_list_counts('seedlot_data_count', response.seedlots[0].length, data.length);
- 
+
                 if (jQuery('#seedlot_data').length) {
                       addToListMenu('seedlot_to_list_menu', 'seedlot_data', {
                       selectText: true,

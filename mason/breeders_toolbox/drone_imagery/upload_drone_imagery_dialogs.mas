@@ -1,7 +1,7 @@
 <%args>
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch', 'CXGN.Trial', 'moment_min', 'daterangepicker' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch03152022', 'CXGN.Trial03152022', 'moment_min', 'daterangepicker' ] &>
 
 <div class="modal fade" id="upload_drone_imagery_dialog" name="upload_drone_imagery_dialog" tabindex="-1" role="dialog" aria-labelledby="uploadDroneImageryDialog">
   <div class="modal-dialog modal-xl" role="document">
@@ -2750,6 +2750,8 @@ jQuery(document).ready(function() {
 
     get_select_box('private_companies', 'upload_drone_image_company_select_div', { 'name' : 'drone_run_company_id', 'id' : 'drone_run_company_id' });
     get_select_box('trials', 'upload_drone_image_trial_select_div', { 'name' : 'drone_run_field_trial_id', 'id' : 'drone_run_field_trial_id', 'empty':1, 'multiple':1, 'private_company_id':1 });
+
+    get_select_box('imaging_event_vehicles', 'drone_run_imaging_vehicle_div', {'id':'drone_run_imaging_vehicle_id', 'name':'drone_run_imaging_vehicle_id', 'private_company_id':1});
 
     var private_company_id;
     var upload_drone_imagery_vehicle_id;

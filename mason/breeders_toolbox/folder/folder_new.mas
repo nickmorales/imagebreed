@@ -10,7 +10,7 @@ $company_name => undef
 $company_project_is_private => undef
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.TrialTreeFolders' ] &>
+<& /util/import_javascript.mas, classes => [ 'CXGN.TrialTreeFolders03152022' ] &>
 % my $dialog_type;
 % my $folder_for_trials;
 % my $folder_for_crosses;

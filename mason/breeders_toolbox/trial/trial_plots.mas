@@ -3,7 +3,7 @@
 $trial_id
 </%args>
 
-<& /util/import_javascript.mas, classes => [ "jquery", "jqueryui", "thickbox", "CXGN.Page.FormattingHelpers", "jquery.cookie", "CXGN.List", "CXGN.BreederSearch" ] &>
+<& /util/import_javascript.mas, classes => [ ] &>
 
 
 <div id="trial_plots_html">
@@ -37,10 +37,10 @@ jQuery(document).ready(function () {
 
                 plot_html = format_options_list(plot);
                 jQuery('#plot_data').html(plot_html);
- 
+
                 var data = jQuery('#plot_data').val() || [];
                 show_list_counts('plot_data_count', response.plots[0].length, data.length);
- 
+
                 if (jQuery('#plot_data').length) {
                       addToListMenu('plot_to_list_menu', 'plot_data', {
                       selectText: true,

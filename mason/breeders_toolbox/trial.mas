@@ -56,7 +56,7 @@ $management_factor_types => ()
 $trial_owner => undef
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.Trial' , 'jstree/dist/jstree', 'CXGN.BreedersToolbox.HTMLSelect', 'moment_min', 'daterangepicker' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.Trial03152022', 'moment_min', 'daterangepicker' ] &>
 
 %  my $project_is_private = $private_company_project_is_private ? 'True' : 'False';
 

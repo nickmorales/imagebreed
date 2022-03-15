@@ -9,8 +9,8 @@
 
 <& /page/page_title.mas, title => "Breeding Progress" &>
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.BreedersToolbox.HTMLSelect' ] &>
-  
+<& /util/import_javascript.mas, classes => [ ] &>
+
   <table class="table">
     <tr>
       <th width="100">Select Trait</th>
@@ -27,7 +27,7 @@
   </table>
 
   <button class="btn" id="display_stats_button">Show Stats</button>
-  
+
   <table id="progress_stats_datatable">
   </table>
   <br />

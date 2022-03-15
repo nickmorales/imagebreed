@@ -152,7 +152,7 @@ sub perform_drone_imagery_analytics {
 
     my ($stats_out_heritability_fh, $stats_out_heritability) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
 
-    print STDERR "RUN FIRST ENV ESTIMATION\n";
+    print STDERR "RUN FIRST ENV ESTIMATION $statistics_select\n";
     if ($statistics_select eq 'sommer_grm_spatial_genetic_blups' || $statistics_select eq 'sommer_grm_spatial_pure_2dspl_genetic_blups') {
         $statistical_ontology_term = "Multivariate linear mixed model genetic BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000001"; #In the JS this is set to either the genetic or spatial BLUP term (Multivariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000003) when saving analysis results
 
@@ -906,11 +906,11 @@ sub perform_drone_imagery_analytics {
             ';
             my $statistics_cmd_model = '';
             if ($statistics_select eq 'sommer_grm_univariate_spatial_genetic_blups') {
-                $statistics_cmd_model .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                $statistics_cmd_model .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(rowNumberFactor) +vs(colNumberFactor) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
                 ';
             }
             elsif ($statistics_select eq 'sommer_grm_univariate_spatial_pure_2dspl_genetic_blups') {
-                $statistics_cmd_model .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
+                $statistics_cmd_model .= 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
                 ';
             }
             $statistics_cmd_model .= 'if (!is.null(mix\$U)) {
@@ -920,10 +920,11 @@ sub perform_drone_imagery_analytics {
             write.table(mix\$U\$\`u:colNumberFactor\`, file=\''.$stats_out_tempfile_col.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
             write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            X <- with(mat, spl2D(rowNumber, colNumber));
             spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-            blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
-            spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
+            W <- with(mat, spl2Da(rowNumber, colNumber));
+            X <- W\$Z\$\`A:all\`;
+            blups1 <- mix\$U\$\`A:all\`\$'.$t.';
+            spatial_blup_results\$'.$t.' <- X %*% blups1;
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
             e2 <- vpredict(mix, e2 ~ (V2) / ( V2+V3) );

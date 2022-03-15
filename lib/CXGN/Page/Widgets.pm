@@ -17,8 +17,8 @@ as collapsible boxes, content swappers, and (moveable windows?).
 
 =head1 SYNOPSIS
 
-Built-in support for cookie-setting will give the user fine control over his or her 
-SGN experience.  
+Built-in support for cookie-setting will give the user fine control over his or her
+SGN experience.
 
 The basic requirement for something to be a widget and not a FormattingHelper is
 that it is dynamic.
@@ -39,7 +39,7 @@ our @ISA;
 our @EXPORT_OK;
 
 =head2 collapser
-	
+
 	Returns a link and target content, where use of the link by the user
 	will cause that content to collapse.
 
@@ -58,13 +58,13 @@ our @EXPORT_OK;
 
 	Returns: ($link, $content), where $link is the html for the two consecutive <a>links</a> that make the button, and $content is the content you provided,
 			wrapped with <span id='[provided id]'></span>
-	
-	Usage:  my ($link, $content) = collapser({	
-									linktext => 'Heading', 
-									linkstyle => 'text-decoration:none', 
+
+	Usage:  my ($link, $content) = collapser({
+									linktext => 'Heading',
+									linkstyle => 'text-decoration:none',
 									content => '<b>Hide this text on link-click</b>',
 									collapsed => 0,
-									save => 1,  #uses CXGN::UserPrefs, the "id" key on the 
+									save => 1,  #uses CXGN::UserPrefs, the "id" key on the
                                                 #next line would have to be in the Register
 									id=>'hiderbox1'
 								});
@@ -80,8 +80,8 @@ sub collapser {
 		valid => ['linktext', 'hide_state_linktext', 'linkstyle', 'content', 'id', 'collapsed', 'save', 'alt_href', 'alt_target'],
 		required => ['linktext', 'content', 'id']
 	});
-	
-	my ($linktext, $hide_state_linktext, $content, $id, $alt_href, $alt_target) 
+
+	my ($linktext, $hide_state_linktext, $content, $id, $alt_href, $alt_target)
 		= ($args{'linktext'}, $args{'hide_state_linktext'}, $args{'content'}, $args{'id'}, $args{'alt_href'}, $args{'alt_target'});
 	_check_id($id) if $args{save};
 
@@ -107,41 +107,41 @@ sub collapser {
 	$hide_state_linktext ||= $linktext;
         no warnings 'uninitialized';
 	my $link = <<HTML;
-	<a class="collapser collapser_show" target="$alt_target" href="$alt_href" style="$linkstyle;$on_display" onclick=" 
-		Effects.swapElements('${id}_offswitch', '${id}_onswitch'); 
+	<a class="collapser collapser_show" target="$alt_target" href="$alt_href" style="$linkstyle;$on_display" onclick="
+		Effects.swapElements('${id}_offswitch', '${id}_onswitch');
 		Effects.hideElement('${id}_content');
-		$hide_save_js	
+		$hide_save_js
 		return false;"
 		id="${id}_offswitch"><img class="collapser_img" src="/documents/img/collapser_minus.png" />$linktext</a>
 	<a class="collapser collapser_show" target="$alt_target" href="$alt_href" style="$linkstyle;$off_display" onclick="
-		Effects.swapElements('${id}_onswitch', '${id}_offswitch'); 
+		Effects.swapElements('${id}_onswitch', '${id}_offswitch');
 		Effects.showElement('${id}_content');
-		$show_save_js	
+		$show_save_js
 		return false;"
 		id="${id}_onswitch"><img class="collapser_img" src="/documents/img/collapser_plus.png" />$hide_state_linktext</a>
 HTML
-	
+
 	my $wrapped_content = qq|<span id="${id}_content" style="$on_display">$content</span>|;
-	
+
 	return ($link, $wrapped_content);
 }
 
 =head2 swapper
-	
+
 	Returns a link and target content, where use of the link by the user
 	will cause that content to switch to alternate content (back-and-forth), which will be displayed in a consecutively hidden fashion
-	
-	Args:  
-	
+
+	Args:
+
 	Returns: ($link, $content), where $link is the html for the two consecutive <a>links</a> that make the button, and $content contains consecutive
 			contents, one hidden, each wrapped with <span id=[provided id]:(def|alt)></span>
-	Usage:  my ($link, $content) = swapper ({	
+	Usage:  my ($link, $content) = swapper ({
 									linktext => 'Swap With Something Else',
 									linktext_alt => 'Unswap me you savage!",
 									linkstyle => 'text-decoration:none',
 									content => 'I am the regular content',
 									content_alt => 'I am the alternate content <a href='www.boycott-riaa.org'>Click me!</a>',
-									id=>'swapper1' 
+									id=>'swapper1'
 								});
 	print $link . "<br>" . $content;
 
@@ -168,17 +168,17 @@ sub swapper {
 	if($state eq "alt") { $def_display = "display:none"; }
 	else { $alt_display = "display:none"; }
 	$linkstyle =~ s/;\s*$//g;
-	
+
 	my $link = <<HTML;
-	<a href='#' style='$linkstyle;$def_display' onclick=' 
-		Effects.swapElements("${id}_swap", "${id}_unswap"); 
+	<a href='#' style='$linkstyle;$def_display' onclick='
+		Effects.swapElements("${id}_swap", "${id}_unswap");
 		Effects.swapElements("${id}_def", "${id}_alt");
 		UserPrefs.set("$id", "alt");
 		UserPrefs.setCookie();
 		return false;'
 		id='${id}_swap'>$linktext</a>
 	<a href='#' style='$linkstyle;$alt_display', onclick='
-		Effects.swapElements("${id}_unswap", "${id}_swap"); 
+		Effects.swapElements("${id}_unswap", "${id}_swap");
 		Effects.swapElements("${id}_alt", "${id}_def");
 		UserPrefs.set("$id", "def");
 		UserPrefs.setCookie();
@@ -191,23 +191,23 @@ HTML
 }
 
 =head2 cycler
-	
+
 	Returns a link and target content, where use of the link by the user
 	will cause that content to cycle amongst alternate content, which will be displayed in a consecutively hidden fashion
-	
+
 	Args:  a hash reference with the keys:
 			id: a unique alphanumeric key
 			linktexts: an array reference containing the various texts (or html) to display as the cycler button link
 			linkstyle: (optional) a string containing common style for the link
 			contents: an array reference containing the contents to be cycled, in HTML format
-	
+
 	Returns: ($link, $content), where $link is the html for the two consecutive <a>links</a> that make the button, and $content contains consecutive
 			contents, all but one hidden, each wrapped with <span id='[provided id]:(1|2|3...)'></span>
-	Usage:  my ($link, $content) = cycler({	
+	Usage:  my ($link, $content) = cycler({
 									linktexts => ['Go to state two','Go to state three', 'Back to first state']
 									linkstyle => 'text-decoration:none',
 									contents => ['It's good to be state one!!', 'It's my turn, now, bitches!', 'State three is fine with me!']
-									id=>'cycler1' 
+									id=>'cycler1'
 								});
 	print $link . "<br>" . $content;
 
@@ -226,22 +226,22 @@ sub cycler {
 			or croak "Required key: '$required' not specified";
 	}
 	my ($linktexts, $contents) = ($args{'linktexts'}, $args{'contents'});
-	unless(@{$linktexts}==@{$contents} && @{$linktexts}>1) { 
+	unless(@{$linktexts}==@{$contents} && @{$linktexts}>1) {
 		croak "'linktexts' array (@{$linktexts}) must have more than one element AND be equal in length to 'contents' array (size:@{$contents})";
 	}
 	my $id = $args{'id'};
-	
+
 	my $linkstyle = $args{'linkstyle'} || "";
 	my $cyclesize = @{$contents};
-	
+
 	my $link = "";
 	my $count = 0;
 	foreach my $linktext (@{$linktexts}) {
 		my $next = $count+1;
 		if($count >= ($cyclesize - 1)) {$next = 0;}
 		$link .= <<HTML;
-		<a href='#' style='$linkstyle' onclick=' 
-		Effects.swapElements("${id}_$count", "${id}_$next"); 
+		<a href='#' style='$linkstyle' onclick='
+		Effects.swapElements("${id}_$count", "${id}_$next");
 		Effects.swapElements("${id}_control$count", "${id}_control$next");
 		return false;'
 		id='${id}_control$count'>$linktext</a>
@@ -260,8 +260,6 @@ HTML
 
 =head2 notifier
 
-Provides the html notifier box that corresponds with the notify() command in jslib: CXGN.Base.  There should be one below every page toolbar, as far as I'm concerned ;)
-
 Usage:  print CXGN::Page::Widgets::notifier({style => "yaddayadda", append_style => "background-color:#fa0"});
 
 Note: You can only print one notifier per page, as there is a pair of standard elementIds: SGN_NOTIFY_BOX and SGN_NOTIFY_CONTENT
@@ -275,7 +273,7 @@ sub notifier {
 	my $append_style = $args->{append_style};
 	$append_style ||= "";
 
-	return <<HTML;	
+	return <<HTML;
 <div id='SGN_NOTIFY_BOX' style='${style}$append_style'>
 <table style='width:100%; margin:0px; padding:0px;'><tr>
 <td style='text-align:left'>
@@ -301,7 +299,7 @@ sub _check_id {
 sub _get_pref {
 	#since Widgets will be used after headers are sent, we shouldn't use the UserPrefs handle, but we can use the cookie string that we got from the handle when this module is called.  It will be faster this way, anyhow.
 	my $name = shift;
-	my $cookie_string = CXGN::Cookie::get_cookie("user_prefs");	
+	my $cookie_string = CXGN::Cookie::get_cookie("user_prefs");
 	my ($value) = $cookie_string =~ /$name=([^:]+)/;
 	return $value;
 }
@@ -333,6 +331,6 @@ sub _check_args {
 
 =head1 AUTHOR
 
-Chris Carpita <csc32@cornell.edu> 
+Chris Carpita <csc32@cornell.edu>
 
 =cut

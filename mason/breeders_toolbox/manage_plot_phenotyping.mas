@@ -5,7 +5,7 @@ $type_name => "plot"
 </%args>
 
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.BreedersToolbox.HTMLSelect' ] &>
+<& /util/import_javascript.mas, classes => [ ] &>
 
 <& /page/page_title.mas, title=>"Manage Plot Phenotyping" &>
 

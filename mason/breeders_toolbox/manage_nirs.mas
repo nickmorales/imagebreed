@@ -8,7 +8,7 @@ $locations => undef
 $sampling_facilities => ()
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.BreedersToolbox.Trial','CXGN.BreedersToolbox.FieldBook','CXGN.BreedersToolbox.UploadPhenotype', 'CXGN.BreederSearch', 'CXGN.Trial', 'jquery.iframe-post-form' ] &>
+<& /util/import_javascript.mas, classes => [ 'CXGN.BreedersToolbox.Trial03152022','CXGN.BreedersToolbox.FieldBook03152022','CXGN.BreedersToolbox.UploadPhenotype03152022', 'CXGN.BreederSearch03152022', 'CXGN.Trial03152022', 'jquery.iframe-post-form' ] &>
 
 <& /page/page_title.mas, title=>"Manage NIRS Data" &>
 

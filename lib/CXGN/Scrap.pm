@@ -169,10 +169,8 @@ sub jsan_use {
 #          modules required with jsan_use(), plus the globally-used
 #          javascript modules defined herein, currently:
 
-#            CXGN.Effects
 #            CXGN.Page.FormattingHelpers
 #            CXGN.Page.Toolbar
-#            CXGN.UserPrefs
 
 #   Args : none
 #   Ret  : a string containing zero or more newline-separated

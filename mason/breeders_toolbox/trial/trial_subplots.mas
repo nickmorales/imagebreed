@@ -3,7 +3,7 @@
 $trial_id
 </%args>
 
-<& /util/import_javascript.mas, classes => [ "jquery", "jqueryui", "thickbox", "CXGN.Page.FormattingHelpers", "jquery.cookie", "CXGN.List", "CXGN.BreederSearch" ] &>
+<& /util/import_javascript.mas, classes => [ ] &>
 
 
 <div id="trial_subplots_html">
@@ -37,10 +37,10 @@ jQuery(document).ready(function () {
 
                 subplot_html = format_options_list(subplot);
                 jQuery('#subplot_data').html(subplot_html);
- 
+
                 var data = jQuery('#subplot_data').val() || [];
                 show_list_counts('subplot_data_count', response.subplots[0].length, data.length);
- 
+
                 if (jQuery('#subplot_data').length) {
                       addToListMenu('subplot_to_list_menu', 'subplot_data', {
                       selectText: true,

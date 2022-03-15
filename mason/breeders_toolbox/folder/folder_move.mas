@@ -9,7 +9,7 @@ $breeding_program_id => undef
 $breeding_program_name => undef
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.TrialTreeFolders' ] &>
+<& /util/import_javascript.mas, classes => [ 'CXGN.TrialTreeFolders03152022' ] &>
 % my $dialog_type;
 % my $folder_for_trials;
 % my $folder_for_crosses;

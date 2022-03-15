@@ -31,7 +31,7 @@ $original_img => undef
 $display_order => undef
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.Image', 'jquery', 'jqueryui' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery', 'jqueryui' ] &>
 
 <%perl>
 

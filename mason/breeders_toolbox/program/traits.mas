@@ -4,7 +4,7 @@ $program_id
 $collapse_phenotypes_section => 1
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery', 'jquery.dataTables', 'd3.d3v4Min', 'd3.graphers.stackedObservationPhenotypeHistogram'] &>
+<& /util/import_javascript.mas, classes => [ 'd3.d3v4Min', 'd3.graphers.stackedObservationPhenotypeHistogram03152022'] &>
 
 
 <div class="well well-sm table-responsive">

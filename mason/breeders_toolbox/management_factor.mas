@@ -45,7 +45,7 @@ $management_factor_date => undef
 $management_factor_type => undef
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.Trial' , 'jstree/dist/jstree', 'CXGN.BreedersToolbox.HTMLSelect', 'moment_min', 'daterangepicker' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.Trial03152022', 'moment_min', 'daterangepicker' ] &>
 
 <br/>
 

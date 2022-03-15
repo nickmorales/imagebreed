@@ -4,7 +4,7 @@ $role => "stock_orderer"
 $check_vendor_role
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery', 'jquery/dataTables', 'CXGN.BreedersToolbox.HTMLSelect.js', 'CXGN.List' ] &>
+<& /util/import_javascript.mas, classes => [] &>
 
 <& /page/page_title.mas, title => "Your Orders" &>
 

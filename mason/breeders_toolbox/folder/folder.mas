@@ -30,7 +30,7 @@ $folder_for_genotyping_trials
 $has_child_folders => undef
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery', 'jqueryui', 'jquery.iframe-post-form', 'CXGN.Trial', 'CXGN.BreedersToolbox.HTMLSelect' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.Trial03152022' ] &>
 
 <br/>
 

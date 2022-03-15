@@ -1,6 +1,9 @@
 <%args>
 $trial_id
 $trial_name
+$company_id
+$company_name
+$company_project_is_private
 $breeding_program_name
 $breeding_program_id
 $location_name
@@ -116,6 +119,24 @@ $identifier_prefix
                     <span id="trial_folder_div"><a href="/folder/<% $folder_id %>"><% $folder_name %></a></span>
                     <br/><br/>
                     <button class="btn btn-sm btn-default" style="margin:3px" id="new_folder_dialog_link">New Folder</button> <button class="btn btn-sm btn-default" style="margin:3px" id="open_folder_dialog_link">Change Folder</button>
+                </td>
+            </tr>
+
+            <tr>
+                <td><b>Company Name </b></td>
+                <td>
+                    <span id="copmany_name">
+                        <a href="/company/<% $company_id %>"><% $company_name %></a>
+                    </span>
+                </td>
+            </tr>
+
+            <tr>
+                <td><b>Is Private to Company </b></td>
+                <td>
+                    <span id="copmany_project_is_private">
+                        <% $company_project_is_private %>
+                    </span>
                 </td>
             </tr>
 

@@ -29,7 +29,7 @@ my $new_stock_link = qq| <a href="/stock/0/new">Submit new stock</a> \| <a href=
 </%perl>
 
 <& /util/import_javascript.mas,
-    classes => [qw(jquery CXGN.Effects jquery.cookie)]
+    classes => [ ]
 &>
 
 
@@ -42,7 +42,7 @@ my $new_stock_link = qq| <a href="/stock/0/new">Submit new stock</a> \| <a href=
                                           .'-'.$pager->last
                                           .' of '.Number::Format->new->format_number($pager->total_entries)
    &>
-% my @data =();	
+% my @data =();
 %   if( $results->count ) {
 %               @data =
 %            map {
@@ -63,28 +63,28 @@ my $new_stock_link = qq| <a href="/stock/0/new">Submit new stock</a> \| <a href=
 %   }
 
 <div style="text-align:right">
-Copy items on this page to list: 
+Copy items on this page to list:
 <span id="item_list_menu">
 </span>
 
 <div id="item_list">
-</div>	
+</div>
 </div>
 
 % my @items = map { $_->uniquename() } $results->all();
 % my $item_json = JSON::Any->new()->encode(\@items);
 <script>
 
-  jQuery(document).ready( function() { 
+  jQuery(document).ready( function() {
     var items = eval(<% $item_json %>);
 
-    if (isLoggedIn()) { 
+    if (isLoggedIn()) {
       jQuery('#item_list').hide();
       jQuery('#item_list').html(items.join("\n"));
-      
+
       addToListMenu('item_list_menu', 'item_list', 'div');
     }
-    else { 
+    else {
       jQuery('#item_list_menu').html('Log in to use lists.');
     }
   });

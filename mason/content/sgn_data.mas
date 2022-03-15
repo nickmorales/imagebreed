@@ -12,7 +12,7 @@ sgn_data.mas - SGN page for organism data overview in a tree format
     $organism_trees
 </%args>
 
-<& /util/import_javascript.mas, classes => ["CXGN.Page.FormattingHelpers", "CXGN.Effects"] &>
+<& /util/import_javascript.mas, classes => ["CXGN.Page.FormattingHelpers"] &>
 
 <& /page/page_title.mas, title=> "SGN data overview" &>
 

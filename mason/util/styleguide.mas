@@ -1,10 +1,10 @@
 <h3>Importing CSS</h3>
 
 <p>
-  To import CSS one should use the <code>/util/import_css.mas</code> 
-  mason component instead of a <code>&lt;link&gt;</code> element. This will 
-  ensure that a link is added to the <code>&lt;head&gt;</code> 
-  instead of being part of the <code>&lt;body&gt;</code>. One provides this 
+  To import CSS one should use the <code>/util/import_css.mas</code>
+  mason component instead of a <code>&lt;link&gt;</code> element. This will
+  ensure that a link is added to the <code>&lt;head&gt;</code>
+  instead of being part of the <code>&lt;body&gt;</code>. One provides this
   mason componant with a list of strings which are one of the following:
   <ul>
     <li>The relative path to the CSS file from the /static/css folder.</li>
@@ -23,13 +23,13 @@
 <h3>Importing JavaScript</h3>
 
 <p>
-  To import JavaScript one should use the <code>/util/import_javascript.mas</code> 
-  mason component. This will ensure that the script is loaded in the 
-  <code>&lt;head&gt;</code> instead of being part of the 
-  <code>&lt;body&gt;</code>. One provides this mason componant with a list of 
-  strings which are the path to the JavaScript file with slashes replaced by 
+  To import JavaScript one should use the <code>/util/import_javascript.mas</code>
+  mason component. This will ensure that the script is loaded in the
+  <code>&lt;head&gt;</code> instead of being part of the
+  <code>&lt;body&gt;</code>. One provides this mason componant with a list of
+  strings which are the path to the JavaScript file with slashes replaced by
   periods (e.g. <code>s/\/\./g</code>) and the file extension removed.
-  <pre><%text><& /util/import_javascript.mas, classes => [qw[ CXGN.Effects CXGN.Phenome.Locus MochiKit.DOM ]] &></%text></pre>
+  <pre><%text><& /util/import_javascript.mas, classes => [qw[ CXGN.Effects MochiKit.DOM ]] &></%text></pre>
 </p>
 
 <hr>
@@ -37,22 +37,22 @@
 <h3>Info Sections</h3>
 <p>Source:</p>
 <pre><%text>
-&lt;&| /page/info_section.mas, id=&gt;'Example_Info_Section', 
-    title =&gt; 'Example Info Section', subtitle =&gt; 'This is a subtitle', 
+&lt;&| /page/info_section.mas, id=&gt;'Example_Info_Section',
+    title =&gt; 'Example Info Section', subtitle =&gt; 'This is a subtitle',
     collapsible=&gt;1, collapsed=&gt;0 &&gt;
-    
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-  
+
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
 &lt;/&&gt;
 </%text></pre>
 
 <p>Creates:</p>
-<&| /page/info_section.mas, id=>'Example_Info_Section', 
-    title => 'Example Info Section', subtitle => 'This is a subtitle', 
+<&| /page/info_section.mas, id=>'Example_Info_Section',
+    title => 'Example Info Section', subtitle => 'This is a subtitle',
     collapsible=>1, collapsed=>0 &>
-    
-  Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-  
+
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
 </&>
 
 <hr>
@@ -81,7 +81,7 @@
 <h3>HTML Selects (get_select_box)</h3>
 <p>Source:</p>
 <pre>
-&lt;& /util/import_javascript.mas, classes => ['CXGN.BreedersToolbox.HTMLSelect'] &&gt;
+&lt;& /util/import_javascript.mas, classes => ['CXGN.BreedersToolbox.HTMLSelect03152022'] &&gt;
 &lt;div id="htmlselectexample"&gt;&lt;/div&gt;
 &lt;script type="text/javascript"&gt;
     get_select_box("trials", "htmlselectexample")
@@ -99,7 +99,7 @@
 <h3>HTML Muliple Selects (get_select_box has many options e.g. search for trials in breeding_program_name)</h3>
 <p>Source:</p>
 <pre>
-&lt;& /util/import_javascript.mas, classes => ['CXGN.BreedersToolbox.HTMLSelect'] &&gt;
+&lt;& /util/import_javascript.mas, classes => ['CXGN.BreedersToolbox.HTMLSelect03152022'] &&gt;
 &lt;div id="htmlselectmultipleexample"&gt;&lt;/div&gt;
 &lt;script type="text/javascript"&gt;
     get_select_box("trials", "htmlselectmultipleexample", {'multiple':1, 'size':10, 'breeding_program_name':'test'})
@@ -206,7 +206,7 @@ button_id =&gt; "example_button_link"
     <p><pre><%text>&lt;&amp;| /util/workflow.mas, id=> "my_workflow" &amp;&gt;...&lt;/&amp;&gt;</%text></pre></p>
     <button type="button" class="btn btn-default" onclick="Workflow.complete(this);">Next</button>
   </&>
-  
+
   <&| /util/workflow.mas:step, title=>"Adding Steps" &>
     <p>Add steps to the workflow using the <code>/util/workflow.mas:step</code> mason method.</p>
     <p>
@@ -218,11 +218,11 @@ button_id =&gt; "example_button_link"
     </p>
     <button type="button" class="btn btn-default" onclick="Workflow.complete(this);">Next</button>
   </&>
-  
+
   <&| /util/workflow.mas:step, title=>"Completing Steps" &>
   <p>
-    Use the <code>Workflow.complete(Element)</code> JavaScript function to 
-    complete a step. <code>Element</code> should be any DOM element within the 
+    Use the <code>Workflow.complete(Element)</code> JavaScript function to
+    complete a step. <code>Element</code> should be any DOM element within the
     step you would like to complete.
   </p>
   <p>
@@ -236,11 +236,11 @@ button_id =&gt; "example_button_link"
   </p>
   <button type="button" class="btn btn-default" onclick="Workflow.complete(this);">Next</button>
   </&>
-  
+
   <&| /util/workflow.mas:step, title=>"Skipping Steps" &>
   <p>
     Skipping works like completing but marks the step as incomplete. Use
-    <code>Workflow.skip(Element)</code> just like you would 
+    <code>Workflow.skip(Element)</code> just like you would
     <code>Workflow.complete(Element)</code>.
   </p>
   <p>
@@ -254,7 +254,7 @@ button_id =&gt; "example_button_link"
   </p>
   <button type="button" class="btn btn-default" onclick="Workflow.skip(this);">Skip this Step</button>
   </&>
-  
+
   <&| /util/workflow.mas:step, title=>"Pending Steps" &>
   <p>
     Sometimes a step needs time to complete, such as uploads. You can mark a
@@ -273,13 +273,13 @@ button_id =&gt; "example_button_link"
   </p>
   <button id="to_complete" type="button" class="btn btn-primary" onclick="Workflow.pending(this);">Wait and Continue</button>
   </&>
-  
+
   <&| /util/workflow.mas:step, title=>"Endscreens" &>
   <p>
-    After the final step is completed, an endscreen will be shown. To set the 
-    content of the endscreen, use the <code>/util/workflow.mas:complete</code> 
+    After the final step is completed, an endscreen will be shown. To set the
+    content of the endscreen, use the <code>/util/workflow.mas:complete</code>
     mason method. You can also optionally set a special endscreen which is shown
-    instead while there are pending steps using 
+    instead while there are pending steps using
     <code>/util/workflow.mas:pending</code>.
   </p>
   <p>
@@ -291,7 +291,7 @@ button_id =&gt; "example_button_link"
   </p>
   <button type="button" class="btn btn-default" onclick="Workflow.complete(this);">Go to endscreen</button>
   </&>
-  
+
   <&| /util/workflow.mas:pending &>
     <h2>There is still a pending step. Complete it to see the final endscreen.</h2>
     <button type="button" class="btn btn-default" onclick="Workflow.complete(document.querySelector('#to_complete'),false);">Complete Pending Step</button>
@@ -303,10 +303,10 @@ button_id =&gt; "example_button_link"
     <pre>var wf = document.querySelector("#my_workflow");
 Workflow.focus(wf,step_index);</pre>
     <p>
-      By default, <code>Workflow.complete(...)</code>, 
-      <code>Workflow.skip(...)</code>, and <code>Workflow.pending(...)</code> 
-      also change the focus to the next step. Sometimes, you need to set a step 
-      to complete without changing the focus. To do this, pass 
+      By default, <code>Workflow.complete(...)</code>,
+      <code>Workflow.skip(...)</code>, and <code>Workflow.pending(...)</code>
+      also change the focus to the next step. Sometimes, you need to set a step
+      to complete without changing the focus. To do this, pass
       <code>false</code> as the second argument.
     </p>
     <pre>Workflow.complete(Element,false);
@@ -324,7 +324,7 @@ Workflow.pending(Element,false);</pre>
     <pre><%text><& /util/import_javascript.mas, classes => [qw[ vega.vega3 vega.vega-lite2 vega.vega-embed3 vega.vega-defaults ]] &></%text></pre>
     set up a div:
 <pre><%text>&lt;div id="vis"&gt;&lt;/div&gt;</%text></pre>
-    and then run vega-lite (you can also use a <a href="https://vega.github.io/vega/">vega</a> graph spec): 
+    and then run vega-lite (you can also use a <a href="https://vega.github.io/vega/">vega</a> graph spec):
 <pre><%text>&lt;script type="text/javascript"&gt;
     var yourVlSpec = {
       "$schema": "https://vega.github.io/schema/vega-lite/v2.0.json",
@@ -443,7 +443,7 @@ var styleguide_trial_table = jQuery('#styleguide_trial_search_results').DataTabl
 <h3>Use of Symbols</h3>
 
 <p>
-  Below is a table with current usages of symbols in the database. 
+  Below is a table with current usages of symbols in the database.
   Please add to this tale when you choose to use a new symbol.
 </p>
 <style media="screen">

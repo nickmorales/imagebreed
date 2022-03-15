@@ -14,7 +14,6 @@ var $j = jQuery.noConflict();
 
 jQuery(document).ready(function ($) {
 
-    // defined in CXGN.BreedersToolbox.HTMLSelect
     get_select_box("private_companies", "company_select_div", {'name': 'select_private_company_id', 'id': 'select_private_company_id'});
     get_select_box("locations", "location_select_div", {'private_company_id':1});
     get_select_box("breeding_programs", "breeding_program_select_div", {'private_company_id':1});

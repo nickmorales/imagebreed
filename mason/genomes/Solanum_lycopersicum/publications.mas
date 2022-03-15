@@ -1,4 +1,4 @@
-<& /util/import_javascript.mas, classes=>["CXGN.Effects"] &>
+<& /util/import_javascript.mas, classes=>[ ] &>
 
 <style type="text/css">
 
@@ -62,7 +62,7 @@ my @pubs =
     $schema->resultset('Cv::Cvterm')
            ->search({name => 'tomato genome publication'})
            ->search_related('pubprops', {})
-           ->search_related('pub', {}, 
+           ->search_related('pub', {},
                             { prefetch => { pub_dbxrefs => 'dbxref' },
                             }
                            );
@@ -77,7 +77,7 @@ for my $pub (@pubs) {
 <&| /page/info_section.mas, title=>'Publications', collapsible => 0, empty_message => 'temporarily unavailable' &>
 
 %  # for each year, print out the pubs associated with it
-%   my @sorted_years =  sort {$b <=> $a} keys %pubs_by_year; 
+%   my @sorted_years =  sort {$b <=> $a} keys %pubs_by_year;
 %   for my $year ( @sorted_years ) {
 %     my $pubs = $pubs_by_year{$year};
       <&| /page/info_section.mas, title         => $year,
@@ -127,8 +127,8 @@ for my $pub (@pubs) {
 
 <table class="publication">
 <tr>
-  <td><a style="color:black" 
-  target="_blank" 
+  <td><a style="color:black"
+  target="_blank"
   href="/publication/<% $pub->pub_id %>/view">
   <b><% $pub->title | h %></b>
   </a>

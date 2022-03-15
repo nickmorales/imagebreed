@@ -36,7 +36,7 @@ Naama Menda <nm249@cornell.edu>
 
 <%args>
   $pubref => undef
-  
+
 </%args>
 
 
@@ -56,7 +56,7 @@ my @xrefs     = $pub->get_dbxrefs;
 my $dbxrefs_html;
 foreach my $d(@xrefs) {
 	my $db = $d->get_db_name();
-	if ($db  ne 'SGN_ref') { 
+	if ($db  ne 'SGN_ref') {
 	    my $url = $d->get_urlprefix() . $d->get_url() . $d->get_accession();
 	    $dbxrefs_html .=  qq| <a href= "$url" >| . "$db:" . $d->get_accession() . "</a><br />";
 	}
@@ -97,7 +97,7 @@ my $pub_title = $pub->get_title;
 </%perl>
 
 
-<& /util/import_javascript.mas, classes => ["jquery","jqueryui", "CXGN.Phenome.Tools" ] &>
+<& /util/import_javascript.mas, classes => ["jquery","jqueryui"] &>
 
 
 <& /page/page_title.mas, title=> $pub_title  || 'New publication' &>
@@ -109,7 +109,7 @@ my $pub_title = $pub->get_title;
 <& /page/form.mas,
     object_type          => 'publication',
     object_id            => "$pub_id",
-    form_name            => 'pub_form',	
+    form_name            => 'pub_form',
     server_side_script   => '/jsforms/pub_ajax_form.pl',
     form_div_name        => 'pub_details',
     js_object_name       => 'pubForm',
@@ -123,11 +123,11 @@ my $pub_title = $pub->get_title;
 
 % if ($pub_id) {
 
-<&| /page/info_section.mas, title=>"External resources", 
-  collapsible=>1, collapsed=>0 
+<&| /page/info_section.mas, title=>"External resources",
+  collapsible=>1, collapsed=>0
   &>
   <% $dbxrefs_html %>
-  
+
 </&>
 
 <&| /page/info_section.mas, title=>"Associated loci (" . $loci_count  . ")", collapsible=>1, collapsed=>1 &>

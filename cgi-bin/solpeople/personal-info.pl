@@ -39,33 +39,33 @@ sub define_object {
 	my %args = $self->get_args();
 	$self->set_object_id($args{sp_person_id});
 	$self->set_object(new CXGN::People::Person($self->get_dbh(), $args{sp_person_id}));
-	$self->set_primary_key("sp_person_id");		      
+	$self->set_primary_key("sp_person_id");
 	$self->set_owners($self->get_object()->get_sp_person_id());
 }
 
 #specified in SimpleFormPage
-sub check_modify_privileges { 
+sub check_modify_privileges {
     my $self = shift;
 
     # implement quite strict access controls by default
-    # 
+    #
     my $person_id = $self->get_login()->has_session();
     my $user =  CXGN::People::Person->new($self->get_dbh(), $person_id);
     my $user_id = $user->get_sp_person_id();
     if ($user->get_user_type() eq 'curator') {
         return 0;
     }
-    
+
     # check the owner only if the action is not new
     #
     my @owners= $self->get_owners();
-    
-    
-    if (!(grep {/^$user_id$/} @owners )) 
+
+
+    if (!(grep {/^$user_id$/} @owners ))
     {
 	$self->get_page()->message_page("You do not have rights to modify this database entry because you do not own it. [$user_id, @owners]");
     }
-    else { 
+    else {
 	return 0;
     }
 
@@ -81,8 +81,8 @@ sub validate_parameters_before_store
 {
 	my $self = shift;
 	my %args = $self->get_args();
-	
-	my ($keywords, $format, $research_interests, $organism_codes_str, $unlisted_organisms_str) = 
+
+	my ($keywords, $format, $research_interests, $organism_codes_str, $unlisted_organisms_str) =
 		@args{qw(keywords format research_interests organisms unlisted_organisms)};
 	$format = "auto" unless $format eq "html";
 
@@ -106,7 +106,7 @@ sub validate_parameters_before_store
 			$o->set_selected(1);
 		}
 	}
-	
+
 	#deal with unlisted organisms
 	my @unlisted_organisms;
 	foreach (split(/;/, $unlisted_organisms_str))
@@ -117,11 +117,11 @@ sub validate_parameters_before_store
 		}
 	}
 	my $unlisted_organisms = join("\0", @unlisted_organisms);
-	
-	# Quick, dirty hack method of defenestrating disallowed HTML tags in 
+
+	# Quick, dirty hack method of defenestrating disallowed HTML tags in
 	# research interest statements: replace allowed tags with a marker string,
 	# then delete all tokens of the form "<[^>]+>", then replace the marker string
-	# with the original tag. 
+	# with the original tag.
 	#
 	# Using the marker string allows us to "save" the information about the tag
 	# that is allowed -- changing it to a token that won't match the "<[^>]+>"
@@ -140,16 +140,16 @@ sub validate_parameters_before_store
 	$formatted_interests =~ s/<(\/{0,1})([pbi]|br)>/$1-$2-$tag_marker/g;
 	$formatted_interests =~ s/\<[^>]+\>//g;
 	$formatted_interests =~ s/(\/{0,1})-([pbi]|br)-$tag_marker/<$1$2>/g;
-	
+
 	# This is stored separately in the database, without tags, for full-text searching.
 	$research_interests =~ s/\<[^>]+\>//g;
-	
+
 	if ($format eq "auto")
 	{
 		$formatted_interests =~ s/\r{0,1}\n\r{0,1}\n/<\/p><p>/g;
 		$formatted_interests = "<p>$formatted_interests</p>";
 	}
-	
+
 	$args{keywords} = HTML::Entities::encode_entities($keywords);
 	$args{format} = $format;
 	$args{research_interests} = ($format eq "auto") ? HTML::Entities::encode_entities($research_interests) : $formatted_interests;
@@ -160,54 +160,54 @@ sub validate_parameters_before_store
 sub generate_form
 {
 	my $self = shift;
-	
+
 	my %args = $self->get_args();
 	my $person = $self->get_object();
-	
+
 	$self->init_form();
 	my $form = $self->get_form();
-	if ($form->is_editable()) { 
+	if ($form->is_editable()) {
 		$form->set_submit_method('post'); #avoid long URLs caused by research interests
 	}
-	
+
 	my ($displayed_first_name, $displayed_last_name) = ($person->get_first_name(), $person->get_last_name());
 	#i added some html into empty name fields asking people to update their blank entries in the database.
 	#if we encounter one of these, do not fill in the field for their name with the html! --john
 	if($displayed_first_name=~/^</){$displayed_first_name='';}
 	if($displayed_last_name=~/^</){$displayed_last_name='';}
-	
+
 	my @organisms = $person->get_organisms();
 	my @organism_ids = map {$_->get_organism_id()} @organisms;
 	my @organism_names = map {$_->get_organism_name()} @organisms;
 	my @organism_selections = map {$_->is_selected() ? '1' : '0'} @organisms;
-	
+
 	#element IDs for the source elements for the preview panes
 	$self->{html_source_element_id} = 'html_source';
 	$self->{organisms_source_element_id} = 'organisms_source';
-	
+
 	my $default_field_length = 22;
 	if($form->is_editable()) {
 	    $form->add_label(display_name => "",
 			     field_name => "lbl1",
 			     contents => "If you would like to enter or update information at this time but do not want it displayed publically, check this option.");
-	    
-	    $form->add_checkbox(display_name => "Censor contact information from directory search and public display", 
+
+	    $form->add_checkbox(display_name => "Censor contact information from directory search and public display",
 				field_name => "censor",
 				contents => "1",
-				selected => $person->get_censored(), 
-				object => $person, 
-				getter => "get_censored", 
+				selected => $person->get_censored(),
+				object => $person,
+				getter => "get_censored",
 				setter => "set_censor");
-	    
+
 	    $form->add_label(display_name => "",
 			     field_name => "lbl2",
 			     contents => "The first and last names you enter here will be displayed in the SGN directory (if not censored using the box above)."
 			     . " Your username for this interface is not displayed.");
 	}
-	$form->add_select(display_name => "Salutation", 
+	$form->add_select(display_name => "Salutation",
 			  field_name => "salutation",
 			  contents => $person->get_salutation(),
-			  object => $person, 
+			  object => $person,
 			  getter => "get_salutation",
 			  setter => "set_salutation",
 			  select_list_ref => [qw(None Prof. Dr. Mr. Ms. Mrs.)],
@@ -228,26 +228,26 @@ sub generate_form
 			 getter => "get_last_name",
 			 setter => "set_last_name",
 			 validate => "string");
-	$form->add_field(display_name => "Organization", 
+	$form->add_field(display_name => "Organization",
 			 field_name => "organization",
 			 contents => $person->get_organization(),
 			 length => 50,
-			 object => $person, 
+			 object => $person,
 			 getter => "get_organization",
 			 setter => "set_organization");
-	$form->add_textarea(display_name => "Address", 
+	$form->add_textarea(display_name => "Address",
 			    field_name => "address",
 			    contents => $person->get_address(),
 			    rows => 4,
 			    columns => 50,
-			    object => $person, 
+			    object => $person,
 			    getter => "get_address",
 			    setter => "set_address");
-	$form->add_field(display_name => "Country", 
+	$form->add_field(display_name => "Country",
 			 field_name => "country",
 			 contents => $person->get_country(),
 			 length => $default_field_length,
-			 object => $person, 
+			 object => $person,
 			 getter => "get_country",
 			 setter => "set_country");
 	if($form->is_editable()) {
@@ -256,18 +256,18 @@ sub generate_form
 			     contents => "If you wish to be contacted via telephone or fax by interested parties who found your directory entry on SGN, please enter"
 			     . " telephone numbers here. These numbers will be displayed publically to all SGN users who view your entry.");
 	}
-	$form->add_field(display_name => "Phone", 
+	$form->add_field(display_name => "Phone",
 			 field_name => "phone",
 			 contents => $person->get_phone_number(),
 			 length => $default_field_length,
-			 object => $person, 
+			 object => $person,
 			 getter => "get_phone_number",
 			 setter => "set_phone_number");
-	$form->add_field(display_name => "Fax", 
+	$form->add_field(display_name => "Fax",
 							field_name => "fax",
 							contents => $person->get_fax(),
 							length => $default_field_length,
-							object => $person, 
+							object => $person,
 							getter => "get_fax",
 							setter => "set_fax");
 	if($form->is_editable())
@@ -277,18 +277,18 @@ sub generate_form
 								contents => "If you would like to be contacted via email by interested parties who found your directory entry on SGN, please enter"
 								. " an address here. This address will be displayed publically to all SGN users who view your entry.");
 	}
-	$form->add_field(display_name => "Contact E-mail", 
+	$form->add_field(display_name => "Contact E-mail",
 							field_name => "contact_email",
 							contents => $person->get_contact_email(),
 							length => $default_field_length,
-							object => $person, 
+							object => $person,
 							getter => "get_contact_email",
 							setter => "set_contact_email");
-	$form->add_field(display_name => "Website", 
+	$form->add_field(display_name => "Website",
 							field_name => "webpage",
 							contents => $person->get_webpage(),
 							length => $default_field_length,
-							object => $person, 
+							object => $person,
 							getter => "get_webpage",
 							setter => "set_webpage");
 	if($form->is_editable())
@@ -334,8 +334,8 @@ sub generate_form
 								object => $person,
 								setter => 'add_organisms');
 	}
-	
-	if($form->is_editable()) { 	
+
+	if($form->is_editable()) {
 	    $form->add_radio_list(display_name => "",
 				  field_name => "format",
 				  id_prefix => "format_",
@@ -345,7 +345,7 @@ sub generate_form
 				  object => $person,
 				  getter => 'get_user_format',
 				  setter => 'set_user_format');
-	    
+
 	    $form->add_label(display_name => "",
 			     field_name => "lbl8",
 			     contents => "For auto-formatted plain text entries, separate paragraphs by a single empty line. For HTML entries, please use only paragraph"
@@ -367,14 +367,14 @@ sub generate_form
 								contents => "The preview feature below (requires JavaScript) shows your current interests statement if you've selected HTML format. Also,"
 												. " if you need to define new organisms, the preview will show how the website is parsing the text you've entered above.");
 	}
-	
+
 	#for allowing the form to make changes
 	if($form->is_editable())
 	{
 		$form->add_hidden(display_name => "ID", field_name => "sp_person_id", contents => $person->get_sp_person_id());
 		$form->add_hidden(display_name => "Action", field_name => "action", contents => "store");
 	}
-	
+
 	if($form->is_editable())
 	{
 		$form->set_reset_button_text("Clear");
@@ -384,7 +384,7 @@ sub generate_form
 	{
 		$form->from_database();
 	}
-	
+
 	elsif($self->get_action() =~ /store/)
 	{
 		$form->from_request($self->get_args());
@@ -398,12 +398,12 @@ sub get_actions_toolbar
 	my $self = shift;
 	my $user_id= $self->get_user()->get_sp_person_id();
 	my @owners= $self->get_owners();
- 
+
 	my $script_name = $self->get_script_name();
 	my $user_is_owner = (grep {/^$user_id$/} @owners);
 	my %args = $self->get_args();
 	my $sp_person_id = $args{sp_person_id};
-	
+
 	my ($login_user_id, $user_type) = CXGN::Login->new($self->get_dbh())->has_session();
 	my $home;
 	if($user_is_owner || $user_type eq 'curator')
@@ -414,7 +414,7 @@ sub get_actions_toolbar
 	{
 		$home = qq(<span class="ghosted">[Directory Update Home]</span>);
 	}
-	
+
 	if($self->get_action() eq "edit")
 	{
 		if($user_is_owner || $user_type eq 'curator')
@@ -451,10 +451,10 @@ sub display_page
 		$page->message_page("Illegal parameter: action '" . $self->get_action() . "' is not supported by " . $self->get_script_name());
 		exit();
 	}
-	
+
 	$page->add_style(text => ".subtitle {font-weight: bold; text-align: center}");
 	$page->add_style(text => ".invisible {display: none}");
-	$page->jsan_use("CXGN.DynamicPreviewPane", "MochiKit.DOM", "MochiKit.Signal"); #include javascript modules
+	$page->jsan_use("MochiKit.DOM", "MochiKit.Signal"); #include javascript modules
 	$page->header("Sol People: contact and research info");
 
 	print qq{<table><tr valign="middle"><td width="670" align="center" valign="middle" ><br />};
@@ -463,7 +463,7 @@ sub display_page
 
 	print "</td><td>";
 
-	
+
 	print qq { <a href="https://gravatar.com/" class="footer" ><img src="http://gravatar.com/avatar/}. md5_hex(lc($person->get_contact_email())). qq {?d=mm" /></a>};
 	print "</td></tr></table>";
 
@@ -485,7 +485,7 @@ Your research interests will be displayed on SGN\'s website as shown in the box 
 <div id="$html_preview_pane_parent_id"></div>
 </div>
 <br />You have entered the following currently unlisted organisms. Please check that these names are spelled correctly.
-Once committed, these names cannot be changed by this interface. 
+Once committed, these names cannot be changed by this interface.
 If you accidentally save an incorrect organism name, please contact us via <a href="mailto:sgn-feedback\@sgn.cornell.edu">sgn-feedback\@sgn.cornell.edu</a>.
 <div id="$organisms_preview_pane_parent_id"></div>
 <script type="text/javascript">
@@ -507,46 +507,46 @@ EOHTML
 	my ($locus_annotations, $more_annotations) ;
 	my @annotated_loci = ();
 
-	if ($self->get_action() !~ /^edit$/) { 
+	if ($self->get_action() !~ /^edit$/) {
 	    my $person_id=  $person->get_sp_person_id();
 	    @annotated_loci = CXGN::Phenome::Locus::get_locus_ids_by_editor($self->get_dbh(), $person_id);
 	    my $top= 50;
 	    my $more = 0;
 	    my $max = @annotated_loci;
-	    if (@annotated_loci>24) { 
+	    if (@annotated_loci>24) {
 		$more = @annotated_loci-24;
 		$max = 24;
 	    }
-	    
-	    
+
+
 	    for (my $i=0; $i<$top; $i++) {
 		my $locus = CXGN::Phenome::Locus->new($self->get_dbh(), $annotated_loci[$i]);
 		my $symbol = $locus->get_locus_symbol();
 		my $locus_id = $locus->get_locus_id();
-		
+
 
 		if ($locus_id && $symbol) { #deanx jan23 2008
 		  if ($i<$max)  {
-		     $locus_annotations .= qq | <a href="/locus/$locus_id/view">$symbol</a> | }  
+		     $locus_annotations .= qq | <a href="/locus/$locus_id/view">$symbol</a> | }
 		  else {
 		    $more_annotations .= qq { <a href="/locus/$locus_id/view">$symbol</a> };
 		  }
 		}
 	    }
-	    
-	    if ($more) { 
-		$locus_annotations .= qq|<br><b>and <a href="/search/locus">$more more</a></b><br />|; 
-		
-		
+
+	    if ($more) {
+		$locus_annotations .= qq|<br><b>and <a href="/search/locus">$more more</a></b><br />|;
+
+
 	    }
 	}
 
-	if (@annotated_loci) { 
+	if (@annotated_loci) {
 	    print "<hr />\n";
 	    print "Locus editor assignments:&nbsp;\n";
 	    print $locus_annotations;
 	}
-	 
+
 	my $pop_list = $self->owner_populations();
 	if ($pop_list) {
 	    print "<hr />\n $pop_list";
@@ -560,19 +560,19 @@ sub owner_populations {
     my $sp_person_id = $self->get_object_id();
     my @pops = CXGN::Phenome::Population->my_populations($sp_person_id);
     my $pop_list = 'Populations:<br/>';
-   
-    if (@pops) {   
+
+    if (@pops) {
 	foreach my $pops (@pops) {
 	    my $pop_name = $pops->get_name();
 	    my $pop_id = $pops->get_population_id();
 	    #my $is_public = $pops->get_privacy_status();
 	    #if ($is_public) {$is_public = 'is publicly available';}
 	    #if (!$is_public) {$is_public = 'is not publicly available yet';}
-	    $pop_list .= qq |<a href="/phenome/population.pl?population_id=$pop_id">$pop_name</a><br/>|;	   
+	    $pop_list .= qq |<a href="/phenome/population.pl?population_id=$pop_id">$pop_name</a><br/>|;
 	}
    	return $pop_list;
-     
-    } else { 
+
+    } else {
 	return;
     }
 

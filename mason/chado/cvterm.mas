@@ -65,41 +65,6 @@ my $sequencer = $cvtermref->{sequencer};
 my $cvtermprops = $cvtermref->{props};
 
 
-my @def_accessions;
-if ( scalar (@def_dbxrefs ) > 0 ) {
-  # @def_accessions = map( $_->db->name . ":" . $_->accession , @def_dbxrefs);
-}
-
-my @secondary_accessions = ();
-foreach ( @secondary_dbxrefs) {
-  my $db_name =       $_->db->name;
-  my $acc =           $_->accession;
-  my $urlprefix=      $_->db->urlprefix;
-  my $url =           $_->db->url;
-  my $full_acc =      $db_name . ":" . $acc;
-  my $link = $full_acc;
-  if ( $url ) {
-    my $xref_link = $urlprefix . $url . $acc;
-    $link = qq | <a href="$xref_link">$full_acc</a> |
-  }
-  push @secondary_accessions , $link ;
-}
-
-my @qtl_pops = CXGN::Phenome::Qtl::Tools->new()->is_from_qtl( $cvterm_id );
-my @qtl_data;
-
-if ( @qtl_pops )
- {
-    foreach my $pop (@qtl_pops)
-    {
-      my $pop_id   = $pop->get_population_id();
-      my $name     = $pop->get_name();
-      my $desc     = $pop->get_description();
-      my $qtl_link = qq | <a href="/phenome/qtl_analysis.pl?population_id=$pop_id&amp;cvterm_id=$cvterm_id" onClick="Qtl.waitPage()">$name</a> |;
-      push @qtl_data, [ $qtl_link, $desc ];
-    }
- }
-
 my $this_page = "/cvterm/$cvterm_id/view/";
 my $image_subtitle =
    " <a href=\"/image/add?type_id=$cvterm_id&type=cvterm&refering_page=$this_page\">[Add image]</a>" ;
@@ -110,7 +75,7 @@ my $edit_privs = $curator ;
 </%perl>
 
 
-<& /util/import_javascript.mas, classes => [qw [CXGN.AJAX.Ontology  CXGN.Phenome.Qtl thickbox jquery  jquery.dataTables] ] &>
+<& /util/import_javascript.mas, classes => [qw [thickbox jquery  jquery.dataTables] ] &>
 
 
 <script language="javascript">
@@ -149,16 +114,6 @@ my $edit_privs = $curator ;
 <% $synonym %> <br />
 % }
 
-<br /><b> Definition dbxrefs</b><br />
-% foreach my $da (@def_accessions) {
-<% $da %><br />
-% }
-
-<br /><b> Related dbxrefs</b><br />
-% foreach my $sa (@secondary_accessions) {
-<% $sa %><br />
-%  }
-
 </&>
 <br />
 
@@ -188,141 +143,19 @@ LOAD...
 </&>
 <script>
 
-  if (isLoggedIn()) { 
+  if (isLoggedIn()) {
     addToListMenu('paste_to_list', 'cvterm_id', { listType: 'traits' } );
   }
-  else { 
+  else {
     jQuery('#paste_to_list').html("&nbsp;Please log in to use lists.");
   }
-  
+
 </script>
 
 <br />
 
 
 <& /ontology/embedded_browser.mas, cvterm => $cvterm &>
-
-
-
-<&| /page/info_section.mas,
-    title=> "Annotated loci",
-    subtitle => '',
-    collapsible => 1,
-    collapsed   => 1,
-&>
-
-<table id="loci_data" class="display">
-<thead>
-  <tr>
-    <th>Organism</th>
-    <th>Locus symbol</th>
-    <th>Locus name</th>
-  </tr>
-</thead>
-
-</table>
-
-<script>
-
-  jQuery(document).ready(function () {
-  
-    jQuery('#loci_data').DataTable( { 
-      'ajax': '/cvterm/'+ <% $cvterm_id %> + '/datatables/annotated_loci',
-     });
-  });
-
-</script>
-
-
-</&>
-
-
-
-<&| /page/info_section.mas,
-       title=> "Annotated stocks",
-       collapsible => 1,
-       collapsed=>1,
-       subtitle => '',
-       hide_if_empty => 1,
- &>
-
-<table id="annotated_stocks_data" class="display">
-<thead>
-  <tr>
-     <th>Type</th>
-    <th>Stock name</th>
-    <th>Description</th>
-  </tr>
-</thead>
-
-</table>
-
-<script>
-
-  jQuery(document).ready(function () {
-  
-    jQuery('#annotated_stocks_data').DataTable( { 
-      'ajax': '/cvterm/'+ <% $cvterm_id %> + '/datatables/annotated_stocks',
-     });
-  });
-
-</script>
-
-
-</&>
-
-
-
-% if ( @qtl_pops )
-% {
-    <&| /page/info_section.mas,
-        title       => "QTL analysis",
-        collapsible => 1,
-   &>
-     <& /page/columnar_table.mas,
-        headings     => ["Analyze QTL in population", "Population description"], 
-        data         => \@qtl_data,
-        __alt_freq   => 2,
-        __align      =>'l',
-     &>
-  </&>
-% }
-
-
-
-<&| /page/info_section.mas,
-      title       => "Phenotyped accessions",
-      collapsible => 1,
-      collapsed=>1,
-      subtitle    => '' ,
-&>
-
-
-<table id="phen_stocks_data" class="display">
-<thead>
-  <tr>
-     <th>Type</th>
-    <th>Stock name</th>
-    <th>Description</th>
-  </tr>
-</thead>
-
-</table>
-
-<script>
-
-  jQuery(document).ready(function () {
-  
-    jQuery('#phen_stocks_data').DataTable( { 
-      'ajax': '/cvterm/'+ <% $cvterm_id %> + '/datatables/phenotyped_stocks',
-     });
-  });
-
-</script>
-
-
-</&>
-
 
 
 <&| /page/info_section.mas,
@@ -356,8 +189,8 @@ LOAD...
 <script>
 
   jQuery(document).ready(function () {
-  
-    jQuery('#trial_data').DataTable( { 
+
+    jQuery('#trial_data').DataTable( {
       'ajax': '/cvterm/'+ <% $cvterm_id %> + '/datatables/direct_trials',
        }
      );
@@ -367,7 +200,7 @@ LOAD...
 
 </&>
 
-<&| /page/info_section.mas, 
+<&| /page/info_section.mas,
     title => "Images and figures",
     subtitle      => $image_subtitle,
     collapsible   => 1,
@@ -378,5 +211,3 @@ LOAD...
 <& /image/print_images.mas, images => \@image_ids &>
 
 </&>
-
-<& /qtl/waitmessage.mas &>

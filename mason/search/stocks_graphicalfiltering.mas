@@ -3,7 +3,7 @@
 
 <& /util/import_css.mas, paths => ['tools/GraphicalFiltering.css'] &>
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.List', 'd3.d3v4Min', 'brapi.BrAPI', 'brapi.GraphicalFilter' ] &>
+<& /util/import_javascript.mas, classes => [ 'd3.d3v4Min', 'brapi.BrAPI', 'brapi.GraphicalFilter' ] &>
 
 <&| /page/info_section.mas, id=>"stock_search_graphical_filter", title => 'Graphical Filter Accessions By Traits (Includes all Search Criteria From Above Search Form)', collapsible=>1, collapsed=>1&>
 
@@ -62,7 +62,7 @@ function loadBrAPIData(server,parameters,success){
     d3.entries(parameters).forEach(function(entry){
         data[entry.key] = data[entry.key]||entry.value;
     });
-    
+
     var brapi_Data = BrAPI("/brapi/v2",'v2.0',auth_token).search_observationunits(data);
 
     if (currentGFilter!=null){

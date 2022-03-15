@@ -2,7 +2,7 @@
 <%args>
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery', 'jqueryui', 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.UploadImages', 'CXGN.BreederSearch', 'CXGN.Trial', 'brapi.BrAPI' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.UploadImages03152022', 'CXGN.Trial03152022', 'brapi.BrAPI' ] &>
 
 <div class="modal fade" id="upload_images_dialog" name="upload_images_dialog" tabindex="-1" role="dialog" aria-labelledby="uploadImagesDialog">
   <div class="modal-dialog" role="document">

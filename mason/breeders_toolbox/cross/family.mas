@@ -8,7 +8,7 @@ $family_type
 $family_type_string
 </%args>
 
-<& /util/import_javascript.mas, classes => ["jquery", "jqueryui", "thickbox", "CXGN.Page.FormattingHelpers", "jquery.cookie", "CXGN.List"] &>
+<& /util/import_javascript.mas, classes => [] &>
 
 <& /page/page_title.mas, title => "Details for family '$family_name'" &>
 
