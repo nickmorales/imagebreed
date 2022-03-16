@@ -2507,11 +2507,11 @@ sub upload_trial_coordinates : Chained('trial') PathPart('coordsupload') Args(0)
     my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $schema = $c->stash->{schema};
+    my $trial_id = $c->stash->{trial_id};
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
     my $subdirectory = 'trial_coords_upload';
     my $upload = $c->req->upload('trial_coordinates_uploaded_file');
-    my $trial_id = $c->req->param('trial_coordinates_upload_trial_id');
     my $upload_tempfile  = $upload->tempname;
     my $upload_original_name  = $upload->filename();
     my $md5;

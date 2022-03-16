@@ -718,6 +718,10 @@ my $message_raster = $response_raster->decoded_content;
 print STDERR Dumper $message_raster;
 ok($message_raster =~ /Successfully uploaded!/);
 
+
+#####################################################
+#Checking Sommer 2DSpl
+
 my $tn = CXGN::Trial->new({
     bcs_schema => $f->bcs_schema(),
     trial_id => $field_trial_id
@@ -728,6 +732,27 @@ my @traits_assayed_sorted = sort {$a->[0] cmp $b->[0]} @$traits_assayed;
 # print STDERR Dumper \@traits_assayed_sorted;
 # 79076 Total Pixel Sum|Black and White Image|Black and White Denoised Original Image|day 1384.52638888889|COMP:0000408, 15 phenos
 # 79077 Harmonic Mean Pixel Value|Black and White Image|Thresholded Black and White Denoised Original Image|day 1384.52638888889|COMP:0000409, 15 phenos
+
+#Sommer 2dspl needs row,col coords
+my $filename = $f->config->{basepath}."/t/data/trial/upload_trial_coords_file.csv";
+$ua = LWP::UserAgent->new;
+$ua->timeout(3600);
+my $response_coord_upload = $ua->post(
+        'http://localhost:3010/ajax/breeders/trial/'.$field_trial_id.'/coordsupload',
+        Content_Type => 'form-data',
+        Content => [
+            "sgn_session_id"=>$sgn_session_id,
+            trial_coordinates_uploaded_file => [ $filename, basename($filename) ],
+        ]
+    );
+
+ok($response_coord_upload->is_success);
+my $message_coord_upload = $response_coord_upload->decoded_content;
+my $message_coord_upload_hash = decode_json $message_coord_upload;
+print STDERR Dumper $message_coord_upload_hash;
+ok($message_coord_upload_hash->{success});
+
+sleep(10);
 
 $ua = LWP::UserAgent->new;
 $ua->timeout(3600);
@@ -764,5 +789,39 @@ my $message_raster = $response_raster->decoded_content;
 my $message_hash = decode_json $message_raster;
 print STDERR Dumper $message_hash;
 ok($message_hash->{analytics_protocol_id});
+my $analytics_protocol_id = $message_hash->{analytics_protocol_id};
+
+$ua = LWP::UserAgent->new;
+$ua->timeout(3600);
+my $response_raster = $ua->post(
+        'http://localhost:3010/ajax/analytics_protocols_compare_to_trait',
+        Content_Type => 'form-data',
+        Content => [
+            "sgn_session_id" => $sgn_session_id,
+            "protocol_id" => $analytics_protocol_id,
+            "trial_id" => $field_trial_id,
+            "trait_id" => 79076,
+            "analysis" => "2dspl",
+            "traits_secondary" => 79077,
+            "default_tol" => "pre_both",
+            "cor_label_size" => "5",
+            "cor_label_digits" => "2",
+        ]
+    );
+ok($response_raster->is_success);
+my $message_raster = $response_raster->decoded_content;
+my $message_hash = decode_json $message_raster;
+print STDERR Dumper $message_hash;
+ok($message_hash->{charts});
+ok($message_hash->{result_blups_all});
+
+
+#Remove row,col coords
+$ua = LWP::UserAgent->new;
+my $response_del_coords = $ua->post('http://localhost:3010/ajax/breeders/trial/'.$field_trial_id.'/delete_field_coords?sgn_session_id='.$sgn_session_id);
+my $message_del_coords = $response_del_coords->decoded_content;
+my $message_del_coords_hash = decode_json $message_del_coords;
+print STDERR Dumper $message_del_coords_hash;
+ok($message_del_coords_hash->{success});
 
 done_testing();

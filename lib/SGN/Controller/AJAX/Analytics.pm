@@ -3583,12 +3583,12 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
     my @legendre_coeff_exec = (
         '1 * $b',
-        '$time * $b',
-        '(1/2*(3*$time**2 - 1)*$b)',
-        '1/2*(5*$time**3 - 3*$time)*$b',
-        '1/8*(35*$time**4 - 30*$time**2 + 3)*$b',
-        '1/16*(63*$time**5 - 70*$time**2 + 15*$time)*$b',
-        '1/16*(231*$time**6 - 315*$time**4 + 105*$time**2 - 5)*$b'
+        '($time**1)*$b',
+        '($time**2)*$b',
+        '($time**3)*$b',
+        '($time**4)*$b',
+        '($time**5)*$b',
+        '($time**6)*$b'
     );
 
     my $r0_gdd = 1225;
@@ -3840,6 +3840,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my @seen_plots = sort keys %plot_phenotypes_htp;
     my @seen_germplasm = sort keys %germplasm_phenotypes;
     my @accession_ids = sort keys %seen_accession_stock_ids;
+
+    my $max_row_half = round($max_row/2);
+    my $max_col_half = round($max_col/2);
+    print STDERR Dumper [$max_row_half, $max_col_half];
 
     my $grm_file;
     # Prepare GRM for 2Dspl Trait Spatial Correction
@@ -4603,6 +4607,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
     # Prepare phenotype file for Trait Spatial Correction
     my $stats_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+    my $stats_tempfile_q1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+    my $stats_tempfile_q2 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+    my $stats_tempfile_q3 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+    my $stats_tempfile_q4 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $stats_out_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $stats_out_tempfile_ar1_indata = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $stats_out_tempfile_2dspl = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
@@ -4621,6 +4629,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $analytics_protocol_genfile_tempfile_1 = $c->config->{basepath}."/".$analytics_protocol_genfile_tempfile_string_1;
 
     my @data_matrix_original;
+    my @data_matrix_original_q1;
+    my @data_matrix_original_q2;
+    my @data_matrix_original_q3;
+    my @data_matrix_original_q4;
     foreach my $p (@seen_plots) {
         my $obsunit_stock_id = $stock_name_row_col{$p}->{obsunit_stock_id};
         my $row_number = $stock_name_row_col{$p}->{row_number};
@@ -4640,8 +4652,31 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 push @row, 'NA';
             }
         }
+
+        if ($row_number <= $max_row_half) {
+            if ($col_number <= $max_col_half) {
+                push @data_matrix_original_q1, \@row;
+            }
+            else {
+                push @data_matrix_original_q2, \@row;
+            }
+        }
+        else {
+            if ($col_number <= $max_col_half) {
+                push @data_matrix_original_q3, \@row;
+            }
+            else {
+                push @data_matrix_original_q4, \@row;
+            }
+        }
+
         push @data_matrix_original, \@row;
     }
+    # print STDERR Dumper \@data_matrix_original;
+    # print STDERR Dumper \@data_matrix_original_q1;
+    # print STDERR Dumper \@data_matrix_original_q2;
+    # print STDERR Dumper \@data_matrix_original_q3;
+    # print STDERR Dumper \@data_matrix_original_q4;
 
     my @phenotype_header = ("replicate", "block", "id", "plot_id", "rowNumber", "colNumber", "rowNumberFactor", "colNumberFactor", "accession_id_factor", "plot_id_factor", "plot_id_s");
     foreach (@sorted_trait_names) {
@@ -4656,6 +4691,38 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             print $Fs "$line\n";
         }
     close($Fs);
+
+    open(my $Fsq1, ">", $stats_tempfile_q1) || die "Can't open file ".$stats_tempfile_q1;
+        print $Fsq1 $header_string."\n";
+        foreach (@data_matrix_original_q1) {
+            my $line = join ',', @$_;
+            print $Fsq1 "$line\n";
+        }
+    close($Fsq1);
+
+    open(my $Fsq2, ">", $stats_tempfile_q2) || die "Can't open file ".$stats_tempfile_q2;
+        print $Fsq2 $header_string."\n";
+        foreach (@data_matrix_original_q2) {
+            my $line = join ',', @$_;
+            print $Fsq2 "$line\n";
+        }
+    close($Fsq2);
+
+    open(my $Fsq3, ">", $stats_tempfile_q3) || die "Can't open file ".$stats_tempfile_q3;
+        print $Fsq3 $header_string."\n";
+        foreach (@data_matrix_original_q3) {
+            my $line = join ',', @$_;
+            print $Fsq3 "$line\n";
+        }
+    close($Fsq3);
+
+    open(my $Fsq4, ">", $stats_tempfile_q4) || die "Can't open file ".$stats_tempfile_q4;
+        print $Fsq4 $header_string."\n";
+        foreach (@data_matrix_original_q4) {
+            my $line = join ',', @$_;
+            print $Fsq4 "$line\n";
+        }
+    close($Fsq4);
 
     my $trait_name_string = join ',', @sorted_trait_names;
     my $trait_name_encoded_string = $trait_name_encoder_s{$trait_name_string};
@@ -5079,11 +5146,67 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         close($F_gcorr_f);
     };
 
+    my $gcorr_grm_trait_2dspl_q_mean = 0;
+    my @gcorr_grm_trait_2dspl_q_array;
+    eval {
+        my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+        mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\'));
+        mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\'));
+        mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\'));
+        mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+        geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+        geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+        geno_mat[is.na(geno_mat)] <- 0;
+        mat_q1\$rowNumber <- as.numeric(mat_q1\$rowNumber); mat_q1\$colNumber <- as.numeric(mat_q1\$colNumber); mat_q2\$rowNumber <- as.numeric(mat_q2\$rowNumber); mat_q2\$colNumber <- as.numeric(mat_q2\$colNumber); mat_q3\$rowNumber <- as.numeric(mat_q3\$rowNumber); mat_q3\$colNumber <- as.numeric(mat_q3\$colNumber); mat_q4\$rowNumber <- as.numeric(mat_q4\$rowNumber); mat_q4\$colNumber <- as.numeric(mat_q4\$colNumber);
+        mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat_q1, tolparinv='.$tolparinv_10.');
+        if (!is.null(mix1\$U)) {
+        mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat_q2, tolparinv='.$tolparinv_10.');
+        if (!is.null(mix2\$U)) {
+        mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat_q3, tolparinv='.$tolparinv_10.');
+        if (!is.null(mix3\$U)) {
+        mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat_q4, tolparinv='.$tolparinv_10.');
+        if (!is.null(mix4\$U)) {
+        m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+        m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+        m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+        m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+        m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+        m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+        g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0;
+        try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\'));
+        try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\'));
+        try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\'));
+        try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\'));
+        try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\'));
+        try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\'));
+        g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+        write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+        }}}}
+        "';
+        print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+        my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+        open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+            print STDERR "Opened $stats_out_tempfile_gcor\n";
+            $header_fits = <$F_gcorr_f>;
+            while (my $row = <$F_gcorr_f>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+                $gcorr_grm_trait_2dspl_q_mean = $columns[0];
+                @gcorr_grm_trait_2dspl_q_array = split ',', $columns[1];
+            }
+        close($F_gcorr_f);
+    };
+
     print STDERR Dumper {
         type => 'trait spatial genetic effect 2dspl',
         genetic_effect_sum => $genetic_effect_sum_s,
         genetic_effect_min => $genetic_effect_min_s,
         genetic_effect_max => $genetic_effect_max_s,
+        gcorr_mean => $gcorr_grm_trait_2dspl_q_mean,
+        gcorr_arr => \@gcorr_grm_trait_2dspl_q_array
     };
 
     my $grm_file_ar1;
@@ -7353,6 +7476,22 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $analytics_protocol_data_tempfile_grm_id_prm_gcorr= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile_grm_id_prm_id_gcorr= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
         my $analytics_protocol_data_tempfile_grm_prm_secondary_gcorr= $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_fixed_q1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_fixed_q2 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_fixed_q3 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_fixed_q4 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_prm_q1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_prm_q2 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_prm_q3 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_prm_q4 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_prm_sec_q1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_prm_sec_q2 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_prm_sec_q3 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_prm_sec_q4 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_prm_sec_fix_q1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_prm_sec_fix_q2 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_prm_sec_fix_q3 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+        my $analytics_protocol_data_tempfile_prm_sec_fix_q4 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
 
         my $analytics_protocol_tempfile_string_1 = $c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX');
         $analytics_protocol_tempfile_string_1 .= '.png';
@@ -7431,8 +7570,20 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @plots_data_iteration_data_values = ();
 
         my @plots_data_grm_prm_data_values = ();
+        my @plots_data_grm_prm_data_values_q1 = ();
+        my @plots_data_grm_prm_data_values_q2 = ();
+        my @plots_data_grm_prm_data_values_q3 = ();
+        my @plots_data_grm_prm_data_values_q4 = ();
         my @plots_data_grm_prm_secondary_traits_data_values = ();
+        my @plots_data_grm_prm_secondary_traits_data_values_q1 = ();
+        my @plots_data_grm_prm_secondary_traits_data_values_q2 = ();
+        my @plots_data_grm_prm_secondary_traits_data_values_q3 = ();
+        my @plots_data_grm_prm_secondary_traits_data_values_q4 = ();
         my @plots_data_grm_prm_secondary_traits_fixed_data_values = ();
+        my @plots_data_grm_prm_secondary_traits_fixed_data_values_q1 = ();
+        my @plots_data_grm_prm_secondary_traits_fixed_data_values_q2 = ();
+        my @plots_data_grm_prm_secondary_traits_fixed_data_values_q3 = ();
+        my @plots_data_grm_prm_secondary_traits_fixed_data_values_q4 = ();
         my @varcomp_original_grm;
         my @varcomp_original_grm_fixed_effect;
         my @varcomp_original_grm_fixed_effects;
@@ -7501,6 +7652,40 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $gcorr_grm_prm_secondary_traits;
         my @gcorr_grm_prm_secondary_traits_favg;
         my @gcorr_grm_prm_secondary_traits_havg;
+        my $gcorr_q_favg;
+        my $gcorr_q_f2;
+        my $gcorr_q_f3;
+        my $gcorr_q_havg;
+        my $gcorr_q_fmax;
+        my $gcorr_q_fmin;
+        my $gcorr_q_fall;
+        my $gcorr_q_f3_cont;
+        my $gcorr_q_grm;
+        my $gcorr_q_grm_id;
+        my $gcorr_q_prm;
+        my $gcorr_q_grm_prm;
+        my $gcorr_q_grm_id_prm;
+        my $gcorr_q_grm_id_prm_id;
+        my $gcorr_q_grm_prm_secondary_traits;
+        my @gcorr_q_grm_prm_secondary_traits_favg;
+        my @gcorr_q_grm_prm_secondary_traits_havg;
+        my @gcorr_qarr_favg;
+        my @gcorr_qarr_f2;
+        my @gcorr_qarr_f3;
+        my @gcorr_qarr_havg;
+        my @gcorr_qarr_fmax;
+        my @gcorr_qarr_fmin;
+        my @gcorr_qarr_fall;
+        my @gcorr_qarr_f3_cont;
+        my @gcorr_qarr_grm;
+        my @gcorr_qarr_grm_id;
+        my @gcorr_qarr_prm;
+        my @gcorr_qarr_grm_prm;
+        my @gcorr_qarr_grm_id_prm;
+        my @gcorr_qarr_grm_id_prm_id;
+        my @gcorr_qarr_grm_prm_secondary_traits;
+        my @gcorr_qarr_grm_prm_secondary_traits_favg;
+        my @gcorr_qarr_grm_prm_secondary_traits_havg;
         my @f_anova_grm_fixed_effect;
         my @f_anova_grm_fixed_effects;
         my @f_anova_grm_fixed_effects_3;
@@ -7797,6 +7982,32 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             push @plots_data_grm_prm_data_values, \@plots_grm_prm_values;
             push @plots_data_grm_prm_secondary_traits_data_values, \@plots_grm_prm_secondary_traits_values;
             push @plots_data_grm_prm_secondary_traits_fixed_data_values, \@plots_grm_prm_secondary_traits_fixed_values;
+
+            if ($row_number <= $max_row_half) {
+                if ($col_number <= $max_col_half) {
+                    push @plots_data_grm_prm_data_values_q1, \@plots_grm_prm_values;
+                    push @plots_data_grm_prm_secondary_traits_data_values_q1, \@plots_grm_prm_secondary_traits_values;
+                    push @plots_data_grm_prm_secondary_traits_fixed_data_values_q1, \@plots_grm_prm_secondary_traits_fixed_values;
+                }
+                else {
+                    push @plots_data_grm_prm_data_values_q2, \@plots_grm_prm_values;
+                    push @plots_data_grm_prm_secondary_traits_data_values_q2, \@plots_grm_prm_secondary_traits_values;
+                    push @plots_data_grm_prm_secondary_traits_fixed_data_values_q2, \@plots_grm_prm_secondary_traits_fixed_values;
+                }
+            }
+            else {
+                if ($col_number <= $max_col_half) {
+                    push @plots_data_grm_prm_data_values_q3, \@plots_grm_prm_values;
+                    push @plots_data_grm_prm_secondary_traits_data_values_q3, \@plots_grm_prm_secondary_traits_values;
+                    push @plots_data_grm_prm_secondary_traits_fixed_data_values_q3, \@plots_grm_prm_secondary_traits_fixed_values;
+                }
+                else {
+                    push @plots_data_grm_prm_data_values_q4, \@plots_grm_prm_values;
+                    push @plots_data_grm_prm_secondary_traits_data_values_q4, \@plots_grm_prm_secondary_traits_values;
+                    push @plots_data_grm_prm_secondary_traits_fixed_data_values_q4, \@plots_grm_prm_secondary_traits_fixed_values;
+                }
+            }
+
             $is_first_plot = 0;
         }
 
@@ -7909,6 +8120,34 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             }
         close($F27);
 
+        open(my $F27_q1, ">", $analytics_protocol_data_tempfile_prm_q1) || die "Can't open file ".$analytics_protocol_data_tempfile_prm_q1;
+            foreach (@plots_data_grm_prm_data_values_q1) {
+                my $string = join ',', @$_;
+                print $F27_q1 "$string\n";
+            }
+        close($F27_q1);
+
+        open(my $F27_q2, ">", $analytics_protocol_data_tempfile_prm_q2) || die "Can't open file ".$analytics_protocol_data_tempfile_prm_q2;
+            foreach (@plots_data_grm_prm_data_values_q2) {
+                my $string = join ',', @$_;
+                print $F27_q2 "$string\n";
+            }
+        close($F27_q2);
+
+        open(my $F27_q3, ">", $analytics_protocol_data_tempfile_prm_q3) || die "Can't open file ".$analytics_protocol_data_tempfile_prm_q3;
+            foreach (@plots_data_grm_prm_data_values_q3) {
+                my $string = join ',', @$_;
+                print $F27_q3 "$string\n";
+            }
+        close($F27_q3);
+
+        open(my $F27_q4, ">", $analytics_protocol_data_tempfile_prm_q4) || die "Can't open file ".$analytics_protocol_data_tempfile_prm_q4;
+            foreach (@plots_data_grm_prm_data_values_q4) {
+                my $string = join ',', @$_;
+                print $F27_q4 "$string\n";
+            }
+        close($F27_q4);
+
         open(my $F28, ">", $analytics_protocol_data_tempfile28) || die "Can't open file ".$analytics_protocol_data_tempfile28;
             foreach (@plots_data_grm_prm_secondary_traits_data_values) {
                 my $string = join ',', @$_;
@@ -7916,12 +8155,68 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             }
         close($F28);
 
+        open(my $F28_q1, ">", $analytics_protocol_data_tempfile_prm_sec_q1) || die "Can't open file ".$analytics_protocol_data_tempfile_prm_sec_q1;
+            foreach (@plots_data_grm_prm_secondary_traits_data_values_q1) {
+                my $string = join ',', @$_;
+                print $F28_q1 "$string\n";
+            }
+        close($F28_q1);
+
+        open(my $F28_q2, ">", $analytics_protocol_data_tempfile_prm_sec_q2) || die "Can't open file ".$analytics_protocol_data_tempfile_prm_sec_q2;
+            foreach (@plots_data_grm_prm_secondary_traits_data_values_q2) {
+                my $string = join ',', @$_;
+                print $F28_q2 "$string\n";
+            }
+        close($F28_q2);
+
+        open(my $F28_q3, ">", $analytics_protocol_data_tempfile_prm_sec_q3) || die "Can't open file ".$analytics_protocol_data_tempfile_prm_sec_q3;
+            foreach (@plots_data_grm_prm_secondary_traits_data_values_q3) {
+                my $string = join ',', @$_;
+                print $F28_q3 "$string\n";
+            }
+        close($F28_q3);
+
+        open(my $F28_q4, ">", $analytics_protocol_data_tempfile_prm_sec_q4) || die "Can't open file ".$analytics_protocol_data_tempfile_prm_sec_q4;
+            foreach (@plots_data_grm_prm_secondary_traits_data_values_q4) {
+                my $string = join ',', @$_;
+                print $F28_q4 "$string\n";
+            }
+        close($F28_q4);
+
         open(my $F30, ">", $analytics_protocol_data_tempfile30) || die "Can't open file ".$analytics_protocol_data_tempfile30;
             foreach (@plots_data_grm_prm_secondary_traits_fixed_data_values) {
                 my $string = join ',', @$_;
                 print $F30 "$string\n";
             }
         close($F30);
+
+        open(my $F30_q1, ">", $analytics_protocol_data_tempfile_prm_sec_fix_q1) || die "Can't open file ".$analytics_protocol_data_tempfile_prm_sec_fix_q1;
+            foreach (@plots_data_grm_prm_secondary_traits_fixed_data_values_q1) {
+                my $string = join ',', @$_;
+                print $F30_q1 "$string\n";
+            }
+        close($F30_q1);
+
+        open(my $F30_q2, ">", $analytics_protocol_data_tempfile_prm_sec_fix_q2) || die "Can't open file ".$analytics_protocol_data_tempfile_prm_sec_fix_q2;
+            foreach (@plots_data_grm_prm_secondary_traits_fixed_data_values_q2) {
+                my $string = join ',', @$_;
+                print $F30_q2 "$string\n";
+            }
+        close($F30_q2);
+
+        open(my $F30_q3, ">", $analytics_protocol_data_tempfile_prm_sec_fix_q3) || die "Can't open file ".$analytics_protocol_data_tempfile_prm_sec_fix_q3;
+            foreach (@plots_data_grm_prm_secondary_traits_fixed_data_values_q3) {
+                my $string = join ',', @$_;
+                print $F30_q3 "$string\n";
+            }
+        close($F30_q3);
+
+        open(my $F30_q4, ">", $analytics_protocol_data_tempfile_prm_sec_fix_q4) || die "Can't open file ".$analytics_protocol_data_tempfile_prm_sec_fix_q4;
+            foreach (@plots_data_grm_prm_secondary_traits_fixed_data_values_q4) {
+                my $string = join ',', @$_;
+                print $F30_q4 "$string\n";
+            }
+        close($F30_q4);
 
         if ($result_type eq 'originalgenoeff') {
 
@@ -8031,6 +8326,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             my @fixed_effect_header_traits;
             print STDERR "$analytics_protocol_data_tempfile29\n";
             open(my $F29, ">", $analytics_protocol_data_tempfile29) || die "Can't open file ".$analytics_protocol_data_tempfile29;
+            open(my $F29_q1, ">", $analytics_protocol_data_tempfile_fixed_q1) || die "Can't open file ".$analytics_protocol_data_tempfile_fixed_q1;
+            open(my $F29_q2, ">", $analytics_protocol_data_tempfile_fixed_q2) || die "Can't open file ".$analytics_protocol_data_tempfile_fixed_q2;
+            open(my $F29_q3, ">", $analytics_protocol_data_tempfile_fixed_q3) || die "Can't open file ".$analytics_protocol_data_tempfile_fixed_q3;
+            open(my $F29_q4, ">", $analytics_protocol_data_tempfile_fixed_q4) || die "Can't open file ".$analytics_protocol_data_tempfile_fixed_q4;
                 my @fixed_factor_header = ('plot_name','fixed_effect_all_cont','fixed_effect_all','fixed_effect_1','fixed_effect_2','fixed_effect_3_1','fixed_effect_3_2','fixed_effect_3_3','fixed_effect_max','fixed_effect_min','fixed_effect_1_cont','fixed_effect_2_cont','fixed_effect_3_cont');
                 foreach my $time (@sorted_seen_times_p) {
                     my $time_enc = $trait_name_map_reverse{$time};
@@ -8039,7 +8338,13 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
                 my $fixed_factor_header_string = join ',', @fixed_factor_header;
                 print $F29 "$fixed_factor_header_string\n";
+                print $F29_q1 "$fixed_factor_header_string\n";
+                print $F29_q2 "$fixed_factor_header_string\n";
+                print $F29_q3 "$fixed_factor_header_string\n";
+                print $F29_q4 "$fixed_factor_header_string\n";
                 foreach my $p (@seen_plots) {
+                    my $row_number = $stock_name_row_col{$p}->{row_number};
+                    my $col_number = $stock_name_row_col{$p}->{col_number};
                     my $fixed_effect_cont = $plot_averaged_fixed_effect_cont{$p};
                     my $fixed_effect_all = $plot_averaged_fixed_effect{$p};
                     my $fixed_effect_min = $plot_averaged_fixed_effect_minimum{$p};
@@ -8060,8 +8365,29 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     }
                     my $fixed_effect_row_string = join ',', @fixed_effect_row;
                     print $F29 "$fixed_effect_row_string\n";
+
+                    if ($row_number <= $max_row_half) {
+                        if ($col_number <= $max_col_half) {
+                            print $F29_q1 "$fixed_effect_row_string\n";
+                        }
+                        else {
+                            print $F29_q2 "$fixed_effect_row_string\n";
+                        }
+                    }
+                    else {
+                        if ($col_number <= $max_col_half) {
+                            print $F29_q3 "$fixed_effect_row_string\n";
+                        }
+                        else {
+                            print $F29_q4 "$fixed_effect_row_string\n";
+                        }
+                    }
                 }
             close($F29);
+            close($F29_q1);
+            close($F29_q2);
+            close($F29_q3);
+            close($F29_q4);
             my $fixed_effect_header_traits_string = join ' + ', @fixed_effect_header_traits;
 
             my $r_cmd_i2 = 'R -e "library(ggplot2); library(data.table);
@@ -8227,8 +8553,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
             mat\$fixed_effect_all <- mat_fixed\$fixed_effect_all;
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
@@ -8397,10 +8721,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mat\$fixed_effect_all <- mat_fixed\$fixed_effect_all;
             mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
             if (!is.null(mix1\$U)) {
@@ -8428,14 +8748,48 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($F_avg_gcorr_f);
 
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                mat_fq1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q1.'\', header=TRUE, sep=\',\')); mat_fq2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q2.'\', header=TRUE, sep=\',\')); mat_fq3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q3.'\', header=TRUE, sep=\',\')); mat_fq4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                mat_q1\$fixed_effect_all <- mat_fq1\$fixed_effect_all; mat_q2\$fixed_effect_all <- mat_fq2\$fixed_effect_all; mat_q3\$fixed_effect_all <- mat_fq3\$fixed_effect_all; mat_q4\$fixed_effect_all <- mat_fq4\$fixed_effect_all;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_favg = $columns[0];
+                        @gcorr_qarr_favg = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
+
             my $grm_no_prm_fixed_effects_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
             mat\$fixed_effect_1 <- mat_fixed\$fixed_effect_1;
             mat\$fixed_effect_2 <- mat_fixed\$fixed_effect_2;
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1 + fixed_effect_2, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
@@ -8605,10 +8959,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mat\$fixed_effect_1 <- mat_fixed\$fixed_effect_1;
             mat\$fixed_effect_2 <- mat_fixed\$fixed_effect_2;
             mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1 + fixed_effect_2, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
@@ -8637,14 +8987,48 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($F_avg_gcorr_f);
 
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                mat_fq1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q1.'\', header=TRUE, sep=\',\')); mat_fq2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q2.'\', header=TRUE, sep=\',\')); mat_fq3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q3.'\', header=TRUE, sep=\',\')); mat_fq4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                mat_q1\$fixed_effect_1 <- mat_fq1\$fixed_effect_1; mat_q2\$fixed_effect_1 <- mat_fq2\$fixed_effect_1; mat_q3\$fixed_effect_1 <- mat_fq3\$fixed_effect_1; mat_q4\$fixed_effect_1 <- mat_fq4\$fixed_effect_1; mat_q1\$fixed_effect_2 <- mat_fq1\$fixed_effect_2; mat_q2\$fixed_effect_2 <- mat_fq2\$fixed_effect_2; mat_q3\$fixed_effect_2 <- mat_fq3\$fixed_effect_2; mat_q4\$fixed_effect_2 <- mat_fq4\$fixed_effect_2;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1 + fixed_effect_2, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1 + fixed_effect_2, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1 + fixed_effect_2, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1 + fixed_effect_2, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_f2 = $columns[0];
+                        @gcorr_qarr_f2 = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
+
             my $grm_no_prm_fixed_effects_all_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
-            geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);';
+            geno_mat[is.na(geno_mat)] <- 0; ';
             foreach my $fixed_eff_t_col (@fixed_effect_header_traits) {
                 $grm_no_prm_fixed_effects_all_cmd .= '
                 mat\$'.$fixed_eff_t_col.' <- mat_fixed\$'.$fixed_eff_t_col.';';
@@ -8812,11 +9196,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
-            geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);';
+            geno_mat[is.na(geno_mat)] <- 0; ';
             foreach my $fixed_eff_t_col (@fixed_effect_header_traits) {
                 $grm_no_prm_fixed_effects_all_rep_gcorr_cmd .= '
                 mat\$'.$fixed_eff_t_col.' <- mat_fixed\$'.$fixed_eff_t_col.';';
@@ -8848,14 +9228,52 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($F_avg_gcorr_f);
 
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                mat_fq1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q1.'\', header=TRUE, sep=\',\')); mat_fq2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q2.'\', header=TRUE, sep=\',\')); mat_fq3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q3.'\', header=TRUE, sep=\',\')); mat_fq4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0; ';
+                foreach my $fixed_eff_t_col (@fixed_effect_header_traits) {
+                    $spatial_correct_2dspl_rep_gcorr_cmd .= '
+                    mat_q1\$'.$fixed_eff_t_col.' <- mat_fq1\$'.$fixed_eff_t_col.'; mat_q2\$'.$fixed_eff_t_col.' <- mat_fq2\$'.$fixed_eff_t_col.'; mat_q3\$'.$fixed_eff_t_col.' <- mat_fq3\$'.$fixed_eff_t_col.'; mat_q4\$'.$fixed_eff_t_col.' <- mat_fq4\$'.$fixed_eff_t_col.'; ';
+                }
+                $spatial_correct_2dspl_rep_gcorr_cmd .= '
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + '.$fixed_effect_header_traits_string.', random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + '.$fixed_effect_header_traits_string.', random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate + '.$fixed_effect_header_traits_string.', random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate + '.$fixed_effect_header_traits_string.', random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_fall = $columns[0];
+                        @gcorr_qarr_fall = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
+
             my $grm_no_prm_fixed_effects_3_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
             mat\$fixed_effect_3_1 <- mat_fixed\$fixed_effect_3_1;
             mat\$fixed_effect_3_2 <- mat_fixed\$fixed_effect_3_2;
             mat\$fixed_effect_3_3 <- mat_fixed\$fixed_effect_3_3;
@@ -9026,10 +9444,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mat\$fixed_effect_3_1 <- mat_fixed\$fixed_effect_3_1;
             mat\$fixed_effect_3_2 <- mat_fixed\$fixed_effect_3_2;
             mat\$fixed_effect_3_3 <- mat_fixed\$fixed_effect_3_3;
@@ -9058,6 +9472,42 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     $gcorr_f3 = $columns[0];
                 }
             close($F_avg_gcorr_f);
+
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                mat_fq1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q1.'\', header=TRUE, sep=\',\')); mat_fq2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q2.'\', header=TRUE, sep=\',\')); mat_fq3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q3.'\', header=TRUE, sep=\',\')); mat_fq4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                mat_q1\$fixed_effect_3_1 <- mat_fq1\$fixed_effect_3_1; mat_q2\$fixed_effect_3_1 <- mat_fq2\$fixed_effect_3_1; mat_q3\$fixed_effect_3_1 <- mat_fq3\$fixed_effect_3_1; mat_q4\$fixed_effect_3_1 <- mat_fq4\$fixed_effect_3_1; mat_q1\$fixed_effect_3_2 <- mat_fq1\$fixed_effect_3_2; mat_q2\$fixed_effect_3_2 <- mat_fq2\$fixed_effect_3_2; mat_q3\$fixed_effect_3_2 <- mat_fq3\$fixed_effect_3_2; mat_q4\$fixed_effect_3_2 <- mat_fq4\$fixed_effect_3_2; mat_q1\$fixed_effect_3_3 <- mat_fq1\$fixed_effect_3_3; mat_q2\$fixed_effect_3_3 <- mat_fq2\$fixed_effect_3_3; mat_q3\$fixed_effect_3_3 <- mat_fq3\$fixed_effect_3_3; mat_q4\$fixed_effect_3_3 <- mat_fq4\$fixed_effect_3_3;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_3_1 + fixed_effect_3_2 + fixed_effect_3_3, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_3_1 + fixed_effect_3_2 + fixed_effect_3_3, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_3_1 + fixed_effect_3_2 + fixed_effect_3_3, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_3_1 + fixed_effect_3_2 + fixed_effect_3_3, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_f3 = $columns[0];
+                        @gcorr_qarr_f3 = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
 
             my $grm_no_prm_fixed_effects_cont_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -9233,10 +9683,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mat\$fixed_effect_all_cont <- mat_fixed\$fixed_effect_all_cont;
             mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
             if (!is.null(mix1\$U)) {
@@ -9263,6 +9709,42 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     $gcorr_havg = $columns[0];
                 }
             close($F_avg_gcorr_f);
+
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                mat_fq1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q1.'\', header=TRUE, sep=\',\')); mat_fq2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q2.'\', header=TRUE, sep=\',\')); mat_fq3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q3.'\', header=TRUE, sep=\',\')); mat_fq4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                mat_q1\$fixed_effect_all_cont <- mat_fq1\$fixed_effect_all_cont; mat_q2\$fixed_effect_all_cont <- mat_fq2\$fixed_effect_all_cont; mat_q3\$fixed_effect_all_cont <- mat_fq3\$fixed_effect_all_cont; mat_q4\$fixed_effect_all_cont <- mat_fq4\$fixed_effect_all_cont;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_havg = $columns[0];
+                        @gcorr_qarr_havg = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
 
             my $grm_no_prm_fixed_effects_max_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -9438,10 +9920,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mat\$fixed_effect_max <- mat_fixed\$fixed_effect_max;
             mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_max, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
             if (!is.null(mix1\$U)) {
@@ -9468,6 +9946,42 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     $gcorr_fmax = $columns[0];
                 }
             close($F_avg_gcorr_f);
+
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                mat_fq1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q1.'\', header=TRUE, sep=\',\')); mat_fq2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q2.'\', header=TRUE, sep=\',\')); mat_fq3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q3.'\', header=TRUE, sep=\',\')); mat_fq4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                mat_q1\$fixed_effect_max <- mat_fq1\$fixed_effect_max; mat_q2\$fixed_effect_max <- mat_fq2\$fixed_effect_max; mat_q3\$fixed_effect_max <- mat_fq3\$fixed_effect_max; mat_q4\$fixed_effect_max <- mat_fq4\$fixed_effect_max;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_max, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_max, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_max, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_max, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_fmax = $columns[0];
+                        @gcorr_qarr_fmax = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
 
             my $grm_no_prm_fixed_effects_min_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -9643,10 +10157,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mat\$fixed_effect_min <- mat_fixed\$fixed_effect_min;
             mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_min, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
             if (!is.null(mix1\$U)) {
@@ -9673,6 +10183,42 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     $gcorr_fmin = $columns[0];
                 }
             close($F_avg_gcorr_f);
+
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                mat_fq1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q1.'\', header=TRUE, sep=\',\')); mat_fq2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q2.'\', header=TRUE, sep=\',\')); mat_fq3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q3.'\', header=TRUE, sep=\',\')); mat_fq4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                mat_q1\$fixed_effect_min <- mat_fq1\$fixed_effect_min; mat_q2\$fixed_effect_min <- mat_fq2\$fixed_effect_min; mat_q3\$fixed_effect_min <- mat_fq3\$fixed_effect_min; mat_q4\$fixed_effect_min <- mat_fq4\$fixed_effect_min;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_min, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_min, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_min, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_min, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_fmin = $columns[0];
+                        @gcorr_qarr_fmin = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
 
             my $grm_no_prm_fixed_effects_3_cont_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -9850,8 +10396,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
             mat\$fixed_effect_1_cont <- mat_fixed\$fixed_effect_1_cont;
             mat\$fixed_effect_2_cont <- mat_fixed\$fixed_effect_2_cont;
             mat\$fixed_effect_3_cont <- mat_fixed\$fixed_effect_3_cont;
@@ -9881,15 +10425,47 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($F_avg_gcorr_f);
 
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                mat_fq1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q1.'\', header=TRUE, sep=\',\')); mat_fq2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q2.'\', header=TRUE, sep=\',\')); mat_fq3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q3.'\', header=TRUE, sep=\',\')); mat_fq4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_fixed_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                mat_q1\$fixed_effect_1_cont <- mat_fq1\$fixed_effect_1_cont; mat_q2\$fixed_effect_1_cont <- mat_fq2\$fixed_effect_1_cont; mat_q3\$fixed_effect_1_cont <- mat_fq3\$fixed_effect_1_cont; mat_q4\$fixed_effect_1_cont <- mat_fq4\$fixed_effect_1_cont; mat_q1\$fixed_effect_2_cont <- mat_fq1\$fixed_effect_2_cont; mat_q2\$fixed_effect_2_cont <- mat_fq2\$fixed_effect_2_cont; mat_q3\$fixed_effect_2_cont <- mat_fq3\$fixed_effect_2_cont; mat_q4\$fixed_effect_2_cont <- mat_fq4\$fixed_effect_2_cont; mat_q1\$fixed_effect_3_cont <- mat_fq1\$fixed_effect_3_cont; mat_q2\$fixed_effect_3_cont <- mat_fq2\$fixed_effect_3_cont; mat_q3\$fixed_effect_3_cont <- mat_fq3\$fixed_effect_3_cont; mat_q4\$fixed_effect_3_cont <- mat_fq4\$fixed_effect_3_cont;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1_cont + fixed_effect_2_cont + fixed_effect_3_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1_cont + fixed_effect_2_cont + fixed_effect_3_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1_cont + fixed_effect_2_cont + fixed_effect_3_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1_cont + fixed_effect_2_cont + fixed_effect_3_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_f3_cont = $columns[0];
+                        @gcorr_qarr_f3_cont = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
+
             my $grm_no_prm_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
@@ -10036,10 +10612,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
             geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
             geno_mat[is.na(geno_mat)] <- 0;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
@@ -10066,6 +10638,40 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($F_avg_gcorr_f);
 
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_grm = $columns[0];
+                        @gcorr_qarr_grm = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
+
             my $grm_prm_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
@@ -10080,19 +10686,14 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             ggsave(\''.$analytics_protocol_figure_tempfile_8.'\', cor_plot, device=\'png\', width=50, height=50, units=\'in\', limitsize = FALSE);
             colnames(prm_mat) <- mat\$plot_id_s;
             rownames(prm_mat) <- mat\$plot_id_s;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat);
+            mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
             write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
             write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-            h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
-            e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
-            write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+            h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) );
+            write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=0, ese=0), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
             ff <- fitted(mix);
             r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
             SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
@@ -10236,17 +10837,11 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             #prm_mat <- as.matrix(prm_mat_cols) %*% t(as.matrix(prm_mat_cols));
             prm_mat[is.na(prm_mat)] <- 0;
             prm_mat <- prm_mat/ncol(prm_mat_cols);
-            cor_plot <- ggcorr(data = NULL, cor_matrix = prm_mat, hjust = 1, size = 3, color = \'grey50\', label = FALSE, layout.exp = 1);
-            ggsave(\''.$analytics_protocol_figure_tempfile_8.'\', cor_plot, device=\'png\', width=50, height=50, units=\'in\', limitsize = FALSE);
             colnames(prm_mat) <- mat\$plot_id_s;
             rownames(prm_mat) <- mat\$plot_id_s;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
-            mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
+            mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
             if (!is.null(mix1\$U)) {
-            mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
+            mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
             if (!is.null(mix2\$U)) {
             mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_rep2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
             g_corr <- 0;
@@ -10266,9 +10861,47 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                    $gcorr_prm = $columns[0];
+                    $gcorr_grm_prm = $columns[0];
                 }
             close($F_avg_gcorr_f);
+
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                prm_mat_cols_q1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q1.'\', header=FALSE, sep=\',\')); prm_mat_q1 <- cor(t(prm_mat_cols_q1)); prm_mat_q1[is.na(prm_mat_q1)] <- 0; prm_mat_q1 <- prm_mat_q1/ncol(prm_mat_cols_q1); colnames(prm_mat_q1) <- mat_q1\$plot_id_s; rownames(prm_mat_q1) <- mat_q1\$plot_id_s;
+                prm_mat_cols_q2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q2.'\', header=FALSE, sep=\',\')); prm_mat_q2 <- cor(t(prm_mat_cols_q2)); prm_mat_q2[is.na(prm_mat_q2)] <- 0; prm_mat_q2 <- prm_mat_q2/ncol(prm_mat_cols_q2); colnames(prm_mat_q2) <- mat_q2\$plot_id_s; rownames(prm_mat_q2) <- mat_q2\$plot_id_s;
+                prm_mat_cols_q3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q3.'\', header=FALSE, sep=\',\')); prm_mat_q3 <- cor(t(prm_mat_cols_q3)); prm_mat_q3[is.na(prm_mat_q3)] <- 0; prm_mat_q3 <- prm_mat_q3/ncol(prm_mat_cols_q3); colnames(prm_mat_q3) <- mat_q3\$plot_id_s; rownames(prm_mat_q3) <- mat_q3\$plot_id_s;
+                prm_mat_cols_q4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q4.'\', header=FALSE, sep=\',\')); prm_mat_q4 <- cor(t(prm_mat_cols_q4)); prm_mat_q4[is.na(prm_mat_q4)] <- 0; prm_mat_q4 <- prm_mat_q4/ncol(prm_mat_cols_q4); colnames(prm_mat_q4) <- mat_q4\$plot_id_s; rownames(prm_mat_q4) <- mat_q4\$plot_id_s;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat_q1), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat_q2), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat_q3), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat_q4), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_grm_prm = $columns[0];
+                        @gcorr_qarr_grm_prm = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
 
             my $grm_prm_secondary_traits_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -10284,10 +10917,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             ggsave(\''.$analytics_protocol_figure_tempfile_10.'\', cor_plot, device=\'png\', width=50, height=50, units=\'in\', limitsize = FALSE);
             colnames(prm_mat) <- mat\$plot_id_s;
             rownames(prm_mat) <- mat\$plot_id_s;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
@@ -10440,14 +11069,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             #prm_mat <- as.matrix(prm_mat_cols) %*% t(as.matrix(prm_mat_cols));
             prm_mat[is.na(prm_mat)] <- 0;
             prm_mat <- prm_mat/ncol(prm_mat_cols);
-            cor_plot <- ggcorr(data = NULL, cor_matrix = prm_mat, hjust = 1, size = 3, color = \'grey50\', label = FALSE, layout.exp = 1);
-            ggsave(\''.$analytics_protocol_figure_tempfile_10.'\', cor_plot, device=\'png\', width=50, height=50, units=\'in\', limitsize = FALSE);
             colnames(prm_mat) <- mat\$plot_id_s;
             rownames(prm_mat) <- mat\$plot_id_s;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat) , rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
@@ -10474,6 +11097,44 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($F_avg_gcorr_f);
 
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                prm_mat_cols_q1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_sec_q1.'\', header=FALSE, sep=\',\')); prm_mat_q1 <- cor(t(prm_mat_cols_q1)); prm_mat_q1[is.na(prm_mat_q1)] <- 0; prm_mat_q1 <- prm_mat_q1/ncol(prm_mat_cols_q1); colnames(prm_mat_q1) <- mat_q1\$plot_id_s; rownames(prm_mat_q1) <- mat_q1\$plot_id_s;
+                prm_mat_cols_q2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_sec_q2.'\', header=FALSE, sep=\',\')); prm_mat_q2 <- cor(t(prm_mat_cols_q2)); prm_mat_q2[is.na(prm_mat_q2)] <- 0; prm_mat_q2 <- prm_mat_q2/ncol(prm_mat_cols_q2); colnames(prm_mat_q2) <- mat_q2\$plot_id_s; rownames(prm_mat_q2) <- mat_q2\$plot_id_s;
+                prm_mat_cols_q3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_sec_q3.'\', header=FALSE, sep=\',\')); prm_mat_q3 <- cor(t(prm_mat_cols_q3)); prm_mat_q3[is.na(prm_mat_q3)] <- 0; prm_mat_q3 <- prm_mat_q3/ncol(prm_mat_cols_q3); colnames(prm_mat_q3) <- mat_q3\$plot_id_s; rownames(prm_mat_q3) <- mat_q3\$plot_id_s;
+                prm_mat_cols_q4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_sec_q4.'\', header=FALSE, sep=\',\')); prm_mat_q4 <- cor(t(prm_mat_cols_q4)); prm_mat_q4[is.na(prm_mat_q4)] <- 0; prm_mat_q4 <- prm_mat_q4/ncol(prm_mat_cols_q4); colnames(prm_mat_q4) <- mat_q4\$plot_id_s; rownames(prm_mat_q4) <- mat_q4\$plot_id_s;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat_q1), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat_q2), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat_q3), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat_q4), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_grm_prm_secondary_traits = $columns[0];
+                        @gcorr_qarr_grm_prm_secondary_traits = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
+
             my $prm_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
@@ -10486,10 +11147,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             prm_mat <- prm_mat/ncol(prm_mat_cols);
             colnames(prm_mat) <- mat\$plot_id_s;
             rownames(prm_mat) <- mat\$plot_id_s;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
@@ -10643,10 +11300,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             prm_mat <- prm_mat/ncol(prm_mat_cols);
             colnames(prm_mat) <- mat\$plot_id_s;
             rownames(prm_mat) <- mat\$plot_id_s;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
@@ -10669,9 +11322,47 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     if ($csv->parse($row)) {
                         @columns = $csv->fields();
                     }
-                    $gcorr_grm_prm = $columns[0];
+                    $gcorr_prm = $columns[0];
                 }
             close($F_avg_gcorr_f);
+
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                prm_mat_cols_q1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q1.'\', header=FALSE, sep=\',\')); prm_mat_q1 <- cor(t(prm_mat_cols_q1)); prm_mat_q1[is.na(prm_mat_q1)] <- 0; prm_mat_q1 <- prm_mat_q1/ncol(prm_mat_cols_q1); colnames(prm_mat_q1) <- mat_q1\$plot_id_s; rownames(prm_mat_q1) <- mat_q1\$plot_id_s;
+                prm_mat_cols_q2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q2.'\', header=FALSE, sep=\',\')); prm_mat_q2 <- cor(t(prm_mat_cols_q2)); prm_mat_q2[is.na(prm_mat_q2)] <- 0; prm_mat_q2 <- prm_mat_q2/ncol(prm_mat_cols_q2); colnames(prm_mat_q2) <- mat_q2\$plot_id_s; rownames(prm_mat_q2) <- mat_q2\$plot_id_s;
+                prm_mat_cols_q3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q3.'\', header=FALSE, sep=\',\')); prm_mat_q3 <- cor(t(prm_mat_cols_q3)); prm_mat_q3[is.na(prm_mat_q3)] <- 0; prm_mat_q3 <- prm_mat_q3/ncol(prm_mat_cols_q3); colnames(prm_mat_q3) <- mat_q3\$plot_id_s; rownames(prm_mat_q3) <- mat_q3\$plot_id_s;
+                prm_mat_cols_q4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q4.'\', header=FALSE, sep=\',\')); prm_mat_q4 <- cor(t(prm_mat_cols_q4)); prm_mat_q4[is.na(prm_mat_q4)] <- 0; prm_mat_q4 <- prm_mat_q4/ncol(prm_mat_cols_q4); colnames(prm_mat_q4) <- mat_q4\$plot_id_s; rownames(prm_mat_q4) <- mat_q4\$plot_id_s;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(plot_id_s, Gu=prm_mat_q1), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(plot_id_s, Gu=prm_mat_q2), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(plot_id_s, Gu=prm_mat_q3), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(plot_id_s, Gu=prm_mat_q4), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_prm = $columns[0];
+                        @gcorr_qarr_prm = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
 
             my $grm_id_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -10688,10 +11379,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             diag_geno <- diag(nrow(geno_mat));
             colnames(diag_geno) <- colnames(geno_mat);
             rownames(diag_geno) <- rownames(geno_mat);
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
@@ -10848,10 +11535,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             diag_geno <- diag(nrow(geno_mat));
             colnames(diag_geno) <- colnames(geno_mat);
             rownames(diag_geno) <- rownames(geno_mat);
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
@@ -10878,6 +11561,46 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($F_avg_gcorr_f);
 
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+                geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+                geno_mat[is.na(geno_mat)] <- 0;
+                diag_geno <- diag(nrow(geno_mat));
+                colnames(diag_geno) <- colnames(geno_mat);
+                rownames(diag_geno) <- rownames(geno_mat);
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_grm_id = $columns[0];
+                        @gcorr_qarr_grm_id = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
+
             my $grm_id_prm_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
@@ -10893,10 +11616,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             diag_geno <- diag(nrow(geno_mat));
             colnames(diag_geno) <- colnames(geno_mat);
             rownames(diag_geno) <- rownames(geno_mat);
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
@@ -11054,10 +11773,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             diag_geno <- diag(nrow(geno_mat));
             colnames(diag_geno) <- colnames(geno_mat);
             rownames(diag_geno) <- rownames(geno_mat);
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
@@ -11084,6 +11799,44 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             close($F_avg_gcorr_f);
 
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                prm_mat_cols_q1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q1.'\', header=FALSE, sep=\',\')); prm_mat_q1 <- cor(t(prm_mat_cols_q1)); prm_mat_q1[is.na(prm_mat_q1)] <- 0; prm_mat_q1 <- prm_mat_q1/ncol(prm_mat_cols_q1); colnames(prm_mat_q1) <- mat_q1\$plot_id_s; rownames(prm_mat_q1) <- mat_q1\$plot_id_s;
+                prm_mat_cols_q2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q2.'\', header=FALSE, sep=\',\')); prm_mat_q2 <- cor(t(prm_mat_cols_q2)); prm_mat_q2[is.na(prm_mat_q2)] <- 0; prm_mat_q2 <- prm_mat_q2/ncol(prm_mat_cols_q2); colnames(prm_mat_q2) <- mat_q2\$plot_id_s; rownames(prm_mat_q2) <- mat_q2\$plot_id_s;
+                prm_mat_cols_q3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q3.'\', header=FALSE, sep=\',\')); prm_mat_q3 <- cor(t(prm_mat_cols_q3)); prm_mat_q3[is.na(prm_mat_q3)] <- 0; prm_mat_q3 <- prm_mat_q3/ncol(prm_mat_cols_q3); colnames(prm_mat_q3) <- mat_q3\$plot_id_s; rownames(prm_mat_q3) <- mat_q3\$plot_id_s;
+                prm_mat_cols_q4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q4.'\', header=FALSE, sep=\',\')); prm_mat_q4 <- cor(t(prm_mat_cols_q4)); prm_mat_q4[is.na(prm_mat_q4)] <- 0; prm_mat_q4 <- prm_mat_q4/ncol(prm_mat_cols_q4); colnames(prm_mat_q4) <- mat_q4\$plot_id_s; rownames(prm_mat_q4) <- mat_q4\$plot_id_s;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=prm_mat_q1), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=prm_mat_q2), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=prm_mat_q3), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=prm_mat_q4), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_grm_id_prm = $columns[0];
+                        @gcorr_qarr_grm_id_prm = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
+
             my $grm_id_prm_id_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
@@ -11097,10 +11850,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             diag_prm <- diag(nrow(prm_mat));
             colnames(diag_prm) <- mat\$plot_id_s;
             rownames(diag_prm) <- mat\$plot_id_s;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=diag_prm), rcov=~vs(units), data=mat);
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
@@ -11256,10 +12005,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             diag_prm <- diag(nrow(prm_mat));
             colnames(diag_prm) <- mat\$plot_id_s;
             rownames(diag_prm) <- mat\$plot_id_s;
-            mat\$rowNumber <- as.numeric(mat\$rowNumber);
-            mat\$colNumber <- as.numeric(mat\$colNumber);
-            mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-            mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
             mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=diag_prm), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
             if (!is.null(mix1\$U)) {
             mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=diag_prm), rcov=~vs(units), data=mat[mat\$replicate == \'2\', ]);
@@ -11285,6 +12030,44 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     $gcorr_grm_id_prm_id = $columns[0];
                 }
             close($F_avg_gcorr_f);
+
+            eval {
+                my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0; diag_geno <- diag(nrow(geno_mat)); colnames(diag_geno) <- colnames(geno_mat); rownames(diag_geno) <- rownames(geno_mat);
+                prm_mat_cols_q1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q1.'\', header=FALSE, sep=\',\')); prm_mat_q1 <- cor(t(prm_mat_cols_q1)); diag_prm_q1 <- diag(nrow(prm_mat_q1)); colnames(diag_prm_q1) <- mat_q1\$plot_id_s; rownames(diag_prm_q1) <- mat_q1\$plot_id_s;
+                prm_mat_cols_q2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q2.'\', header=FALSE, sep=\',\')); prm_mat_q2 <- cor(t(prm_mat_cols_q2)); diag_prm_q2 <- diag(nrow(prm_mat_q2)); colnames(diag_prm_q2) <- mat_q2\$plot_id_s; rownames(diag_prm_q2) <- mat_q2\$plot_id_s;
+                prm_mat_cols_q3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q3.'\', header=FALSE, sep=\',\')); prm_mat_q3 <- cor(t(prm_mat_cols_q3)); diag_prm_q3 <- diag(nrow(prm_mat_q3)); colnames(diag_prm_q3) <- mat_q3\$plot_id_s; rownames(diag_prm_q3) <- mat_q3\$plot_id_s;
+                prm_mat_cols_q4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_q4.'\', header=FALSE, sep=\',\')); prm_mat_q4 <- cor(t(prm_mat_cols_q4)); diag_prm_q4 <- diag(nrow(prm_mat_q4)); colnames(diag_prm_q4) <- mat_q4\$plot_id_s; rownames(diag_prm_q4) <- mat_q4\$plot_id_s;
+                mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=diag_prm_q1), rcov=~vs(units), data=mat_q1);
+                if (!is.null(mix1\$U)) {
+                mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=diag_prm_q2), rcov=~vs(units), data=mat_q2);
+                if (!is.null(mix2\$U)) {
+                mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=diag_prm_q3), rcov=~vs(units), data=mat_q3);
+                if (!is.null(mix3\$U)) {
+                mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=diag_geno) + vs(plot_id_s, Gu=diag_prm_q4), rcov=~vs(units), data=mat_q4);
+                if (!is.null(mix4\$U)) {
+                m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                }}}}
+                "';
+                print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_gcorr_f>;
+                    while (my $row = <$F_gcorr_f>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        $gcorr_q_grm_id_prm_id = $columns[0];
+                        @gcorr_qarr_grm_id_prm_id = split ',', $columns[1];
+                    }
+                close($F_gcorr_f);
+            };
 
             my $trait_name_secondary_counter = 1;
             foreach my $t_sec (@sorted_trait_names_secondary) {
@@ -11468,10 +12251,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 sec_binned <- data.frame(fread(\''.$analytics_protocol_data_tempfile30.'\', header=FALSE, sep=\',\'));
                 geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
                 geno_mat[is.na(geno_mat)] <- 0;
-                mat\$rowNumber <- as.numeric(mat\$rowNumber);
-                mat\$colNumber <- as.numeric(mat\$colNumber);
-                mat\$rowNumberFactor <- as.factor(mat\$rowNumberFactor);
-                mat\$colNumberFactor <- as.factor(mat\$colNumberFactor);
                 mat\$fixed_eff <- sec_cont[ ,'.$trait_name_secondary_counter.'];
                 mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \'1\', ]);
                 if (!is.null(mix1\$U)) {
@@ -11499,6 +12278,43 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     }
                 close($F_avg_gcorr_f);
                 push @gcorr_grm_prm_secondary_traits_havg, $gcorr_grm_prm_secondary_traits;
+
+                eval {
+                    my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                    mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                    geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                    mat_fq1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_sec_q1.'\', header=FALSE, sep=\',\')); mat_fq2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_sec_q2.'\', header=FALSE, sep=\',\')); mat_fq3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_sec_q3.'\', header=FALSE, sep=\',\')); mat_fq4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_sec_q4.'\', header=FALSE, sep=\',\'));
+                    mat_q1\$fixed_eff <- mat_fq1[ ,'.$trait_name_secondary_counter.']; mat_q2\$fixed_eff <- mat_fq2[ ,'.$trait_name_secondary_counter.']; mat_q3\$fixed_eff <- mat_fq3[ ,'.$trait_name_secondary_counter.']; mat_q4\$fixed_eff <- mat_fq4[ ,'.$trait_name_secondary_counter.'];
+                    mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q1);
+                    if (!is.null(mix1\$U)) {
+                    mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q2);
+                    if (!is.null(mix2\$U)) {
+                    mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q3);
+                    if (!is.null(mix3\$U)) {
+                    mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q4);
+                    if (!is.null(mix4\$U)) {
+                    m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                    g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                    write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                    }}}}
+                    "';
+                    print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                    my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                    open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                        print STDERR "Opened $stats_out_tempfile_gcor\n";
+                        $header_fits = <$F_gcorr_f>;
+                        while (my $row = <$F_gcorr_f>) {
+                            my @columns;
+                            if ($csv->parse($row)) {
+                                @columns = $csv->fields();
+                            }
+                            push @gcorr_q_grm_prm_secondary_traits_havg, $columns[0];
+                            my @gcorr_qarr = split ',', $columns[1];
+                            push @gcorr_qarr_grm_prm_secondary_traits_havg, \@gcorr_qarr;
+                        }
+                    close($F_gcorr_f);
+                };
 
                 my $grm_prm_secondary_favg_traits_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
                 mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -11712,6 +12528,43 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 close($F_avg_gcorr_f);
                 push @gcorr_grm_prm_secondary_traits_favg, $gcorr_grm_prm_secondary_traits;
 
+                eval {
+                    my $spatial_correct_2dspl_rep_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2);
+                    mat_q1 <- data.frame(fread(\''.$stats_tempfile_q1.'\', header=TRUE, sep=\',\')); mat_q2 <- data.frame(fread(\''.$stats_tempfile_q2.'\', header=TRUE, sep=\',\')); mat_q3 <- data.frame(fread(\''.$stats_tempfile_q3.'\', header=TRUE, sep=\',\')); mat_q4 <- data.frame(fread(\''.$stats_tempfile_q4.'\', header=TRUE, sep=\',\'));
+                    geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\')); geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\'); geno_mat[is.na(geno_mat)] <- 0;
+                    mat_fq1 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_sec_fix_q1.'\', header=FALSE, sep=\',\')); mat_fq2 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_sec_fix_q2.'\', header=FALSE, sep=\',\')); mat_fq3 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_sec_fix_q3.'\', header=FALSE, sep=\',\')); mat_fq4 <- data.frame(fread(\''.$analytics_protocol_data_tempfile_prm_sec_fix_q4.'\', header=FALSE, sep=\',\'));
+                    mat_q1\$fixed_eff <- mat_fq1[ ,'.$trait_name_secondary_counter.']; mat_q2\$fixed_eff <- mat_fq2[ ,'.$trait_name_secondary_counter.']; mat_q3\$fixed_eff <- mat_fq3[ ,'.$trait_name_secondary_counter.']; mat_q4\$fixed_eff <- mat_fq4[ ,'.$trait_name_secondary_counter.'];
+                    mix1 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q1);
+                    if (!is.null(mix1\$U)) {
+                    mix2 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q2);
+                    if (!is.null(mix2\$U)) {
+                    mix3 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q3);
+                    if (!is.null(mix3\$U)) {
+                    mix4 <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_eff, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_q4);
+                    if (!is.null(mix4\$U)) {
+                    m_q1 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q2 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q3 <- merge(data.frame(g_q1=mix1\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q4 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q5 <- merge(data.frame(g_q2=mix2\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE); m_q6 <- merge(data.frame(g_q3=mix3\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), data.frame(g_q4=mix4\$U\$\`u:id\`\$'.$trait_name_encoded_string.'), by=\'row.names\', all=TRUE);
+                    g_corr1 <- 0; g_corr2 <- 0; g_corr3 <- 0; g_corr4 <- 0; g_corr5 <- 0; g_corr6 <- 0; try (g_c1 <- cor(m_q1\$g_q1, m_q1\$g_q2, use = \'complete.obs\')); try (g_c2 <- cor(m_q2\$g_q1, m_q2\$g_q3, use = \'complete.obs\')); try (g_c3 <- cor(m_q3\$g_q1, m_q3\$g_q4, use = \'complete.obs\')); try (g_c4 <- cor(m_q4\$g_q2, m_q4\$g_q3, use = \'complete.obs\')); try (g_c5 <- cor(m_q5\$g_q2, m_q5\$g_q4, use = \'complete.obs\')); try (g_c6 <- cor(m_q6\$g_q3, m_q6\$g_q4, use = \'complete.obs\')); g_c <- c(g_c1, g_c2, g_c3, g_c4, g_c5, g_c6);
+                    write.table(data.frame(gcorr = c(mean(g_c,na.rm=TRUE)), gcorra = c(paste(g_c,collapse=\',\')) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                    }}}}
+                    "';
+                    print STDERR Dumper $spatial_correct_2dspl_rep_gcorr_cmd;
+                    my $spatial_correct_2dspl_rep_gcorr_status = system($spatial_correct_2dspl_rep_gcorr_cmd);
+
+                    open(my $F_gcorr_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                        print STDERR "Opened $stats_out_tempfile_gcor\n";
+                        $header_fits = <$F_gcorr_f>;
+                        while (my $row = <$F_gcorr_f>) {
+                            my @columns;
+                            if ($csv->parse($row)) {
+                                @columns = $csv->fields();
+                            }
+                            push @gcorr_q_grm_prm_secondary_traits_favg, $columns[0];
+                            my @gcorr_qarr = split ',', $columns[1];
+                            push @gcorr_qarr_grm_prm_secondary_traits_favg, \@gcorr_qarr;
+                        }
+                    close($F_gcorr_f);
+                };
+
                 $trait_name_secondary_counter++;
             }
         }
@@ -11826,7 +12679,43 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             f_anova_grm_fixed_effects_all => \@f_anova_grm_fixed_effects_all,
             f_anova_grm_fixed_effects_f3_cont => \@f_anova_grm_fixed_effects_f3_cont,
             f_anova_grm_prm_secondary_traits_havg => \@f_anova_grm_prm_secondary_traits_havg,
-            f_anova_grm_prm_secondary_traits_favg => \@f_anova_grm_prm_secondary_traits_favg
+            f_anova_grm_prm_secondary_traits_favg => \@f_anova_grm_prm_secondary_traits_favg,
+            gcorr_q_grm_trait_2dspl => $gcorr_grm_trait_2dspl_q_mean,
+            gcorr_q_favg => $gcorr_q_favg,
+            gcorr_q_f2 => $gcorr_q_f2,
+            gcorr_q_f3 => $gcorr_q_f3,
+            gcorr_q_fall => $gcorr_q_fall,
+            gcorr_q_havg => $gcorr_q_havg,
+            gcorr_q_fmax => $gcorr_q_fmax,
+            gcorr_q_fmin => $gcorr_q_fmin,
+            gcorr_q_f3_cont => $gcorr_q_f3_cont,
+            gcorr_q_grm => $gcorr_q_grm,
+            gcorr_q_prm => $gcorr_q_prm,
+            gcorr_q_grm_prm_secondary_traits => $gcorr_q_grm_prm_secondary_traits,
+            gcorr_q_grm_prm => $gcorr_q_grm_prm,
+            gcorr_q_grm_id => $gcorr_q_grm_id,
+            gcorr_q_grm_id_prm => $gcorr_q_grm_id_prm,
+            gcorr_q_grm_id_prm_id => $gcorr_q_grm_id_prm_id,
+            gcorr_q_grm_prm_secondary_traits_havg => \@gcorr_q_grm_prm_secondary_traits_havg,
+            gcorr_q_grm_prm_secondary_traits_favg => \@gcorr_q_grm_prm_secondary_traits_favg,
+            gcorr_qarr_grm_trait_2dspl => \@gcorr_grm_trait_2dspl_q_array,
+            gcorr_qarr_favg => \@gcorr_qarr_favg,
+            gcorr_qarr_f2 => \@gcorr_qarr_f2,
+            gcorr_qarr_f3 => \@gcorr_qarr_f3,
+            gcorr_qarr_fall => \@gcorr_qarr_fall,
+            gcorr_qarr_havg => \@gcorr_qarr_havg,
+            gcorr_qarr_fmax => \@gcorr_qarr_fmax,
+            gcorr_qarr_fmin => \@gcorr_qarr_fmin,
+            gcorr_qarr_f3_cont => \@gcorr_qarr_f3_cont,
+            gcorr_qarr_grm => \@gcorr_qarr_grm,
+            gcorr_qarr_prm => \@gcorr_qarr_prm,
+            gcorr_qarr_grm_prm_secondary_traits => \@gcorr_qarr_grm_prm_secondary_traits,
+            gcorr_qarr_grm_prm => \@gcorr_qarr_grm_prm,
+            gcorr_qarr_grm_id => \@gcorr_qarr_grm_id,
+            gcorr_qarr_grm_id_prm => \@gcorr_qarr_grm_id_prm,
+            gcorr_qarr_grm_id_prm_id => \@gcorr_qarr_grm_id_prm_id,
+            gcorr_qarr_grm_prm_secondary_traits_havg => \@gcorr_qarr_grm_prm_secondary_traits_havg,
+            gcorr_qarr_grm_prm_secondary_traits_favg => \@gcorr_qarr_grm_prm_secondary_traits_favg
         }
     }
 
