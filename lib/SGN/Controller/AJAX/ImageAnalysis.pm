@@ -41,6 +41,7 @@ use List::Util qw/sum/;
 use Parallel::ForkManager;
 use CXGN::Image::Search;
 use CXGN::Trait::Search;
+use File::Slurp;
 #use Inline::Python;
 
 BEGIN { extends 'Catalyst::Controller::REST' }
@@ -63,12 +64,12 @@ sub image_analysis_submit_POST : Args(0) {
     my $trait = $c->req->param('trait');
     my ($user_id, $user_name, $user_role) = _check_user_login_image_analysis($c, 'submitter', 0, 0);
     my $main_production_site_url = $c->config->{main_production_site_url};
-    _log_analysis_activity($c,$image_ids,$service,$trait);
+    _log_analysis_activity($c, $user_name, $image_ids, $service, $trait);
 
     unless (ref($image_ids) eq 'ARRAY') { $image_ids = [$image_ids]; }
 
     my ($trait_name, $db_accession) = split(/\|/, $trait);
-    myq ($db, $accession) = split(/:/, $db_accession);
+    my ($db, $accession) = split(/:/, $db_accession);
     my ($trait_details, $record_number) = CXGN::Trait::Search->new({
         bcs_schema=>$schema,
         ontology_db_name_list => [$db],
@@ -362,6 +363,64 @@ sub image_analysis_group_POST : Args(0) {
     $c->stash->{rest} = { success => 1, results => \@table_data };
 }
 
+sub get_activity_data : Path('/ajax/image_analysis/activity') Args(0) {
+  my $self = shift;
+  my $c = shift;
+  my ($user_id, $user_name, $user_role) = _check_user_login_image_analysis($c, 0, 0, 0);
+
+  my %date_counts;
+  if ($c->config->{image_analysis_log}) {
+    my $logfile = $c->config->{image_analysis_log};
+    my @file_data = read_file($logfile, chomp => 1);
+    foreach my $line (@file_data) {
+        my @values = split("\t", $line);
+        print STDERR "values are @values\n";
+        my @ts_parts = split(" ", $values[0]);
+        print STDERR "Date is ".$ts_parts[0]."\n";
+        $date_counts{$ts_parts[0]}++;
+    }
+  }
+
+  print STDERR "date count hash is: " . Dumper(%date_counts);
+
+  my @activity;
+  foreach my $date (keys %date_counts) {
+      push @activity, { date => $date, value => $date_counts{$date}};
+  }
+
+  print STDERR "activity_response is: " . Dumper(@activity);
+
+  my $json = JSON->new();
+  $c->stash->{rest} = { activity => $json->encode(\@activity)};
+
+}
+sub _log_analysis_activity {
+    my $c = shift;
+    my $user_name = shift;
+    my $image_ids = shift;
+    my $service = shift;
+    my $trait = shift;
+    my $now = DateTime->now();
+
+    if ($c->config->{image_analysis_log}) {
+      my $logfile = $c->config->{image_analysis_log};
+      open (my $F, ">> :encoding(UTF-8)", $logfile) || die "Can't open logfile $logfile\n";
+      print $F join("\t", (
+            $now->year()."-".$now->month()."-".$now->day()." ".$now->hour().":".$now->minute(),
+            $user_name,
+            $service,
+            $trait,
+            $image_ids
+            ));
+      print $F "\n";
+      close($F);
+      print STDERR "Analysis submission logged in $logfile\n";
+    }
+    else {
+      print STDERR "Note: set config variable image_analysis_log to obtain a log and graph of image analysis activity.\n";
+    }
+}
+
 sub _check_user_login_image_analysis {
     my $c = shift;
     my $check_priv = shift;
@@ -376,31 +435,6 @@ sub _check_user_login_image_analysis {
     my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     return ($user_id, $user_name, $user_role);
-}
-
-sub _log_analysis_activity {
-    my $c = shift;
-    my $image_ids = shift;
-    my $service = shift;
-    my $trait = shift;
-    my $now = DateTime->now();
-
-    if ($c->config->{image_analysis_log}) {
-      my $logfile = $c->config->{image_analysis_log};
-      open (my $F, ">> :encoding(UTF-8)", $logfile) || die "Can't open logfile $logfile\n";
-      print $F join("\t", (
-            $c->user->get_object->get_username(),
-            $service,
-            $trait,
-            $image_ids,
-            $now->year()."-".$now->month()."-".$now->day()." ".$now->hour().":".$now->minute()));
-      print $F "\n";
-      close($F);
-      print STDERR "Analysis submission logged in $logfile\n";
-    }
-    else {
-      print STDERR "Note: set config variable image_analysis_log to obtain a log and graph of image analysis activity.\n";
-    }
 }
 
 1;
