@@ -208,30 +208,25 @@ function compute_derived_trait() {
 function delete_field_map() {
     jQuery('#working_modal').modal("show");
 
-  var trialID = parseInt(jQuery('#trialIDDiv').text());
-  new jQuery.ajax({
-	 type: 'POST',
-	 url: '/ajax/phenotype/delete_field_coords',
-	 dataType: "json",
-	 data: {
-             'trial_id': trialID,
-	 },
-
-	 success: function (response) {
-	     jQuery('#working_modal').modal("hide");
-
-      if (response.error) {
-		      alert("Error Deleting Field Map: "+response.error);
-      } else {
-          //alert("Field map deletion Successful...");
-		      jQuery('#delete_field_map_dialog_message').dialog("open");
-          }
-	 },
-	 error: function () {
-	     jQuery('#working_modal').modal("hide");
-             alert('An error occurred deleting field map.');
-	 }
-  });
+    var trialID = parseInt(jQuery('#trialIDDiv').text());
+    new jQuery.ajax({
+        type: 'POST',
+        url: '/ajax/breeders/trial/'+trialID+'/delete_field_coords',
+        dataType: "json",
+        success: function (response) {
+            jQuery('#working_modal').modal("hide");
+            if (response.error) {
+                alert("Error Deleting Field Map: "+response.error);
+            } else {
+                //alert("Field map deletion Successful...");
+                jQuery('#delete_field_map_dialog_message').dialog("open");
+            }
+        },
+        error: function () {
+            jQuery('#working_modal').modal("hide");
+            alert('An error occurred deleting field map.');
+        }
+    });
 }
 
 function replace_accessions() {
@@ -660,7 +655,7 @@ jQuery(document).ready(function ($) {
 
 	function upload_trial_coord_file() {
         var uploadFile = $("#trial_coordinates_uploaded_file").val();
-        $('#upload_trial_coordinates_form').attr("action", "/ajax/breeders/trial/coordsupload");
+        $('#upload_trial_coordinates_form').attr("action", "/ajax/breeders/trial/"+get_trial_id()+"/coordsupload");
         if (uploadFile === '') {
 	    alert("Please select a file");
 	    return;
