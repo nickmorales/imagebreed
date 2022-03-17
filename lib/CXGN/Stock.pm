@@ -1413,16 +1413,16 @@ sub _retrieve_stockprop {
     my $type = shift;
     my @results;
 
-    try {
+    # try {
         my $stockprop_type_id = SGN::Model::Cvterm->get_cvterm_row($self->schema, $type, 'stock_property')->cvterm_id();
         my $rs = $self->schema()->resultset("Stock::Stockprop")->search({ stock_id => $self->stock_id(), type_id => $stockprop_type_id }, { order_by => {-asc => 'stockprop_id'} });
 
         while (my $r = $rs->next()){
             push @results, $r->value;
         }
-    } catch {
+    # } catch {
         #print STDERR "Cvterm $type does not exist in this database\n";
-    };
+    # };
 
     my $res = join ',', @results;
     return $res;
