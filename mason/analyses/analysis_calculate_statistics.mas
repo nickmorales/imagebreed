@@ -545,7 +545,7 @@ jQuery(document).ready(function() {
 
         if (analysis_calculate_statistics_select == 'sommer_grm_spatial_genetic_blups') {
 
-            analysis_stats_protocol = 'mmer('+analysis_stats_mv_traits_string+'~1+replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('+analysis_stats_numbers_traits+')) +vs(rowNumberFactor, Gtc=diag('+analysis_stats_numbers_traits+')) +vs(colNumberFactor, Gtc=diag('+analysis_stats_numbers_traits+')) + spl2Da(rowNumber, colNumber), rcov=~vs(units, Gtc=unsm('+analysis_stats_numbers_traits+')), data=mat, tolparinv='+analysis_stats_tolparinv_param+');';
+            analysis_stats_protocol = 'mmer('+analysis_stats_mv_traits_string+'~1+replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('+analysis_stats_numbers_traits+')) +vs(rowNumberFactor, Gtc=diag('+analysis_stats_numbers_traits+')) +vs(colNumberFactor, Gtc=diag('+analysis_stats_numbers_traits+')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('+analysis_stats_numbers_traits+')), rcov=~vs(units, Gtc=unsm('+analysis_stats_numbers_traits+')), data=mat, tolparinv='+analysis_stats_tolparinv_param+');';
 
             analysis_stats_parameters = {
                 'tolparinv':analysis_stats_tolparinv_param,
@@ -805,7 +805,7 @@ jQuery(document).ready(function() {
 
         if (analysis_calculate_statistics_select == 'sommer_grm_spatial_genetic_blups') {
 
-            analysis_stats_protocol = 'mmer('+analysis_stats_mv_traits_string+'~1+replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('+analysis_stats_numbers_traits+')) +vs(rowNumberFactor, Gtc=diag('+analysis_stats_numbers_traits+')) +vs(colNumberFactor, Gtc=diag('+analysis_stats_numbers_traits+')) + spl2Da(rowNumber, colNumber), rcov=~vs(units, Gtc=unsm('+analysis_stats_numbers_traits+')), data=mat, tolparinv='+analysis_stats_tolparinv_param+');';
+            analysis_stats_protocol = 'mmer('+analysis_stats_mv_traits_string+'~1+replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('+analysis_stats_numbers_traits+')) +vs(rowNumberFactor, Gtc=diag('+analysis_stats_numbers_traits+')) +vs(colNumberFactor, Gtc=diag('+analysis_stats_numbers_traits+')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('+analysis_stats_numbers_traits+')), rcov=~vs(units, Gtc=unsm('+analysis_stats_numbers_traits+')), data=mat, tolparinv='+analysis_stats_tolparinv_param+');';
 
             analysis_stats_parameters = {
                 'tolparinv':analysis_stats_tolparinv_param,
