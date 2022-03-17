@@ -498,7 +498,7 @@ has 'private_company_stock_is_private' => (
 sub BUILD {
     my $self = shift;
 
-    #print STDERR "RUNNING BUILD FOR STOCK.PM...\n";
+    print STDERR "RUNNING BUILD FOR STOCK.PM...\n";
     my $stock;
     if ($self->stock_id){
         $stock = $self->schema()->resultset("Stock::Stock")->find({ stock_id => $self->stock_id() });
@@ -516,6 +516,7 @@ sub BUILD {
         $self->organization_name($self->_retrieve_stockprop('organization'));
         $self->_retrieve_populations();
 
+        print STDERR "B1\n";
         my $q = "SELECT private_company_id, sgn_people.private_company.name, is_private
             FROM stock
             JOIN sgn_people.private_company USING(private_company_id)
@@ -526,6 +527,7 @@ sub BUILD {
         $self->private_company_id($private_company_id);
         $self->private_company_name($private_company_name);
         $self->private_company_stock_is_private($is_private);
+        print STDERR "B2\n";
 
         if ($stock->organism_id) {
             my $organism_rs = $self->schema->resultset("Organism::Organism")->search({ organism_id=>$stock->organism_id });
@@ -539,6 +541,7 @@ sub BUILD {
         }
     }
 
+    print STDERR "B3\n";
 
     if ($self->stock_id()) {
 
@@ -557,6 +560,8 @@ sub BUILD {
 
 	$self->subjects(\@subjects);
     }
+    print STDERR "B4\n";
+
     return $self;
 }
 
