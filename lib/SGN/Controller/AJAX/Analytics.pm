@@ -3486,7 +3486,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
 sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compare_to_trait') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
