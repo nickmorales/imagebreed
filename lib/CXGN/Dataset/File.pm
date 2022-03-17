@@ -51,7 +51,7 @@ override('retrieve_genotypes',
         }
 
         my @accessions_list = @$accessions_list_ref;
-        my $genotypes_search = CXGN::Genotype::Search->new(
+        my $genotypes_search = CXGN::Genotype::Search->new({
             bcs_schema => $self->schema(),
             people_schema => $self->people_schema(),
             cache_root=>$cache_root_dir,
@@ -63,7 +63,7 @@ override('retrieve_genotypes',
             protocolprop_marker_hash_select=>$protocolprop_marker_hash_select, #THESE ARE THE KEYS IN THE MARKERS OBJECT IN THE PROTOCOLPROP OBJECT
             return_only_first_genotypeprop_for_stock=>$return_only_first_genotypeprop_for_stock, #FOR MEMORY REASONS TO LIMIT DATA
             forbid_cache=>$forbid_cache
-        );
+        });
         my @required_config = (
             $cluster_shared_tempdir_config,
             $backend_config,
