@@ -498,7 +498,7 @@ sub get_genotype_info {
         $limit_clause
         $offset_clause;";
 
-    print STDERR Dumper $q;
+    # print STDERR Dumper $q;
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute();
 
@@ -512,7 +512,6 @@ sub get_genotype_info {
         my $igd_number_hash = $igd_number_json ? decode_json $igd_number_json : undef;
         my $igd_number = $igd_number_hash ? $igd_number_hash->{'igd number'} : undef;
         $igd_number = !$igd_number && $igd_number_hash ? $igd_number_hash->{'igd_number'} : undef;
-        print STDERR Dumper $stock_id;
 
         my $germplasmName = '';
         my $germplasmDbId = '';
@@ -2284,7 +2283,7 @@ sub check_which_have_genotypes {
         $limit_clause
         $offset_clause;";
 
-    print STDERR Dumper $q;
+    # print STDERR Dumper $q;
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute();
     my @genotypeprop_infos;

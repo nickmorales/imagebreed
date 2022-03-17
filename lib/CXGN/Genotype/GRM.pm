@@ -504,7 +504,6 @@ sub _get_grm {
                     male_id => $male_parent_stock_id
                 };
             }
-            print STDERR Dumper \%accession_pedigree_hash;
 
             #stock_relatedness is stored in both a,b directions, so only need to query this combo one way
             my %missing_all_parents_hash;
@@ -538,7 +537,6 @@ sub _get_grm {
                     }
                 }
             }
-            print STDERR Dumper \%missing_all_parents_hash;
 
             my @all_missing_parents_ids = sort keys %missing_all_parents_hash;
             my $genotypes_search = CXGN::Genotype::Search->new({
@@ -555,7 +553,6 @@ sub _get_grm {
                 my $accession_id = $_->{germplasmDbId};
                 $missing_parents_have_genotypes_accession_ids{$accession_id}++;
             }
-            print STDERR Dumper \%missing_parents_have_genotypes_accession_ids;
 
             my @missing_accession_ids = sort keys %missing_stock_ids_all_relatedness;
             my %missing_have_genotypes_accession_ids;
@@ -566,7 +563,6 @@ sub _get_grm {
                     $missing_have_genotypes_accession_ids{$_}++;
                 }
             }
-            print STDERR Dumper \%missing_have_genotypes_accession_ids;
 
             my %accessions_get_genotypes;
             foreach my $a (sort keys %missing_stock_ids_relatedness) {
@@ -585,7 +581,6 @@ sub _get_grm {
                 my $accession_stock_id = $accession_stock_ids_found[$i];
 
                 if (exists($missing_have_genotypes_accession_ids{$accession_stock_id})) {
-                    print STDERR Dumper [$accession_stock_id, $female_stock_id, $male_stock_id];
 
                     my $dataset = CXGN::Dataset::Cache->new({
                         people_schema=>$people_schema,

@@ -248,7 +248,6 @@ sub _retrieve_germplasmSeedSource {
 
 sub _retrieve_synonyms {
     my $self = shift;
-    print STDERR "_retrieve_synonyms\n";
     my @synonyms = $self->_retrieve_stockprop('stock_synonym') ? split ',', $self->_retrieve_stockprop('stock_synonym') : ();
     $self->synonyms(\@synonyms);
 }
