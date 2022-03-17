@@ -525,7 +525,7 @@ sub get_genotype_info {
             $germplasmDbId = $accession_id;
         }
 
-        #my $stock_object = CXGN::Stock::Accession->new({schema=>$self->bcs_schema, stock_id=>$germplasmDbId});
+        my $stock_object = CXGN::Stock::Accession->new({schema=>$self->bcs_schema, stock_id=>$germplasmDbId});
 
         push @genotype_id_array, $genotype_id;
 
@@ -533,7 +533,7 @@ sub get_genotype_info {
             markerProfileDbId => $genotype_id,
             germplasmDbId => $germplasmDbId,
             germplasmName => $germplasmName,
-            # synonyms => $stock_object->synonyms,
+            synonyms => $stock_object->synonyms,
             stock_id => $stock_id,
             stock_name => $stock_name,
             stock_type_id => $stock_type_id,
