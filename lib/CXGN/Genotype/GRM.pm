@@ -504,6 +504,7 @@ sub _get_grm {
                     male_id => $male_parent_stock_id
                 };
             }
+            print STDERR Dumper \%accession_pedigree_hash;
 
             #stock_relatedness is stored in both a,b directions, so only need to query this combo one way
             my %missing_all_parents_hash;
@@ -534,7 +535,7 @@ sub _get_grm {
                 protocol_id_list => [$protocol_id],
             );
             my ($geno_info, $seen_protocol_hash) = $genotypes_search->check_which_have_genotypes();
-            # print STDERR Dumper $geno_info;
+            print STDERR Dumper $geno_info;
 
             my %missing_parents_have_genotypes_accession_ids;
             foreach (@$geno_info) {
@@ -559,12 +560,13 @@ sub _get_grm {
             my %accessions_get_genotypes;
             foreach my $a (sort keys %missing_stock_ids_relatedness) {
                 foreach my $b (sort keys %{$missing_stock_ids_relatedness{$a}}) {
-                    if (exists($missing_have_genotypes_accession_ids{$a}) && exists($missing_have_genotypes_accession_ids{$b})) {
+                    if (exists($missing_have_genotypes_accession_ids{$a}) || exists($missing_have_genotypes_accession_ids{$b})) {
                         $accessions_get_genotypes{$a}++;
                         $accessions_get_genotypes{$b}++;
                     }
                 }
             }
+            print STDERR Dumper \%accessions_get_genotypes;
 
             for my $i (0..scalar(@accession_stock_ids_found)-1) {
                 my $female_stock_id = $female_stock_ids_found[$i];
