@@ -267,12 +267,12 @@ sub _get_grm {
             }
 
             my @missing_accession_ids = sort keys %missing_stock_ids_all_relatedness;
-            my $genotypes_search = CXGN::Genotype::Search->new(
+            my $genotypes_search = CXGN::Genotype::Search->new({
                 bcs_schema => $schema,
                 people_schema=> $people_schema,
                 accession_list => \@missing_accession_ids,
                 protocol_id_list => [$protocol_id],
-            );
+            });
             my ($geno_info, $seen_protocol_hash) = $genotypes_search->check_which_have_genotypes();
             # print STDERR Dumper $geno_info;
 
@@ -397,12 +397,12 @@ sub _get_grm {
             }
 
             my @missing_accession_ids = sort keys %missing_stock_ids_all_relatedness;
-            my $genotypes_search = CXGN::Genotype::Search->new(
+            my $genotypes_search = CXGN::Genotype::Search->new({
                 bcs_schema => $schema,
                 people_schema=> $people_schema,
                 accession_list => \@missing_accession_ids,
                 protocol_id_list => [$protocol_id],
-            );
+            });
             my ($geno_info, $seen_protocol_hash) = $genotypes_search->check_which_have_genotypes();
             # print STDERR Dumper $geno_info;
 
@@ -516,25 +516,37 @@ sub _get_grm {
                         $seen_accession_stock_ids_relatedness{$a}->{$b} = $value;
                     }
                     else {
+                        my $female_id1 = $accession_pedigree_hash{$a}->{female_id};
+                        my $male_id1 = $accession_pedigree_hash{$a}->{male_id};
+                        my $female_id2 = $accession_pedigree_hash{$b}->{female_id};
+                        my $male_id2 = $accession_pedigree_hash{$b}->{male_id};
                         $missing_stock_ids_relatedness{$a}->{$b}++;
                         $missing_stock_ids_all_relatedness{$a}++;
                         $missing_stock_ids_all_relatedness{$b}++;
-                        $missing_all_parents_hash{$accession_pedigree_hash{$a}->{female_id}}++;
-                        $missing_all_parents_hash{$accession_pedigree_hash{$b}->{female_id}}++;
-                        $missing_all_parents_hash{$accession_pedigree_hash{$a}->{male_id}}++;
-                        $missing_all_parents_hash{$accession_pedigree_hash{$b}->{male_id}}++;
+                        if ($female_id1) {
+                            $missing_all_parents_hash{$female_id1}++;
+                        }
+                        if ($male_id1) {
+                            $missing_all_parents_hash{$male_id1}++;
+                        }
+                        if ($female_id2) {
+                            $missing_all_parents_hash{$female_id2}++;
+                        }
+                        if ($male_id2) {
+                            $missing_all_parents_hash{$male_id2}++;
+                        }
                     }
                 }
             }
             print STDERR Dumper \%missing_all_parents_hash;
 
             my @all_missing_parents_ids = sort keys %missing_all_parents_hash;
-            my $genotypes_search = CXGN::Genotype::Search->new(
+            my $genotypes_search = CXGN::Genotype::Search->new({
                 bcs_schema => $schema,
                 people_schema=> $people_schema,
                 accession_list => \@all_missing_parents_ids,
                 protocol_id_list => [$protocol_id],
-            );
+            });
             my ($geno_info, $seen_protocol_hash) = $genotypes_search->check_which_have_genotypes();
             print STDERR Dumper $geno_info;
 
