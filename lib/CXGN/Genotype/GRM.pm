@@ -558,18 +558,15 @@ sub _get_grm {
             print STDERR Dumper \%missing_parents_have_genotypes_accession_ids;
 
             my @missing_accession_ids = sort keys %missing_stock_ids_all_relatedness;
-            my %missing_no_genotypes_accession_ids;
             my %missing_have_genotypes_accession_ids;
             foreach (@missing_accession_ids) {
                 my $female_id = $accession_pedigree_hash{$_}->{female_id};
                 my $male_id = $accession_pedigree_hash{$_}->{male_id};
-                if (!exists($missing_parents_have_genotypes_accession_ids{$female_id}) && !exists($missing_parents_have_genotypes_accession_ids{$male_id})) {
-                    $missing_no_genotypes_accession_ids{$_}++;
-                }
-                else {
+                if (exists($missing_parents_have_genotypes_accession_ids{$female_id}) || exists($missing_parents_have_genotypes_accession_ids{$male_id})) {
                     $missing_have_genotypes_accession_ids{$_}++;
                 }
             }
+            print STDERR Dumper \%missing_have_genotypes_accession_ids;
 
             my %accessions_get_genotypes;
             foreach my $a (sort keys %missing_stock_ids_relatedness) {
@@ -580,15 +577,14 @@ sub _get_grm {
                     }
                 }
             }
-            print STDERR Dumper \%accessions_get_genotypes;
+            # print STDERR Dumper \%accessions_get_genotypes;
 
-            print STDERR Dumper \@accession_stock_ids_found;
             for my $i (0..scalar(@accession_stock_ids_found)-1) {
                 my $female_stock_id = $female_stock_ids_found[$i];
                 my $male_stock_id = $male_stock_ids_found[$i];
                 my $accession_stock_id = $accession_stock_ids_found[$i];
 
-                if (exists($accessions_get_genotypes{$accession_stock_id})) {
+                if (exists($missing_have_genotypes_accession_ids{$accession_stock_id})) {
                     print STDERR Dumper [$accession_stock_id, $female_stock_id, $male_stock_id];
 
                     my $dataset = CXGN::Dataset::Cache->new({
