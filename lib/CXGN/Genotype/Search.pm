@@ -512,6 +512,7 @@ sub get_genotype_info {
         my $igd_number_hash = $igd_number_json ? decode_json $igd_number_json : undef;
         my $igd_number = $igd_number_hash ? $igd_number_hash->{'igd number'} : undef;
         $igd_number = !$igd_number && $igd_number_hash ? $igd_number_hash->{'igd_number'} : undef;
+        print STDERR Dumper $stock_id;
 
         my $germplasmName = '';
         my $germplasmDbId = '';
@@ -524,7 +525,7 @@ sub get_genotype_info {
             $germplasmDbId = $accession_id;
         }
 
-        my $stock_object = CXGN::Stock::Accession->new({schema=>$self->bcs_schema, stock_id=>$germplasmDbId});
+        #my $stock_object = CXGN::Stock::Accession->new({schema=>$self->bcs_schema, stock_id=>$germplasmDbId});
 
         push @genotype_id_array, $genotype_id;
 
@@ -532,7 +533,7 @@ sub get_genotype_info {
             markerProfileDbId => $genotype_id,
             germplasmDbId => $germplasmDbId,
             germplasmName => $germplasmName,
-            synonyms => $stock_object->synonyms,
+            # synonyms => $stock_object->synonyms,
             stock_id => $stock_id,
             stock_name => $stock_name,
             stock_type_id => $stock_type_id,
