@@ -7868,7 +7868,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                     my ($data_2, $unique_traits_2) = $phenotypes_search_2->search();
                     @sorted_trait_names_2 = sort keys %$unique_traits_2;
 
-                    if (scalar(@$data_2) == 0) {
+                    if (scalar(@$data_2) == 0 || scalar(@sorted_trait_names_2) == 0) {
                         $c->stash->{rest} = { error => "There are no phenotypes for the trials and traits you have selected!"};
                         return;
                     }

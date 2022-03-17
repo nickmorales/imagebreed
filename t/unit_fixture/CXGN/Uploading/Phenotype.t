@@ -3298,7 +3298,7 @@ my ($stored_phenotype_error_msg, $store_success) = $store_phenotypes->store();
 ok(!$stored_phenotype_error_msg, "check that store phenotype spreadsheet simple works");
 
 my $bs = CXGN::BreederSearch->new( { dbh=>$f->bcs_schema->storage->dbh, dbname=>$f->config->{dbname} } );
-my $refresh = $bs->refresh_matviews($f->config->{dbhost}, $f->config->{dbname}, $f->config->{dbuser}, $f->config->{dbpass}, 'fullview', 'concurrent', $f->config->{basepath});
+my $refresh = $bs->refresh_matviews($f->config->{dbhost}, $f->config->{dbname}, $f->config->{dbuser}, $f->config->{dbpass}, 'fullview', 'nonconcurrent', $f->config->{basepath});
 sleep(10);
 
 my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
@@ -3378,7 +3378,7 @@ my ($stored_phenotype_error_msg, $store_success) = $store_phenotypes->store();
 ok(!$stored_phenotype_error_msg, "check that store phenotype spreadsheet associated_images works");
 
 my $bs = CXGN::BreederSearch->new( { dbh=>$f->bcs_schema->storage->dbh, dbname=>$f->config->{dbname} } );
-my $refresh = $bs->refresh_matviews($f->config->{dbhost}, $f->config->{dbname}, $f->config->{dbuser}, $f->config->{dbpass}, 'fullview', 'concurrent', $f->config->{basepath});
+my $refresh = $bs->refresh_matviews($f->config->{dbhost}, $f->config->{dbname}, $f->config->{dbuser}, $f->config->{dbpass}, 'fullview', 'nonconcurrent', $f->config->{basepath});
 sleep(10);
 
 $mech->get_ok('http://localhost:3010/ajax/search/images?sgn_session_id='.$sgn_session_id);

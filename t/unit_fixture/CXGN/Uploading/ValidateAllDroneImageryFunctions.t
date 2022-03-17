@@ -733,6 +733,9 @@ my @traits_assayed_sorted = sort {$a->[0] cmp $b->[0]} @$traits_assayed;
 # 79076 Total Pixel Sum|Black and White Image|Black and White Denoised Original Image|day 1384.52638888889|COMP:0000408, 15 phenos
 # 79077 Harmonic Mean Pixel Value|Black and White Image|Thresholded Black and White Denoised Original Image|day 1384.52638888889|COMP:0000409, 15 phenos
 
+my $trait_id1 = $schema->resultset("Cv::Cvterm")->find({name=>"Total Pixel Sum|Black and White Image|Black and White Denoised Original Image|day 1384.52638888889"})->cvterm_id();
+my $trait_id2 = $schema->resultset("Cv::Cvterm")->find({name=>"Harmonic Mean Pixel Value|Black and White Image|Thresholded Black and White Denoised Original Image|day 1384.52638888889"})->cvterm_id();
+
 #Sommer 2dspl needs row,col coords
 my $filename = $f->config->{basepath}."/t/data/trial/upload_trial_coords_file.csv";
 $ua = LWP::UserAgent->new;
@@ -761,7 +764,7 @@ my $response_raster = $ua->post(
         Content_Type => 'form-data',
         Content => [
             "sgn_session_id" => $sgn_session_id,
-            "observation_variable_id_list" => encode_json([79076]),
+            "observation_variable_id_list" => encode_json([$trait_id1]),
             "field_trial_id_list" => encode_json([$field_trial_id]),
             "statistics_select" => "sommer_grm_univariate_spatial_pure_2dspl_genetic_blups",
             "analytics_protocol_name" => "test_2dspluni_1NDVI_analytics1",
@@ -769,13 +772,13 @@ my $response_raster = $ua->post(
             "analytics_select" => "minimize_local_env_effect",
             "number_iterations" => "2",
             "relationship_matrix_type" => "", #identity
-            "tolparinv" => "0.05",
+            "tolparinv" => "0.1",
             "legendre_order_number" => "3",
             "use_area_under_curve" => "no",
             "permanent_environment_structure" => "identity",
             "sim_env_change_over_time" => "",
             "env_variance_percent" => "0.2",
-            "simulated_environment_real_data_trait_id" => "79077",
+            "simulated_environment_real_data_trait_id" => "$trait_id2",
             "sim_env_change_over_time_correlation" => "0.9",
             "fixed_effect_type" => "replicate",
             "fixed_effect_trait_id" => undef,
@@ -800,9 +803,9 @@ my $response_raster = $ua->post(
             "sgn_session_id" => $sgn_session_id,
             "protocol_id" => $analytics_protocol_id,
             "trial_id" => $field_trial_id,
-            "trait_id" => 79076,
+            "trait_id" => $trait_id1,
             "analysis" => "2dspl",
-            "traits_secondary" => 79077,
+            "traits_secondary" => $trait_id2,
             "default_tol" => "pre_both",
             "cor_label_size" => "5",
             "cor_label_digits" => "2",

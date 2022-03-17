@@ -740,7 +740,7 @@ sub upload_genotype_verify_POST : Args(0) {
     my $dbuser = $c->config->{dbuser};
     my $dbpass = $c->config->{dbpass};
     my $bs = CXGN::BreederSearch->new( { dbh=>$c->dbc->dbh, dbname=>$dbname, } );
-    my $refresh = $bs->refresh_matviews($dbhost, $dbname, $dbuser, $dbpass, 'fullview', 'concurrent', $basepath);
+    my $refresh = $bs->refresh_matviews($dbhost, $dbname, $dbuser, $dbpass, 'fullview', 'nonconcurrent', $basepath);
 
     # Rebuild and refresh the materialized_markerview table
     my $async_refresh = CXGN::Tools::Run->new();
