@@ -526,6 +526,7 @@ sub _get_grm {
                     }
                 }
             }
+            print STDERR Dumper \%missing_all_parents_hash;
 
             my @all_missing_parents_ids = sort keys %missing_all_parents_hash;
             my $genotypes_search = CXGN::Genotype::Search->new(
