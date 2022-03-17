@@ -548,13 +548,14 @@ sub _get_grm {
                 protocol_id_list => [$protocol_id],
             });
             my ($geno_info, $seen_protocol_hash) = $genotypes_search->check_which_have_genotypes();
-            print STDERR Dumper $geno_info;
+            # print STDERR Dumper $geno_info;
 
             my %missing_parents_have_genotypes_accession_ids;
             foreach (@$geno_info) {
                 my $accession_id = $_->{germplasmDbId};
                 $missing_parents_have_genotypes_accession_ids{$accession_id}++;
             }
+            print STDERR Dumper \%missing_parents_have_genotypes_accession_ids;
 
             my @missing_accession_ids = sort keys %missing_stock_ids_all_relatedness;
             my %missing_no_genotypes_accession_ids;
@@ -581,12 +582,14 @@ sub _get_grm {
             }
             print STDERR Dumper \%accessions_get_genotypes;
 
+            print STDERR Dumper \@accession_stock_ids_found;
             for my $i (0..scalar(@accession_stock_ids_found)-1) {
                 my $female_stock_id = $female_stock_ids_found[$i];
                 my $male_stock_id = $male_stock_ids_found[$i];
                 my $accession_stock_id = $accession_stock_ids_found[$i];
 
                 if (exists($accessions_get_genotypes{$accession_stock_id})) {
+                    print STDERR Dumper [$accession_stock_id, $female_stock_id, $male_stock_id];
 
                     my $dataset = CXGN::Dataset::Cache->new({
                         people_schema=>$people_schema,
