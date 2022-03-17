@@ -1700,26 +1700,18 @@ sub obsolete_trial_additional_file_uploaded :Chained('trial') PathPart('obsolete
     my $self = shift;
     my $c = shift;
     my $file_id = shift;
-    
-    if (!$c->user) {
-	$c->stash->{rest} = { error => "You must be logged in to obsolete additional files!" };
-	$c->detach();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'curator', 'curator_access');
 
-    my $user_id = $c->user->get_object()->get_sp_person_id();
-
-    my @roles = $c->user->roles();
-    my $result = $c->stash->{trial}->obsolete_additional_uploaded_file($file_id, $user_id, $roles[0]);
+    my $result = $c->stash->{trial}->obsolete_additional_uploaded_file($file_id, $user_id, $user_role);
 
     if (exists($result->{errors})) {
-	$c->stash->{rest} = { error => $result->{errors} }; 
+        $c->stash->{rest} = { error => $result->{errors} };
     }
     else {
-	$c->stash->{rest} = { success => 1 };
+        $c->stash->{rest} = { success => 1 };
     }
-    
 }
-    
+
 
 sub trial_controls : Chained('trial') PathPart('controls') Args(0) {
     my $self = shift;
