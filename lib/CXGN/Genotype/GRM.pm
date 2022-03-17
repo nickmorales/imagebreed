@@ -493,13 +493,20 @@ sub _get_grm {
             my @accession_stock_ids_found = ();
             my @female_stock_ids_found = ();
             my @male_stock_ids_found = ();
+            my %accession_pedigree_hash;
             while (my ($accession_stock_id, $female_parent_stock_id, $male_parent_stock_id) = $h->fetchrow_array()) {
                 push @accession_stock_ids_found, $accession_stock_id;
                 push @female_stock_ids_found, $female_parent_stock_id;
                 push @male_stock_ids_found, $male_parent_stock_id;
+
+                $accession_pedigree_hash{$accession_stock_id} = {
+                    female_id => $female_parent_stock_id,
+                    male_id => $male_parent_stock_id
+                };
             }
 
             #stock_relatedness is stored in both a,b directions, so only need to query this combo one way
+            my %missing_all_parents_hash;
             foreach my $a (@all_individual_accessions_stock_ids) {
                 foreach my $b (@all_individual_accessions_stock_ids) {
                     $genomic_relatedness_dosage_h->execute($a, $b, $genomic_relatedness_dosage_cvterm_id, $protocol_id);
@@ -511,30 +518,41 @@ sub _get_grm {
                         $missing_stock_ids_relatedness{$a}->{$b}++;
                         $missing_stock_ids_all_relatedness{$a}++;
                         $missing_stock_ids_all_relatedness{$b}++;
+                        $missing_all_parents_hash{$accession_pedigree_hash{$a}->{female_id}}++;
+                        $missing_all_parents_hash{$accession_pedigree_hash{$b}->{female_id}}++;
+                        $missing_all_parents_hash{$accession_pedigree_hash{$a}->{male_id}}++;
+                        $missing_all_parents_hash{$accession_pedigree_hash{$b}->{male_id}}++;
                     }
                 }
             }
 
-            my @missing_accession_ids = sort keys %missing_stock_ids_all_relatedness;
+            my @all_missing_parents_ids = sort keys %missing_all_parents_hash;
             my $genotypes_search = CXGN::Genotype::Search->new(
                 bcs_schema => $schema,
                 people_schema=> $people_schema,
-                accession_list => \@missing_accession_ids,
+                accession_list => \@all_missing_parents_ids,
                 protocol_id_list => [$protocol_id],
             );
             my ($geno_info, $seen_protocol_hash) = $genotypes_search->check_which_have_genotypes();
             # print STDERR Dumper $geno_info;
 
-            my %missing_have_genotypes_accession_ids;
+            my %missing_parents_have_genotypes_accession_ids;
             foreach (@$geno_info) {
                 my $accession_id = $_->{germplasmDbId};
-                $missing_have_genotypes_accession_ids{$accession_id}++;
+                $missing_parents_have_genotypes_accession_ids{$accession_id}++;
             }
 
+            my @missing_accession_ids = sort keys %missing_stock_ids_all_relatedness;
             my %missing_no_genotypes_accession_ids;
+            my %missing_have_genotypes_accession_ids;
             foreach (@missing_accession_ids) {
-                if (!exists($missing_have_genotypes_accession_ids{$_})) {
+                my $female_id = $accession_pedigree_hash{$_}->{female_id};
+                my $male_id = $accession_pedigree_hash{$_}->{male_id};
+                if (!exists($missing_parents_have_genotypes_accession_ids{$female_id}) && !exists($missing_parents_have_genotypes_accession_ids{$male_id})) {
                     $missing_no_genotypes_accession_ids{$_}++;
+                }
+                else {
+                    $missing_have_genotypes_accession_ids{$_}++;
                 }
             }
 
