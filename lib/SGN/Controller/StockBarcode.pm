@@ -31,7 +31,7 @@ BEGIN { extends "Catalyst::Controller"; }
 #     my @found;
 #     my @labels;
 #
-#     my $schema = $c->dbic_schema('Bio::Chado::Schema');
+#     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
 #
 #     foreach my $name (@names) {
 #
@@ -98,7 +98,7 @@ sub download_pdf_labels :Path('/barcode/stock/download/pdf') :Args(0) {
     my $cass_print_format = $c->req->param("select_print_format");
     my $label_text_4;
     my $type_id;
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $plot_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot', 'stock_type' )->cvterm_id();
     my $plot_number_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot number', 'stock_property' )->cvterm_id();
     my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'accession', 'stock_type' )->cvterm_id();
@@ -1004,7 +1004,7 @@ sub download_qrcode : Path('/barcode/stock/download/plot_QRcode') : Args(0) {
   my $left_margin_mm = 70;
   my $bottom_margin_mm = 12;
   my $right_margin_mm = 20;
-  my $schema = $c->dbic_schema('Bio::Chado::Schema');
+  my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
   my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'accession', 'stock_type' )->cvterm_id();
   my $plot_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot', 'stock_type' )->cvterm_id();
   # convert mm into pixels
@@ -1197,7 +1197,7 @@ sub download_trial_qrcode : Path('/barcode/trial/download/trial_QRcode') : Args(
   my $bottom_margin_mm = 12;
   my $right_margin_mm = 10;
   my $barcode_type = "trial";
-  my $schema = $c->dbic_schema('Bio::Chado::Schema');
+  my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
 
  # convert mm into pixels
   #

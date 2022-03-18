@@ -7,7 +7,7 @@ CXGN::Trial::TrialDesignStore - Module to validate and store a trial's design (f
 =head1 USAGE
 
  my $design_store = CXGN::Trial::TrialDesignStore->new({
-    bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
+    bcs_schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
     trial_id => $trial_id,
     trial_name => $trial_name,
     design_type => 'CRD',

@@ -45,7 +45,7 @@ __PACKAGE__->config(
 sub get_variant_reference_genomes : Path('/ajax/markers/genotyped/reference_genomes') :Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     # Get the reference genomes
     my $msearch = CXGN::Marker::SearchMatView->new(bcs_schema => $schema);
@@ -67,7 +67,7 @@ sub get_variant_reference_genomes : Path('/ajax/markers/genotyped/reference_geno
 sub get_variant_chromosomes : Path('/ajax/markers/genotyped/chromosomes') : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     # Get the chromosomes
     my $msearch = CXGN::Marker::SearchMatView->new(bcs_schema => $schema);
@@ -91,7 +91,7 @@ sub get_variant_chromosomes : Path('/ajax/markers/genotyped/chromosomes') : Args
 sub get_variant_protocols : Path('/ajax/markers/genotyped/protocols') : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     # Get the protocols
     my $msearch = CXGN::Marker::SearchMatView->new(bcs_schema => $schema);
@@ -143,7 +143,7 @@ sub query_variants : Path('/ajax/markers/genotyped/query') : ActionClass('REST')
 sub query_variants_GET : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $name = $c->req->param('name');
     my $name_match = $c->req->param('name_match');
@@ -210,7 +210,7 @@ sub get_related_variants : Path('/ajax/markers/genotyped/related_variants') : Ac
 sub get_related_variants_GET : Args(0) {
     my ($self, $c) = @_;
     my $variant_name = $c->req->param('variant_name');
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $msearch = CXGN::Marker::SearchMatView->new(bcs_schema => $schema);
     my $related_variants = $msearch->related_variants($variant_name);
@@ -236,7 +236,7 @@ sub get_related_mapped_markers : Path('/ajax/markers/genotyped/related_mapped_ma
 sub get_related_mapped_markers_GET : Args(0) {
     my ($self, $c) = @_;
     my $variant_name = $c->req->param('variant_name');
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $msearch = CXGN::Marker::SearchMatView->new(bcs_schema => $schema);
     my $related_mapped_markers = $msearch->related_mapped_markers($variant_name);
@@ -260,7 +260,7 @@ sub get_markerprops : Path('/ajax/markers/genotyped/props') : ActionClass('REST'
 sub get_markerprops_GET {
     my ($self, $c) = @_;
     my @marker_names = split(/, ?/, $c->req->param("marker_names"));
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $dbh = $schema->storage->dbh();
 
     my @row;

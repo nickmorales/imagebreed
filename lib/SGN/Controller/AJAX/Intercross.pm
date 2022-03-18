@@ -207,7 +207,7 @@ sub create_intercross_wishlist : Path('/ajax/intercross/create_intercross_wishli
 
 sub create_intercross_wishlist_POST : Args(0) {
     my ($self, $c) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $wishlist_data = decode_json $c->req->param('wishlist_data');
     my $crossing_experiment_id = $c->req->param('crossing_experiment_id');
     my @wishlist_array = @$wishlist_data;

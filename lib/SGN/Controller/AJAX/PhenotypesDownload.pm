@@ -71,7 +71,7 @@ sub create_phenotype_spreadsheet_POST : Args(0) {
     #print STDERR Dumper $predefined_columns;
 
     foreach (@trial_ids){
-        my $trial = CXGN::Trial->new( { bcs_schema => $c->dbic_schema("Bio::Chado::Schema"), trial_id => $_ });
+        my $trial = CXGN::Trial->new( { bcs_schema => $schema, trial_id => $_ });
         if ($data_level eq 'plants') {
             if (!$trial->has_plant_entries()) {
                 $c->stash->{rest} = { error => "The requested trial (".$trial->get_name().") does not have plant entries. Please create the plant entries first." };

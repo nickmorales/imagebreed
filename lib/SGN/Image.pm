@@ -325,7 +325,7 @@ sub upload_fieldbook_zipfile {
     my $user_id = shift;
     my $c = $self->config();
     my $error_status;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $dbh = $schema->storage->dbh;
     my $archived_zip = CXGN::ZipFile->new(archived_zipfile_path=>$image_zip);
@@ -374,7 +374,7 @@ sub upload_phenotypes_associated_images_zipfile {
     my $image_type_name = shift;
     print STDERR "Doing upload_phenotypes_associated_images_zipfile\n";
     my $c = $self->config();
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $dbh = $schema->storage->dbh;
     my $archived_zip = CXGN::ZipFile->new(archived_zipfile_path=>$image_zip);
@@ -451,7 +451,7 @@ sub upload_drone_imagery_zipfile {
     my $user_id = shift;
     my $project_id = shift;
     my $c = $self->config();
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $dbh = $schema->storage->dbh;
 

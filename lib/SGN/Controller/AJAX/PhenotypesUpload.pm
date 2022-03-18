@@ -43,7 +43,7 @@ __PACKAGE__->config(
 sub upload_phenotype_verify :  Path('/ajax/phenotype/upload_verify') : ActionClass('REST') { }
 sub upload_phenotype_verify_POST : Args(1) {
     my ($self, $c, $file_type) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
 
@@ -94,7 +94,7 @@ sub upload_phenotype_verify_POST : Args(1) {
 sub upload_phenotype_store :  Path('/ajax/phenotype/upload_store') : ActionClass('REST') { }
 sub upload_phenotype_store_POST : Args(1) {
     my ($self, $c, $file_type) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
 
@@ -347,7 +347,7 @@ sub update_plot_phenotype_POST : Args(0) {
   my $time = DateTime->now();
   my $timestamp = $time->ymd()."_".$time->hms();
   my $dbh = $c->dbc->dbh();
-  my $schema = $c->dbic_schema("Bio::Chado::Schema");
+  my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
   my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
   my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
   my (@plots, @traits, %data, $trait);
@@ -428,7 +428,7 @@ sub retrieve_plot_phenotype_POST : Args(0) {
   my $self = shift;
   my $c = shift;
   my $dbh = $c->dbc->dbh();
-  my $schema = $c->dbic_schema("Bio::Chado::Schema");
+  my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
   my $plot_name = $c->req->param("plot_name");
   my $trait_id = $c->req->param("trait");
   my $trait_list_option = $c->req->param("trait_list_option");
@@ -474,7 +474,7 @@ sub view_all_uploads :Path('/ajax/phenotype/view_uploads') Args(0) {
     my $self = shift;
     my $c = shift;
 
-    my $file_list = CXGN::Project->get_all_phenotype_metadata($c->dbic_schema("Bio::Chado::Schema"), 100);
+    my $file_list = CXGN::Project->get_all_phenotype_metadata($c->dbic_schema("Bio::Chado::Schema", "sgn_chado"), 100);
     $c->stash->{rest} = $file_list;
 }
 

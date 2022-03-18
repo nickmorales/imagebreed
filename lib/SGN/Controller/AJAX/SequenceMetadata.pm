@@ -36,7 +36,7 @@ __PACKAGE__->config(
 sub get_features : Path('/ajax/sequence_metadata/features') :Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $dbh = $schema->storage->dbh();
 
     # Get features used by sequence metadata
@@ -83,7 +83,7 @@ sub get_features : Path('/ajax/sequence_metadata/features') :Args(0) {
 sub get_types : Path('/ajax/sequence_metadata/types') :Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $dbh = $schema->storage->dbh();
 
     # Get types used by sequence metadata
@@ -124,7 +124,7 @@ WHERE cv_id = (SELECT cv_id FROM public.cv WHERE name = 'sequence_metadata_types
 sub get_protocols : Path('/ajax/sequence_metadata/protocols') :Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $dbh = $schema->storage->dbh();
 
     # Get protocols used by sequence metadata
@@ -184,7 +184,7 @@ sub sequence_metadata_upload_verify_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     my @params = $c->req->params();
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     # Check Logged In Status
     if (!$c->user){
@@ -337,7 +337,7 @@ sub sequence_metadata_store_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     my @params = $c->req->params();
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $sgn_schema = $c->dbic_schema("SGN::Schema");
     my $dbh = $schema->storage->dbh();
 
@@ -547,7 +547,7 @@ sub sequence_metadata_query_GET : Args(0) {
     my $format = $c->req->param('format');
     my $prepend_chr_to_feature_name = $c->req->param('prepend_chr_to_feature_name');
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $dbh = $schema->storage->dbh();
 
 

@@ -33,7 +33,7 @@ sub get_family_parents :Path('/ajax/family/parents') :Args(1) {
     my $self = shift;
     my $c = shift;
     my $family_id = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $family = CXGN::FamilyName->new({schema=>$schema, family_stock_id=>$family_id});
 
@@ -53,7 +53,7 @@ sub get_family_members :Path('/ajax/family/members') :Args(1) {
     my $self = shift;
     my $c = shift;
     my $family_id = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $family = CXGN::FamilyName->new({schema=>$schema, family_stock_id=>$family_id});
 
@@ -81,7 +81,7 @@ sub get_all_progenies :Path('/ajax/family/all_progenies') :Args(1) {
     my $self = shift;
     my $c = shift;
     my $family_id = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $family = CXGN::FamilyName->new({schema=>$schema, family_stock_id=>$family_id});
 

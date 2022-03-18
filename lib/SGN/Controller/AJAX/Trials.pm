@@ -27,7 +27,7 @@ sub get_trials : Path('/ajax/breeders/get_trials') Args(0) {
     my $c = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_trials($c, 0, 0, 0);
 
-    my $p = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") } );
+    my $p = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado") } );
 
     my $projects = $p->get_breeding_programs($user_id);
 
@@ -44,7 +44,7 @@ sub get_trials_with_folders : Path('/ajax/breeders/get_trials_with_folders') Arg
     my $self = shift;
     my $c = shift;
     my $tree_type = $c->req->param('type') || 'trial'; #can be 'trial' or 'genotyping_trial', 'cross'
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my ($user_id, $user_name, $user_role) = _check_user_login_trials($c, 0, 0, 0);
 
     my $dir = catdir($c->config->{static_content_path}, "folder");
@@ -63,7 +63,7 @@ sub get_trials_with_folders_cached : Path('/ajax/breeders/get_trials_with_folder
     my $self = shift;
     my $c = shift;
     my $tree_type = $c->req->param('type') || 'trial'; #can be 'trial' or 'genotyping_trial', 'cross'
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my ($user_id, $user_name, $user_role) = _check_user_login_trials($c, 0, 0, 0);
 
     my $dir = catdir($c->config->{static_content_path}, "folder");
@@ -119,7 +119,7 @@ sub trial_autocomplete : Local : ActionClass('REST') { }
 
 sub trial_autocomplete_GET :Args(0) {
     my ($self, $c) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my ($user_id, $user_name, $user_role) = _check_user_login_trials($c, 0, 0, 0);
 
     my $term = $c->req->param('term');
@@ -149,7 +149,7 @@ sub trial_lookup : Path('/ajax/breeders/trial_lookup') Args(0) {
     my $self = shift;
     my $c = shift;
     my $trial_name = $c->req->param('name');
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my ($user_id, $user_name, $user_role) = _check_user_login_trials($c, 0, 0, 0);
 
     if ( !$trial_name || $trial_name eq '' ) {

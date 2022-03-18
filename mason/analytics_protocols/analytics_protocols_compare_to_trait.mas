@@ -273,6 +273,10 @@ jQuery(document).ready(function() {
                 console.log(response);
                 jQuery("#working_modal").modal("hide");
 
+                if (response.error) {
+                    alert(response.error);
+                }
+
                 var result_blups_all = response.result_blups_all;
 
                 var html = '<p>Genotypic Effects For Selected Trait: <a href="'+response.germplasm_trait_gen_file+'" target="_blank">Download</a></p>';

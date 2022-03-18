@@ -116,7 +116,7 @@ sub seedlot_base : Chained('/') PathPart('ajax/breeders/seedlot') CaptureArgs(1)
     my $c = shift;
     my $seedlot_id = shift;
 
-    $c->stash->{schema} = $c->dbic_schema("Bio::Chado::Schema");
+    $c->stash->{schema} = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     $c->stash->{phenome_schema} = $c->dbic_schema("CXGN::Phenome::Schema");
     $c->stash->{seedlot_id} = $seedlot_id;
     $c->stash->{seedlot} = CXGN::Stock::Seedlot->new(
@@ -249,7 +249,7 @@ sub seedlot_verify_delete_by_list :Path('/ajax/seedlots/verify_delete_by_list') 
 
     print STDERR "DELETE VERIFY USING LIST!\n";
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($ok, $errors) = CXGN::Stock::Seedlot->delete_verify_using_list($schema, $phenome_schema, $list_id);
 
@@ -263,7 +263,7 @@ sub seedlot_confirm_delete_by_list :Path('/ajax/seedlots/confirm_delete_by_list'
     my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'curator', 0, 0);
     my $list_id = $c->req->param("list_id");
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($total_count, $delete_count, $errors) = CXGN::Stock::Seedlot->delete_using_list($schema, $phenome_schema, $list_id);
 
@@ -282,7 +282,7 @@ sub create_seedlot :Path('/ajax/breeders/seedlot-create/') :Args(0) {
     my $c = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'submitter', 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $seedlot_uniquename = $c->req->param("seedlot_name");
     my $location_code = $c->req->param("seedlot_location");
@@ -433,7 +433,7 @@ sub upload_seedlots_POST : Args(0) {
     my $c = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'submitter', 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $breeding_program_id = $c->req->param("upload_seedlot_breeding_program_id");
     my $location = $c->req->param("upload_seedlot_location");
@@ -655,7 +655,7 @@ sub upload_seedlots_inventory_POST : Args(0) {
     my $c = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'submitter', 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $upload = $c->req->upload('seedlot_uploaded_inventory_file');
     my $subdirectory = "seedlot_upload";
@@ -767,7 +767,7 @@ sub upload_seedlots_inventory_POST : Args(0) {
 sub seedlot_transaction_base :Chained('seedlot_base') PathPart('transaction') CaptureArgs(1) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $transaction_id = shift;
     my $t_obj = CXGN::Stock::Seedlot::Transaction->new(schema=>$schema, transaction_id=>$transaction_id);
     $c->stash->{transaction_id} = $transaction_id;
@@ -824,7 +824,7 @@ sub edit_seedlot_transaction :Chained('seedlot_transaction_base') PathPart('edit
 sub list_seedlot_transactions :Chained('seedlot_base') :PathPart('transactions') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $transactions = $c->stash->{seedlot}->transactions();
     my $type_id = SGN::Model::Cvterm->get_cvterm_row($schema, "seedlot", "stock_type")->cvterm_id();
     my $cross_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, "cross", "stock_type")->cvterm_id();
@@ -881,7 +881,7 @@ sub list_seedlot_transactions :Chained('seedlot_base') :PathPart('transactions')
 sub add_seedlot_transaction :Chained('seedlot_base') :PathPart('transaction/add') :Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($user_id, $user_name, $user_role) = _check_user_login_seedlot($c, 'submitter', 0, 0);
 

@@ -45,7 +45,7 @@ sub catalog_item_details : Path('/catalog/item_details') Args(1) {
     my $item_id = shift;
 #    print STDERR "CATALOG STOCK ID =".Dumper($item_id)."\n";
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-    my $stock_catalog_type_id = SGN::Model::Cvterm->get_cvterm_row($c->dbic_schema("Bio::Chado::Schema"), 'stock_catalog_json', 'stock_property')->cvterm_id();
+    my $stock_catalog_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'stock_catalog_json', 'stock_property')->cvterm_id();
 
     my $stock_catalog_info = $schema->resultset("Stock::Stockprop")->find({stock_id => $item_id, type_id => $stock_catalog_type_id});
 

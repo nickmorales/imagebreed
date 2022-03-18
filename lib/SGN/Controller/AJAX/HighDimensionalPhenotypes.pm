@@ -36,7 +36,7 @@ sub high_dimensional_phenotypes_nirs_upload_verify_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     print STDERR Dumper $c->req->params();
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($user_id, $user_name, $user_type) = _check_user_login_high_dim_pheno($c, 'submitter', 0, 0);
@@ -250,7 +250,7 @@ sub high_dimensional_phenotypes_nirs_upload_store : Path('/ajax/highdimensionalp
 sub high_dimensional_phenotypes_nirs_upload_store_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($user_id, $user_name, $user_type) = _check_user_login_high_dim_pheno($c, 'submitter', 0, 0);
@@ -540,7 +540,7 @@ sub high_dimensional_phenotypes_transcriptomics_upload_verify_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     print STDERR Dumper $c->req->params();
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($user_id, $user_name, $user_type) = _check_user_login_high_dim_pheno($c, 'submitter', 0, 0);
@@ -716,7 +716,7 @@ sub high_dimensional_phenotypes_transcriptomics_upload_store : Path('/ajax/highd
 sub high_dimensional_phenotypes_transcriptomics_upload_store_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($user_id, $user_name, $user_type) = _check_user_login_high_dim_pheno($c, 'submitter', 0, 0);
@@ -934,7 +934,7 @@ sub high_dimensional_phenotypes_metabolomics_upload_verify_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     print STDERR Dumper $c->req->params();
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($user_id, $user_name, $user_type) = _check_user_login_high_dim_pheno($c, 'submitter', 0, 0);
@@ -1122,7 +1122,7 @@ sub high_dimensional_phenotypes_metabolomics_upload_store : Path('/ajax/highdime
 sub high_dimensional_phenotypes_metabolomics_upload_store_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($user_id, $user_name, $user_type) = _check_user_login_high_dim_pheno($c, 'submitter', 0, 0);
@@ -1365,7 +1365,7 @@ sub high_dimensional_phenotypes_download_file : Path('/ajax/highdimensionalpheno
 sub high_dimensional_phenotypes_download_file_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
@@ -1528,7 +1528,7 @@ sub high_dimensional_phenotypes_download_relationship_matrix_file : Path('/ajax/
 sub high_dimensional_phenotypes_download_relationship_matrix_file_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");

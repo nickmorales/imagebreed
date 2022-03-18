@@ -242,6 +242,10 @@ sleep(3);
 print STDERR "Done.\n";
 
 if (!$nocleanup) {
+    print STDERR "# Deleting test cache...\n";
+    my $cache_path = $config->{cache_file_path};
+    system("rm -rf $cache_path");
+
     print STDERR "# Deleting test archive...\n";
     my $archive_path = $config->{archive_path};
     system("rm -rf $archive_path");
@@ -255,17 +259,17 @@ if (!$nocleanup) {
     print STDERR "Done.\n";
 
     if ($noserver) {
-	print STDERR "# [ --noserver option: No logfile to remove]\n";
+        print STDERR "# [ --noserver option: No logfile to remove]\n";
     }
     else {
-	# print STDERR "# Delete server logfile... ";
-	# close($logfile);
-	# unlink $logfile;
-	# print STDERR "Done.\n";
+        # print STDERR "# Delete server logfile... ";
+        # close($logfile);
+        # unlink $logfile;
+        # print STDERR "Done.\n";
 
-	print STDERR "# Delete fixture conf file... ";
-	unlink "sgn_fixture.conf";
-	print STDERR "Done.\n";
+        print STDERR "# Delete fixture conf file... ";
+        unlink "sgn_fixture.conf";
+        print STDERR "Done.\n";
     }
 }
 else {

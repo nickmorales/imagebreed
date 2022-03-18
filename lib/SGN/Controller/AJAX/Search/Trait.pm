@@ -19,7 +19,7 @@ __PACKAGE__->config(
 sub search : Path('/ajax/search/traits') Args(0) {
     my $self = shift;
     my $c    = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $params = $c->req->params() || {};
     #print STDERR Dumper $params;
 

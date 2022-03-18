@@ -107,7 +107,7 @@ sub add_event_POST {
     if ($params->{event_description} eq '') {$params->{event_description} = 'N/A';}
     if ($params->{event_url} eq '') {$params->{event_url} = '#';} else {$params->{event_url} = 'http://www.'.$params->{event_url};}
 
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $rs = $schema->resultset('Project::Projectprop');
     my $count = $rs->search({ project_id=>$params->{event_project_select}, 'me.type_id'=>$params->{event_type_select} })->count;
 
@@ -140,7 +140,7 @@ sub delete_event_POST {
     }
 
     my $projectprop_id = $c->req->param("event_projectprop_id");
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     if (my $delete = $schema->resultset('Project::Projectprop')->find({projectprop_id=>$projectprop_id})->delete) {
 	   $c->stash->{rest} = {status => 1,};
     } else {
@@ -198,7 +198,7 @@ sub drag_or_resize_event_POST {
     my $new_end_time = $calendar_funcs->calendar_end_display($formatted_end, $params->{view}, $params->{allday} );
     my $new_end_display = $calendar_funcs->format_display_date($formatted_end);
 
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     if (my $update_rs = $schema->resultset('Project::Projectprop')->find({projectprop_id=>$params->{projectprop_id} }, columns=>['value'])->update({value=>[$new_start, $new_end, $params->{description}, $params->{url}] })) {
 
 	   $c->stash->{rest} = {success => 1, start=>$new_start, start_drag=>$new_start, start_display=>$new_start_display, end=>$new_end_time, end_drag=>$new_end, end_display=>$new_end_display};
@@ -242,7 +242,7 @@ sub edit_event_POST {
     if ($params->{edit_event_description} eq '') {$params->{edit_event_description} = 'N/A';}
     if ($params->{edit_event_url} eq '') {$params->{edit_event_url} = '#';}
 
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     if (my $update_rs = $schema->resultset('Project::Projectprop')->find({projectprop_id=>$params->{edit_event_projectprop_id} }, columns=>['project_id', 'type_id', 'value'])->update({project_id=>$params->{edit_event_project_select}, type_id=>$params->{edit_event_type_select}, value=>[$format_start, $format_end, $params->{edit_event_description}, $params->{edit_event_url}] })) {
 	   $c->stash->{rest} = {status => 1,};
     } else {
@@ -279,7 +279,7 @@ sub day_click_personal_GET {
 
     my @calendar_projectprop_names = (['project_planting_date', 'project_property'], ['project_harvest_date', 'project_property'], ['Fertilizer Event', 'calendar'], ['Meeting Event', 'calendar'], ['Planning Event', 'calendar'], ['Presentation Event', 'calendar'], ['Phenotyping Event', 'calendar'], ['Genotyping Event', 'calendar'] );
 
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my @projectprop_types;
     foreach (@calendar_projectprop_names) {
         my $term = SGN::Model::Cvterm->get_cvterm_row($schema, $_->[0], $_->[1] );

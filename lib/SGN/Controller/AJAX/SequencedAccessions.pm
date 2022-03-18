@@ -22,11 +22,11 @@ sub get_all_sequenced_stocks :Path('/ajax/genomes/sequenced_stocks') {
     my $c = shift;
 
     my $user_id = $c->user() ? $c->user->get_object()->get_sp_person_id() : undef;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $sequenced_stocks = CXGN::Stock::SequencingInfo->get_props($schema);
 
     print STDERR "SEQeunced STOCKS: ".Dumper($sequenced_stocks);
-    
+
     my @info = $self->format_sequencing_infos($schema, $user_id, $sequenced_stocks);
 
     $c->stash->{rest} = { data => \@info };
@@ -39,8 +39,8 @@ sub get_all_sequenced_stocks :Path('/ajax/genomes/sequenced_stocks') {
 
      my $user_id = $c->user() ? $c->user->get_object()->get_sp_person_id() : undef;
      print STDERR "Retrieving sequencing info for stock $stock_id...\n";
-     
-     my $schema = $c->dbic_schema("Bio::Chado::Schema");
+
+     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
      my $sequenced_stocks = CXGN::Stock::SequencingInfo->get_props($schema, $stock_id);
 
      my @info = $self->format_sequencing_infos($schema, $user_id, $sequenced_stocks);
@@ -63,46 +63,46 @@ sub format_sequencing_infos {
 	my $row = $schema->resultset("Stock::Stock")->find( { stock_id => $info->{parent_id} });
 
 	$info->{uniquename} = "UNKNOWN";
-	if ($row) { 
+	if ($row) {
 	    $info->{uniquename} = $row->uniquename();
 	}
-	
+
 	print STDERR "INFO = ".Dumper($info);
 
 	my $website = "";
 	if ($info->{website}) {
 	    $website = qq | <a href="https://$info->{website}">$info->{website}</a> |;
 	}
-	
+
 	my $blast_link = "BLAST";
 	if ($info->{blast_link}) {
 	    $blast_link = qq | <a href="$info->{blast_link}">BLAST</a> |;
 	}
-	
+
 	my $jbrowse_link = "Jbrowse";
 	if ($info->{jbrowse_link}) {
 	    $jbrowse_link = qq | <a href="$info->{jbrowse_link}">JBrowse</a> |;
 	}
-	
+
 	my $ftp_link = "FTP";
 	if ($info->{ftp_link}) {
 	    $ftp_link = qq | <a href="$info->{ftp_link}">FTP</a> |;
 	}
-	
+
 	my $ncbi_link = "NCBI";
 	if ($info->{ncbi_link}) {
 	    $ncbi_link = qq | <a href="$info->{ncbi_link}">NCBI</a> |;
 	}
-	
+
 	my $delete_link_js = "window.jsMod['sequenced_accessions'].delete_sequencing_info(".$info->{prop_id}.");";
-	
+
 	my $edit_link_js = "window.jsMod['sequenced_accessions'].edit_sequencing_info(".$info->{prop_id}.");";
 	my $edit_delete_html = "Edit | Delete";
-	
+
 	if ($user_id && ($info->{sp_person_id} == $user_id)) {
 	    $edit_delete_html = '<a href="javascript:'.$edit_link_js.'">Edit</a> | <a href="javascript:'.$delete_link_js.'">Delete</a>';
 	}
-		
+
 	push @data, [
 	    "<a href=\"/stock/$info->{parent_id}/view\">".$info->{uniquename}."</a>",
 	    $info->{sequencing_year},
@@ -112,7 +112,7 @@ sub format_sequencing_infos {
 	    $edit_delete_html,
 	    ];
     }
-    
+
     #print STDERR "Sequencing Data for this stock: ".Dumper(\@data);
     return @data;
 }
@@ -122,7 +122,7 @@ sub get_sequencing_info :Path('/ajax/genomes/sequencing_info') Args(1) {
     my $c = shift;
     my $stockprop_id = shift;
 
-    my $si = CXGN::Stock::SequencingInfo->new( { bcs_schema => $c->dbic_schema("Bio::Chado::Schema"), prop_id => $stockprop_id });
+    my $si = CXGN::Stock::SequencingInfo->new( { bcs_schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"), prop_id => $stockprop_id });
 
     my $hashref = $si->to_hashref();
 
@@ -154,7 +154,7 @@ sub store_sequencing_info :Path('/ajax/genomes/store_sequencing_info') Args(0) {
     if (!$params->{stockprop_id}) { $params->{stockprop_id} = undef; } # force it to undef if it is a ""
 
     print STDERR "Create sequencing info object...\n";
-    my $si = CXGN::Stock::SequencingInfo->new( { bcs_schema => $c->dbic_schema("Bio::Chado::Schema") });
+    my $si = CXGN::Stock::SequencingInfo->new( { bcs_schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado") });
     print STDERR "Done\n";
     my $timestamp = DateTime->now();
     $params->{sp_person_id} = $c->user()->get_object()->get_sp_person_id();
@@ -164,18 +164,18 @@ sub store_sequencing_info :Path('/ajax/genomes/store_sequencing_info') Args(0) {
     print STDERR "Adjusted params = ".Dumper($params);
 
     $si->from_hash($params);
-    
+
     eval {
 	$si->parent_id($params->{stock_id});
 	$si->prop_id($params->{stockprop_id});
 	$si->store();
     };
-    
+
     if ($@) {
 	$c->stash->{rest} = { error => "Error. The operation could not be completed. ($@)" };
 	return;
     }
-    
+
     $c->stash->{rest} = { success => 1};
 }
 
@@ -196,7 +196,7 @@ tion." };
 
     my $si = CXGN::Stock::SequencingInfo->new(
 	{
-	    bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
+	    bcs_schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
 	    prop_id => $stockprop_id,
 	});
 

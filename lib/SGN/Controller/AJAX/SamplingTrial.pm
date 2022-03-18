@@ -27,7 +27,7 @@ sub generate_sampling_trial_POST : Args(0) {
         $c->detach();
     }
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $sampling_data = decode_json $c->req->param("sampling_data");
     print STDERR Dumper $sampling_data;
 
@@ -277,7 +277,7 @@ sub store_sampling_trial_POST : Args(0) {
         $c->detach();
     }
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $sampling_data = decode_json $c->req->param("sampling_data");
     #print STDERR Dumper $plate_info;
     if ( !$sampling_data->{design} || !$sampling_data->{description} || !$sampling_data->{location} || !$sampling_data->{year} || !$sampling_data->{name} || !$sampling_data->{breeding_program} || !$sampling_data->{sampling_facility} || !$sampling_data->{sample_type} ) {

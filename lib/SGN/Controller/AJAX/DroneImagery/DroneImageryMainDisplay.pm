@@ -39,7 +39,7 @@ sub raw_drone_imagery_summary_top : Path('/api/drone_imagery/raw_drone_imagery_t
 sub raw_drone_imagery_summary_top_GET : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_main_display($c, 0, 0, 0);
 
@@ -339,7 +339,7 @@ sub raw_drone_imagery_drone_run_band_summary_GET : Args(0) {
     my $self = shift;
     my $c = shift;
     my $drone_run_band_project_id = $c->req->param('drone_run_band_project_id');
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_main_display($c, 0, 0, 0);
 

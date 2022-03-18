@@ -484,7 +484,7 @@ sub save_experimental_design : Path('/ajax/trial/save_experimental_design') : Ac
 
 sub save_experimental_design_POST : Args(0) {
     my ($self, $c) = @_;
-    my $chado_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $dbh = $c->dbc->dbh;
@@ -519,7 +519,6 @@ sub save_experimental_design_POST : Args(0) {
     my $add_project_trial_genotype_trial_select = [$add_project_trial_genotype_trial];
     my $add_project_trial_crossing_trial_select = [$add_project_trial_crossing_trial];
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
     my $breeding_program_id = $schema->resultset("Project::Project")->find({name=>$breeding_program})->project_id();
     my $folder;
     my $new_trial_id;
@@ -584,7 +583,7 @@ sub save_experimental_design_POST : Args(0) {
         my $trial_location_design = $json->decode($design->[$design_index]);
 
         my %trial_info_hash = (
-            chado_schema => $chado_schema,
+            chado_schema => $schema,
             dbh => $dbh,
             design => $trial_location_design,
             private_company_id => $private_company_id,
@@ -633,7 +632,7 @@ sub save_experimental_design_POST : Args(0) {
         if ($save->{'error'}) {
             if (scalar(@locations) > 1){
                 my $folder = CXGN::Trial::Folder->new({
-                    bcs_schema => $chado_schema,
+                    bcs_schema => $schema,
                     folder_id => $folder_id,
                 });
                 my $delete_folder = $folder->delete_folder();
@@ -647,7 +646,7 @@ sub save_experimental_design_POST : Args(0) {
 
             if ($folder_id) {
                 my $folder1 = CXGN::Trial::Folder->new({
-                    bcs_schema => $chado_schema,
+                    bcs_schema => $schema,
                     folder_id => $save->{'trial_id'},
                 });
                 $folder1->associate_parent($folder_id);

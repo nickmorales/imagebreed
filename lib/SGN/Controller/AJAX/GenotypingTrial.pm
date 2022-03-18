@@ -29,7 +29,7 @@ sub generate_genotype_trial_POST : Args(0) {
     my $private_company_id = $plate_info->{private_company_id};
     my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', $private_company_id, 'submitter_access');
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     #print STDERR Dumper $plate_info;
 
     if ( !$plate_info->{elements} || !$plate_info->{genotyping_facility_submit} || !$plate_info->{project_name} || !$plate_info->{description} || !$plate_info->{location} || !$plate_info->{year} || !$plate_info->{name} || !$plate_info->{breeding_program} || !$plate_info->{genotyping_facility} || !$plate_info->{sample_type} || !$plate_info->{plate_format} ) {
@@ -248,7 +248,7 @@ sub store_genotype_trial_POST : Args(0) {
     my $private_company_id = $plate_info->{private_company_id};
     my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', $private_company_id, 'submitter_access');
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     #print STDERR Dumper $plate_info;
 
     if ( !$plate_info->{design} || !$plate_info->{genotyping_facility_submit} || !$plate_info->{project_name} || !$plate_info->{description} || !$plate_info->{location} || !$plate_info->{year} || !$plate_info->{name} || !$plate_info->{breeding_program} || !$plate_info->{genotyping_facility} || !$plate_info->{sample_type} || !$plate_info->{plate_format} ) {
@@ -480,7 +480,7 @@ sub create_plate_order_POST : Args(0) {
     my $c = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $plate_info = decode_json $c->req->param("order_info");
 
     my $plate_id = $plate_info->{plate_id};
@@ -521,7 +521,7 @@ sub store_plate_order_POST : Args(0) {
     my $c = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $order_info = decode_json $c->req->param("order");
 
     my $plate_id = $c->req->param("plate_id");

@@ -55,7 +55,7 @@ sub image_analysis_submit : Path('/ajax/image_analysis/submit') : ActionClass('R
 sub image_analysis_submit_POST : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $image_ids = decode_json $c->req->param('selected_image_ids');

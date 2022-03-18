@@ -836,7 +836,7 @@ sub manage_drone_imagery : Path("/breeders/drone_imagery") Args(0) {
         return;
     }
 
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     $c->stash->{template} = '/breeders_toolbox/manage_drone_imagery.mas';
 }
 

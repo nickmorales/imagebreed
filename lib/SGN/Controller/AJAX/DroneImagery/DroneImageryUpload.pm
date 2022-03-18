@@ -48,7 +48,7 @@ sub upload_drone_imagery_check_drone_name_GET : Args(0) {
     my $c = shift;
     $c->response->headers->header( "Access-Control-Allow-Origin" => '*' );
     my $drone_name = $c->req->param('drone_run_name');
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 0, 0, 0);
 
     my $project_rs = $schema->resultset("Project::Project")->search({name=>$drone_name});
@@ -69,7 +69,7 @@ sub upload_drone_imagery_POST : Args(0) {
     my $c = shift;
     $c->response->headers->header( "Access-Control-Allow-Origin" => '*' );
     $c->response->headers->header( "Access-Control-Allow-Methods" => "POST, GET, PUT, DELETE" );
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', 0, 0);
@@ -1374,7 +1374,7 @@ sub upload_drone_imagery_new_vehicle_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     $c->response->headers->header( "Access-Control-Allow-Origin" => '*' );
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $private_company_id = $c->req->param('private_company_id');
     my $vehicle_name = $c->req->param('vehicle_name');
     my $vehicle_desc = $c->req->param('vehicle_description');

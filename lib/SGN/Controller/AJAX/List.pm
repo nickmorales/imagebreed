@@ -452,7 +452,7 @@ sub add_cross_progeny : Path('/list/add_cross_progeny') Args(0) {
     my %response;
     $response{'count'} = 0;
     foreach (@$cross_id_list) {
-        my $cross = CXGN::Cross->new({ schema => $c->dbic_schema("Bio::Chado::Schema"), cross_stock_id=>$_});
+        my $cross = CXGN::Cross->new({ schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"), cross_stock_id=>$_});
         my ($maternal_parent, $paternal_parent, $progeny) = $cross->get_cross_relationships();
 
         my @accession_names;
@@ -626,7 +626,7 @@ sub validate : Path('/list/validate') Args(2) {
     my @flat_list = map { $_->[1] } @$list;
 
     my $lv = CXGN::List::Validate->new();
-    my $data = $lv->validate($c->dbic_schema("Bio::Chado::Schema"), $type, \@flat_list);
+    my $data = $lv->validate($c->dbic_schema("Bio::Chado::Schema", "sgn_chado"), $type, \@flat_list);
 
     $c->stash->{rest} = $data;
 }
@@ -655,7 +655,7 @@ sub temp_validate :Path('/list/validate/temp') Args(0) {
     my $items = $c->req->param("items") ? decode_json $c->req->param("items") : [];
 
     my $lv = CXGN::List::Validate->new();
-    my $data = $lv->validate($c->dbic_schema("Bio::Chado::Schema"), $type, $items);
+    my $data = $lv->validate($c->dbic_schema("Bio::Chado::Schema", "sgn_chado"), $type, $items);
 
     # Set missing
     my $m = $data->{missing};
@@ -681,7 +681,7 @@ sub fuzzysearch : Path('/list/fuzzysearch') Args(2) {
     my @flat_list = map { $_->[1] } @$list;
 
     my $f = CXGN::List::FuzzySearch->new();
-    my $data = $f->fuzzysearch($c->dbic_schema("Bio::Chado::Schema"), $list_type, \@flat_list);
+    my $data = $f->fuzzysearch($c->dbic_schema("Bio::Chado::Schema", "sgn_chado"), $list_type, \@flat_list);
 
     $c->stash->{rest} = $data;
 }
@@ -700,7 +700,7 @@ sub transform :Path('/list/transform/') Args(2) {
 
     my @list_items = map { $_->[1] } @$list_data;
 
-    my $result = $t->transform($c->dbic_schema("Bio::Chado::Schema"), $transform_name, \@list_items);
+    my $result = $t->transform($c->dbic_schema("Bio::Chado::Schema", "sgn_chado"), $transform_name, \@list_items);
 
     if (exists($result->{missing}) && (scalar(@{$result->{missing}}) > 0)) {
 	$c->stash->{rest} = { error => "This lists contains elements that cannot be converted. Not converting list.", };
@@ -718,7 +718,7 @@ sub temp_transform :Path('/list/transform/temp') Args(0) {
     my $items = $c->req->param("items") ? decode_json $c->req->param("items") : [];
 
     my $t = CXGN::List::Transform->new();
-    my $result = $t->transform($c->dbic_schema("Bio::Chado::Schema"), $type, $items);
+    my $result = $t->transform($c->dbic_schema("Bio::Chado::Schema", "sgn_chado"), $type, $items);
 
     if (exists($result->{missing}) && (scalar(@{$result->{missing}}) > 0)) {
        $result->{error}  =  "Warning. This temporary list contains elements that cannot be converted.";
@@ -978,7 +978,7 @@ sub desynonymize_list: Path('/list/desynonymize') Args(0) {
     	$c->stash->{rest} = { error => 'You must be logged in to use lists.', };
     	return;
     }
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $dbh = $schema->storage->dbh;
 
     my $list = CXGN::List->new( { dbh => $dbh, list_id => $list_id } );

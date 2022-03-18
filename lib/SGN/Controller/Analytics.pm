@@ -15,7 +15,7 @@ sub view_analytics_protocols :Path('/analytics_protocols') Args(0) {
     my $self = shift;
     my $c = shift;
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $user_id;
     if ($c->user()) {
         $user_id = $c->user->get_object()->get_sp_person_id();
@@ -31,7 +31,7 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
     my $self = shift;
     my $c = shift;
     my $analytics_protocol_id = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $user = $c->user();
 
     my $user_id;

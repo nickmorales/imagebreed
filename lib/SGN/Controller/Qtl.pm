@@ -23,50 +23,50 @@ use Bio::Chado::Schema;
 use CXGN::Phenome::Qtl;
 use CXGN::Phenome::Population;
 
-BEGIN { extends 'Catalyst::Controller'}  
+BEGIN { extends 'Catalyst::Controller'}
 
 sub view : Path('/qtl/view') Args(1) {
     my ($self, $c, $id) = @_;
     $c->res->redirect("/qtl/population/$id");
-  
+
 }
 
 
 sub population : Path('/qtl/population') Args(1) {
     my ( $self, $c, $id) = @_;
-    
+
     if ( $id )
     {
         $self->is_qtl_pop($c, $id);
-        if ( $c->stash->{is_qtl_pop} ) 
+        if ( $c->stash->{is_qtl_pop} )
         {
-       
-            my $pop =  CXGN::Phenome::Population->new($c->dbc->dbh, $id);       
+
+            my $pop =  CXGN::Phenome::Population->new($c->dbc->dbh, $id);
             my $phenotype_file = $pop->phenotype_file($c);
             my $genotype_file =  $pop->genotype_file($c);
 
-            my $userid = $c->user->get_object->get_sp_person_id if $c->user;          
-            $c->stash(template     => '/qtl/population/index.mas',                              
-                      pop          => $pop, 
-                      referer      => $c->req->path,             
+            my $userid = $c->user->get_object->get_sp_person_id if $c->user;
+            $c->stash(template     => '/qtl/population/index.mas',
+                      pop          => $pop,
+                      referer      => $c->req->path,
                       userid       => $userid,
                 );
             my $size = -s $phenotype_file;
-          
+
             $self->_link($c);
-            $self->_show_data($c);           
+            $self->_show_data($c);
             $self->_list_traits($c);
-            $self->genetic_map($c);                
-           
+            $self->genetic_map($c);
+
             $self->_get_trait_acronyms($c);
-                           
-            } 
-            else 
+
+            }
+            else
             {
                 $c->throw_404("$id is not a QTL population.");
             }
     }
-    else 
+    else
     {
             $c->throw_404("There is no QTL population for $id");
     }
@@ -75,113 +75,113 @@ sub population : Path('/qtl/population') Args(1) {
 
 sub download_phenotype : Path('/qtl/download/phenotype') Args(1) {
     my ($self, $c, $id) = @_;
-    
+
     $c->throw_404("<strong>$id</strong> is not a valid population id") if  $id =~ m/\D/;
-    
+
     $self->is_qtl_pop($c, $id);
-    if ($c->stash->{is_qtl_pop})   
+    if ($c->stash->{is_qtl_pop})
     {
         my $pop             = CXGN::Phenome::Population->new($c->dbc->dbh, $id);
         my $phenotype_file  = $pop->phenotype_file($c);
-    
+
         unless (!-e $phenotype_file || -s $phenotype_file <= 1)
-        {        
+        {
             my @pheno_data = map {   s/,/\t/g; [ $_ ]; } read_file($phenotype_file);
-            
+
             $c->res->content_type("text/plain");
-            $c->res->body(join "",  map{ $_->[0]} @pheno_data);        
+            $c->res->body(join "",  map{ $_->[0]} @pheno_data);
         }
     }
     else
     {
-        $c->throw_404("<strong>$id</strong> is not a QTL population id");   
-    }       
+        $c->throw_404("<strong>$id</strong> is not a QTL population id");
+    }
 }
 
 sub download_genotype : Path('/qtl/download/genotype') Args(1) {
     my ($self, $c, $id) = @_;
-    
+
     $c->throw_404("<strong>$id</strong> is not a valid population id") if  $id =~ m/\D/;
-   
+
     $self->is_qtl_pop($c, $id);
     if ($c->stash->{is_qtl_pop})
     {
-       
-        my $pop             = CXGN::Phenome::Population->new($c->dbc->dbh, $id);        
+
+        my $pop             = CXGN::Phenome::Population->new($c->dbc->dbh, $id);
         my $genotype_file   = $pop->genotype_file($c);
-       
+
         unless (!-e $genotype_file || -s $genotype_file <= 1)
         {
             my @geno_data = map { s/,/\t/g; [ $_ ]; } read_file($genotype_file);
-            
+
             $c->res->content_type("text/plain");
-            $c->res->body(join "",  map{ $_->[0]} @geno_data);   
+            $c->res->body(join "",  map{ $_->[0]} @geno_data);
         }
     }
     else
     {
-        $c->throw_404("<strong>$id</strong> is not a QTL population id");   
-    }       
+        $c->throw_404("<strong>$id</strong> is not a QTL population id");
+    }
 }
 
 sub download_correlation : Path('/qtl/download/correlation') Args(1) {
     my ($self, $c, $id) = @_;
-    
+
     $c->throw_404("<strong>$id</strong> is not a valid population id") if $id =~ m/\D/;
 
     $self->is_qtl_pop($c, $id);
     if ($c->stash->{is_qtl_pop})
     {
-    
+
         my $corr_file = catfile($c->path_to($c->config->{cluster_shared_tempdir}), 'correlation', 'cache',  "corre_coefficients_table_${id}");
-       
-        unless (!-e $corr_file || -s $corr_file <= 1) 
+
+        unless (!-e $corr_file || -s $corr_file <= 1)
         {
             my @corr_data;
             my $count=1;
 
             foreach ( read_file($corr_file) )
             {
-                if ($count==1) {  $_ = "Traits\t" . $_;}             
-                s/NA//g;               
+                if ($count==1) {  $_ = "Traits\t" . $_;}
+                s/NA//g;
                 push @corr_data, [ $_ ] ;
                 $count++;
-            }   
+            }
             $c->res->content_type("text/plain");
-            $c->res->body(join "",  map{ $_->[0] } @corr_data);   
-          
-        } 
-    }  
+            $c->res->body(join "",  map{ $_->[0] } @corr_data);
+
+        }
+    }
     else
     {
-        $c->throw_404("<strong>$id</strong> is not a QTL population id");   
-    }       
+        $c->throw_404("<strong>$id</strong> is not a QTL population id");
+    }
 }
 
 sub download_acronym : Path('/qtl/download/acronym') Args(1) {
     my ($self, $c, $id) = @_;
 
     $c->throw_404("<strong>$id</strong> is not a valid population id") if  $id =~ m/\D/;
-    
+
     $self->is_qtl_pop($c, $id);
     if ($c->stash->{is_qtl_pop})
     {
-        my $pop = CXGN::Phenome::Population->new($c->dbc->dbh, $id);    
+        my $pop = CXGN::Phenome::Population->new($c->dbc->dbh, $id);
         my $acronym = $pop->get_cvterm_acronyms;
-       
+
         $c->res->content_type("text/plain");
         $c->res->body(join "\n",  map{ $_->[1] . "\t" . $_->[0] } @$acronym);
-   
+
     }
     else
     {
-        $c->throw_404("<strong>$id</strong> is not a QTL population id");   
-    }       
+        $c->throw_404("<strong>$id</strong> is not a QTL population id");
+    }
 }
 
 
 sub _analyze_correlation  {
-    my ($self, $c)      = @_;    
+    my ($self, $c)      = @_;
     my $pop_id          = $c->stash->{pop}->get_population_id();
     my $pheno_file      = $c->stash->{pop}->phenotype_file($c);
     my $base_path       = $c->config->{basepath};
@@ -189,29 +189,29 @@ sub _analyze_correlation  {
     my $r_qtl_dir       = $c->config->{solqtl};
     my $corre_image_dir = catfile($base_path, $temp_image_dir, "correlation");
     my $corre_temp_dir  = catfile($r_qtl_dir, "cache");
-    
-    if (-s $pheno_file) 
+
+    if (-s $pheno_file)
     {
-        mkpath ([$corre_temp_dir, $corre_image_dir], 0, 0755);  
-    
+        mkpath ([$corre_temp_dir, $corre_image_dir], 0, 0755);
+
         my ($fh_hm, $heatmap_file)     = tempfile( "heatmap_${pop_id}-XXXXXX",
                                                   DIR      => $corre_temp_dir,
                                                   SUFFIX   => '.png',
                                                   UNLINK   => 0,
                                                 );
         $fh_hm->close;
-        
+
         print STDERR "\nheatmap tempfile: $heatmap_file\n";
-       
+
         my ($fh_ct, $corre_table_file) = tempfile( "corre_table_${pop_id}-XXXXXX",
                                                   DIR      => $corre_temp_dir,
                                                   SUFFIX   => '.txt',
                                                   UNLINK   => 0,
                                                 );
         $fh_ct->close;
-        
+
         print STDERR "\ncorrelation coefficients tempfile: $corre_table_file\n";
-        
+
         CXGN::Tools::Run->temp_base($corre_temp_dir);
         my ($fh_out, $filename);
         my ( $corre_commands_temp, $corre_output_temp ) =
@@ -230,13 +230,13 @@ sub _analyze_correlation  {
 
         $fh_out->close;
         print STDERR "\ncorrelation r output  tempfile: $corre_output_temp\n";
-        
+
         {
             my $corre_commands_file = $c->path_to('/cgi-bin/phenome/correlation.r');
             copy( $corre_commands_file, $corre_commands_temp )
                 or die "could not copy '$corre_commands_file' to '$corre_commands_temp'";
         }
-        try 
+        try
         {
             print STDERR "\nsubmitting correlation job to the cluster..\n";
             my $r_process = CXGN::Tools::Run->run_cluster(
@@ -255,8 +255,8 @@ sub _analyze_correlation  {
             sleep 5;
             print STDERR "\ndone with correlation analysis..\n";
        }
-        catch 
-        {  
+        catch
+        {
             print STDERR "\nsubmitting correlation job to the cluster gone wrong....\n";
             my $err = $_;
             $err =~ s/\n at .+//s; #< remove any additional backtrace
@@ -265,94 +265,94 @@ sub _analyze_correlation  {
             # die with a backtrace
             Carp::confess $err;
         };
-        
-        copy($heatmap_file, $corre_image_dir)  
+
+        copy($heatmap_file, $corre_image_dir)
             or die "could not copy $heatmap_file to $corre_image_dir";
-        copy($corre_table_file, $corre_image_dir) 
+        copy($corre_table_file, $corre_image_dir)
             or die "could not copy $corre_table_file to $corre_image_dir";
 
         $heatmap_file      = fileparse($heatmap_file);
         $heatmap_file      = $c->generated_file_uri("correlation",  $heatmap_file);
         $corre_table_file  = fileparse($corre_table_file);
         $corre_table_file  = $c->generated_file_uri("correlation", $corre_table_file);
-        
+
         print STDERR "\nheatmap tempfile after copying to the apps static dir : $heatmap_file\n";
         print STDERR "\ncorrelation coefficients after copying to the apps static dir: $corre_table_file\n";
-        
-        $c->stash( heatmap_file     => $heatmap_file, 
+
+        $c->stash( heatmap_file     => $heatmap_file,
                    corre_table_file => $corre_table_file
-                 );  
-    } 
+                 );
+    }
 }
 
 sub _correlation_output {
     my ($self, $c)      = @_;
     my $pop             = $c->{stash}->{pop};
     my $base_path       = $c->config->{basepath};
-    my $temp_image_dir  = $c->config->{tempfiles_subdir};   
+    my $temp_image_dir  = $c->config->{tempfiles_subdir};
     my $corre_image_dir = catfile($base_path, $temp_image_dir, "correlation");
     my $cache           = Cache::File->new( cache_root  => $corre_image_dir);
     $cache->purge();
 
     my $key_h           = "heat_" . $pop->get_population_id();
-    my $key_t           = "corr_table_" . $pop->get_population_id();   
+    my $key_t           = "corr_table_" . $pop->get_population_id();
     my $heatmap         = $cache->get($key_h);
-    my $corre_table     = $cache->get($key_t); 
-   
+    my $corre_table     = $cache->get($key_t);
+
      print STDERR "\ncached heatmap file: $heatmap\n";
      print STDERR "\ncached correlation coefficients files: $corre_table\n";
 
-    unless ($heatmap) 
+    unless ($heatmap)
     {
         $self->_analyze_correlation($c);
 
-        $heatmap = $c->stash->{heatmap_file};      
+        $heatmap = $c->stash->{heatmap_file};
         $corre_table  = $c->stash->{corre_table_file};
 
         $cache->set($key_h, $heatmap, "30 days");
-        $cache->set($key_t, $corre_table, "30 days");        
+        $cache->set($key_t, $corre_table, "30 days");
     }
 
-    $heatmap     = undef if -z $c->config->{basepath} . $heatmap;   
+    $heatmap     = undef if -z $c->config->{basepath} . $heatmap;
     $corre_table = undef if -z $c->config->{basepath} . $corre_table;
-       
+
     $c->stash( heatmap_file     => $heatmap,
                corre_table_file => $corre_table,
-             );  
- 
+             );
+
     $self->_get_trait_acronyms($c);
 
 }
 
 sub _list_traits {
-    my ($self, $c) = @_;      
+    my ($self, $c) = @_;
     my $population_id = $c->stash->{pop}->get_population_id();
-    my @phenotype;  
-   
-    if ($c->stash->{pop}->get_web_uploaded()) 
+    my @phenotype;
+
+    if ($c->stash->{pop}->get_web_uploaded())
     {
         my @traits = $c->stash->{pop}->get_cvterms();
-       
-        foreach my $trait (@traits)  
+
+        foreach my $trait (@traits)
         {
             my $trait_id   = $trait->get_user_trait_id();
             my $trait_name = $trait->get_name();
             my $definition = $trait->get_definition();
-            
+
             my ($min, $max, $avg, $std, $count) = $c->stash->{pop}->get_pop_data_summary($trait_id);
-            
+
             $c->stash( trait_id   => $trait_id,
                        trait_name => $trait_name
                 );
-                      
+
             $self->_link($c);
             my $trait_link = $c->stash->{trait_page};
-          
-            my $qtl_analysis_page = $c->stash->{qtl_analysis_page}; 
-            push  @phenotype,  [ map { $_ } ( $trait_link, $min, $max, $avg, $count, $qtl_analysis_page ) ];               
+
+            my $qtl_analysis_page = $c->stash->{qtl_analysis_page};
+            push  @phenotype,  [ map { $_ } ( $trait_link, $min, $max, $avg, $count, $qtl_analysis_page ) ];
         }
     }
-    else 
+    else
     {
         my @cvterms = $c->stash->{pop}->get_cvterms();
         foreach my $cvterm( @cvterms )
@@ -360,7 +360,7 @@ sub _list_traits {
             my $cvterm_id = $cvterm->get_cvterm_id();
             my $cvterm_name = $cvterm->get_cvterm_name();
             my ($min, $max, $avg, $std, $count)= $c->stash->{pop}->get_pop_data_summary($cvterm_id);
-            
+
             $c->stash( trait_name => $cvterm_name,
                        cvterm_id  => $cvterm_id
                 );
@@ -383,7 +383,7 @@ sub is_qtl_pop {
     foreach my $qtl_pop ( @qtl_pops )
     {
         my $pop_id = $qtl_pop->get_population_id();
-        $pop_id == $id ? $c->stash(is_qtl_pop => 1) && last 
+        $pop_id == $id ? $c->stash(is_qtl_pop => 1) && last
                        : $c->stash(is_qtl_pop => 0)
                        ;
     }
@@ -393,7 +393,7 @@ sub is_qtl_pop {
 sub _link {
     my ($self, $c) = @_;
     my $pop_id     = $c->stash->{pop}->get_population_id();
-    
+
     {
         no warnings 'uninitialized';
         my $trait_id   = $c->stash->{trait_id};
@@ -401,11 +401,11 @@ sub _link {
         my $trait_name = $c->stash->{trait_name};
         my $term_id    = $trait_id ? $trait_id : $cvterm_id;
         my $graph_icon = qq | <img src="/documents/img/pop_graph.png" alt="run solqtl"/> |;
-    
+
         $self->_get_owner_details($c);
         my $owner_name = $c->stash->{owner_name};
-        my $owner_id   = $c->stash->{owner_id};   
-    
+        my $owner_id   = $c->stash->{owner_id};
+
         $c->stash( cvterm_page        => qq |<a href="/cvterm/$cvterm_id/view">$trait_name</a> |,
                    trait_page         => qq |<a href="/phenome/trait.pl?trait_id=$trait_id">$trait_name</a> |,
                    owner_page         => qq |<a href="/solpeople/personal-info.pl?sp_person_id=$owner_id">$owner_name</a> |,
@@ -417,12 +417,12 @@ sub _link {
                    qtl_analysis_page  => qq |<a href="/phenome/qtl_analysis.pl?population_id=$pop_id&amp;cvterm_id=$term_id" onclick="Qtl.waitPage()">$graph_icon</a> |,
             );
     }
-    
+
 }
 
 sub _get_trait_acronyms {
     my ($self, $c) = @_;
-  
+
     $c->stash(trait_acronym_pairs => $c->stash->{pop}->get_cvterm_acronyms());
 
 }
@@ -431,12 +431,12 @@ sub _get_owner_details {
     my ($self, $c) = @_;
     my $owner_id   = $c->stash->{pop}->get_sp_person_id();
     my $owner      = CXGN::People::Person->new($c->dbc->dbh, $owner_id);
-    my $owner_name = $owner->get_first_name()." ".$owner->get_last_name();    
-    
+    my $owner_name = $owner->get_first_name()." ".$owner->get_last_name();
+
     $c->stash( owner_name => $owner_name,
                owner_id   => $owner_id
         );
-    
+
 }
 
 sub _show_data {
@@ -445,18 +445,18 @@ sub _show_data {
     my $user_type  = $c->user->get_object->get_user_type() if $c->user;
     my $is_public  = $c->stash->{pop}->get_privacy_status();
     my $owner_id   = $c->stash->{pop}->get_sp_person_id();
-    
-    if ($user_id) 
-    {        
-        ($user_id == $owner_id || $user_type eq 'curator') ? $c->stash(show_data => 1) 
+
+    if ($user_id)
+    {
+        ($user_id == $owner_id || $user_type eq 'curator') ? $c->stash(show_data => 1)
                   :                                          $c->stash(show_data => undef)
                   ;
     } else
-    { 
-        $is_public ? $c->stash(show_data => 1) 
+    {
+        $is_public ? $c->stash(show_data => 1)
                    : $c->stash(show_data => undef)
                    ;
-    }            
+    }
 }
 
 sub set_stat_option : PathPart('qtl/stat/option') Chained Args(0) {
@@ -465,65 +465,65 @@ sub set_stat_option : PathPart('qtl/stat/option') Chained Args(0) {
     my $stat_params = $c->req->param('stat_params');
     my $file        = $self->stat_options_file($c, $pop_id);
 
-    if ($file) 
+    if ($file)
     {
         my $f = file( $file )->openw
             or die "Can't create file: $! \n";
 
-        if ( $stat_params eq 'default' ) 
+        if ( $stat_params eq 'default' )
         {
             $f->print( "default parameters\tYes" );
-        } 
-        else 
+        }
+        else
         {
             $f->print( "default parameters\tNo" );
-        }  
+        }
     }
     $c->res->content_type('application/json');
-    $c->res->body({undef});                
+    $c->res->body({undef});
 
 }
 
 sub stat_options_file {
     my ($self, $c, $pop_id) = @_;
     my $login_id            = $c->user()->get_object->get_sp_person_id() if $c->user;
-    
-    if ($login_id) 
+
+    if ($login_id)
     {
         my $qtl = CXGN::Phenome::Qtl->new($login_id);
         my ($temp_qtl_dir, $temp_user_dir) = $qtl->create_user_qtl_dir($c);
         return  catfile( $temp_user_dir, "stat_options_pop_${pop_id}.txt" );
     }
-    else 
+    else
     {
         return;
     }
 }
 
-    
+
 sub qtl_form : PathPart('qtl/form') Chained Args {
-    my ($self, $c, $type, $pop_id) = @_;  
-    
+    my ($self, $c, $type, $pop_id) = @_;
+
     my $userid = $c->user()->get_object->get_sp_person_id() if $c->user;
-    
-    unless ($userid) 
+
+    unless ($userid)
     {
        $c->res->redirect( '/user/login' );
     }
-    
-    $type = 'intro' if !$type; 
-   
-    if (!$pop_id and $type !~ /intro|pop_form/ ) 
+
+    $type = 'intro' if !$type;
+
+    if (!$pop_id and $type !~ /intro|pop_form/ )
     {
-     $c->throw_404("Population id argument is missing");   
+     $c->throw_404("Population id argument is missing");
     }
 
-    if ($pop_id and $pop_id !~ /^([0-9]+)$/)  
+    if ($pop_id and $pop_id !~ /^([0-9]+)$/)
     {
-        $c->throw_404("<strong>$pop_id</strong> is not an accepted argument. 
-                        This form expects an all digit population id, instead of 
+        $c->throw_404("<strong>$pop_id</strong> is not an accepted argument.
+                        This form expects an all digit population id, instead of
                         <strong>$pop_id</strong>"
-                     );   
+                     );
     }
 
     $c->stash( template => $self->get_template($c, $type),
@@ -531,8 +531,8 @@ sub qtl_form : PathPart('qtl/form') Chained Args {
                guide    => qq |<a href="/qtl/submission/guide">Guideline</a> |,
                referer  => $c->req->path,
                userid   => $userid
-            );   
- 
+            );
+
 }
 
 sub templates {
@@ -550,7 +550,7 @@ sub templates {
 
 
 sub get_template {
-    my ($self, $c, $type) = @_;        
+    my ($self, $c, $type) = @_;
     return $self->templates->{$type};
 }
 
@@ -565,7 +565,7 @@ sub genetic_map {
     my $map         = CXGN::Map->new( $c->dbc->dbh, { map_version_id => $mapv_id } );
     my $map_name    = $map->get_long_name();
     my $map_sh_name = $map->get_short_name();
-  
+
     $c->stash( genetic_map => qq | <a href=/cview/map.pl?map_version_id=$mapv_id>$map_name ($map_sh_name)</a> | );
 
 }
@@ -580,13 +580,13 @@ sub show_search_results : PathPart('qtl/search/results') Chained Args(0) {
     my $trait = $c->req->param('trait');
     $trait =~ s/(^\s+|\s+$)//g;
     $trait =~ s/\s+/ /g;
-               
+
     my $rs = $self->search_qtl_traits($c, $trait);
 
     if ($rs)
     {
         my $rows = $self->mark_qtl_traits($c, $rs);
-                                                        
+
         $c->stash(template   => '/qtl/search/results.mas',
                   data       => $rows,
                   query      => $c->req->param('trait'),
@@ -594,7 +594,7 @@ sub show_search_results : PathPart('qtl/search/results') Chained Args(0) {
                   page_links => sub {uri ( query => { trait => $c->req->param('trait'), page => shift } ) }
             );
     }
-    else 
+    else
     {
         $c->stash(template   => '/qtl/search/results.mas',
                   data       => undef,
@@ -607,80 +607,80 @@ sub show_search_results : PathPart('qtl/search/results') Chained Args(0) {
 
 sub search_qtl_traits {
     my ($self, $c, $trait) = @_;
-    
+
     my $rs;
     if ($trait)
     {
-        my $schema    = $c->dbic_schema("Bio::Chado::Schema");
+        my $schema    = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
         my $cv_id     = $schema->resultset("Cv::Cv")->search(
             {name => 'solanaceae_phenotype'}
             )->single->cv_id;
 
         $rs = $schema->resultset("Cv::Cvterm")->search(
             { name  => { 'LIKE' => '%'.$trait .'%'},
-              cv_id => $cv_id,            
-            },          
+              cv_id => $cv_id,
+            },
             {
-              columns => [ qw/ cvterm_id name definition / ] 
-            },    
-            { 
+              columns => [ qw/ cvterm_id name definition / ]
+            },
+            {
               page     => $c->req->param('page') || 1,
               rows     => 10,
               order_by => 'name'
             }
-            );       
+            );
     }
-    return $rs;      
+    return $rs;
 }
 
 sub mark_qtl_traits {
     my ($self, $c, $rs) = @_;
     my @rows =();
-    
-    if (!$rs->single) 
+
+    if (!$rs->single)
     {
         return undef;
     }
-    else 
-    {  
+    else
+    {
         my $qtltool  = CXGN::Phenome::Qtl::Tools->new();
         my $yes_mark = qq |<font size=4 color="#0033FF"> &#10003;</font> |;
         my $no_mark  = qq |<font size=4 color="#FF0000"> X </font> |;
 
-        while (my $cv = $rs->next) 
+        while (my $cv = $rs->next)
         {
             my $id   = $cv->cvterm_id;
             my $name = $cv->name;
             my $def  = $cv->definition;
 
-            if (  $qtltool->is_from_qtl( $id ) ) 
-            {                         
+            if (  $qtltool->is_from_qtl( $id ) )
+            {
                 push @rows, [ qq | <a href="/cvterm/$id/view">$name</a> |, $def, $yes_mark ];
-           
+
             }
-            else 
+            else
             {
                 push @rows, [ qq | <a href="/cvterm/$id/view">$name</a> |, $def, $no_mark ];
-            }      
-        } 
+            }
+        }
         return \@rows;
-    } 
+    }
 }
 
 
 sub qtl_traits : PathPart('qtl/traits') Chained Args(1) {
     my ($self, $c, $index) = @_;
-    
-    if ($index =~ /^\w{1}$/) 
+
+    if ($index =~ /^\w{1}$/)
     {
         my $traits_list = $self->map_qtl_traits($c, $index);
-    
+
         $c->stash( template    => '/qtl/traits/index.mas',
                    index       => $index,
                    traits_list => $traits_list
             );
     }
-    else 
+    else
     {
         $c->res->redirect('/search/qtl');
     }
@@ -708,7 +708,7 @@ sub map_qtl_traits {
     my ($self, $c, $index) = @_;
 
     my $traits_list = $self->filter_qtl_traits($index);
-    
+
     my @traits_urls;
     if (@{$traits_list})
     {
@@ -720,7 +720,7 @@ sub map_qtl_traits {
             {
                 push @traits_urls,
                 [
-                 map { $_ } 
+                 map { $_ }
                  (
                   qq |<a href=/cvterm/$cvterm_id/view>$trait</a> |
                  )
@@ -732,7 +732,7 @@ sub map_qtl_traits {
                 my $trait_id = $t->get_user_trait_id();
                 push @traits_urls,
                 [
-                 map { $_ } 
+                 map { $_ }
                  (
                   qq |<a href=/phenome/trait.pl?trait_id=$trait_id>$trait</a> |
                  )
@@ -740,7 +740,7 @@ sub map_qtl_traits {
             }
         }
     }
-   
+
     return \@traits_urls;
 }
 

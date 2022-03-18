@@ -40,7 +40,7 @@ sub store_dataset :Path('/ajax/dataset/save') Args(0) {
     my $user_id = $c->user()->get_object()->get_sp_person_id();
 
     my $dataset = CXGN::Dataset->new( {
-	schema => $c->dbic_schema("Bio::Chado::Schema"),
+	schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
 	people_schema => $people_schema,
 				      });
 
@@ -107,7 +107,7 @@ sub set_datasets_public :Path('/ajax/dataset/set_public') Args(1) {
 
     my $dataset = CXGN::Dataset->new(
         {
-	    schema => $c->dbic_schema("Bio::Chado::Schema"),
+	    schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
             people_schema => $c->dbic_schema("CXGN::People::Schema"),
             sp_dataset_id=> $dataset_id,
         });
@@ -133,7 +133,7 @@ sub get_dataset :Path('/ajax/dataset/get') Args(1) {
 
     my $dataset = CXGN::Dataset->new(
 	{
-	    schema => $c->dbic_schema("Bio::Chado::Schema"),
+	    schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
 	    people_schema => $c->dbic_schema("CXGN::People::Schema"),
 	    sp_dataset_id=> $dataset_id,
 	});
@@ -157,7 +157,7 @@ sub delete_dataset :Path('/ajax/dataset/delete') Args(1) {
 
     my $dataset = CXGN::Dataset->new(
 	{
-	    schema => $c->dbic_schema("Bio::Chado::Schema"),
+	    schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
 	    people_schema => $c->dbic_schema("CXGN::People::Schema"),
 	    sp_dataset_id=> $dataset_id,
 	});

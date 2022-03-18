@@ -29,7 +29,7 @@ __PACKAGE__->config(
 sub add_company : Path('/ajax/private_company/create_company') : ActionClass('REST') { }
 sub add_company_POST : Args(0) {
     my ($self, $c) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     if (!$c->user()) {
         $c->stash->{rest} = {error => 'Please login to add a new company!' };
@@ -63,7 +63,7 @@ sub add_company_POST : Args(0) {
 sub edit_company : Path('/ajax/private_company/edit_company') : ActionClass('REST') { }
 sub edit_company_POST : Args(0) {
     my ($self, $c) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     if (!$c->user()) {
         $c->stash->{rest} = {error => 'Please login to edit a company!' };
@@ -99,7 +99,7 @@ sub edit_company_POST : Args(0) {
 sub add_company_member : Path('/ajax/private_company/add_company_member') : ActionClass('REST') { }
 sub add_company_member_POST : Args(0) {
     my ($self, $c) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     if (!$c->user()) {
         $c->stash->{rest} = {error => 'Please login to add a company member!' };
@@ -121,7 +121,7 @@ sub add_company_member_POST : Args(0) {
 sub remove_company_member : Path('/ajax/private_company/remove_company_member') : ActionClass('REST') { }
 sub remove_company_member_POST : Args(0) {
     my ($self, $c) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     if (!$c->user()) {
         $c->stash->{rest} = {error => 'Please login to remove a company member!' };
@@ -143,7 +143,7 @@ sub remove_company_member_POST : Args(0) {
 sub edit_company_member : Path('/ajax/private_company/edit_company_member') : ActionClass('REST') { }
 sub edit_company_member_POST : Args(0) {
     my ($self, $c) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     # print STDERR Dumper $c->req->params();
 
     if (!$c->user()) {

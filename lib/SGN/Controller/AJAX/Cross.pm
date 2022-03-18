@@ -362,7 +362,7 @@ sub get_cross_relationships :Path('/cross/ajax/relationships') :Args(1) {
     my $cross_id = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $cross = $schema->resultset("Stock::Stock")->find( { stock_id => $cross_id });
 
@@ -388,7 +388,7 @@ sub get_membership :Path('/ajax/cross/membership') :Args(1) {
     my $cross_id = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $cross = $schema->resultset("Stock::Stock")->find( { stock_id => $cross_id });
 
@@ -417,7 +417,7 @@ sub get_cross_parents :Path('/ajax/cross/accession_plot_plant_parents') Args(1) 
     my $cross_id = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $cross = $schema->resultset("Stock::Stock")->find( { stock_id => $cross_id });
 
     if ($cross && $cross->type()->name() ne "cross") {
@@ -453,7 +453,7 @@ sub get_cross_properties :Path('/ajax/cross/properties') Args(1) {
     my $cross_id = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $cross_info_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'crossing_metadata_json', 'stock_property')->cvterm_id();
     my $cross_info = $schema->resultset("Stock::Stockprop")->find({stock_id => $cross_id, type_id => $cross_info_cvterm});
 
@@ -485,7 +485,7 @@ sub get_cross_tissue_culture_summary :Path('/ajax/cross/tissue_culture_summary')
     my $self = shift;
     my $c = shift;
     my $cross_id = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
     my $cross_samples_obj = CXGN::Cross->new({schema=>$schema, cross_stock_id=>$cross_id});
@@ -620,7 +620,7 @@ sub get_cross_tissue_culture_summary :Path('/ajax/cross/tissue_culture_summary')
     my $type = $c->req->param("type");
     my $value = $c->req->param("value");
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     if ($type =~ m/Number/ || $type =~ m/Days/) { $type = 'number';}
     if ($type =~ m/Date/) { $type = 'date';}
@@ -1563,7 +1563,7 @@ sub get_cross_transactions :Path('/ajax/cross/transactions') Args(1) {
     my $self = shift;
     my $c = shift;
     my $cross_id = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
     my $cross_transaction_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'cross_transaction_json', 'stock_property')->cvterm_id();
@@ -1595,7 +1595,7 @@ sub get_cross_additional_info :Path('/ajax/cross/additional_info') Args(1) {
     my $self = shift;
     my $c = shift;
     my $cross_id = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 0, 0, 0);
 
     my $cross_additional_info_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'cross_additional_info', 'stock_property')->cvterm_id();

@@ -57,7 +57,7 @@ sub create_DataCollector_spreadsheet_POST : Args(0) {
   my $data_level = $c->req->param('data_level') || "plots";
 
   if ($data_level eq 'plants') {
-      my $trial = CXGN::Trial->new( { bcs_schema => $c->dbic_schema("Bio::Chado::Schema"), trial_id => $trial_id });
+      my $trial = CXGN::Trial->new( { bcs_schema => $schema, trial_id => $trial_id });
       if (!$trial->has_plant_entries()) {
           $c->stash->{rest} = { error => "The requested trial (".$trial->get_name().") does not have plant entries. Please create the plant entries first." };
           return;

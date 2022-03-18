@@ -197,7 +197,7 @@ sub execute_predefined_searches: Private {
              $c->dbc->dbh,
              %$search,
              term => $c->stash->{term},
-	     schema => $c->dbic_schema("Bio::Chado::Schema"),
+	     schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
            );
          $c->stash->{results}{$search_name} = {
              result => $searchresults,

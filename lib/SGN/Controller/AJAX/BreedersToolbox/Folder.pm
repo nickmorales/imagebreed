@@ -18,7 +18,7 @@ sub get_folder : Chained('/') PathPart('ajax/folder') CaptureArgs(1) {
     my $c = shift;
 
     my $folder_id = shift;
-    $c->stash->{schema} = $c->dbic_schema("Bio::Chado::Schema");
+    $c->stash->{schema} = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     $c->stash->{folder_id} = $folder_id;
 
 }
@@ -48,7 +48,7 @@ sub create_folder :Path('/ajax/folder/new') Args(0) {
     if (! $self->check_privileges($c)) {
 	return;
     }
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $existing = $schema->resultset("Project::Project")->find( { name => $folder_name });
 
     if ($existing) {

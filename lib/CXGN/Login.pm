@@ -90,7 +90,7 @@ sub _check_user_login {
     my $check_priv = shift; #curator, submitter
     my $check_company_id = shift;
     my $check_company_id_access = shift; #curator_access, submitter_access
-    my $bcs_schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $bcs_schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     # print STDERR Dumper [$check_priv,$check_company_id,$check_company_id_access];
 
     my $user_id;

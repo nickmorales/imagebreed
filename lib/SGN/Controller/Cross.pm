@@ -579,13 +579,14 @@ sub cross_detail : Path('/cross') Args(1) {
     my $self = shift;
     my $c = shift;
     my $id = shift;
-    my $cross_type_id = SGN::Model::Cvterm->get_cvterm_row($c->dbic_schema("Bio::Chado::Schema"), 'cross', 'stock_type')->cvterm_id();
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $cross_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'cross', 'stock_type')->cvterm_id();
 
     #get cross from stock id
-    my $cross = $c->dbic_schema("Bio::Chado::Schema")->resultset("Stock::Stock")->search( { stock_id => $id, type_id => $cross_type_id } )->first();
+    my $cross = $schema->resultset("Stock::Stock")->search( { stock_id => $id, type_id => $cross_type_id } )->first();
 
     if (!$cross) { #or from project id
-        $cross = $c->dbic_schema("Bio::Chado::Schema")->resultset("Project::Project")->search({ 'me.project_id' => $id })->search_related('nd_experiment_projects')->search_related('nd_experiment')->search_related('nd_experiment_stocks')->search_related('stock', {'stock.type_id'=>$cross_type_id})->first();
+        $cross = $schema->resultset("Project::Project")->search({ 'me.project_id' => $id })->search_related('nd_experiment_projects')->search_related('nd_experiment')->search_related('nd_experiment_stocks')->search_related('stock', {'stock.type_id'=>$cross_type_id})->first();
     }
 
     my $cross_id;
@@ -600,7 +601,7 @@ sub cross_detail : Path('/cross') Args(1) {
 
     #print STDERR "Cross stock_id is $cross_id\n";
 
-    my $progeny = $c->dbic_schema("Bio::Chado::Schema")->resultset("Stock::StockRelationship") -> search( { object_id => $cross_id, 'type.name' => 'offspring_of'  }, { join =>  'type' } );
+    my $progeny = $schema->resultset("Stock::StockRelationship") -> search( { object_id => $cross_id, 'type.name' => 'offspring_of'  }, { join =>  'type' } );
 
     my $progeny_count = $progeny->count();
 
@@ -609,7 +610,6 @@ sub cross_detail : Path('/cross') Args(1) {
     $c->stash->{cross_id} = $cross_id;
     $c->stash->{progeny_count} = $progeny_count;
     $c->stash->{template} = '/breeders_toolbox/cross/index.mas';
-
 }
 
 sub cross_wishlist_download : Path('/cross_wishlist/file_download/') Args(1) {
@@ -631,7 +631,7 @@ sub family_name_detail : Path('/family') Args(1) {
     my $self = shift;
     my $c = shift;
     my $id = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $family_stock_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'family_name', 'stock_type')->cvterm_id();
     my $family_type_id = SGN::Model::Cvterm->get_cvterm_row($schema,  'family_type', 'stock_property')->cvterm_id();
 

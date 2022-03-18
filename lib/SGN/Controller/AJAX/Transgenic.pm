@@ -1,6 +1,6 @@
 =head1 NAME
 
-SGN::Controller::AJAX::Transgenic - a REST controller class for Vector Constructs. 
+SGN::Controller::AJAX::Transgenic - a REST controller class for Vector Constructs.
 
 =head1 DESCRIPTION
 
@@ -33,11 +33,11 @@ __PACKAGE__->config(
 
 sub sync_cass_transgenics : Path('/ajax/cass_transgenics/sync') Args(0) ActionClass('REST') { }
 
-sub sync_cass_transgenics_POST { 
+sub sync_cass_transgenics_POST {
     my $self = shift;
     my $c = shift;
     my $status = '';
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $transgenic_names = decode_json($c->req->param("data"));
     my %transgenic_hash = %$transgenic_names;

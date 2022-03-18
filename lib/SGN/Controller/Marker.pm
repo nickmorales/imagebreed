@@ -121,7 +121,7 @@ sub rflp_image_link {
 
 sub search_marker : Private {
     my ( $self, $c, $marker_query ) = @_;
-    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $dbh = $c->dbc->dbh();
 
     # Get mapped markers

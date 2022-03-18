@@ -607,7 +607,7 @@ sub population_autocomplete_GET :Args(0) {
     $term =~ s/(^\s+|\s+)$//g;
     $term =~ s/\s+/ /g;
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $population_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'population', 'stock_type')->cvterm_id();
 
     my @response_list;
@@ -861,7 +861,7 @@ sub remove_parent_GET : Path('/ajax/stock/parent/remove') Args(0) {
         return;
     }
 
-    my $q = $c->dbic_schema("Bio::Chado::Schema")->resultset("Stock::StockRelationship")->find( { object_id => $stock_id, subject_id=> $parent_id });
+    my $q = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado")->resultset("Stock::StockRelationship")->find( { object_id => $stock_id, subject_id=> $parent_id });
 
     eval {
 	$q->delete();
@@ -1065,7 +1065,7 @@ sub get_pedigree_string :Chained('/stock/get_stock') PathPart('pedigree') Args(0
     my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $stock = CXGN::Stock->new(
-        schema => $c->dbic_schema("Bio::Chado::Schema"),
+        schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
         stock_id => $c->stash->{stock}->stock_id()
     );
     my $parents = $stock->get_pedigree_string($level);
@@ -1192,7 +1192,7 @@ sub stock_lookup_POST {
     #print STDERR $lookup_field;
     #print STDERR $value_to_lookup;
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $s = $schema->resultset("Stock::Stock")->find( { $lookup_from_field => $value_to_lookup } );
     my $value;
     if ($s && $lookup_field eq 'stock_id') {
@@ -1440,7 +1440,7 @@ sub get_accessions_with_pedigree : Path('/ajax/stock/accessions_with_pedigree') 
 sub get_accessions_with_pedigree_GET {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $result = CXGN::Cross->get_progeny_info($schema);

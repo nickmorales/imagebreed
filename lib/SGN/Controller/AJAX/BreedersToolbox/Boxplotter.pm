@@ -17,9 +17,9 @@ sub get_constraints :Path('/ajax/tools/boxplotter/get_constraints') {
   my $c = shift;
   my $sp_dataset_id = $c->req->param('dataset');
   my $unit = $c->req->param('unit');
-  my $ds = CXGN::Dataset->new( 
-    people_schema => $c->dbic_schema("CXGN::People::Schema"), 
-    schema => $c->dbic_schema("Bio::Chado::Schema"), 
+  my $ds = CXGN::Dataset->new(
+    people_schema => $c->dbic_schema("CXGN::People::Schema"),
+    schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"), 
     sp_dataset_id => $sp_dataset_id
   );
   if (!$c->user || $c->user->get_sp_person_id()!=$ds->sp_person_id()){

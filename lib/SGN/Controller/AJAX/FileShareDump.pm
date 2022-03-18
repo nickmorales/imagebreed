@@ -37,7 +37,7 @@ sub filesharedump_upload_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_file_share_dump($c, 'submitter', 0, 0);
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my $upload = $c->req->upload('manage_file_dump_upload_file_dialog_file');
@@ -81,7 +81,7 @@ sub filesharedump_list_GET : Args(0) {
     my $c = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_file_share_dump($c, 0, 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
 

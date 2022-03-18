@@ -61,7 +61,7 @@ sub create_cross_wishlist : Path('/ajax/cross/create_cross_wishlist') : ActionCl
 
 sub create_cross_wishlist_POST : Args(0) {
     my ($self, $c) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     #print STDERR Dumper $c->req->params();
     my $data = decode_json $c->req->param('crosses');
     my $female_trial_id = $c->req->param('female_trial_id');

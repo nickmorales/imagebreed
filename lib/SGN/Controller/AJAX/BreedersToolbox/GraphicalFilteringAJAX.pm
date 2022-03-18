@@ -33,7 +33,7 @@ sub common_traits_by_trial_list_GET : Args(0) {
    my $trial_list_id = $c->request->param('trial_list_id');
 
    #get userinfo from db
-   my $schema = $c->dbic_schema("Bio::Chado::Schema");
+   my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
    my $user_id;
    my $user_name;
@@ -130,7 +130,7 @@ sub common_traits_by_plot_list_GET : Args(0) {
    my $plot_list_id = $c->request->param('plot_list_id');
 
    #get userinfo from db
-   my $schema = $c->dbic_schema("Bio::Chado::Schema");
+   my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
    my $user_id;
    my $user_name;
@@ -230,7 +230,7 @@ sub common_traits_by_trials_GET : Args(0) {
    }
 
    #get schema
-   my $schema = $c->dbic_schema("Bio::Chado::Schema");
+   my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
    #parse trial params
    my $trial_ids = $c->request->parameters->{'trial_id'};

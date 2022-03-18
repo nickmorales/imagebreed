@@ -73,7 +73,7 @@ sub profile_detail : Path('/profile') Args(1) {
     my $c = shift;
     my $profile_id = shift;
     my $schema = $self->schema;
-    my $profile_json_type_id = SGN::Model::Cvterm->get_cvterm_row($c->dbic_schema("Bio::Chado::Schema"), 'product_profile_json', 'project_property')->cvterm_id();
+    my $profile_json_type_id = SGN::Model::Cvterm->get_cvterm_row($c->dbic_schema("Bio::Chado::Schema", "sgn_chado"), 'product_profile_json', 'project_property')->cvterm_id();
     my $profile_rs = $schema->resultset("Project::Projectprop")->search({ projectprop_id => $profile_id, type_id => $profile_json_type_id });
 
     if (!$profile_rs) {

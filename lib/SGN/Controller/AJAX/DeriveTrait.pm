@@ -32,7 +32,7 @@ __PACKAGE__->config(
 sub get_all_derived_trait : Path('/ajax/breeders/trial/trait_formula') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $dbh = $c->dbc->dbh();
     my (@cvterm_ids, @derived_traits, @formulas, @derived_traits_array, @trait_ids, @trait_db_ids, @formulas_array, @formulas_array_msg, $formula_json_array);
 
@@ -71,7 +71,7 @@ sub compute_derive_traits : Path('/ajax/phenotype/create_derived_trait') Args(0)
 	print "TRAIT NAME: $selected_trait\n";
 	print "TRIAl ID: $trial_id\n";
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
 	my $selected_trait_cvterm = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($schema, $selected_trait);
@@ -155,13 +155,13 @@ sub compute_derive_traits : Path('/ajax/phenotype/create_derived_trait') Args(0)
 	my (%hash1, %hash2, %hash3, @trait_values1, @trait_values2, @trait_values3);
 	while ($msg_formula =~ /(\w*\:\d+)/g){
 		push @dependent_trait_ids, [$1];
-		($db_id,$accession) = split (/:/, $1);	
-			
+		($db_id,$accession) = split (/:/, $1);
+
 		$accession =~ s/\s+$//;
 		$accession =~ s/^\s+//;
 		$db_id =~ s/\s+$//;
 		$db_id =~ s/^\s+//;
-			
+
 		push @accessions, $accession;
 	}
 	print "DB ID: $db_id\n";
@@ -312,7 +312,7 @@ sub generate_plot_phenotypes : Path('/ajax/breeders/trial/generate_plot_phenotyp
     #print STDERR "Trait: $trait_name\n";
     #print STDERR "Method: $method\n";
     #print STDERR "Round: $rounding\n";
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
 
     my @traits;
     if ($trait_name eq 'all') {
@@ -372,7 +372,7 @@ sub store_generated_plot_phenotypes : Path('/ajax/breeders/trial/store_generated
     #print STDERR Dumper $traits;
     #print STDERR $overwrite_values;
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
 

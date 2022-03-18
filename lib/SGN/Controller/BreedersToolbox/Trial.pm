@@ -28,7 +28,7 @@ sub trial_init : Chained('/') PathPart('breeders/trial') CaptureArgs(1) {
     $c->stash->{trial_id} = $trial_id;
     print STDERR "TRIAL ID = $trial_id\n";
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     $c->stash->{schema} = $schema;
     my $trial;
     eval {
@@ -498,7 +498,7 @@ sub _parse_list_from_json {
 # Display trial detail page for 1 match, error messages for no matches
 sub search_trial : Private {
     my ( $self, $c, $trial_query ) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $rs = $schema->resultset('Project::Project');
 
     my $matches;
@@ -524,7 +524,6 @@ sub search_trial : Private {
         my $trial_id = $matches->first->project_id;
         $c->stash->{trial_id} = $trial_id;
 
-        my $schema = $c->dbic_schema("Bio::Chado::Schema");
         $c->stash->{schema} = $schema;
 
         my $trial = CXGN::Trial->new( { bcs_schema => $schema, trial_id => $trial_id });

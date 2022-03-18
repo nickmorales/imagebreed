@@ -17,7 +17,7 @@ Will do the following:
 
     FOR FIELD PHENOTYPING TRIALS:
     my $trial_create = CXGN::Trial::TrialCreate->new({
-        chado_schema => $c->dbic_schema("Bio::Chado::Schema"),
+        chado_schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
         dbh => $c->dbc->dbh(),
         owner_id => $sp_person_id,
         operator => $c->user()->get_object()->get_username(),
@@ -47,7 +47,7 @@ Will do the following:
 
     FOR GENOTYPING PLATES:
     my $ct = CXGN::Trial::TrialCreate->new( {
-        chado_schema => $c->dbic_schema("Bio::Chado::Schema"),
+        chado_schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
         dbh => $c->dbc->dbh(),
         owner_id => $sp_person_id,
         operator => $c->user()->get_object()->get_username(),

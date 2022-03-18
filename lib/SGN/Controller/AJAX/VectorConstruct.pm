@@ -1,6 +1,6 @@
 =head1 NAME
 
-SGN::Controller::AJAX::VectorConstruct - a REST controller class for Vector Constructs. 
+SGN::Controller::AJAX::VectorConstruct - a REST controller class for Vector Constructs.
 
 =head1 DESCRIPTION
 
@@ -32,11 +32,11 @@ __PACKAGE__->config(
 
 sub sync_cass_constructs : Path('/ajax/cass_vector_construct/sync') Args(0) ActionClass('REST') { }
 
-sub sync_cass_constructs_POST { 
+sub sync_cass_constructs_POST {
     my $self = shift;
     my $c = shift;
     my $status = '';
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $construct_names = decode_json($c->req->param("data"));
     my %construct_hash = %$construct_names;

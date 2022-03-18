@@ -19,7 +19,7 @@ __PACKAGE__->config(
 sub search : Path('/ajax/search/trials') Args(0) {
     my $self = shift;
     my $c    = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my ($user_id, $user_name, $user_role) = _check_user_login_trial($c, 0, 0, 0);
 
     my @location_ids;

@@ -345,7 +345,7 @@ sub download_action : Path('/breeders/download_action') Args(0) {
 
     my $unique_transform = $tf->can_transform("accession_synonyms", "accession_names");
 
-    my $unique_list = $tf->transform($c->dbic_schema("Bio::Chado::Schema"), $unique_transform, \@accession_list);
+    my $unique_list = $tf->transform($schema, $unique_transform, \@accession_list);
 
     # get array ref out of hash ref so Transform/Plugins can use it
     my %unique_hash = %$unique_list;

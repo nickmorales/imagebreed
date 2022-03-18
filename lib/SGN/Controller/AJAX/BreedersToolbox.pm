@@ -31,7 +31,7 @@ sub new_breeding_program :Path('/breeders/program/new') Args(0) {
     my $name = $c->req->param("name");
     my $desc = $c->req->param("desc");
     my $private_company_id = $c->req->param("private_company_id");
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'submitter', 0, 0);
 
@@ -46,7 +46,7 @@ sub delete_breeding_program :Path('/breeders/program/delete') Args(1) {
     my $self = shift;
     my $c = shift;
     my $program_id = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     print STDERR Dumper $program_id;
 
     my $private_company_id = _get_private_company_from_project_id($schema, $program_id);
@@ -64,7 +64,7 @@ sub get_breeding_programs_by_trial :Path('/breeders/programs_by_trial/') Args(1)
     my $self = shift;
     my $c = shift;
     my $trial_id = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $private_company_id = _get_private_company_from_project_id($schema, $trial_id);
     my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'user', $private_company_id, 'user_access');
@@ -81,7 +81,7 @@ sub add_data_agreement :Path('/breeders/trial/add/data_agreement') Args(0) {
     my $c = shift;
     my $project_id = $c->req->param('project_id');
     my $data_agreement = $c->req->param('text');
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
 
     my $private_company_id = _get_private_company_from_project_id($schema, $project_id);
     my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'submitter', $private_company_id, 'submitter_access');
@@ -126,7 +126,7 @@ sub get_data_agreement :Path('/breeders/trial/data_agreement/get') :Args(0) {
     my $self = shift;
     my $c = shift;
     my $project_id = $c->req->param('project_id');
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 0, 0, 0);
 
     my $data_agreement_cvterm_id_rs = $schema->resultset('Cv::Cvterm')->search( { name => 'data_agreement' });
@@ -158,7 +158,7 @@ sub get_all_years : Path('/ajax/breeders/trial/all_years' ) Args(0) {
     my $c = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 0, 0, 0);
 
-    my $bp = CXGN::BreedersToolbox::Projects->new({ schema => $c->dbic_schema("Bio::Chado::Schema") });
+    my $bp = CXGN::BreedersToolbox::Projects->new({ schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado") });
     my @years = $bp->get_all_years();
 
     $c->stash->{rest} = { years => \@years };
@@ -168,7 +168,7 @@ sub get_trial_location : Path('/ajax/breeders/trial/location') Args(1) {
     my $self = shift;
     my $c = shift;
     my $trial_id = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $private_company_id = _get_private_company_from_project_id($schema, $trial_id);
     my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'user', $private_company_id, 'user_access');
@@ -190,7 +190,7 @@ sub get_trial_type : Path('/ajax/breeders/trial/type') Args(1) {
     my $self = shift;
     my $c = shift;
     my $trial_id = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $private_company_id = _get_private_company_from_project_id($schema, $trial_id);
     my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'user', $private_company_id, 'user_access');
@@ -208,7 +208,7 @@ sub get_all_trial_types : Path('/ajax/breeders/trial/alltypes') Args(0) {
     my $self = shift;
     my $c = shift;
 
-    my @types = CXGN::Trial::get_all_project_types($c->dbic_schema("Bio::Chado::Schema"));
+    my @types = CXGN::Trial::get_all_project_types($c->dbic_schema("Bio::Chado::Schema", "sgn_chado"));
 
     $c->stash->{rest} = { types => \@types };
 }
@@ -256,7 +256,7 @@ sub delete_uploaded_phenotype_files : Path('/ajax/breeders/phenotyping/delete/')
     my $self = shift;
     my $c = shift;
     my $file_id = shift;
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     print STDERR "Deleting phenotypes from File ID: $file_id and making file obsolete\n";
     my $dbh = $c->dbc->dbh();
     my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'curator', 0, 0);
@@ -302,7 +302,7 @@ sub progress : Path('/ajax/progress') Args(0) {
     my $trait_id = $c->req->param("trait_id");
     my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 0, 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $q = "select projectprop.value, avg(phenotype.value::REAL), stddev(phenotype.value::REAL),count(*) from phenotype join cvterm on(cvalue_id=cvterm_id) join nd_experiment_phenotype using(phenotype_id) join nd_experiment_project using(nd_experiment_id) join projectprop using(project_id)  where cvterm.cvterm_id=? and phenotype.value not in ('-', 'miss','#VALUE!','..') and projectprop.type_id=(SELECT cvterm_id FROM cvterm where name='project year') group by projectprop.type_id, projectprop.value order by projectprop.value";
     my $h = $schema->storage->dbh()->prepare($q);

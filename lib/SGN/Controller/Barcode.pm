@@ -291,22 +291,22 @@ sub barcode_tool :Path('/barcode/tool') Args(3) {
     my $cvterm = shift;
     my $tool_version = shift;
     my $values = shift;
-
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my ($db, $accession) = split ":", $cvterm;
 
     print STDERR "Searching $cvterm, DB $db...\n";
-    my ($db_row) = $c->dbic_schema('Bio::Chado::Schema')->resultset('General::Db')->search( { name => $db } );
+    my ($db_row) = $schema->resultset('General::Db')->search( { name => $db } );
 
     print STDERR $db_row->db_id;
     print STDERR "DB_ID for $db: $\n";
 
 
-    my $dbxref_rs = $c->dbic_schema('Bio::Chado::Schema')->resultset('General::Dbxref')->search_rs( { accession=>$accession, db_id=>$db_row->db_id } );
+    my $dbxref_rs = $schema->resultset('General::Dbxref')->search_rs( { accession=>$accession, db_id=>$db_row->db_id } );
 
-    my $cvterm_rs = $c->dbic_schema('Bio::Chado::Schema')->resultset('Cv::Cvterm')->search( { dbxref_id => $dbxref_rs->first->dbxref_id });
+    my $cvterm_rs = $schema->resultset('Cv::Cvterm')->search( { dbxref_id => $dbxref_rs->first->dbxref_id });
 
     my $cvterm_id = $cvterm_rs->first()->cvterm_id();
-    my $cvterm_synonym_rs = ""; #$c->dbic_schema('Bio::Chado::Schema')->resultset('Cv::Cvtermsynonym')->search->( { cvterm_id=>$cvterm_id });
+    my $cvterm_synonym_rs = ""; #$schema->resultset('Cv::Cvtermsynonym')->search->( { cvterm_id=>$cvterm_id });
 
     $c->stash->{cvterm} = $cvterm;
     $c->stash->{cvterm_name} = $cvterm_rs->first()->name();
@@ -320,9 +320,9 @@ sub barcode_tool :Path('/barcode/tool') Args(3) {
 
 
 sub barcode_multitool :Path('/barcode/multitool') Args(0) {
-
     my $self  =shift;
     my $c = shift;
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
 
     $c->stash->{operator} = $c->req->param('operator');
     $c->stash->{date}     = $c->req->param('date');
@@ -338,18 +338,18 @@ sub barcode_multitool :Path('/barcode/multitool') Args(0) {
 	my ($db, $accession) = split ":", $cvterm;
 
 	print STDERR "Searching $cvterm, DB $db...\n";
-	my ($db_row) = $c->dbic_schema('Bio::Chado::Schema')->resultset('General::Db')->search( { name => $db } );
+	my ($db_row) = $schema->resultset('General::Db')->search( { name => $db } );
 
 	print STDERR $db_row->db_id;
 	print STDERR "DB_ID for $db: $\n";
 
 
-	my $dbxref_rs = $c->dbic_schema('Bio::Chado::Schema')->resultset('General::Dbxref')->search_rs( { accession=>$accession, db_id=>$db_row->db_id } );
+	my $dbxref_rs = $schema->resultset('General::Dbxref')->search_rs( { accession=>$accession, db_id=>$db_row->db_id } );
 
-	my $cvterm_rs = $c->dbic_schema('Bio::Chado::Schema')->resultset('Cv::Cvterm')->search( { dbxref_id => $dbxref_rs->first->dbxref_id });
+	my $cvterm_rs = $schema->resultset('Cv::Cvterm')->search( { dbxref_id => $dbxref_rs->first->dbxref_id });
 
 	my $cvterm_id = $cvterm_rs->first()->cvterm_id();
-	my $cvterm_synonym_rs = ""; #$c->dbic_schema('Bio::Chado::Schema')->resultset('Cv::Cvtermsynonym')->search->( { cvterm_id=>$cvterm_id });
+	my $cvterm_synonym_rs = ""; #$schema->resultset('Cv::Cvtermsynonym')->search->( { cvterm_id=>$cvterm_id });
 
 	push @$cvterm_data, { cvterm => $cvterm,
 			      cvterm_name => $cvterm_rs->first()->name(),

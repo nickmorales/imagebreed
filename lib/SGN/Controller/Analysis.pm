@@ -11,7 +11,7 @@ sub view_analyses :Path('/analyses') Args(0) {
     my $self = shift;
     my $c = shift;
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $user_id;
     if ($c->user()) {
         $user_id = $c->user->get_object()->get_sp_person_id();
@@ -27,7 +27,7 @@ sub analysis_detail :Path('/analyses') Args(1) {
     my $self = shift;
     my $c = shift;
     my $analysis_id = shift;
-    my $bcs_schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $bcs_schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $user = $c->user();
 
     my $user_id;
@@ -74,7 +74,7 @@ sub analysis_model_detail :Path('/analyses_model') Args(1) {
     my $self = shift;
     my $c = shift;
     my $model_id = shift;
-    my $bcs_schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $bcs_schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $user_id;
     if ($c->user()) {
@@ -114,4 +114,3 @@ sub analysis_model_detail :Path('/analyses_model') Args(1) {
 }
 
 1;
-    

@@ -35,7 +35,7 @@ __PACKAGE__->config(
 sub upload_document :  Path('/ajax/tools/documents/upload') : ActionClass('REST') { }
 sub upload_document_POST : Args(0) {
     my ($self, $c) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
 
     my $upload = $c->req->upload('upload_document_browser_file_input');
@@ -43,12 +43,12 @@ sub upload_document_POST : Args(0) {
     my $upload_tempfile = $upload->tempname;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
-    
+
     if (!$c->user){
         $c->stash->{rest} = { error => 'Must be logged in!' };
         $c->detach;
     }
-    
+
     my $user_id = $c->user->get_object->get_sp_person_id;
     my $user_type = $c->user->get_object->get_user_type();
 

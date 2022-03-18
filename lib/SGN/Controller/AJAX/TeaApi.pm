@@ -35,7 +35,7 @@ __PACKAGE__->config(
 # 	}
 #
 # 	foreach my $gene_name (@gene_array) {
-# 		my $schema = $c->dbic_schema("Bio::Chado::Schema");
+# 		my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 # 		my $feature = $schema->resultset("Sequence::Feature")->find( { uniquename=> { like => 'mRNA:'.$gene_name.'%' } });
 # 		my $cv = $schema->resultset("Cv::Cvterm")->find( { name=> 'Note' } );
 # 		my $fp = $schema->resultset("Sequence::Featureprop")->find({

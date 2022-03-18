@@ -134,7 +134,7 @@ __PACKAGE__->config(
    sub retrieve_longest_fields :Path('/tools/label_designer/retrieve_longest_fields') {
         my $self = shift;
         my $c = shift;
-        my $schema = $c->dbic_schema('Bio::Chado::Schema');
+        my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
         my $data_type = $c->req->param("data_type");
         my $source_id = $c->req->param("source_id");
         my $data_level = $c->req->param("data_level");
@@ -220,7 +220,7 @@ __PACKAGE__->config(
   sub label_designer_download_POST : Args(0) {
        my $self = shift;
        my $c = shift;
-       my $schema = $c->dbic_schema('Bio::Chado::Schema');
+       my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
        my $download_type = $c->req->param("download_type");
        my $data_type = $c->req->param("data_type");
        my $data_level = $c->req->param("data_level");
@@ -743,7 +743,7 @@ sub get_additional_list_data {
     my $list_id = shift;
     my $list_item_id = shift;
     my $list_item_name = shift;
-    my $schema = $c->dbic_schema('Bio::Chado::Schema');
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $dbh = $schema->storage->dbh();
 
     if ( !$list_id || $list_id eq '' ) {

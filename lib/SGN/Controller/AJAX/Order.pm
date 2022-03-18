@@ -128,7 +128,7 @@ END_HEREDOC
 sub get_user_current_orders :Path('/ajax/order/current') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $people_schema = $c->dbic_schema('CXGN::People::Schema');
     my $dbh = $c->dbc->dbh;
     my $user_id;
@@ -157,7 +157,7 @@ sub get_user_current_orders :Path('/ajax/order/current') Args(0) {
 sub get_user_completed_orders :Path('/ajax/order/completed') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $people_schema = $c->dbic_schema('CXGN::People::Schema');
     my $dbh = $c->dbc->dbh;
     my $user_id;
@@ -189,7 +189,7 @@ sub get_user_completed_orders :Path('/ajax/order/completed') Args(0) {
 sub get_vendor_current_orders :Path('/ajax/order/vendor_current_orders') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $people_schema = $c->dbic_schema('CXGN::People::Schema');
     my $dbh = $c->dbc->dbh;
     my $user_id;
@@ -222,7 +222,7 @@ sub get_vendor_current_orders :Path('/ajax/order/vendor_current_orders') Args(0)
 sub get_vendor_completed_orders :Path('/ajax/order/vendor_completed_orders') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $people_schema = $c->dbic_schema('CXGN::People::Schema');
     my $dbh = $c->dbc->dbh;
     my $user_id;

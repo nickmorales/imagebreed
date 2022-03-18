@@ -30,7 +30,7 @@ sub mason_forward :Path('/pages') Args(1) {
     my $page = shift;
 
     print STDERR "Forwarding to $page...\n";
-    $c->stash->{schema} = $c->dbic_schema("Bio::Chado::Schema");
+    $c->stash->{schema} = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     $c->stash->{template} = '/pages/'.$page.".mas";
 }
 
@@ -41,7 +41,7 @@ sub mason_forward_with_subfolder :Path('/pages/') Args(2) {
     my $page = shift;
 
     print STDERR "Forwarding to $subfolder,  $page...\n";
-    $c->stash->{schema} = $c->dbic_schema("Bio::Chado::Schema");
+    $c->stash->{schema} = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     $c->stash->{template} = '/pages/'.$subfolder."/".$page.".mas";
 }
 

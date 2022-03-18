@@ -48,7 +48,7 @@ sub get_maps : Path('/ajax/markers/mapped/maps') : ActionClass('REST') { }
 sub get_maps_GET : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $dbh = $schema->storage->dbh();
 
     # Perform query
@@ -89,7 +89,7 @@ sub get_chromosomes : Path('/ajax/markers/mapped/chromosomes') : ActionClass('RE
 sub get_chromosomes_GET : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $dbh = $schema->storage->dbh();
 
     # Perform query
@@ -130,7 +130,7 @@ sub get_protocols : Path('/ajax/markers/mapped/protocols') : ActionClass('REST')
 sub get_protocols_GET : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $dbh = $schema->storage->dbh();
 
     # Perform query
@@ -199,7 +199,7 @@ sub get_related_variants_of_mapped_marker_GET : Args(0) {
     my $self = shift;
     my $c = shift;
     my $marker_id = $c->req->param('marker_id');
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $dbh = $schema->storage->dbh();
 
     # Check for required parameters
@@ -285,7 +285,7 @@ sub query_mapped_markers : Path('/ajax/markers/mapped/query') : ActionClass('RES
 sub query_mapped_markers_GET : Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $dbh = $schema->storage->dbh();
 
     my $name = $c->req->param('name');

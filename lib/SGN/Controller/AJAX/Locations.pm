@@ -37,7 +37,7 @@ sub get_all_locations :Path("/ajax/location/all") Args(0) {
 
     my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 0, 0, 0);
 
-    my $location = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema") });
+    my $location = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado") });
 
     my $all_locations = $location->get_location_geojson($user_id);
     #print STDERR "Returning with all locations: ".$all_locations."\n";
@@ -66,7 +66,7 @@ sub store_location :Path("/ajax/location/store") Args(0) {
     print STDERR "Creating location object\n";
 
     my $location = CXGN::Location->new( {
-        bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
+        bcs_schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
         is_saving => 1,
         nd_geolocation_id => $id,
         name => $name,
@@ -100,7 +100,7 @@ sub delete_location :Path('/ajax/location/delete') Args(1) {
     my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 'submitter', 0, 0);
 
     my $location_to_delete = CXGN::Location->new( {
-        bcs_schema => $c->dbic_schema("Bio::Chado::Schema"),
+        bcs_schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado"),
         nd_geolocation_id => $location_id
     } );
 
@@ -123,7 +123,7 @@ sub upload_locations : Path('/ajax/locations/upload') : ActionClass('REST') { }
 
 sub upload_locations_POST : Args(0) {
     my ($self, $c) = @_;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $upload = $c->req->upload('locations_upload_file');
     my $upload_original_name = $upload->filename();
     my $upload_tempfile = $upload->tempname;
@@ -209,7 +209,7 @@ sub get_noaa_station_id :Path("/ajax/location/get_noaa_station_id") Args(1) {
     my $location_id = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 0, 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $location = CXGN::Location->new({
         bcs_schema => $schema,
@@ -230,14 +230,9 @@ sub noaa_ncdc_gdd_cp :Path("/ajax/location/noaa_ncdc_gdd_cp") Args(0) {
     my $end_date = $c->req->param('end_date');
     my $base_temp = $c->req->param('base_temp');
     my $data_type = $c->req->param('data_type') || 'gdd';
-    my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 0, 0, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 'submitter', 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
-
-    if (! $c->user()) {
-        $c->stash->{rest} = { error => 'You must be logged in to add or edit a location.' };
-        return;
-    }
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $location = CXGN::Location->new({
         bcs_schema => $schema,
@@ -281,9 +276,9 @@ sub noaa_ncdc_analysis :Path("/ajax/location/noaa_ncdc_analysis") Args(0) {
     my $window_start = $c->req->param('w_start');
     my $window_end = $c->req->param('w_end');
     my $cumulative_year = $c->req->param('cumul_year') eq 'yes' ? 1 : 0;
-    my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 0, 0, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_location($c, 'submitter', 0, 0);
 
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $location = CXGN::Location->new({
         bcs_schema => $schema,
