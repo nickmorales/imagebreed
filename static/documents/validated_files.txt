@@ -24,7 +24,6 @@ index.pl                                        1/8
 italy.pl                                        1/7
 release_20040301.pl                             1/7
 solanum_nomenclature.pl                         1/6
-status.pl                                            can't locate SGN.pm in @INC -- has been superseded? doesn't seem recent
 temp.pl                                              graphs server-room temperature? has been superseded?
 tomato_project_overview.pl                      1/8
 tomato_sequencing.pl                            1/8
@@ -297,7 +296,7 @@ chr1c.pl                                   1/6
 chr1d.pl                                   1/6
 chr1e.pl                                   1/6
 chr2_split.pl                              1/6
-chr2a.pl                                   1/6                                
+chr2a.pl                                   1/6
 chr2b.pl                                   1/6
 chr2c.pl                                   1/6
 chr2d.pl                                   1/6
@@ -449,11 +448,6 @@ http_error_handler.pl                                  You really shouldn't call
 
 ./secretom:
 index.pl                                         1/7
-
-./sequencing:
-agp.pl                                           1/6
-bac_registry_discrepancies.pl                         'sorry, this page is temporarily unavailable'
-tpf.pl                                           1/6
 
 ./sgn_photos:
 index.pl                                         1/6

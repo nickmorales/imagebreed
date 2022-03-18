@@ -35,7 +35,7 @@ pages.
     }
 
     .MapsMarkers {
-            position: relative; 
+            position: relative;
     	top: 80px;
     	left: 50px;
     }
@@ -54,7 +54,7 @@ pages.
 
     .Genes {
     	position: relative;
-        top: 40px; 
+        top: 40px;
     	left: 120px;
     }
 
@@ -71,14 +71,14 @@ pages.
      }
 
     .Phenotypes {
-    	position: relative; 
+    	position: relative;
     	top: 80px;
     	left: 100px;
     }
 
     .PhenotypesSubMenu {
     	width: 227px;
-    	height: 100px; 
+    	height: 100px;
     	position: relative;
     	top: -110px;
     	left: 115px;
@@ -86,7 +86,7 @@ pages.
 
 
     .BreedersToolBox {
-    	position: relative; 
+    	position: relative;
     	top: 140px;
     	left: -360px;
         z-index: 1;
@@ -102,7 +102,7 @@ pages.
     }
 
     .GenomesSequences {
-    	position: relative; 
+    	position: relative;
     	top: 40px;
     	left: 260px;
     }
@@ -117,7 +117,7 @@ pages.
     }
 
     .Pathways {
-    	position: relative; 
+    	position: relative;
     	top: -10px;
     	left: 310px;
     }
@@ -130,7 +130,7 @@ pages.
     	left: 115px;
     }
 
-    .Divider { 
+    .Divider {
             line-height:4px;
             font-size: 4px;
     }
@@ -159,9 +159,9 @@ pages.
               <li><a href="/search/direct_search.pl?search=unigene">Search unigenes</a></li>
               <li><a href="/search/direct_search.pl?search=template">Expression</a></li>
               <li><a href="/organism/Solanum_lycopersicum/genome">Search/browse tomato genome</a></li>
-	      <li><a href="/phenome/">Become an SGN locus editor</a></li>              
+	      <li><a href="/phenome/">Become an SGN locus editor</a></li>
 	      </div>
-	      
+
 	  </ul>
 
 
@@ -179,7 +179,7 @@ pages.
           </ul>
 
 	</li>
-    
+
     <li class="BreedersToolBox"><a href="/breeders/"><img src="/img/soliconmenu/BreedersToolBox.png" alt="Breeders Toolbox" title="Click to access the Breeder's toolbox" /></a>
     	<!--
 		<ul>
@@ -191,7 +191,7 @@ pages.
         </ul>
         -->
 	</li>
-    
+
   <li class="GenomesSequences"><a href="/genomes"><img src="/img/soliconmenu/GenomesSequences.png" alt="Genomes and Sequences" title="Genomes and Sequences" /></a>
     <ul>
       <div class="submenu GenomesSequencesSubMenu">
@@ -199,13 +199,10 @@ pages.
         <!-- <li><a href="/organism/Solanum_lycopersicum/genome">Search/browse tomato genome</a></li> -->
         <li><a href="/organism/Solanum_pimpinellifolium/genome"><i>Solanum pimpinellifolium</i> genome</a></li>
         <li><a href="/organism/Nicotiana_benthamiana/genome"><i>Nicotiana benthamiana</i> genome</a></li>
-        
-        <li><a href=""></a>&nbsp;<li>
-        <li><a href="/sequencing/sol100.pl">SOL100 genomes</a></li>
       </div>
     </ul>
   </li>
-    
+
     <li class="Pathways"><a href="http://solcyc.solgenomics.net/"><img src="/img/soliconmenu/Pathways.png" alt="Pathways" title="Click to access SolCyc" /></a>
     	<!--
 		<ul>
@@ -217,8 +214,8 @@ pages.
         </ul>
         -->
 	</li>
-    
-    
+
+
 </ul>
 
 </div>

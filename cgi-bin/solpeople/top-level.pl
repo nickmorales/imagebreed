@@ -139,8 +139,6 @@ EOHTML
 <a href="attribute_bacs.pl">Attribute a BAC to your chromosome sequencing project</a><br />
 <a href="/maps/physical/clone_il_view.pl">View/update BAC IL mapping information (list view)</a><br />
 <div style="vertical-align: middle; font-weight: bold"><a href="/maps/physical/clone_reg.pl">View/update all BAC registry info (list view) <img style="border: none" src="/documents/img/new.gif" /></a></div>
-<a href="/sequencing/tpf.pl">View TPF Files</a><br />
-<a href="/sequencing/agp.pl">View AGP Files</a><br />
 $tpf_agp_upload
 EOHTML
 }
@@ -327,24 +325,6 @@ sub tpf_agp_upload_forms {
     $chrinput_agp =~ s/TYPE/_agp/g;
     $chrinput_tpf =~ s/TYPE/_tpf/g;
     return <<EOHTML;
-<div style="margin-top: 1em">
-  <b>Upload Accessioned Golden Path (AGP) File</b><br />
-  <form action="/sequencing/agp.pl" method="post" enctype="multipart/form-data">
-    $chrinput_agp
-    <input type="hidden" name="filetype" value="agp" />
-    <label for="agpinput">File: </label>
-    <input id="agpinput" type="file" name="agp_file" value="Upload AGP file" /><input type="submit" value="Submit" />
-  </form>
-</div>
-<div style="margin-top: 1em">
-  <b>Upload Tiling Path Format (TPF) File</b><br />
-  <form action="/sequencing/tpf.pl" method="post" enctype="multipart/form-data">
-    $chrinput_tpf
-    <input type="hidden" name="filetype" value="tpf" />
-    <label for="tpfinput">File: </label>
-    <input id="tpfinput" type="file" name="tpf_file" value="Upload TPF file" /><input type="submit" value="Submit" />
-  </form>
-</div>
 EOHTML
 }
 
