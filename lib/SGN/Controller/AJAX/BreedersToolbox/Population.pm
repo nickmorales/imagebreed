@@ -25,11 +25,7 @@ sub create_population :Path('/ajax/population/new') Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
-
-    if(!$c->user){
-        $c->stash->{rest} = { error => "You must be logged in to add a population" };
-        $c->detach;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_population($c, 0, 0, 0);
 
     my $population_name = $c->req->param('population_name');
     my $accession_list_id = $c->req->param('accession_list_id');
@@ -52,6 +48,7 @@ sub create_population :Path('/ajax/population/new') Args(0) {
 sub add_accessions_to_population :Path('/ajax/population/add_accessions') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_population($c, 'submitter', 0, 0);
 
     my $population_name = $c->req->param('population_name');
     my $accession_list_id = $c->req->param('accession_list_id');
@@ -69,6 +66,7 @@ sub add_accessions_to_population :Path('/ajax/population/add_accessions') Args(0
 sub delete_population :Path('/ajax/population/delete') Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_population($c, 'submitter', 0, 0);
 
     my $population_id = $c->req->param('population_id');
     my $population_name = $c->req->param('population_name');
@@ -102,11 +100,7 @@ sub delete_population :Path('/ajax/population/delete') Args(0) {
 sub remove_population_member :Path('/ajax/population/remove_member') Args(0) {
     my $self = shift;
     my $c = shift;
-
-    if(!$c->user){
-        $c->stash->{rest} = { error => "You must be logged in to remove an accession from population" };
-        $c->detach;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_population($c, 'submitter', 0, 0);
 
     my $stock_relationship_id = $c->req->param('stock_relationship_id');
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
@@ -132,6 +126,22 @@ sub remove_population_member :Path('/ajax/population/remove_member') Args(0) {
     }
 
     $c->stash->{rest} = $return;
+}
+
+sub _check_user_login_population {
+    my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
 }
 
 1;

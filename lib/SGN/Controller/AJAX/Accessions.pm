@@ -35,6 +35,7 @@ use Encode;
 use JSON::XS qw | decode_json |;
 use utf8;
 use CXGN::PrivateCompany;
+use CXGN::Login;
 
 BEGIN { extends 'Catalyst::Controller::REST' }
 
@@ -54,13 +55,7 @@ sub verify_accession_list_GET : Args(0) {
 
 sub verify_accession_list_POST : Args(0) {
     my ($self, $c) = @_;
-
-    my $login_check_return = CXGN::Login::_check_user_login($c, 'submitter', 0, 0);
-    if ($login_check_return->{error}) {
-        $c->stash->{rest} = $login_check_return;
-        $c->detach();
-    }
-    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+    my ($user_id, $user_name, $user_role) = _check_user_login_accessions($c, 'submitter', 0, 0);
 
     my $accession_list_json = $c->req->param('accession_list');
     my $organism_list_json = $c->req->param('organism_list');
@@ -187,13 +182,7 @@ sub do_exact_search {
 sub verify_accessions_file : Path('/ajax/accessions/verify_accessions_file') : ActionClass('REST') { }
 sub verify_accessions_file_POST : Args(0) {
     my ($self, $c) = @_;
-
-    my $login_check_return = CXGN::Login::_check_user_login($c, 'submitter', 0, 0);
-    if ($login_check_return->{error}) {
-        $c->stash->{rest} = $login_check_return;
-        $c->detach();
-    }
-    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+    my ($user_id, $user_name, $user_role) = _check_user_login_accessions($c, 'submitter', 0, 0);
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $private_company_id = $c->req->param('add_accessions_file_private_company_select');
@@ -202,12 +191,6 @@ sub verify_accessions_file_POST : Args(0) {
 
     if ($user_role ne 'curator' && !$do_fuzzy_search) {
         $c->stash->{rest} = {error=>'Only a curator can add accessions without using the fuzzy search!'};
-        $c->detach();
-    }
-
-    # These roles are required by CXGN::UploadFile
-    if ($user_role ne 'curator' && $user_role ne 'submitter' && $user_role ne 'sequencer' ) {
-        $c->stash->{rest} = {error=>'Only a curator, submitter or sequencer can upload a file'};
         $c->detach();
     }
 
@@ -297,6 +280,8 @@ sub verify_fuzzy_options : Path('/ajax/accession_list/fuzzy_options') : ActionCl
 
 sub verify_fuzzy_options_POST : Args(0) {
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_accessions($c, 'submitter', 0, 0);
+
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $accession_list_id = $c->req->param('accession_list_id');
     my $fuzzy_option_hash = decode_json( encode("utf8", $c->req->param('fuzzy_option_data')));
@@ -341,18 +326,12 @@ sub add_accession_list : Path('/ajax/accession_list/add') : ActionClass('REST') 
 sub add_accession_list_POST : Args(0) {
     my ($self, $c) = @_;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_accessions($c, 'submitter', 0, 0);
 
     my $full_info = $c->req->param('full_info') ? _parse_list_from_json($c, $c->req->param('full_info')) : '';
     my $allowed_organisms = $c->req->param('allowed_organisms') ? _parse_list_from_json($c, $c->req->param('allowed_organisms')) : [];
     my %allowed_organisms = map {$_=>1} @$allowed_organisms;
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
-
-    my $login_check_return = CXGN::Login::_check_user_login($c, 'submitter', 0, 0);
-    if ($login_check_return->{error}) {
-        $c->stash->{rest} = $login_check_return;
-        $c->detach();
-    }
-    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
     my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
     my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
@@ -460,40 +439,43 @@ sub add_accession_list_POST : Args(0) {
 
 sub possible_seedlots : Path('/ajax/accessions/possible_seedlots') : ActionClass('REST') { }
 sub possible_seedlots_POST : Args(0) {
-  my ($self, $c) = @_;
-  my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-  my $people_schema = $c->dbic_schema('CXGN::People::Schema');
-  my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
+    my ($self, $c) = @_;
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $people_schema = $c->dbic_schema('CXGN::People::Schema');
+    my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
+    my ($user_id, $user_name, $user_role) = _check_user_login_accessions($c, 0, 0, 0);
 
-  my $names = $c->req->body_data->{'names'};
-  my $type = $c->req->body_data->{'type'};
+    my $names = $c->req->body_data->{'names'};
+    my $type = $c->req->body_data->{'type'};
 
-  my $stock_lookup = CXGN::Stock::StockLookup->new(schema => $schema);
-  my $accession_manager = CXGN::BreedersToolbox::Accessions->new(schema=>$schema, people_schema=>$people_schema, phenome_schema=>$phenome_schema);
+    my $stock_lookup = CXGN::Stock::StockLookup->new(schema => $schema);
+    my $accession_manager = CXGN::BreedersToolbox::Accessions->new(schema=>$schema, people_schema=>$people_schema, phenome_schema=>$phenome_schema);
 
-  my $synonyms;
-  my @uniquenames;
-  if ($type eq 'accessions'){
-      $synonyms = $stock_lookup->get_stock_synonyms('any_name','accession',$names);
-      @uniquenames = keys %{$synonyms};
-  } else {
-      @uniquenames = @$names;
-  }
+    my $synonyms;
+    my @uniquenames;
+    if ($type eq 'accessions'){
+        $synonyms = $stock_lookup->get_stock_synonyms('any_name','accession',$names);
+        @uniquenames = keys %{$synonyms};
+    } else {
+        @uniquenames = @$names;
+    }
 
-  my $seedlots = $accession_manager->get_possible_seedlots(\@uniquenames, $type);
+    my $seedlots = $accession_manager->get_possible_seedlots(\@uniquenames, $type);
 
-  $c->stash->{rest} = {
-      success => "1",
-      seedlots=> $seedlots,
-      synonyms=>$synonyms
-  };
-  return;
+    $c->stash->{rest} = {
+        success => "1",
+        seedlots=> $seedlots,
+        synonyms=>$synonyms
+    };
+    return;
 }
 
 sub fuzzy_response_download : Path('/ajax/accession_list/fuzzy_download') : ActionClass('REST') { }
 
 sub fuzzy_response_download_POST : Args(0) {
     my ($self, $c) = @_;
+    my ($user_id, $user_name, $user_role) = _check_user_login_accessions($c, 0, 0, 0);
+
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $fuzzy_json = $c->req->param('fuzzy_response');
     my $fuzzy_response = decode_json(encode("utf8", $fuzzy_json));
@@ -532,6 +514,7 @@ sub populations : Path('/ajax/manage_accessions/populations') : ActionClass('RES
 sub populations_GET : Args(0) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_accessions($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $ac = CXGN::BreedersToolbox::Accessions->new( { schema=>$schema });
@@ -546,6 +529,7 @@ sub population_members_GET : Args(1) {
     my $self = shift;
     my $c = shift;
     my $stock_id = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_accessions($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $ac = CXGN::BreedersToolbox::Accessions->new( { schema=>$schema });
@@ -591,6 +575,22 @@ sub debug {
     # print $F "### Request from ".$c->req->referer()."\n";
     # print $F "### ENCODING: $encoding\n$message\n==========\n";
     # close($F);
+}
+
+sub _check_user_login_accessions {
+    my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
 }
 
 1;

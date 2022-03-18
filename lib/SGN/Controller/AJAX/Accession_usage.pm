@@ -3,6 +3,7 @@ package SGN::Controller::AJAX::Accession_usage;
 use Moose;
 use Data::Dumper;
 use Scalar::Util qw(looks_like_number);
+use CXGN::Login;
 
 BEGIN { extends 'Catalyst::Controller::REST'; }
 
@@ -14,9 +15,9 @@ __PACKAGE__->config(
 
 
 sub accession_usage_trials: Path('/ajax/accession_usage_trials') :Args(0){
-
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_accession_usage($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema", 'sgn_chado');
     my $accession_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'accession', 'stock_type')->cvterm_id();
@@ -46,9 +47,9 @@ sub accession_usage_trials: Path('/ajax/accession_usage_trials') :Args(0){
 
 
 sub accession_usage_female: Path('/ajax/accession_usage_female') :Args(0){
-
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_accession_usage($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $female_parent_typeid = $c->model("Cvterm")->get_cvterm_row($schema, "female_parent", "stock_relationship")->cvterm_id();
@@ -80,9 +81,9 @@ sub accession_usage_female: Path('/ajax/accession_usage_female') :Args(0){
 }
 
 sub accession_usage_male: Path('/ajax/accession_usage_male') :Args(0){
-
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_accession_usage($c, 0, 0, 0);
 
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $male_parent_typeid = $c->model("Cvterm")->get_cvterm_row($schema, "male_parent", "stock_relationship")->cvterm_id();
@@ -118,6 +119,7 @@ sub accession_usage_phenotypes: Path('/ajax/accession_usage_phenotypes') :Args(0
     my $c = shift;
     my $params = $c->req->params() || {};
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+    my ($user_id, $user_name, $user_role) = _check_user_login_accession_usage($c, 0, 0, 0);
 
     my $round = Math::Round::Var->new(0.01);
     my $dbh = $c->dbc->dbh();
@@ -197,5 +199,20 @@ sub accession_usage_phenotypes: Path('/ajax/accession_usage_phenotypes') :Args(0
     $c->stash->{rest} = { data => \@phenotype_data, draw => $draw, recordsTotal => $total_count,  recordsFiltered => $total_count };
 }
 
+sub _check_user_login_accession_usage {
+    my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
+}
 
 1;

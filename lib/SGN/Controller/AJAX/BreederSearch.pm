@@ -24,32 +24,7 @@ sub get_data : Path('/ajax/breeder/search') Args(0) {
   my $c = shift;
   my $j = JSON->new;
   my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
-
-  my $user_id;
-  my $user_name;
-  my $user_role;
-  my $session_id = $c->req->param("sgn_session_id");
-
-  if ($session_id){
-      my $dbh = $c->dbc->dbh;
-      my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-      if (!$user_info[0]){
-          $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-          $c->detach();
-      }
-      $user_id = $user_info[0];
-      $user_role = $user_info[1];
-      my $p = CXGN::People::Person->new($dbh, $user_id);
-      $user_name = $p->get_username;
-  } else {
-      if (!$c->user){
-          $c->stash->{rest} = {error=>'You must be logged in to do this!'};
-          $c->detach();
-      }
-      $user_id = $c->user()->get_object()->get_sp_person_id();
-      $user_name = $c->user()->get_object()->get_username();
-      $user_role = $c->user->get_object->get_user_type();
-  }
+  my ($user_id, $user_name, $user_role) = _check_user_login_breedersearch($c, 0, 0, 0);
 
   my @criteria_list = $c->req->param('categories[]');
   my @querytypes = $c->req->param('querytypes[]');
@@ -139,6 +114,7 @@ sub get_data : Path('/ajax/breeder/search') Args(0) {
 sub get_avg_phenotypes : Path('/ajax/breeder/search/avg_phenotypes') Args(0) {
   my $self = shift;
   my $c = shift;
+  my ($user_id, $user_name, $user_role) = _check_user_login_breedersearch($c, 0, 0, 0);
 
   my $trial_id = $c->req->param('trial_id');
   my @trait_ids = $c->req->param('trait_ids[]');
@@ -166,9 +142,10 @@ sub get_genotyping_protocol_chromosomes : Path('/ajax/breeder/search/genotyping_
   my $self = shift;
   my $c = shift;
   my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+  my ($user_id, $user_name, $user_role) = _check_user_login_breedersearch($c, 0, 0, 0);
 
   my $genotyping_protocol_id = $c->req->param('genotyping_protocol');
-  
+
   # Prtocol ID not defined, use the default genotyping protocol
   if ( !defined($genotyping_protocol_id) || $genotyping_protocol_id eq "" ) {
     my $genotyping_protocol_name = $c->config->{default_genotyping_protocol};
@@ -176,7 +153,7 @@ sub get_genotyping_protocol_chromosomes : Path('/ajax/breeder/search/genotyping_
       my $genotyping_protocol_rs = $schema->resultset('NaturalDiversity::NdProtocol')->find({name=>$genotyping_protocol_name});
       if ( defined($genotyping_protocol_rs) ) {
         $genotyping_protocol_id = $genotyping_protocol_rs->nd_protocol_id();
-      } 
+      }
     }
   }
 
@@ -184,8 +161,8 @@ sub get_genotyping_protocol_chromosomes : Path('/ajax/breeder/search/genotyping_
   my @names=();
   if ( defined($genotyping_protocol_id) && $genotyping_protocol_id ne "" ) {
     my $vcf_cvterm_id = $c->model("Cvterm")->get_cvterm_row($schema, "vcf_map_details_markers", "protocol_property")->cvterm_id();
-    my $q = "SELECT DISTINCT(s.value->>'chrom') AS chrom 
-            FROM nd_protocolprop, jsonb_each(nd_protocolprop.value) AS s 
+    my $q = "SELECT DISTINCT(s.value->>'chrom') AS chrom
+            FROM nd_protocolprop, jsonb_each(nd_protocolprop.value) AS s
             WHERE nd_protocol_id = ? AND type_id = ? ORDER BY chrom ASC;";
     my $dbh = $c->dbc->dbh();
     my $h = $dbh->prepare($q);
@@ -209,6 +186,7 @@ sub refresh_matviews : Path('/ajax/breeder/refresh') Args(0) {
   my $self = shift;
   my $c = shift;
   my $matviews = $c->req->param('matviews') || 'fullview'; #can be "fullview" or "stockprop"
+  my ($user_id, $user_name, $user_role) = _check_user_login_breedersearch($c, 'submitter', 0, 0);
 
   print STDERR "dbname=" . $c->config->{dbname} ."\n";
 
@@ -230,6 +208,7 @@ sub refresh_matviews : Path('/ajax/breeder/refresh') Args(0) {
 sub check_status : Path('/ajax/breeder/check_status') Args(0) {
   my $self = shift;
   my $c = shift;
+  my ($user_id, $user_name, $user_role) = _check_user_login_breedersearch($c, 'submitter', 0, 0);
 
   my $dbh = $c->dbc->dbh();
 
@@ -245,3 +224,21 @@ sub check_status : Path('/ajax/breeder/check_status') Args(0) {
     return;
   }
 }
+
+sub _check_user_login_breedersearch {
+    my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
+}
+
+1;

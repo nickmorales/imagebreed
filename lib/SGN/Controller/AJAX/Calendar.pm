@@ -59,13 +59,14 @@ sub calendar_events_personal_GET : Args(1) {
     my $self = shift;
     my $c = shift;
     my $view = shift;
-    if (!$c->user()) {$c->detach();}
+    my ($user_id, $user_name, $user_role) = _check_user_login_calendar($c, 0, 0, 0);
+
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my @roles = $c->user->get_roles();
 
     my $calendar_funcs = CXGN::Calendar->new({
         bcs_schema => $schema,
-        sp_person_id => $c->user->get_object->get_sp_person_id,
+        sp_person_id => $user_id,
         roles => \@roles
     });
     my $search_rs = $calendar_funcs->get_calendar_events_personal($c);
@@ -88,11 +89,7 @@ sub add_event_POST {
     my $self = shift;
     my $c = shift;
     my $params = $c->req->params();
-
-    if (!($c->user()->check_roles('curator') || $c->user()->check_roles('submitter')) ) {
-        $c->stash->{rest} = {status => 3};
-        return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_calendar($c, 'submitter', 0, 0);
 
     my $calendar_funcs = CXGN::Calendar->new({});
 
@@ -133,11 +130,7 @@ sub delete_event : Path('/ajax/calendar/delete_event') : ActionClass('REST') { }
 sub delete_event_POST {
     my $self = shift;
     my $c = shift;
-
-    if (!($c->user()->check_roles('curator') || $c->user()->check_roles('submitter')) ) {
-        $c->stash->{rest} = {status => 3};
-        return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_calendar($c, 'submitter', 0, 0);
 
     my $projectprop_id = $c->req->param("event_projectprop_id");
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
@@ -164,11 +157,7 @@ sub drag_or_resize_event_POST {
     my $self = shift;
     my $c = shift;
     my $params = $c->req->params();
-
-    if (!($c->user()->check_roles('curator') || $c->user()->check_roles('submitter')) ) {
-        $c->stash->{rest} = {status => 3};
-        return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_calendar($c, 'submitter', 0, 0);
 
     my $calendar_funcs = CXGN::Calendar->new({});
 
@@ -222,11 +211,7 @@ sub edit_event : Path('/ajax/calendar/edit_event') : ActionClass('REST') { }
 sub edit_event_POST {
     my $self = shift;
     my $c = shift;
-
-    if (!($c->user()->check_roles('curator') || $c->user()->check_roles('submitter')) ) {
-        $c->stash->{rest} = {status => 3};
-        return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_calendar($c, 'submitter', 0, 0);
 
     my $params = $c->req->params();
     my $calendar_funcs = CXGN::Calendar->new({});
@@ -256,25 +241,28 @@ sub day_click_personal : Path('/ajax/calendar/dayclick/personal') : ActionClass(
 sub day_click_personal_GET {
     my $self = shift;
     my $c = shift;
-
-    my $person_id = $c->user->get_object->get_sp_person_id;
+    my ($user_id, $user_name, $user_role) = _check_user_login_calendar($c, 0, 0, 0);
 
     my @roles = $c->user->get_roles();
     my @projects;
     foreach (@roles) {
-	my $q="SELECT project_id, name FROM project WHERE name=?";
-	my $sth = $c->dbc->dbh->prepare($q);
-	$sth->execute($_);
-	while (my ($project_id, $name) = $sth->fetchrow_array ) {
-	    push(@projects, {project_id=>$project_id, project_name=>$name});
+        my $q="SELECT project_id, name FROM project WHERE name=?";
+        my $sth = $c->dbc->dbh->prepare($q);
+        $sth->execute($_);
+        while (my ($project_id, $name) = $sth->fetchrow_array ) {
+            push(@projects, {project_id=>$project_id, project_name=>$name});
 
-	    my $q="SELECT subject_project_id, project.name FROM project_relationship JOIN cvterm ON (type_id=cvterm_id) JOIN project ON (subject_project_id=project_id) WHERE object_project_id=? and cvterm.name='breeding_program_trial_relationship'";
-	    my $sth = $c->dbc->dbh->prepare($q);
-	    $sth->execute($project_id);
-	    while (my ($trial_id, $trial_name) = $sth->fetchrow_array ) {
-		push(@projects, {project_id=>$trial_id, project_name=>$trial_name});
-	    }
-	}
+            my $q="SELECT subject_project_id, project.name
+                FROM project_relationship
+                JOIN cvterm ON (type_id=cvterm_id)
+                JOIN project ON (subject_project_id=project_id)
+                WHERE object_project_id=? AND cvterm.name='breeding_program_trial_relationship'";
+            my $sth = $c->dbc->dbh->prepare($q);
+            $sth->execute($project_id);
+            while (my ($trial_id, $trial_name) = $sth->fetchrow_array ) {
+                push(@projects, {project_id=>$trial_id, project_name=>$trial_name});
+            }
+        }
     }
 
     my @calendar_projectprop_names = (['project_planting_date', 'project_property'], ['project_harvest_date', 'project_property'], ['Fertilizer Event', 'calendar'], ['Meeting Event', 'calendar'], ['Planning Event', 'calendar'], ['Presentation Event', 'calendar'], ['Phenotyping Event', 'calendar'], ['Genotyping Event', 'calendar'] );
@@ -293,5 +281,20 @@ sub day_click_personal_GET {
     $c->stash->{rest} = {project_list => \@projects, projectprop_list => \@projectprop_types};
 }
 
+sub _check_user_login_calendar {
+    my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
+}
 
 1;

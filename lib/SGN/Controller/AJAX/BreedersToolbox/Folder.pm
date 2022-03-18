@@ -16,11 +16,11 @@ __PACKAGE__->config(
 sub get_folder : Chained('/') PathPart('ajax/folder') CaptureArgs(1) {
     my $self = shift;
     my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_breederstoolbox_folder($c, 0, 0, 0);
 
     my $folder_id = shift;
     $c->stash->{schema} = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     $c->stash->{folder_id} = $folder_id;
-
 }
 
 sub create_folder :Path('/ajax/folder/new') Args(0) {
@@ -30,6 +30,7 @@ sub create_folder :Path('/ajax/folder/new') Args(0) {
     my $folder_name = $c->req->param("folder_name");
     my $breeding_program_id = $c->req->param("breeding_program_id");
     my $private_company_id = $c->req->param("private_company_id");
+    my ($user_id, $user_name, $user_role) = _check_user_login_breederstoolbox_folder($c, 'submitter', 0, 0);
 
     my $folder_for_trials;
     my $folder_for_crosses;
@@ -44,10 +45,6 @@ sub create_folder :Path('/ajax/folder/new') Args(0) {
         $folder_for_genotyping_trials = 1
     }
 
-
-    if (! $self->check_privileges($c)) {
-	return;
-    }
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $existing = $schema->resultset("Project::Project")->find( { name => $folder_name });
 
@@ -75,10 +72,7 @@ sub create_folder :Path('/ajax/folder/new') Args(0) {
 sub delete_folder : Chained('get_folder') PathPart('delete') Args(0) {
     my $self = shift;
     my $c = shift;
-
-    if (! $self->check_privileges($c)) {
-        return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_breederstoolbox_folder($c, 'submitter', 0, 0);
 
     my $folder = CXGN::Trial::Folder->new({
         bcs_schema => $c->stash->{schema},
@@ -98,9 +92,7 @@ sub rename_folder : Chained('get_folder') PathPart('name') Args(0) {
     my $self = shift;
     my $c = shift;
     my $new_folder_name = $c->req->param("new_name") ;
-    if (! $self->check_privileges($c)) {
-        return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_breederstoolbox_folder($c, 'submitter', 0, 0);
 
     my $folder = CXGN::Trial::Folder->new({
         bcs_schema => $c->stash->{schema},
@@ -120,21 +112,16 @@ sub associate_parent_folder : Chained('get_folder') PathPart('associate/parent')
     my $self = shift;
     my $c = shift;
     my $parent_id = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_breederstoolbox_folder($c, 'submitter', 0, 0);
 
-    if (! $self->check_privileges($c)) {
-	return;
-    }
-
-    my $folder = CXGN::Trial::Folder->new(
-	{
-	    bcs_schema => $c->stash->{schema},
-	    folder_id => $c->stash->{folder_id}
-	});
+    my $folder = CXGN::Trial::Folder->new({
+        bcs_schema => $c->stash->{schema},
+        folder_id => $c->stash->{folder_id}
+    });
 
     $folder->associate_parent($parent_id);
 
     $c->stash->{rest} = { success => 1 };
-
 }
 
 sub set_folder_categories : Chained('get_folder') PathPart('categories') Args(0) {
@@ -143,10 +130,7 @@ sub set_folder_categories : Chained('get_folder') PathPart('categories') Args(0)
     my $folder_for_trials = $c->req->param("folder_for_trials") eq 'true' ? 1 : 0;
     my $folder_for_crosses = $c->req->param("folder_for_crosses") eq 'true' ? 1 : 0;
     my $folder_for_genotyping_trials = $c->req->param("folder_for_genotyping_trials") eq 'true' ? 1 : 0;
-
-    if (! $self->check_privileges($c)) {
-        return;
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_breederstoolbox_folder($c, 'submitter', 0, 0);
 
     my $folder = CXGN::Trial::Folder->new({
         bcs_schema => $c->stash->{schema},
@@ -160,23 +144,21 @@ sub set_folder_categories : Chained('get_folder') PathPart('categories') Args(0)
     $c->stash->{rest} = { success => 1 };
 }
 
-sub check_privileges {
-    my $self = shift;
+sub _check_user_login_breederstoolbox_folder {
     my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
 
-    if (!$c->user()) {
-        print STDERR "User not logged in... not uploading coordinates.\n";
-        $c->stash->{rest} = {error => "You need to be logged in." };
-        $c->detach;
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
     }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 
-    if (!any { $_ eq "curator" || $_ eq "submitter" } ($c->user()->roles)  ) {
-        $c->stash->{rest} = {error =>  "You have insufficient privileges." };
-        $c->detach;
-    }
-    return 1;
+    return ($user_id, $user_name, $user_role);
 }
-
 
 
 1;

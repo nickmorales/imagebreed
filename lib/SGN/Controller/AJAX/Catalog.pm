@@ -23,6 +23,7 @@ sub add_catalog_item_POST : Args(0) {
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $dbh = $c->dbc->dbh;
+    my ($user_id, $user_name, $user_role) = _check_user_login_catalog($c, 'submitter', 0, 0);
 
     my $item_name = $c->req->param('item_name');
     my $item_type = $c->req->param('item_type');
@@ -34,11 +35,6 @@ sub add_catalog_item_POST : Args(0) {
     my $contact_person = $c->req->param('contact_person');
     my $item_prop_id = $c->req->param('item_prop_id');
     my $item_stock_id;
-    if (!$c->user()) {
-        print STDERR "User not logged in... not adding a catalog item.\n";
-        $c->stash->{rest} = {error_string => "You must be logged in to add a catalog item." };
-        return;
-    }
 
     my $item_rs = $schema->resultset("Stock::Stock")->find({uniquename => $item_name});
     if (!$item_rs) {
@@ -97,45 +93,13 @@ sub upload_catalog_items_POST : Args(0) {
     my $dbh = $c->dbc->dbh;
     my $upload = $c->req->upload('catalog_items_upload_file');
     my $upload_type = 'CatalogXLS';
-    my $parser;
-    my $parsed_data;
     my $upload_original_name = $upload->filename();
     my $upload_tempfile = $upload->tempname;
     my $subdirectory = "catalog_upload";
-    my $archived_filename_with_path;
-    my $md5;
-    my $validate_file;
-    my $parsed_file;
-    my $parse_errors;
-    my %parsed_data;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
-    my $user_role;
-    my $user_id;
-    my $user_name;
-    my $owner_name;
-    my $session_id = $c->req->param("sgn_session_id");
+    my ($user_id, $user_name, $user_role) = _check_user_login_catalog($c, 'submitter', 0, 0);
 
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload catalog items!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
     my $uploader = CXGN::UploadFile->new({
         tempfile => $upload_tempfile,
         subdirectory => $subdirectory,
@@ -147,8 +111,8 @@ sub upload_catalog_items_POST : Args(0) {
     });
 
     ## Store uploaded temporary file in arhive
-    $archived_filename_with_path = $uploader->archive();
-    $md5 = $uploader->get_md5($archived_filename_with_path);
+    my $archived_filename_with_path = $uploader->archive();
+    my $md5 = $uploader->get_md5($archived_filename_with_path);
     if (!$archived_filename_with_path) {
         $c->stash->{rest} = {error => "Could not save file $upload_original_name in archive",};
         return;
@@ -156,9 +120,9 @@ sub upload_catalog_items_POST : Args(0) {
     unlink $upload_tempfile;
     #parse uploaded file with appropriate plugin
     my @stock_props = ('stock_catalog_json');
-    $parser = CXGN::Stock::ParseUpload->new(chado_schema => $schema, filename => $archived_filename_with_path, editable_stock_props=>\@stock_props);
+    my $parser = CXGN::Stock::ParseUpload->new(chado_schema => $schema, filename => $archived_filename_with_path, editable_stock_props=>\@stock_props);
     $parser->load_plugin($upload_type);
-    $parsed_data = $parser->parse();
+    my $parsed_data = $parser->parse();
     #print STDERR "PARSED DATA =".Dumper($parsed_data)."\n";
 
     if (!$parsed_data){
@@ -208,7 +172,6 @@ sub upload_catalog_items_POST : Args(0) {
     }
 
     $c->stash->{rest} = {success => "1"};
-
 }
 
 
@@ -216,6 +179,7 @@ sub get_catalog :Path('/ajax/catalog/items') :Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_catalog($c, 0, 0, 0);
 
     my $catalog_obj = CXGN::Stock::Catalog->new({ bcs_schema => $schema});
     my $catalog_ref = $catalog_obj->get_catalog_items();
@@ -246,7 +210,6 @@ sub get_catalog :Path('/ajax/catalog/items') :Args(0) {
     }
 
     $c->stash->{rest} = {data => \@catalog_items};
-
 }
 
 
@@ -257,6 +220,7 @@ sub item_image_list :Path('/ajax/catalog/image_list') :Args(1) {
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $dbh = $c->dbc->dbh;
 #    print STDERR "ITEM ID =".Dumper($item_id)."\n";
+    my ($user_id, $user_name, $user_role) = _check_user_login_catalog($c, 0, 0, 0);
 
     my @image_ids;
     my $q = "select distinct image_id, cvterm.name, stock_image.display_order FROM phenome.stock_image JOIN stock USING(stock_id) JOIN cvterm ON(type_id=cvterm_id) WHERE stock_id = ? ORDER BY stock_image.display_order ASC";
@@ -304,6 +268,7 @@ sub edit_catalog_image_POST : Args(0) {
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $dbh = $c->dbc->dbh;
+    my ($user_id, $user_name, $user_role) = _check_user_login_catalog($c, 'submitter', 0, 0);
 
     my $item_name = $c->req->param('item_name');
     my $item_prop_id = $c->req->param('item_prop_id');
@@ -312,11 +277,6 @@ sub edit_catalog_image_POST : Args(0) {
     my $item_stock_id;
     push @images, $image_id;
     print STDERR "IMAGE ID =".Dumper(\@images)."\n";
-    if (!$c->user()) {
-        print STDERR "User not logged in... not adding a catalog item.\n";
-        $c->stash->{rest} = {error_string => "You must be logged in to add a catalog image." };
-        return;
-    }
 
     my $item_rs = $schema->resultset("Stock::Stock")->find({uniquename => $item_name});
     if (!$item_rs) {
@@ -352,6 +312,7 @@ sub delete_catalog_item_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_catalog($c, 'submitter', 0, 0);
 
     my $item_prop_id = $c->req->param('item_prop_id');
     print STDERR "ITEM PROP ID =".Dumper($item_prop_id)."\n";
@@ -363,6 +324,22 @@ sub delete_catalog_item_POST : Args(0) {
     }
 
     $c->stash->{rest} = { success => 1 };
+}
+
+sub _check_user_login_catalog {
+    my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
 }
 
 1;
