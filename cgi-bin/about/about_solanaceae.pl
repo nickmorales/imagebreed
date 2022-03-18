@@ -5,7 +5,7 @@ $page->header('About The Solanaceae family');
 print<<END_HEREDOC;
 
   <center>
-      
+
 
     <table summary="" width="720" cellpadding="0" cellspacing="0"
     border="0">
@@ -67,13 +67,6 @@ print<<END_HEREDOC;
           Lycopersicon was re-integrated into the Solanum genus, as
           had been the case in Linnaeus' classification.</p>
 
-          <p>Today, the <a href=
-          "/solanaceae-project/index.pl">International SOL project</a>
-          attempts to study the basis of diversity and adaptation
-          in the Solanaceae as a model for biology. One of the
-          cornerstones of the SOL project is the sequencing of the
-          complete euchromatic region of the tomato genome.</p>
-
           <h4>Solanaceae phylogenetic tree</h4>
 
 <p>Below is an overview
@@ -106,7 +99,7 @@ print<<END_HEREDOC;
           Phylogenetic relationships in Solanum (Solanaceae) based
           on ndhF sequences. Syst. Bot. 22: 5-17.</p>
 
-          
+
           </td>
       </tr>
     </table>

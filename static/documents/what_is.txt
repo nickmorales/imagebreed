@@ -19,7 +19,6 @@ SGN is a <b>community curated</b> database. This means that <b>you</b> can contr
 <li><div class="subheading"><a class="creativitylinks" href="/about/index.pl">About SGN </a></div></li>
 <li><div class="subheading"><a class="creativitylinks" href="/content/sgn_data.pl">Species in the SGN database</a></div></li>
 <li><div class="subheading"><a class="creativitylinks" href="/about/about_solanaceae.pl">What are Solanaceae?</a></div></li>
-<li><div class="subheading"><a class="creativitylinks" href="/solanaceae-project/index.pl">Why are the Solanaceae being studied?</a></div></li>
 <li><div class="subheading"><a class="creativitylinks" href="/genomes/Solanum_lycopersicum/">The tomato genome sequencing project</a></div></li>
 </ul>
 
@@ -39,7 +38,7 @@ Fernandez-Pozo N, Menda N, Edwards JD, Saha S, Tecle IY, Strickler SR, Bombarely
 <br /><br />
 <div class="boxheading">SGN code and database</div>
 <div class="boxcontent">
- The SGN code and database are developed as an open source project, and is based on database schemas developed by the <a href="http://gmod.org/" target="_new" >GMOD project</a> and SGN-specific extensions. 
+ The SGN code and database are developed as an open source project, and is based on database schemas developed by the <a href="http://gmod.org/" target="_new" >GMOD project</a> and SGN-specific extensions.
 <br /><br />
 Contributions to the codebase are welcome.  All SGN code is available from <a href="http://github.com/solgenomics/" target="_new" >http://github.com/solgenomics</a>.
 </div>
@@ -49,4 +48,3 @@ Contributions to the codebase are welcome.  All SGN code is available from <a hr
 
 
 </div>
-

@@ -452,22 +452,6 @@ index.pl                                         1/7
 ./sgn_photos:
 index.pl                                         1/6
 
-./solanaceae-project:
-call_for_BACS.pl                                 1/6
-index.pl                                         1/6
-seed_bac_selection.pl                            1/6
-summary.pl                                       1/6
-
-./solanaceae-project/docs:
-index.pl                                         1/6
-
-./solanaceae-project/meeting_2005:
-index.pl                                         1/6
-
-./solanaceae-project/sol-bioinformatics:
-ghent2006_report.pl                              1/8
-index.pl                                         1/6
-
 ./solpeople:
 account-confirm.pl                               1/5
 attribute_bacs.pl                                1/5

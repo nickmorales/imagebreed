@@ -5,7 +5,7 @@ $page->header('About The Sol Genomics Network');
 print<<END_HEREDOC;
 
   <center>
-    
+
 
   <table summary="" width="720" cellpadding="0" cellspacing="0"
   border="0">
@@ -42,27 +42,6 @@ print<<END_HEREDOC;
         provided by Robin Buell of TIGR, USA. We would like to
         sincerely thank these researchers for making their data
         available through SGN.</p>
-</li>
-<li><p>International Solanaceae Project (SOL) page</p>
-
-        <p>The International Solanaceae Project (SOL) page is
-        available at http://sgn.cornell.edu/solanaceae-project/.
-        SOL is an initiative that will create a coordinated network
-        of knowledge about the Solanaceae family aimed at answering
-        two of the most important questions about life and
-        agriculture, namely (1) How can a common set of
-        genes/proteins give rise to such a wide range of
-        morphologically and ecologically distinct organisms that
-        occupy our planet? and (2) How can a deeper understanding
-        of the genetic basis of diversity be harnessed to better
-        meet the needs of society in an environmentally-friendly
-        way? In addition, the page contains information on the
-        meeting in Dulles, Virginia last November and provides
-        downloads for a number of documents, such as the SOL
-        whitepaper draft, information and guidelines for the tomato
-        sequencing project, and transcripts from the Dulles
-        meeting. More information will be available soon, so check
-        back frequently.</p>
 </li>
 <li><p>Updated toolbar and user interface</p>
 

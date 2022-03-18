@@ -12,30 +12,28 @@ print <<END_HEREDOC;
      <td width="33%" class="left">
 	  <div class="boxcontent">
 	  <br />
-	    
+
 	    <div class="subheading">
-	    <u>SGN Info</u> 
+	    <u>SGN Info</u>
 	    </div>
 	    <div class="boxsubcontent">
               <a class="creativitylinks" href="/content/sgn_data.pl">SGN data overview</a><br />
               <a class="creativitylinks" href="/about/index.pl">More about SGN</a><br />
-              <a class="creativitylinks" href="/solanaceae-project/">SOL project</a><br />
-              <a class="creativitylinks" href="/solanaceae-project/#SOL_news">SOL newsletter</a><br />
               <a class="creativitylinks" href="/about/tomato_sequencing.pl">International tomato project</a><br />
             </div>
-	   
+
             <div class="subheading">
             <u>Solanaceous Species</u>
             </div>
 	    <div class="boxsubcontent">
-	      <a class="creativitylinks" href="/content/sgn_data.pl#Solanumlycopersicum(formerlyLycopersiconesculentum)">Tomato</a><br /> 
+	      <a class="creativitylinks" href="/content/sgn_data.pl#Solanumlycopersicum(formerlyLycopersiconesculentum)">Tomato</a><br />
               <a class="creativitylinks" href="/content/sgn_data.pl#Capsicumannuum">Pepper</a><br />
 	      <a class="creativitylinks" href="/content/sgn_data.pl#Solanumtuberosum">Potato</a><br />
 	      <a class="creativitylinks" href="/content/sgn_data.pl#Solanummelongena">Eggplant</a><br />
 	      <a class="creativitylinks" href="/content/sgn_data.pl#Petuniahybrida">Petunia</a><br />
 	      <a class="creativitylinks" href="/about/solanum_nomenclature.pl">Solanum nomenclature</a>
             </div>
-	    
+
 	    <div class="subheading">
             <u>Tomato Genome</u>
             </div>
@@ -44,7 +42,7 @@ print <<END_HEREDOC;
               <a class="creativitylinks" href="/search/direct_search.pl?search=BACs">Search BACS</a><br />
               <a class="creativitylinks" href="/maps/physical/overgo_process_explained.pl">Overgo plating process</a>
             </div>
-	    
+
             <div class="subheading">
             <u>Maps and Markers</u>
             </div>
@@ -54,7 +52,7 @@ print <<END_HEREDOC;
 	      <a class="creativitylinks" href="/markers/cosii_markers.pl">About COSII markers</a><br />
 	      <a class="creativitylinks" href="/markers/cosii.xls">New COSII data available now</a><br />
             </div>
-	    
+
 	    <div class="subheading">
             <u>Sequences</u>
             </div>

@@ -11,43 +11,6 @@ EOS
 $page->header(('International Tomato Sequencing Project Overview') x 2);
 print info_section_html( title => 'Abstract',
 			 contents => <<EOH);
-<p>The tomato genome is comprised
-of approximately 950 Mb of DNA - more than 75\% of which
-is heterochromatin and largely devoid of genes. The
-majority of genes are found in long contiguous stretches
-of gene-dense euchromatin located on the distal portions
-of each chromosome arm. A minimal tiling path of BAC
-clones will be identified through this approximately 220
-Mb euchromatin. The starting point for sequencing the
-genome will be approximately 1500 "seed" BAC clones
-individually anchored to the tomato high density genetic
-map based on a single, common L. esculentum x L.
-pennellii F2 population (referred to as the F2.2000; view
-<a href="/cview/map.pl?map_id=9">
-map on SGN</a>). Sequencing will proceed on a BAC-by-BAC
-basis. Each sequenced anchor BAC will serve as a seed
-from which to radiate out into the minimum tiling path.
-Identification of the correct next BACs in the
-euchromatin minimum tiling path for sequencing will be
-based on the use of a BAC end sequence database that will
-be created as part of this project, as well as a
-fingerprint contig physical map that is currently being
-constructed. A subset of the sequenced BACs will be
-localized on pachytene chromosomes via FISH (fluorescence
-in situ hybridization) to help guide the extension of the
-tiling path through the euchromatic arms of each
-chromosome and to determine when the heterochromatin and
-telomeric regions have been reached on each arm. A
-bioinformatics portal will be created for this project
-that will be mirrored at several locations around the
-world and provide a mechanism by which researchers in
-different locations can develop and contribute
-bioinformatics tools and information to the project. A
-common set of standards for BAC sequencing and finishing,
-and for gene nomenclature, and structural and functional
-gene annotation (please refer to the <a href=
-"/solanaceae-project/index.pl">Solanaceae Project page</a>).
-</p>
 EOH
 
 print info_section_html( title => 'Objectives',
@@ -77,7 +40,6 @@ print info_section_html( title => 'More Project Documents',
 <ul>
 <li><a href="/about/tomato_sequencing.pl">International Tomato Genome Sequencing Project Home</a></li>
 <li><a href="/about/tomato_sequencing_scope.pl">Tomato Sequencing Scope and Completion Criteria</a></li>
-<li><a href="/solanaceae-project/index.pl">SOL Project</a></li>
 </ul>
 EOH
 
@@ -143,7 +105,7 @@ print info_section_html
 	       people_list(['D. Choi','KRIBB Seoul','doil@kribb.re.kr'],
 			   ['B.D. Kim','Natl. U.','kimbd@snu.ac.kr'],
 			  ),
-		
+
 	       'BioGreen21 Project / RDA<br />Frontier 21 Project / CFCG<br />Ministry of Science and Technology (MOST)',
 	       'Feb. 2004, July 2004',
 	       26,

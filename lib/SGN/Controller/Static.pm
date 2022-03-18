@@ -80,12 +80,6 @@ sub progress :Path('/progress') Args(0) {
 }
 
 
-sub solanaceae_project_afri :Path('/solanaceae-project/afri-sol/') {
-    my ($self, $c) = @_;
-    $c->stash->{template} = '/links/afri_sol.mas';
-}
-
-
 sub sgn_events :Path('/sgn-events/') {
     my ($self, $c) = @_;
     $c->stash->{template} = '/homepage/sgn_events.mas';

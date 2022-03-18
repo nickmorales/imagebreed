@@ -390,7 +390,6 @@ EOH
     <li><a href="/maps/physical/overgo_process_explained.pl">Overgo plating process</a></li>
     <li><a href="http://www.genome.arizona.edu/fpc/tomato/">Tomato FPC Map at AGI</a></li>
     <li><a href="/supplement/plantcell-14-1441/bac_annotation.pl">Old (2000) chromosome 6 tomato BAC annotation</a></li>
-    <li><a href="/solanaceae-project/seed_bac_selection.pl">Guidelines for seed BAC selection</a></li>
     </ul>
   </div>
 </form>
@@ -518,7 +517,7 @@ sub publication_search_form {
     return <<EOHTML;
 
 <table class="search_form_title" summary=""><tr><td>
-    
+
   </td>
   </tr></table>
 
@@ -624,7 +623,7 @@ sub to_html {
 
 EOHTML
 
-    $retstring .= blue_section_html( 'Marker Options', '<a style="font-size: 75%" href="/search/markers/markersearch.pl?random=yes">  
+    $retstring .= blue_section_html( 'Marker Options', '<a style="font-size: 75%" href="/search/markers/markersearch.pl?random=yes">
     [Select a marker at random]</a>', <<EOFOO);
 
     $checkbox{bac_assoc}
