@@ -418,7 +418,7 @@ sub get_grm {
         my $marker_filter = $self->marker_filter();
         my $individuals_filter = $self->individuals_filter();
 
-        my $cmd = 'R -e "library(genoDataFilter); library(rrBLUP); library(data.table); library(scales);
+        my $cmd = 'R -e "library(rrBLUP); library(data.table); library(scales);
         mat <- fread(\''.$grm_tempfile.'\', header=FALSE, sep=\'\t\');
         range_check <- range(as.matrix(mat)[1,]);
         if (length(table(as.matrix(mat)[1,])) < 2 || (!is.na(range_check[1]) && !is.na(range_check[2]) && range_check[2] - range_check[1] <= 1 )) {
@@ -470,24 +470,25 @@ sub get_grm {
         }
         $cmd .= 'write.table(A, file=\''.$grm_tempfile_out.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
         print STDERR Dumper $cmd;
+        my $status = system($cmd);
 
         # Do the GRM on the cluster
-        my $grm_cmd = CXGN::Tools::Run->new(
-            {
-                backend => $backend_config,
-                submit_host => $cluster_host_config,
-                temp_base => $tmp_output_dir,
-                queue => $web_cluster_queue_config,
-                do_cleanup => 0,
-                out_file => $temp_out_file,
-                # don't block and wait if the cluster looks full
-                max_cluster_jobs => 1_000_000_000,
-            }
-        );
-
-        $grm_cmd->run_cluster($cmd);
-        $grm_cmd->is_cluster(1);
-        $grm_cmd->wait;
+        # my $grm_cmd = CXGN::Tools::Run->new(
+        #     {
+        #         backend => $backend_config,
+        #         submit_host => $cluster_host_config,
+        #         temp_base => $tmp_output_dir,
+        #         queue => $web_cluster_queue_config,
+        #         do_cleanup => 0,
+        #         out_file => $temp_out_file,
+        #         # don't block and wait if the cluster looks full
+        #         max_cluster_jobs => 1_000_000_000,
+        #     }
+        # );
+        #
+        # $grm_cmd->run_cluster($cmd);
+        # $grm_cmd->is_cluster(1);
+        # $grm_cmd->wait;
     }
     else {
         print STDERR "No protocol, so giving equal relationship of all stocks!!\n";
