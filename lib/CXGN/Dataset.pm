@@ -312,7 +312,9 @@ sub BUILD {
         $self->is_live($dataset->{is_live});
         $self->is_public($dataset->{is_public});
     }
-    else { print STDERR "Creating empty dataset object\n"; }
+    else {
+        # print STDERR "Creating empty dataset object\n";
+    }
 
 }
 
@@ -572,7 +574,7 @@ sub retrieve_genotypes {
     my $start_position = shift;
     my $end_position = shift;
     my $marker_name_list = shift || [];
-    print STDERR "CXGN::Dataset retrieve_genotypes\n";
+    # print STDERR "CXGN::Dataset retrieve_genotypes\n";
 
     my $accessions = $self->retrieve_accessions();
     my @accession_ids;

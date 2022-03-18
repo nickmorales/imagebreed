@@ -101,7 +101,7 @@ sub metadata_query {
   # print STDERR "queryref=" . Dumper($queryref);
 
   my $target_table = $criteria_list->[-1];
-  print STDERR "target_table=". $target_table . "\n";
+  # print STDERR "target_table=". $target_table . "\n";
   my $target = $target_table;
   $target =~ s/s$//;
 

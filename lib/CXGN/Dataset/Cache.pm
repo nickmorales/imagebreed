@@ -95,7 +95,7 @@ override('retrieve_genotypes',
         my $start_position = shift;
         my $end_position = shift;
         my $marker_name_list = shift || [];
-        print STDERR "CXGN::Dataset::Cache retrieve_genotypes\n";
+        # print STDERR "CXGN::Dataset::Cache retrieve_genotypes\n";
 
         my $key = $self->genotype_key("retrieve_genotypes", $protocol_id, undef, undef, undef, $genotypeprop_hash_select, $protocolprop_top_key_select, $protocolprop_marker_hash_select, $return_only_first_genotypeprop_for_stock, $chromosome_list, $start_position, $end_position, $marker_name_list);
 
