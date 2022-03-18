@@ -58,7 +58,6 @@ use POSIX;
 use File::Copy;
 use CXGN::Tools::Run;
 use File::Temp 'tempfile';
-use Parallel::ForkManager;
 
 has 'bcs_schema' => (
     isa => 'Bio::Chado::Schema',
@@ -374,11 +373,6 @@ sub get_grm {
 
             @all_individual_accessions_stock_ids = @$accession_list;
 
-            my $pm = Parallel::ForkManager->new(ceil($number_system_cores*0.75));
-            $pm->run_on_finish( sub {
-                my ($pid, $exit_code, $ident, $exit_signal, $core_dump, $data_structure_reference) = @_;
-            });
-
             for my $i (0..scalar(@accession_stock_ids_found)-1) {
                 my $female_stock_id = $female_stock_ids_found[$i];
                 my $male_stock_id = $male_stock_ids_found[$i];
@@ -413,10 +407,8 @@ sub get_grm {
                     write_file($grm_tempfile, {append => 1}, $genotype_string);
                     undef $progeny_genotype;
                 }
-
-                $pm->finish(0, {});
             }
-            $pm->wait_all_children;
+
         }
 
         # print STDERR Dumper \@all_marker_names;
