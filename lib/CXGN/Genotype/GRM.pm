@@ -244,7 +244,7 @@ sub get_grm {
         if ($accession_list && scalar(@$accession_list)>0 && !$get_grm_for_parental_accessions){
             @all_individual_accessions_stock_ids = @$accession_list;
 
-            my $pm = Parallel::ForkManager->new(ceil($number_system_cores/8));
+            my $pm = Parallel::ForkManager->new(ceil($number_system_cores/10));
 
             LINKS:
             foreach (@$accession_list) {
@@ -320,7 +320,7 @@ sub get_grm {
             # print STDERR Dumper \@plot_female_stock_ids_found;
             # print STDERR Dumper \@plot_male_stock_ids_found;
 
-            my $pm = Parallel::ForkManager->new(ceil($number_system_cores/8));
+            my $pm = Parallel::ForkManager->new(ceil($number_system_cores/10));
 
             LINKS:
             for my $i (0..scalar(@plot_stock_ids_found)-1) {
@@ -393,7 +393,7 @@ sub get_grm {
 
             @all_individual_accessions_stock_ids = @$accession_list;
 
-            my $pm = Parallel::ForkManager->new(ceil($number_system_cores/8));
+            my $pm = Parallel::ForkManager->new(ceil($number_system_cores/10));
 
             LINKS:
             for my $i (0..scalar(@accession_stock_ids_found)-1) {
