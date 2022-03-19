@@ -220,6 +220,7 @@ sub get_grm {
     my $tmp_output_dir = $shared_cluster_dir_config."/tmp_genotype_download_grm";
     mkdir $tmp_output_dir if ! -d $tmp_output_dir;
     my ($grm_tempfile_out_fh, $grm_tempfile_out) = tempfile("download_grm_out_XXXXX", DIR=> $tmp_output_dir);
+    my ($grm_tempfile_debug_out_fh, $grm_tempfile_debug_out) = tempfile("download_grm_out_XXXXX", DIR=> $tmp_output_dir);
     my ($grm_imputed_tempfile_out_fh, $grm_imputed_tempfile_out) = tempfile("download_grm_out_XXXXX", DIR=> $tmp_output_dir);
     my ($temp_out_file_fh, $temp_out_file) = tempfile("download_grm_tmp_XXXXX", DIR=> $tmp_output_dir);
 
@@ -437,6 +438,7 @@ sub get_grm {
         #else {
         if (!$return_imputed_matrix) {
             $cmd .= 'A <- A.mat(mat, min.MAF='.$maf.', max.missing='.$marker_filter.', impute.method=\'mean\', n.core='.$number_system_cores.', return.imputed=FALSE);
+            write.table(A, file=\''.$grm_tempfile_debug_out.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"
             ';
         }
         else {
@@ -444,6 +446,7 @@ sub get_grm {
             A <- A_list\$A;
             imputed <- A_list\$imputed;
             write.table(imputed, file=\''.$grm_imputed_tempfile_out.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+            write.table(A, file=\''.$grm_tempfile_debug_out.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"
             ';
         }
         #}
