@@ -438,7 +438,7 @@ sub get_grm {
         #else {
         if (!$return_imputed_matrix) {
             $cmd .= 'A <- A.mat(mat, min.MAF='.$maf.', max.missing='.$marker_filter.', impute.method=\'mean\', n.core='.$number_system_cores.', return.imputed=FALSE);
-            write.table(A, file=\''.$grm_tempfile_debug_out.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"
+            write.table(A, file=\''.$grm_tempfile_debug_out.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');
             ';
         }
         else {
@@ -446,7 +446,7 @@ sub get_grm {
             A <- A_list\$A;
             imputed <- A_list\$imputed;
             write.table(imputed, file=\''.$grm_imputed_tempfile_out.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
-            write.table(A, file=\''.$grm_tempfile_debug_out.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"
+            write.table(A, file=\''.$grm_tempfile_debug_out.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');
             ';
         }
         #}
