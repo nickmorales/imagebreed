@@ -482,7 +482,7 @@ sub get_grm {
         #}
         if ($ensure_positive_definite) {
             # Ensure positive definite matrix. Taken from Schaeffer
-            $cmd .= 'E = eigen(A);
+            $cmd .= 'A_o <- A; E <- eigen(A);
             ev = E\$values;
             U = E\$vectors;
             no = dim(A)[1];
@@ -496,6 +496,9 @@ sub get_grm {
                 val = ev[nev];
                 ev[nev] = p*(B-val)*(B-val)/wr;
                 A = U%*%diag(ev)%*%t(U);
+            }
+            if (max(A)>=60) {
+                A <- A_o;
             }
             ';
         }
