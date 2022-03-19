@@ -58,6 +58,7 @@ use POSIX;
 use File::Copy;
 use CXGN::Tools::Run;
 use File::Temp 'tempfile';
+use Parallel::ForkManager;
 
 has 'bcs_schema' => (
     isa => 'Bio::Chado::Schema',
@@ -221,6 +222,7 @@ sub get_grm {
     mkdir $tmp_output_dir if ! -d $tmp_output_dir;
     my ($grm_tempfile_out_fh, $grm_tempfile_out) = tempfile("download_grm_out_XXXXX", DIR=> $tmp_output_dir);
     my ($grm_tempfile_debug_out_fh, $grm_tempfile_debug_out) = tempfile("download_grm_out_XXXXX", DIR=> $tmp_output_dir);
+    my ($grm_tempfile_stock_ids_out_fh, $grm_tempfile_stock_ids_out) = tempfile("download_grm_out_XXXXX", DIR=> $tmp_output_dir);
     my ($grm_imputed_tempfile_out_fh, $grm_imputed_tempfile_out) = tempfile("download_grm_out_XXXXX", DIR=> $tmp_output_dir);
     my ($temp_out_file_fh, $temp_out_file) = tempfile("download_grm_tmp_XXXXX", DIR=> $tmp_output_dir);
 
@@ -242,7 +244,12 @@ sub get_grm {
         if ($accession_list && scalar(@$accession_list)>0 && !$get_grm_for_parental_accessions){
             @all_individual_accessions_stock_ids = @$accession_list;
 
+            my $pm = Parallel::ForkManager->new(ceil($number_system_cores/3));
+
+            LINKS:
             foreach (@$accession_list) {
+                $pm->start and next LINKS;
+
                 my $dataset = CXGN::Dataset::Cache->new({
                     people_schema=>$people_schema,
                     schema=>$schema,
@@ -264,18 +271,19 @@ sub get_grm {
                     foreach my $p (0..scalar(@$genotypes)-1) {
                         my $stock_id = $genotypes->[$p]->{stock_id};
                         my $genotype_string = "";
-                        my @row;
+                        my @row = ($stock_id);
                         foreach my $m (@all_marker_objects) {
                             push @row, $genotypes->[$p]->{selected_genotype_hash}->{$m->{name}}->{DS};
                         }
                         my $genotype_string_scores = join "\t", @row;
                         $genotype_string .= $genotype_string_scores . "\n";
-                        push @individuals_stock_ids, $stock_id;
                         write_file($grm_tempfile, {append => 1}, $genotype_string);
                         undef $genotypes->[$p];
                     }
                     undef $genotypes;
                 }
+
+                $pm->finish;
             }
         }
         # IN this case of a hybrid evaluation where the parents of the accessions planted in a plot are genotyped
@@ -310,7 +318,12 @@ sub get_grm {
             # print STDERR Dumper \@plot_female_stock_ids_found;
             # print STDERR Dumper \@plot_male_stock_ids_found;
 
+            my $pm = Parallel::ForkManager->new(ceil($number_system_cores/3));
+
+            LINKS:
             for my $i (0..scalar(@plot_stock_ids_found)-1) {
+                $pm->start and next LINKS;
+
                 my $female_stock_id = $plot_female_stock_ids_found[$i];
                 my $male_stock_id = $plot_male_stock_ids_found[$i];
                 my $plot_stock_id = $plot_stock_ids_found[$i];
@@ -338,12 +351,14 @@ sub get_grm {
                     });
                     my $progeny_genotype = $geno->get_hybrid_genotype();
 
-                    push @individuals_stock_ids, $plot_stock_id;
+                    unshift @$progeny_genotype, $plot_stock_id;
                     my $genotype_string_scores = join "\t", @$progeny_genotype;
                     $genotype_string .= $genotype_string_scores . "\n";
                     write_file($grm_tempfile, {append => 1}, $genotype_string);
                     undef $progeny_genotype;
                 }
+
+                $pm->finish;
             }
         }
         # IN this case of a hybrid evaluation where the parents of the accessions planted in a plot are genotyped
@@ -374,7 +389,12 @@ sub get_grm {
 
             @all_individual_accessions_stock_ids = @$accession_list;
 
+            my $pm = Parallel::ForkManager->new(ceil($number_system_cores/3));
+
+            LINKS:
             for my $i (0..scalar(@accession_stock_ids_found)-1) {
+                $pm->start and next LINKS;
+
                 my $female_stock_id = $female_stock_ids_found[$i];
                 my $male_stock_id = $male_stock_ids_found[$i];
                 my $accession_stock_id = $accession_stock_ids_found[$i];
@@ -402,14 +422,17 @@ sub get_grm {
                     });
                     my $progeny_genotype = $geno->get_hybrid_genotype();
 
-                    push @individuals_stock_ids, $accession_stock_id;
+                    unshift @$progeny_genotype, $accession_stock_id;
                     my $genotype_string_scores = join "\t", @$progeny_genotype;
                     $genotype_string .= $genotype_string_scores . "\n";
                     write_file($grm_tempfile, {append => 1}, $genotype_string);
                     undef $progeny_genotype;
                 }
+
+                $pm->finish;
             }
 
+            $pm->wait_all_children;
         }
 
         # print STDERR Dumper \@all_marker_names;
@@ -421,7 +444,10 @@ sub get_grm {
         my $individuals_filter = $self->individuals_filter();
 
         my $cmd = 'R -e "library(rrBLUP); library(data.table); library(scales);
-        mat <- fread(\''.$grm_tempfile.'\', header=FALSE, sep=\'\t\');
+        mat_full <- fread(\''.$grm_tempfile.'\', header=FALSE, sep=\'\t\');
+        mat <- mat_full[,-1];
+        stock_ids <- mat_full[,1];
+        write.table(stock_ids, file=\''.$grm_tempfile_stock_ids_out.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');
         range_check <- range(as.matrix(mat)[1,]);
         if (length(table(as.matrix(mat)[1,])) < 2 || (!is.na(range_check[1]) && !is.na(range_check[2]) && range_check[2] - range_check[1] <= 1 )) {
             mat <- as.data.frame(rescale(as.matrix(mat), to = c(-1,1), from = c(0,2) ));
@@ -493,6 +519,13 @@ sub get_grm {
         # $grm_cmd->run_cluster($cmd);
         # $grm_cmd->is_cluster(1);
         # $grm_cmd->wait;
+
+        open(my $fh_stock_ids, "<", $grm_tempfile_stock_ids_out) or die "Can't open < $grm_tempfile_stock_ids_out: $!";
+        while (my $stock_id = <$fh_stock_ids>) {
+            chomp($stock_id);
+            push @individuals_stock_ids, $stock_id;
+        }
+        close($fh_stock_ids);
     }
     else {
         print STDERR "No protocol, so giving equal relationship of all stocks!!\n";
