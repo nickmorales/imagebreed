@@ -285,6 +285,8 @@ sub get_grm {
 
                 $pm->finish;
             }
+
+            $pm->wait_all_children;
         }
         # IN this case of a hybrid evaluation where the parents of the accessions planted in a plot are genotyped
         elsif ($get_grm_for_parental_accessions && $plot_list && scalar(@$plot_list)>0) {
@@ -360,6 +362,8 @@ sub get_grm {
 
                 $pm->finish;
             }
+
+            $pm->wait_all_children;
         }
         # IN this case of a hybrid evaluation where the parents of the accessions planted in a plot are genotyped
         elsif ($get_grm_for_parental_accessions && $accession_list && scalar(@$accession_list)>0) {
