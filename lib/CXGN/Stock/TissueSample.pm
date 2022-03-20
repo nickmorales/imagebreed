@@ -308,7 +308,7 @@ sub BUILD {
         $self->dna_person($self->_retrieve_stockprop('dna_person'));
         $self->row_number($self->_retrieve_stockprop('row_number'));
         $self->col_number($self->_retrieve_stockprop('col_number'));
-        $self->well($self->_retrieve_stockprop('well'));
+        $self->well($self->_retrieve_stockprop('plot number'));
         $self->acquisition_date($self->_retrieve_stockprop('acquisition date'));
     }
 }

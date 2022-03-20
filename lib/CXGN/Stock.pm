@@ -1414,6 +1414,7 @@ sub _retrieve_stockprop {
     my @results;
 
     # try {
+        # print STDERR Dumper $type;
         my $stockprop_type_id = SGN::Model::Cvterm->get_cvterm_row($self->schema, $type, 'stock_property')->cvterm_id();
         my $rs = $self->schema()->resultset("Stock::Stockprop")->search({ stock_id => $self->stock_id(), type_id => $stockprop_type_id }, { order_by => {-asc => 'stockprop_id'} });
 
