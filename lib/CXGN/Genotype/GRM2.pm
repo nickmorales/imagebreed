@@ -677,24 +677,25 @@ sub _get_grm {
             }
             $cmd .= 'write.table(A, file=\''.$grm_tempfile_out.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
             print STDERR Dumper $cmd;
+            my $status = system($cmd);
 
             # Do the GRM on the cluster
-            my $grm_cmd = CXGN::Tools::Run->new(
-                {
-                    backend => $backend_config,
-                    submit_host => $cluster_host_config,
-                    temp_base => $tmp_output_dir,
-                    queue => $web_cluster_queue_config,
-                    do_cleanup => 0,
-                    out_file => $temp_out_file,
-                    # don't block and wait if the cluster looks full
-                    max_cluster_jobs => 1_000_000_000,
-                }
-            );
-
-            $grm_cmd->run_cluster($cmd);
-            $grm_cmd->is_cluster(1);
-            $grm_cmd->wait;
+            # my $grm_cmd = CXGN::Tools::Run->new(
+            #     {
+            #         backend => $backend_config,
+            #         submit_host => $cluster_host_config,
+            #         temp_base => $tmp_output_dir,
+            #         queue => $web_cluster_queue_config,
+            #         do_cleanup => 0,
+            #         out_file => $temp_out_file,
+            #         # don't block and wait if the cluster looks full
+            #         max_cluster_jobs => 1_000_000_000,
+            #     }
+            # );
+            #
+            # $grm_cmd->run_cluster($cmd);
+            # $grm_cmd->is_cluster(1);
+            # $grm_cmd->wait;
         }
     }
     else {
@@ -946,7 +947,6 @@ sub download_grm {
             }
         }
         elsif ($download_format eq 'three_column_reciprocal') {
-
             foreach my $s (@$all_accession_stock_ids) {
                 foreach my $c (@$all_accession_stock_ids) {
                     my $val;
