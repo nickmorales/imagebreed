@@ -544,16 +544,26 @@ sub get_grm {
         if ($accession_list && scalar(@$accession_list)) {
             @$accession_list = sort {$a <=> $b} @$accession_list;
             $number_of_stocks = scalar(@$accession_list);
-            $stock_id_string = join ',', @$accession_list;
             @individuals_stock_ids = @$accession_list;
             @all_individual_accessions_stock_ids = @$accession_list;
         }
         elsif ($plot_list && scalar(@$plot_list)) {
-            @$plot_list = sort {$a <=> $b} @$plot_list;
-            $number_of_stocks = scalar(@$plot_list);
-            $stock_id_string = join ',', @$plot_list;
-            @individuals_stock_ids = @$plot_list;
-            @all_individual_accessions_stock_ids = @$plot_list;
+            my $plot_list_string = join ',', @$plot_list;
+            my $q = "SELECT plot.stock_id, accession.stock_id
+                FROM stock AS plot
+                JOIN stock_relationship AS plot_acc_rel ON(plot_acc_rel.subject_id=plot.stock_id AND plot_acc_rel.type_id=$plot_of_cvterm_id)
+                JOIN stock AS accession ON(plot_acc_rel.object_id=accession.stock_id AND accession.type_id=$accession_cvterm_id)
+                WHERE plot.type_id=$plot_cvterm_id AND plot.stock_id IN ($plot_list_string);";
+            my $h = $schema->storage->dbh()->prepare($q);
+            $h->execute();
+            my %plot_accession_ids;
+            while (my ($plot_stock_id, $accession_stock_id) = $h->fetchrow_array()) {
+                $plot_accession_ids{$accession_stock_id}++;
+            }
+            my @seen_accession_ids = sort {$a <=> $b} keys %plot_accession_ids;
+            $number_of_stocks = scalar(@seen_accession_ids);
+            @individuals_stock_ids = @seen_accession_ids;
+            @all_individual_accessions_stock_ids = @seen_accession_ids;
         }
         my $cmd .= 'R -e "
             A <- as.data.frame(diag('.$number_of_stocks.'));
@@ -617,25 +627,20 @@ sub download_grm {
     $self->cache( Cache::File->new( cache_root => $self->cache_root() ));
 
     my $return;
-    # if ($self->cache()->exists($key)) {
-    #     print STDERR "DOWNLOAD GRM CACHED\n";
-    #     if ($return_type eq 'filehandle') {
-    #         $return = $self->cache()->handle($key);
-    #     }
-    #     elsif ($return_type eq 'data') {
-    #         $return = $self->cache()->get($key);
-    #     }
-    # }
-    # else {
+    if ($self->cache()->exists($key)) {
+        print STDERR "DOWNLOAD GRM CACHED\n";
+        if ($return_type eq 'filehandle') {
+            $return = $self->cache()->handle($key);
+        }
+        elsif ($return_type eq 'data') {
+            $return = $self->cache()->get($key);
+        }
+    }
+    else {
         print STDERR "DOWNLOAD GRM\n";
-        my ($grm_tempfile_out, $stock_ids, $all_accession_stock_ids, $seen_accession_stock_ids_relatedness) = $self->get_grm($shared_cluster_dir_config, $backend_config, $cluster_host_config, $web_cluster_queue_config, $basepath_config);
+        my ($grm_tempfile_out, $stock_ids, $all_accession_stock_ids) = $self->get_grm($shared_cluster_dir_config, $backend_config, $cluster_host_config, $web_cluster_queue_config, $basepath_config);
         # print STDERR Dumper $stock_ids;
         # print STDERR Dumper $all_accession_stock_ids;
-
-        my $genomic_relatedness_dosage_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'genomic_relatedness_dosage', 'stock_relatedness')->cvterm_id();
-
-        my $relatedness_fill_q = "INSERT INTO stock_relatedness (type_id, nd_protocol_id, a_stock_id, b_stock_id, value) VALUES ($genomic_relatedness_dosage_cvterm_id,$protocol_id,?,?,?);";
-        my $relatedness_fill_h = $schema->storage->dbh->prepare($relatedness_fill_q);
 
         my %grm_hash;
         open(my $fh, "<", $grm_tempfile_out) or die "Can't open < $grm_tempfile_out: $!";
@@ -655,18 +660,15 @@ sub download_grm {
             $row_num++;
         }
 
-        # foreach my $s (@$all_accession_stock_ids) {
-        #     foreach my $c (@$all_accession_stock_ids) {
-        #         if (!defined($seen_accession_stock_ids_relatedness->{$s}->{$c}) && $row_num>1 && defined($grm_hash{$s}->{$c})) {
-        #             my $val = $grm_hash{$s}->{$c};
-        #
-        #             if ($protocol_id) {
-        #                 $relatedness_fill_h->execute($s, $c, $val);
-        #                 $relatedness_fill_h->execute($c, $s, $val);
-        #             }
-        #         }
-        #     }
-        # }
+        my %all_names;
+        my $q = "SELECT stock.uniquename, stock.stock_id
+            FROM stock
+            WHERE stock.is_obsolete = 'F';";
+        my $h = $schema->storage->dbh()->prepare($q);
+        $h->execute();
+        while (my ($uniquename, $stock_id) = $h->fetchrow_array()) {
+            $all_names{$stock_id} = $uniquename;
+        }
 
         my $data = '';
         if ($download_format eq 'matrix') {
@@ -682,10 +684,46 @@ sub download_grm {
                 my @row = ("S".$s);
                 foreach my $c (@$all_accession_stock_ids) {
                     my $val;
-                    if (defined($seen_accession_stock_ids_relatedness->{$s}->{$c})) {
-                        $val = $seen_accession_stock_ids_relatedness->{$s}->{$c};
+                    if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                        $val = $grm_hash{$s}->{$c};
                     }
-                    elsif ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                    elsif ($s == $c) {
+                        $val = 1;
+                    }
+                    else {
+                        $val = 0;
+                    }
+
+                    push @row, $val;
+                }
+                my $line = join "\t", @row;
+                $data .= "$line\n";
+            }
+
+            $self->cache()->set($key, $data);
+            if ($return_type eq 'filehandle') {
+                $return = $self->cache()->handle($key);
+            }
+            elsif ($return_type eq 'data') {
+                $return = $data;
+            }
+        }
+        elsif ($download_format eq 'matrix_uniquenames') {
+            my @header = ("stock_uniquename");
+            foreach (@$all_accession_stock_ids) {
+                my $s1 = $all_names{$_};
+                push @header, $s1;
+            }
+
+            my $header_line = join "\t", @header;
+            $data = "$header_line\n";
+
+            foreach my $s (@$all_accession_stock_ids) {
+                my $s2 = $all_names{$s};
+                my @row = ($s2);
+                foreach my $c (@$all_accession_stock_ids) {
+                    my $val;
+                    if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
                         $val = $grm_hash{$s}->{$c};
                     }
                     elsif ($s == $c) {
@@ -715,10 +753,7 @@ sub download_grm {
                 foreach my $c (@$all_accession_stock_ids) {
                     if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
                         my $val;
-                        if (defined($seen_accession_stock_ids_relatedness->{$s}->{$c})) {
-                            $val = $seen_accession_stock_ids_relatedness->{$s}->{$c};
-                        }
-                        elsif ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                        if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
                             $val = $grm_hash{$s}->{$c};
                         }
                         elsif ($s == $c) {
@@ -742,16 +777,45 @@ sub download_grm {
                 $return = $data;
             }
         }
+        elsif ($download_format eq 'three_column_uniquenames') {
+            my %result_hash;
+            foreach my $s (@$all_accession_stock_ids) {
+                foreach my $c (@$all_accession_stock_ids) {
+                    if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
+                        my $val;
+                        if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                            $val = $grm_hash{$s}->{$c};
+                        }
+                        elsif ($s == $c) {
+                            $val = 1;
+                        }
+                        else {
+                            $val = 0;
+                        }
+
+                        my $s1 = $all_names{$s};
+                        my $s2 = $all_names{$c};
+                        $data .= "$s1\t$s2\t$val\n";
+                        $result_hash{$s}->{$c} = $val;
+                    }
+                }
+            }
+
+            $self->cache()->set($key, $data);
+            if ($return_type eq 'filehandle') {
+                $return = $self->cache()->handle($key);
+            }
+            elsif ($return_type eq 'data') {
+                $return = $data;
+            }
+        }
         elsif ($download_format eq 'three_column_stock_id_integer') {
             my %result_hash;
             foreach my $s (@$all_accession_stock_ids) {
                 foreach my $c (@$all_accession_stock_ids) {
                     if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
                         my $val;
-                        if (defined($seen_accession_stock_ids_relatedness->{$s}->{$c})) {
-                            $val = $seen_accession_stock_ids_relatedness->{$s}->{$c};
-                        }
-                        elsif ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                        if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
                             $val = $grm_hash{$s}->{$c};
                         }
                         elsif ($s == $c) {
@@ -779,10 +843,7 @@ sub download_grm {
             foreach my $s (@$all_accession_stock_ids) {
                 foreach my $c (@$all_accession_stock_ids) {
                     my $val;
-                    if (defined($seen_accession_stock_ids_relatedness->{$s}->{$c})) {
-                        $val = $seen_accession_stock_ids_relatedness->{$s}->{$c};
-                    }
-                    elsif ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                    if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
                         $val = $grm_hash{$s}->{$c};
                     }
                     elsif ($s == $c) {
@@ -804,14 +865,39 @@ sub download_grm {
                 $return = $data;
             }
         }
+        elsif ($download_format eq 'three_column_reciprocal_uniquenames') {
+            foreach my $s (@$all_accession_stock_ids) {
+                foreach my $c (@$all_accession_stock_ids) {
+                    my $val;
+                    if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                        $val = $grm_hash{$s}->{$c};
+                    }
+                    elsif ($s == $c) {
+                        $val = 1;
+                    }
+                    else {
+                        $val = 0;
+                    }
+
+                    my $s1 = $all_names{$s};
+                    my $s2 = $all_names{$c};
+                    $data .= "$s1\t$s2\t$val\n";
+                }
+            }
+
+            $self->cache()->set($key, $data);
+            if ($return_type eq 'filehandle') {
+                $return = $self->cache()->handle($key);
+            }
+            elsif ($return_type eq 'data') {
+                $return = $data;
+            }
+        }
         elsif ($download_format eq 'three_column_reciprocal_stock_id_integer') {
             foreach my $s (@$all_accession_stock_ids) {
                 foreach my $c (@$all_accession_stock_ids) {
                     my $val;
-                    if (defined($seen_accession_stock_ids_relatedness->{$s}->{$c})) {
-                        $val = $seen_accession_stock_ids_relatedness->{$s}->{$c};
-                    }
-                    elsif ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                    if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
                         $val = $grm_hash{$s}->{$c};
                     }
                     elsif ($s == $c) {
@@ -837,10 +923,7 @@ sub download_grm {
             foreach my $s (@$all_accession_stock_ids) {
                 foreach my $c (@$all_accession_stock_ids) {
                     my $val;
-                    if (defined($seen_accession_stock_ids_relatedness->{$s}->{$c})) {
-                        $val = $seen_accession_stock_ids_relatedness->{$s}->{$c};
-                    }
-                    elsif ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                    if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
                         $val = $grm_hash{$s}->{$c};
                     }
                     elsif ($s == $c) {
@@ -849,8 +932,9 @@ sub download_grm {
                     else {
                         $val = 0;
                     }
-
-                    $data .= "S$s\tS$c\t$val\n";
+                    my $s1 = $all_names{$s};
+                    my $s2 = $all_names{$c};
+                    $data .= "$s1\t$s2\t$val\n";
                 }
             }
 
@@ -904,7 +988,7 @@ sub download_grm {
                 die "Can only return the filehandle for GRM heatmap!\n";
             }
         }
-    # }
+    }
     return $return;
 }
 

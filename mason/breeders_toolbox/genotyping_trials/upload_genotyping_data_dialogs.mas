@@ -787,6 +787,48 @@ $facilities
     </div>
 </div>
 
+<div class="modal fade" id="upload_grm_spreadsheet_info_dialog" name="upload_grm_spreadsheet_info_dialog" tabindex="-1" role="dialog" aria-labelledby="uploadGRMSpreadsheetInfoDialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="text-align: center">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="uploadGRMSpreadsheetInfoDialog">Upload Genomic Relationships Data Template Information</h4>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <b>Genomic Relationship Matrix (GRM) data may be uploaded as a tab-separated file (.tsv)</b>
+                    <br />
+                        (Excel format not supported)
+                    <br /><br />
+                    <b>Example of GRM Data Spreadsheet:</b>
+                    <br>
+
+                    <table class="table table-hover table-bordered table-condensed" >
+                        <thead></thead>
+                        <tbody>
+                            <tr>
+                                <td>a_stock_uniquename</td>
+                                <td>b_stock_uniquename</td>
+                                <td>value</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <b>Required columns:</b>
+                    <ul>
+                        <li><b>a_stock_uniquename</b>: The uniquename of the first accession. Must already exist in the database.</li>
+                        <li><b>b_stock_uniquename</b>: The uniquename of the second accession. Must already exist in the database.</li>
+                        <li><b>value</b>: The genomic relationship value between the two accessions.</li>
+                    </ul>
+                    <b>Note: Only upload a one-sided (upper or lower diagonal) relationship because the database will automatically save both sides.</b>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="upload_ssr_spreadsheet_info_dialog" name="upload_ssr_spreadsheet_info_dialog" tabindex="-1" role="dialog" aria-labelledby="uploadSSRSpreadsheetInfoDialog">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
@@ -1044,6 +1086,10 @@ jQuery(document).ready(function(){
 
     jQuery('#upload_ssr_data_spreadsheet_info').click(function(){
         jQuery('#upload_ssr_spreadsheet_info_dialog').modal('show');
+    });
+
+    jQuery('#upload_grm_data_spreadsheet_info').click(function(){
+        jQuery('#upload_grm_spreadsheet_info_dialog').modal('show');
     });
 
     jQuery('#upload_ssr_protocol_format').click(function(){
