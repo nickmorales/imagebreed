@@ -17,14 +17,17 @@ args <- commandArgs(trailingOnly = TRUE)
 
 # args[1] = new spectral data for prediction
 dataset.input <- jsonlite::fromJSON(txt = args[1], flatten = T) %>%
-  rename("unique.id" = observationUnitId) %>%
+  rename(uniqueid = observationUnitId) %>%
   rename_at(vars(starts_with("nirs_spectra")), ~str_replace(., "nirs_spectra.", "")) %>%
-  dplyr::select("unique.id", num_range(prefix = "X", range = 1:100000))
+  dplyr::select(uniqueid, num_range(prefix = "X", range = 1:100000))
 print(dataset.input[1:10,1:10])
 
-predictions <- predict_spectra(input.data = dataset.input,
+wls <- colnames(dataset.input)[-1] %>% parse_number()
+
+predictions <- PredictFromSavedModel(input.data = dataset.input,
                                      model.stats.location = args[2], # args[2] =  model performance statistics filepath
                                      model.location = args[3], # args[3] = model filepath
+                                     wavelengths = wls,
                                      model.method = args[4]) # args[4] = model method as a string
 
 print(predictions)
