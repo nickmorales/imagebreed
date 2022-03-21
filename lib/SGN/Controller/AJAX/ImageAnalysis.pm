@@ -368,27 +368,16 @@ sub get_activity_data : Path('/ajax/image_analysis/activity') Args(0) {
   my $c = shift;
   my ($user_id, $user_name, $user_role) = _check_user_login_image_analysis($c, 0, 0, 0);
 
-  my %date_counts;
+  my @activity;
   if ($c->config->{image_analysis_log}) {
     my $logfile = $c->config->{image_analysis_log};
     my @file_data = read_file($logfile, chomp => 1);
     foreach my $line (@file_data) {
         my @values = split("\t", $line);
-        print STDERR "values are @values\n";
         my @ts_parts = split(" ", $values[0]);
-        print STDERR "Date is ".$ts_parts[0]."\n";
-        $date_counts{$ts_parts[0]}++;
+        push @activity, { date => $ts_parts[0]};
     }
   }
-
-  print STDERR "date count hash is: " . Dumper(%date_counts);
-
-  my @activity;
-  foreach my $date (keys %date_counts) {
-      push @activity, { date => $date, value => $date_counts{$date}};
-  }
-
-  print STDERR "activity_response is: " . Dumper(@activity);
 
   my $json = JSON->new();
   $c->stash->{rest} = { activity => $json->encode(\@activity)};
