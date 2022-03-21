@@ -5204,740 +5204,742 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     };
 
     my $grm_file_ar1;
-    # Prepare GRM for AR1 Trait Spatial Correction
-    eval {
-        print STDERR Dumper [$compute_relationship_matrix_from_htp_phenotypes, $include_pedgiree_info_if_compute_from_parents, $use_parental_grms_if_compute_from_parents, $compute_from_parents];
-        if ($compute_relationship_matrix_from_htp_phenotypes eq 'genotypes') {
+    if ($analysis_run_type eq 'ar1' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq 'ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq 'ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol' || $analysis_run_type eq '2dspl_ar1_wRowPlusCol' || $analysis_run_type eq '2dspl_ar1_wColPlusRow') {
+        # Prepare GRM for AR1 Trait Spatial Correction
+        eval {
+            print STDERR Dumper [$compute_relationship_matrix_from_htp_phenotypes, $include_pedgiree_info_if_compute_from_parents, $use_parental_grms_if_compute_from_parents, $compute_from_parents];
+            if ($compute_relationship_matrix_from_htp_phenotypes eq 'genotypes') {
 
-            if ($include_pedgiree_info_if_compute_from_parents) {
-                my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
-                my $tmp_arm_dir = $shared_cluster_dir_config."/tmp_download_arm";
-                mkdir $tmp_arm_dir if ! -d $tmp_arm_dir;
-                my ($arm_tempfile_fh, $arm_tempfile) = tempfile("drone_stats_download_arm_XXXXX", DIR=> $tmp_arm_dir);
-                my ($grm1_tempfile_fh, $grm1_tempfile) = tempfile("drone_stats_download_grm1_XXXXX", DIR=> $tmp_arm_dir);
-                my ($grm_out_temp_tempfile_fh, $grm_out_temp_tempfile) = tempfile("drone_stats_download_grm_temp_out_XXXXX", DIR=> $tmp_arm_dir);
-                my ($grm_out_tempfile_fh, $grm_out_tempfile) = tempfile("drone_stats_download_grm_out_XXXXX", DIR=> $tmp_arm_dir);
-                my ($grm_out_posdef_tempfile_fh, $grm_out_posdef_tempfile) = tempfile("drone_stats_download_grm_out_XXXXX", DIR=> $tmp_arm_dir);
+                if ($include_pedgiree_info_if_compute_from_parents) {
+                    my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
+                    my $tmp_arm_dir = $shared_cluster_dir_config."/tmp_download_arm";
+                    mkdir $tmp_arm_dir if ! -d $tmp_arm_dir;
+                    my ($arm_tempfile_fh, $arm_tempfile) = tempfile("drone_stats_download_arm_XXXXX", DIR=> $tmp_arm_dir);
+                    my ($grm1_tempfile_fh, $grm1_tempfile) = tempfile("drone_stats_download_grm1_XXXXX", DIR=> $tmp_arm_dir);
+                    my ($grm_out_temp_tempfile_fh, $grm_out_temp_tempfile) = tempfile("drone_stats_download_grm_temp_out_XXXXX", DIR=> $tmp_arm_dir);
+                    my ($grm_out_tempfile_fh, $grm_out_tempfile) = tempfile("drone_stats_download_grm_out_XXXXX", DIR=> $tmp_arm_dir);
+                    my ($grm_out_posdef_tempfile_fh, $grm_out_posdef_tempfile) = tempfile("drone_stats_download_grm_out_XXXXX", DIR=> $tmp_arm_dir);
 
-                if (!$genotyping_protocol_id) {
-                    $genotyping_protocol_id = undef;
-                }
-
-                my $pedigree_arm = CXGN::Pedigree::ARM->new({
-                    bcs_schema=>$schema,
-                    arm_temp_file=>$arm_tempfile,
-                    people_schema=>$people_schema,
-                    accession_id_list=>\@accession_ids,
-                    # plot_id_list=>\@plot_id_list,
-                    cache_root=>$c->config->{cache_file_path},
-                    download_format=>'matrix', #either 'matrix', 'three_column', or 'heatmap'
-                });
-                my ($parent_hash, $stock_ids, $all_accession_stock_ids, $female_stock_ids, $male_stock_ids) = $pedigree_arm->get_arm(
-                    $shared_cluster_dir_config,
-                    $c->config->{backend},
-                    $c->config->{cluster_host},
-                    $c->config->{'web_cluster_queue'},
-                    $c->config->{basepath}
-                );
-                # print STDERR Dumper $parent_hash;
-
-                my $female_geno = CXGN::Genotype::GRM->new({
-                    bcs_schema=>$schema,
-                    grm_temp_file=>$grm1_tempfile,
-                    people_schema=>$people_schema,
-                    cache_root=>$c->config->{cache_file_path},
-                    accession_id_list=>$female_stock_ids,
-                    protocol_id=>$genotyping_protocol_id,
-                    get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
-                    # minor_allele_frequency=>$minor_allele_frequency,
-                    # marker_filter=>$marker_filter,
-                    # individuals_filter=>$individuals_filter
-                });
-                my $female_grm_data = $female_geno->download_grm(
-                    'data',
-                    $shared_cluster_dir_config,
-                    $c->config->{backend},
-                    $c->config->{cluster_host},
-                    $c->config->{'web_cluster_queue'},
-                    $c->config->{basepath}
-                );
-                my @fl = split '\n', $female_grm_data;
-                my %female_parent_grm;
-                foreach (@fl) {
-                    my @l = split '\t', $_;
-                    $female_parent_grm{$l[0]}->{$l[1]} = $l[2];
-                }
-                # print STDERR Dumper \%female_parent_grm;
-
-                my $male_geno = CXGN::Genotype::GRM->new({
-                    bcs_schema=>$schema,
-                    grm_temp_file=>$grm1_tempfile,
-                    people_schema=>$people_schema,
-                    cache_root=>$c->config->{cache_file_path},
-                    accession_id_list=>$male_stock_ids,
-                    protocol_id=>$genotyping_protocol_id,
-                    get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
-                    # minor_allele_frequency=>$minor_allele_frequency,
-                    # marker_filter=>$marker_filter,
-                    # individuals_filter=>$individuals_filter
-                });
-                my $male_grm_data = $male_geno->download_grm(
-                    'data',
-                    $shared_cluster_dir_config,
-                    $c->config->{backend},
-                    $c->config->{cluster_host},
-                    $c->config->{'web_cluster_queue'},
-                    $c->config->{basepath}
-                );
-                my @ml = split '\n', $male_grm_data;
-                my %male_parent_grm;
-                foreach (@ml) {
-                    my @l = split '\t', $_;
-                    $male_parent_grm{$l[0]}->{$l[1]} = $l[2];
-                }
-                # print STDERR Dumper \%male_parent_grm;
-
-                my %rel_result_hash;
-                foreach my $a1 (@accession_ids) {
-                    foreach my $a2 (@accession_ids) {
-                        my $female_parent1 = $parent_hash->{$a1}->{female_stock_id};
-                        my $male_parent1 = $parent_hash->{$a1}->{male_stock_id};
-                        my $female_parent2 = $parent_hash->{$a2}->{female_stock_id};
-                        my $male_parent2 = $parent_hash->{$a2}->{male_stock_id};
-
-                        my $female_rel = 0;
-                        if ($female_parent1 && $female_parent2 && $female_parent_grm{'S'.$female_parent1}->{'S'.$female_parent2}) {
-                            $female_rel = $female_parent_grm{'S'.$female_parent1}->{'S'.$female_parent2};
-                        }
-                        elsif ($female_parent1 && $female_parent2 && $female_parent1 == $female_parent2) {
-                            $female_rel = 1;
-                        }
-                        elsif ($a1 == $a2) {
-                            $female_rel = 1;
-                        }
-
-                        my $male_rel = 0;
-                        if ($male_parent1 && $male_parent2 && $male_parent_grm{'S'.$male_parent1}->{'S'.$male_parent2}) {
-                            $male_rel = $male_parent_grm{'S'.$male_parent1}->{'S'.$male_parent2};
-                        }
-                        elsif ($male_parent1 && $male_parent2 && $male_parent1 == $male_parent2) {
-                            $male_rel = 1;
-                        }
-                        elsif ($a1 == $a2) {
-                            $male_rel = 1;
-                        }
-                        # print STDERR "$a1 $a2 $female_rel $male_rel\n";
-
-                        my $rel = 0.5*($female_rel + $male_rel);
-                        $rel_result_hash{$a1}->{$a2} = $rel;
+                    if (!$genotyping_protocol_id) {
+                        $genotyping_protocol_id = undef;
                     }
-                }
-                # print STDERR Dumper \%rel_result_hash;
 
-                my $data = '';
-                my %result_hash;
-                foreach my $s (sort @accession_ids) {
-                    foreach my $c (sort @accession_ids) {
-                        if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
-                            my $val = $rel_result_hash{$s}->{$c};
-                            if (defined $val and length $val) {
-                                $result_hash{$s}->{$c} = $val;
-                                $data .= "S$s\tS$c\t$val\n";
+                    my $pedigree_arm = CXGN::Pedigree::ARM->new({
+                        bcs_schema=>$schema,
+                        arm_temp_file=>$arm_tempfile,
+                        people_schema=>$people_schema,
+                        accession_id_list=>\@accession_ids,
+                        # plot_id_list=>\@plot_id_list,
+                        cache_root=>$c->config->{cache_file_path},
+                        download_format=>'matrix', #either 'matrix', 'three_column', or 'heatmap'
+                    });
+                    my ($parent_hash, $stock_ids, $all_accession_stock_ids, $female_stock_ids, $male_stock_ids) = $pedigree_arm->get_arm(
+                        $shared_cluster_dir_config,
+                        $c->config->{backend},
+                        $c->config->{cluster_host},
+                        $c->config->{'web_cluster_queue'},
+                        $c->config->{basepath}
+                    );
+                    # print STDERR Dumper $parent_hash;
+
+                    my $female_geno = CXGN::Genotype::GRM->new({
+                        bcs_schema=>$schema,
+                        grm_temp_file=>$grm1_tempfile,
+                        people_schema=>$people_schema,
+                        cache_root=>$c->config->{cache_file_path},
+                        accession_id_list=>$female_stock_ids,
+                        protocol_id=>$genotyping_protocol_id,
+                        get_grm_for_parental_accessions=>0,
+                        download_format=>'three_column_reciprocal'
+                        # minor_allele_frequency=>$minor_allele_frequency,
+                        # marker_filter=>$marker_filter,
+                        # individuals_filter=>$individuals_filter
+                    });
+                    my $female_grm_data = $female_geno->download_grm(
+                        'data',
+                        $shared_cluster_dir_config,
+                        $c->config->{backend},
+                        $c->config->{cluster_host},
+                        $c->config->{'web_cluster_queue'},
+                        $c->config->{basepath}
+                    );
+                    my @fl = split '\n', $female_grm_data;
+                    my %female_parent_grm;
+                    foreach (@fl) {
+                        my @l = split '\t', $_;
+                        $female_parent_grm{$l[0]}->{$l[1]} = $l[2];
+                    }
+                    # print STDERR Dumper \%female_parent_grm;
+
+                    my $male_geno = CXGN::Genotype::GRM->new({
+                        bcs_schema=>$schema,
+                        grm_temp_file=>$grm1_tempfile,
+                        people_schema=>$people_schema,
+                        cache_root=>$c->config->{cache_file_path},
+                        accession_id_list=>$male_stock_ids,
+                        protocol_id=>$genotyping_protocol_id,
+                        get_grm_for_parental_accessions=>0,
+                        download_format=>'three_column_reciprocal'
+                        # minor_allele_frequency=>$minor_allele_frequency,
+                        # marker_filter=>$marker_filter,
+                        # individuals_filter=>$individuals_filter
+                    });
+                    my $male_grm_data = $male_geno->download_grm(
+                        'data',
+                        $shared_cluster_dir_config,
+                        $c->config->{backend},
+                        $c->config->{cluster_host},
+                        $c->config->{'web_cluster_queue'},
+                        $c->config->{basepath}
+                    );
+                    my @ml = split '\n', $male_grm_data;
+                    my %male_parent_grm;
+                    foreach (@ml) {
+                        my @l = split '\t', $_;
+                        $male_parent_grm{$l[0]}->{$l[1]} = $l[2];
+                    }
+                    # print STDERR Dumper \%male_parent_grm;
+
+                    my %rel_result_hash;
+                    foreach my $a1 (@accession_ids) {
+                        foreach my $a2 (@accession_ids) {
+                            my $female_parent1 = $parent_hash->{$a1}->{female_stock_id};
+                            my $male_parent1 = $parent_hash->{$a1}->{male_stock_id};
+                            my $female_parent2 = $parent_hash->{$a2}->{female_stock_id};
+                            my $male_parent2 = $parent_hash->{$a2}->{male_stock_id};
+
+                            my $female_rel = 0;
+                            if ($female_parent1 && $female_parent2 && $female_parent_grm{'S'.$female_parent1}->{'S'.$female_parent2}) {
+                                $female_rel = $female_parent_grm{'S'.$female_parent1}->{'S'.$female_parent2};
+                            }
+                            elsif ($female_parent1 && $female_parent2 && $female_parent1 == $female_parent2) {
+                                $female_rel = 1;
+                            }
+                            elsif ($a1 == $a2) {
+                                $female_rel = 1;
+                            }
+
+                            my $male_rel = 0;
+                            if ($male_parent1 && $male_parent2 && $male_parent_grm{'S'.$male_parent1}->{'S'.$male_parent2}) {
+                                $male_rel = $male_parent_grm{'S'.$male_parent1}->{'S'.$male_parent2};
+                            }
+                            elsif ($male_parent1 && $male_parent2 && $male_parent1 == $male_parent2) {
+                                $male_rel = 1;
+                            }
+                            elsif ($a1 == $a2) {
+                                $male_rel = 1;
+                            }
+                            # print STDERR "$a1 $a2 $female_rel $male_rel\n";
+
+                            my $rel = 0.5*($female_rel + $male_rel);
+                            $rel_result_hash{$a1}->{$a2} = $rel;
+                        }
+                    }
+                    # print STDERR Dumper \%rel_result_hash;
+
+                    my $data = '';
+                    my %result_hash;
+                    foreach my $s (sort @accession_ids) {
+                        foreach my $c (sort @accession_ids) {
+                            if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
+                                my $val = $rel_result_hash{$s}->{$c};
+                                if (defined $val and length $val) {
+                                    $result_hash{$s}->{$c} = $val;
+                                    $data .= "S$s\tS$c\t$val\n";
+                                }
                             }
                         }
                     }
-                }
 
-                # print STDERR Dumper $data;
-                open(my $F2, ">", $grm_out_temp_tempfile) || die "Can't open file ".$grm_out_temp_tempfile;
-                    print $F2 $data;
-                close($F2);
+                    # print STDERR Dumper $data;
+                    open(my $F2, ">", $grm_out_temp_tempfile) || die "Can't open file ".$grm_out_temp_tempfile;
+                        print $F2 $data;
+                    close($F2);
 
-                my $cmd = 'R -e "library(data.table); library(scales); library(tidyr); library(reshape2);
-                three_col <- fread(\''.$grm_out_temp_tempfile.'\', header=FALSE, sep=\'\t\');
-                A_wide <- dcast(three_col, V1~V2, value.var=\'V3\');
-                A_1 <- A_wide[,-1];
-                A_1[is.na(A_1)] <- 0;
-                A <- A_1 + t(A_1);
-                diag(A) <- diag(as.matrix(A_1));
-                E = eigen(A);
-                ev = E\$values;
-                U = E\$vectors;
-                no = dim(A)[1];
-                nev = which(ev < 0);
-                wr = 0;
-                k=length(nev);
-                if(k > 0){
-                    p = ev[no - k];
-                    B = sum(ev[nev])*2.0;
-                    wr = (B*B*100.0)+1;
-                    val = ev[nev];
-                    ev[nev] = p*(B-val)*(B-val)/wr;
-                    A = U%*%diag(ev)%*%t(U);
-                }
-                A <- as.data.frame(A);
-                colnames(A) <- A_wide[,1];
-                A\$stock_id <- A_wide[,1];
-                A_threecol <- melt(A, id.vars = c(\'stock_id\'), measure.vars = A_wide[,1]);
-                A_threecol\$stock_id <- substring(A_threecol\$stock_id, 2);
-                A_threecol\$variable <- substring(A_threecol\$variable, 2);
-                write.table(data.frame(variable = A_threecol\$variable, stock_id = A_threecol\$stock_id, value = A_threecol\$value), file=\''.$grm_out_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
-                print STDERR $cmd."\n";
-                my $status = system($cmd);
-
-                my %rel_pos_def_result_hash;
-                open(my $F3, '<', $grm_out_tempfile)
-                    or die "Could not open file '$grm_out_tempfile' $!";
-
-                    print STDERR "Opened $grm_out_tempfile\n";
-
-                    while (my $row = <$F3>) {
-                        my @columns;
-                        if ($csv->parse($row)) {
-                            @columns = $csv->fields();
-                        }
-                        my $stock_id1 = $columns[0];
-                        my $stock_id2 = $columns[1];
-                        my $val = $columns[2];
-                        $rel_pos_def_result_hash{$stock_id1}->{$stock_id2} = $val;
+                    my $cmd = 'R -e "library(data.table); library(scales); library(tidyr); library(reshape2);
+                    three_col <- fread(\''.$grm_out_temp_tempfile.'\', header=FALSE, sep=\'\t\');
+                    A_wide <- dcast(three_col, V1~V2, value.var=\'V3\');
+                    A_1 <- A_wide[,-1];
+                    A_1[is.na(A_1)] <- 0;
+                    A <- A_1 + t(A_1);
+                    diag(A) <- diag(as.matrix(A_1));
+                    E = eigen(A);
+                    ev = E\$values;
+                    U = E\$vectors;
+                    no = dim(A)[1];
+                    nev = which(ev < 0);
+                    wr = 0;
+                    k=length(nev);
+                    if(k > 0){
+                        p = ev[no - k];
+                        B = sum(ev[nev])*2.0;
+                        wr = (B*B*100.0)+1;
+                        val = ev[nev];
+                        ev[nev] = p*(B-val)*(B-val)/wr;
+                        A = U%*%diag(ev)%*%t(U);
                     }
-                close($F3);
+                    A <- as.data.frame(A);
+                    colnames(A) <- A_wide[,1];
+                    A\$stock_id <- A_wide[,1];
+                    A_threecol <- melt(A, id.vars = c(\'stock_id\'), measure.vars = A_wide[,1]);
+                    A_threecol\$stock_id <- substring(A_threecol\$stock_id, 2);
+                    A_threecol\$variable <- substring(A_threecol\$variable, 2);
+                    write.table(data.frame(variable = A_threecol\$variable, stock_id = A_threecol\$stock_id, value = A_threecol\$value), file=\''.$grm_out_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
+                    print STDERR $cmd."\n";
+                    my $status = system($cmd);
 
-                my $data_pos_def = '';
-                %result_hash = ();
-                foreach my $s (sort @accession_ids) {
-                    foreach my $c (sort @accession_ids) {
-                        if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
-                            my $val = $rel_pos_def_result_hash{$s}->{$c};
-                            if (defined $val and length $val) {
-                                $result_hash{$s}->{$c} = $val;
-                                $data_pos_def .= "$s\t$c\t$val\n";
+                    my %rel_pos_def_result_hash;
+                    open(my $F3, '<', $grm_out_tempfile)
+                        or die "Could not open file '$grm_out_tempfile' $!";
+
+                        print STDERR "Opened $grm_out_tempfile\n";
+
+                        while (my $row = <$F3>) {
+                            my @columns;
+                            if ($csv->parse($row)) {
+                                @columns = $csv->fields();
+                            }
+                            my $stock_id1 = $columns[0];
+                            my $stock_id2 = $columns[1];
+                            my $val = $columns[2];
+                            $rel_pos_def_result_hash{$stock_id1}->{$stock_id2} = $val;
+                        }
+                    close($F3);
+
+                    my $data_pos_def = '';
+                    %result_hash = ();
+                    foreach my $s (sort @accession_ids) {
+                        foreach my $c (sort @accession_ids) {
+                            if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
+                                my $val = $rel_pos_def_result_hash{$s}->{$c};
+                                if (defined $val and length $val) {
+                                    $result_hash{$s}->{$c} = $val;
+                                    $data_pos_def .= "$s\t$c\t$val\n";
+                                }
                             }
                         }
                     }
+
+                    open(my $F4, ">", $grm_out_posdef_tempfile) || die "Can't open file ".$grm_out_posdef_tempfile;
+                        print $F4 $data_pos_def;
+                    close($F4);
+
+                    $grm_file_ar1 = $grm_out_posdef_tempfile;
+                }
+                elsif ($use_parental_grms_if_compute_from_parents) {
+                    my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
+                    my $tmp_arm_dir = $shared_cluster_dir_config."/tmp_download_arm";
+                    mkdir $tmp_arm_dir if ! -d $tmp_arm_dir;
+                    my ($arm_tempfile_fh, $arm_tempfile) = tempfile("drone_stats_download_arm_XXXXX", DIR=> $tmp_arm_dir);
+                    my ($grm1_tempfile_fh, $grm1_tempfile) = tempfile("drone_stats_download_grm1_XXXXX", DIR=> $tmp_arm_dir);
+                    my ($grm_out_temp_tempfile_fh, $grm_out_temp_tempfile) = tempfile("drone_stats_download_grm_temp_out_XXXXX", DIR=> $tmp_arm_dir);
+                    my ($grm_out_tempfile_fh, $grm_out_tempfile) = tempfile("drone_stats_download_grm_out_XXXXX", DIR=> $tmp_arm_dir);
+                    my ($grm_out_posdef_tempfile_fh, $grm_out_posdef_tempfile) = tempfile("drone_stats_download_grm_out_XXXXX", DIR=> $tmp_arm_dir);
+
+                    if (!$genotyping_protocol_id) {
+                        $genotyping_protocol_id = undef;
+                    }
+
+                    my $pedigree_arm = CXGN::Pedigree::ARM->new({
+                        bcs_schema=>$schema,
+                        arm_temp_file=>$arm_tempfile,
+                        people_schema=>$people_schema,
+                        accession_id_list=>\@accession_ids,
+                        # plot_id_list=>\@plot_id_list,
+                        cache_root=>$c->config->{cache_file_path},
+                        download_format=>'matrix', #either 'matrix', 'three_column', or 'heatmap'
+                    });
+                    my ($parent_hash, $stock_ids, $all_accession_stock_ids, $female_stock_ids, $male_stock_ids) = $pedigree_arm->get_arm(
+                        $shared_cluster_dir_config,
+                        $c->config->{backend},
+                        $c->config->{cluster_host},
+                        $c->config->{'web_cluster_queue'},
+                        $c->config->{basepath}
+                    );
+                    # print STDERR Dumper $parent_hash;
+
+                    my $female_geno = CXGN::Genotype::GRM->new({
+                        bcs_schema=>$schema,
+                        grm_temp_file=>$grm1_tempfile,
+                        people_schema=>$people_schema,
+                        cache_root=>$c->config->{cache_file_path},
+                        accession_id_list=>$female_stock_ids,
+                        protocol_id=>$genotyping_protocol_id,
+                        get_grm_for_parental_accessions=>0,
+                        download_format=>'three_column_reciprocal'
+                        # minor_allele_frequency=>$minor_allele_frequency,
+                        # marker_filter=>$marker_filter,
+                        # individuals_filter=>$individuals_filter
+                    });
+                    my $female_grm_data = $female_geno->download_grm(
+                        'data',
+                        $shared_cluster_dir_config,
+                        $c->config->{backend},
+                        $c->config->{cluster_host},
+                        $c->config->{'web_cluster_queue'},
+                        $c->config->{basepath}
+                    );
+                    my @fl = split '\n', $female_grm_data;
+                    my %female_parent_grm;
+                    foreach (@fl) {
+                        my @l = split '\t', $_;
+                        $female_parent_grm{$l[0]}->{$l[1]} = $l[2];
+                    }
+                    # print STDERR Dumper \%female_parent_grm;
+
+                    my $male_geno = CXGN::Genotype::GRM->new({
+                        bcs_schema=>$schema,
+                        grm_temp_file=>$grm1_tempfile,
+                        people_schema=>$people_schema,
+                        cache_root=>$c->config->{cache_file_path},
+                        accession_id_list=>$male_stock_ids,
+                        protocol_id=>$genotyping_protocol_id,
+                        get_grm_for_parental_accessions=>0,
+                        download_format=>'three_column_reciprocal'
+                        # minor_allele_frequency=>$minor_allele_frequency,
+                        # marker_filter=>$marker_filter,
+                        # individuals_filter=>$individuals_filter
+                    });
+                    my $male_grm_data = $male_geno->download_grm(
+                        'data',
+                        $shared_cluster_dir_config,
+                        $c->config->{backend},
+                        $c->config->{cluster_host},
+                        $c->config->{'web_cluster_queue'},
+                        $c->config->{basepath}
+                    );
+                    my @ml = split '\n', $male_grm_data;
+                    my %male_parent_grm;
+                    foreach (@ml) {
+                        my @l = split '\t', $_;
+                        $male_parent_grm{$l[0]}->{$l[1]} = $l[2];
+                    }
+                    # print STDERR Dumper \%male_parent_grm;
+
+                    my %rel_result_hash;
+                    foreach my $a1 (@accession_ids) {
+                        foreach my $a2 (@accession_ids) {
+                            my $female_parent1 = $parent_hash->{$a1}->{female_stock_id};
+                            my $male_parent1 = $parent_hash->{$a1}->{male_stock_id};
+                            my $female_parent2 = $parent_hash->{$a2}->{female_stock_id};
+                            my $male_parent2 = $parent_hash->{$a2}->{male_stock_id};
+
+                            my $female_rel = 0;
+                            if ($female_parent1 && $female_parent2 && $female_parent_grm{'S'.$female_parent1}->{'S'.$female_parent2}) {
+                                $female_rel = $female_parent_grm{'S'.$female_parent1}->{'S'.$female_parent2};
+                            }
+                            elsif ($a1 == $a2) {
+                                $female_rel = 1;
+                            }
+
+                            my $male_rel = 0;
+                            if ($male_parent1 && $male_parent2 && $male_parent_grm{'S'.$male_parent1}->{'S'.$male_parent2}) {
+                                $male_rel = $male_parent_grm{'S'.$male_parent1}->{'S'.$male_parent2};
+                            }
+                            elsif ($a1 == $a2) {
+                                $male_rel = 1;
+                            }
+                            # print STDERR "$a1 $a2 $female_rel $male_rel\n";
+
+                            my $rel = 0.5*($female_rel + $male_rel);
+                            $rel_result_hash{$a1}->{$a2} = $rel;
+                        }
+                    }
+                    # print STDERR Dumper \%rel_result_hash;
+
+                    my $data = '';
+                    my %result_hash;
+                    foreach my $s (sort @accession_ids) {
+                        foreach my $c (sort @accession_ids) {
+                            if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
+                                my $val = $rel_result_hash{$s}->{$c};
+                                if (defined $val and length $val) {
+                                    $result_hash{$s}->{$c} = $val;
+                                    $data .= "S$s\tS$c\t$val\n";
+                                }
+                            }
+                        }
+                    }
+
+                    # print STDERR Dumper $data;
+                    open(my $F2, ">", $grm_out_temp_tempfile) || die "Can't open file ".$grm_out_temp_tempfile;
+                        print $F2 $data;
+                    close($F2);
+
+                    my $cmd = 'R -e "library(data.table); library(scales); library(tidyr); library(reshape2);
+                    three_col <- fread(\''.$grm_out_temp_tempfile.'\', header=FALSE, sep=\'\t\');
+                    A_wide <- dcast(three_col, V1~V2, value.var=\'V3\');
+                    A_1 <- A_wide[,-1];
+                    A_1[is.na(A_1)] <- 0;
+                    A <- A_1 + t(A_1);
+                    diag(A) <- diag(as.matrix(A_1));
+                    E = eigen(A);
+                    ev = E\$values;
+                    U = E\$vectors;
+                    no = dim(A)[1];
+                    nev = which(ev < 0);
+                    wr = 0;
+                    k=length(nev);
+                    if(k > 0){
+                        p = ev[no - k];
+                        B = sum(ev[nev])*2.0;
+                        wr = (B*B*100.0)+1;
+                        val = ev[nev];
+                        ev[nev] = p*(B-val)*(B-val)/wr;
+                        A = U%*%diag(ev)%*%t(U);
+                    }
+                    A <- as.data.frame(A);
+                    colnames(A) <- A_wide[,1];
+                    A\$stock_id <- A_wide[,1];
+                    A_threecol <- melt(A, id.vars = c(\'stock_id\'), measure.vars = A_wide[,1]);
+                    A_threecol\$stock_id <- substring(A_threecol\$stock_id, 2);
+                    A_threecol\$variable <- substring(A_threecol\$variable, 2);
+                    write.table(data.frame(variable = A_threecol\$variable, stock_id = A_threecol\$stock_id, value = A_threecol\$value), file=\''.$grm_out_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
+                    print STDERR $cmd."\n";
+                    my $status = system($cmd);
+
+                    my %rel_pos_def_result_hash;
+                    open(my $F3, '<', $grm_out_tempfile) or die "Could not open file '$grm_out_tempfile' $!";
+                        print STDERR "Opened $grm_out_tempfile\n";
+
+                        while (my $row = <$F3>) {
+                            my @columns;
+                            if ($csv->parse($row)) {
+                                @columns = $csv->fields();
+                            }
+                            my $stock_id1 = $columns[0];
+                            my $stock_id2 = $columns[1];
+                            my $val = $columns[2];
+                            $rel_pos_def_result_hash{$stock_id1}->{$stock_id2} = $val;
+                        }
+                    close($F3);
+
+                    my $data_pos_def = '';
+                    %result_hash = ();
+                    foreach my $s (sort @accession_ids) {
+                        foreach my $c (sort @accession_ids) {
+                            if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
+                                my $val = $rel_pos_def_result_hash{$s}->{$c};
+                                if (defined $val and length $val) {
+                                    $result_hash{$s}->{$c} = $val;
+                                    $data_pos_def .= "$s\t$c\t$val\n";
+                                }
+                            }
+                        }
+                    }
+
+                    open(my $F4, ">", $grm_out_posdef_tempfile) || die "Can't open file ".$grm_out_posdef_tempfile;
+                        print $F4 $data_pos_def;
+                    close($F4);
+
+                    $grm_file_ar1 = $grm_out_posdef_tempfile;
+                }
+                else {
+                    my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
+                    my $tmp_grm_dir = $shared_cluster_dir_config."/tmp_genotype_download_grm";
+                    mkdir $tmp_grm_dir if ! -d $tmp_grm_dir;
+                    my ($grm_tempfile_fh, $grm_tempfile) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
+                    my ($grm_out_tempfile_fh, $grm_out_tempfile) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
+
+                    if (!$genotyping_protocol_id) {
+                        $genotyping_protocol_id = undef;
+                    }
+
+                    my $grm_search_params = {
+                        bcs_schema=>$schema,
+                        grm_temp_file=>$grm_tempfile,
+                        people_schema=>$people_schema,
+                        cache_root=>$c->config->{cache_file_path},
+                        accession_id_list=>\@accession_ids,
+                        protocol_id=>$genotyping_protocol_id,
+                        get_grm_for_parental_accessions=>$compute_from_parents,
+                        # minor_allele_frequency=>$minor_allele_frequency,
+                        # marker_filter=>$marker_filter,
+                        # individuals_filter=>$individuals_filter
+                    };
+                    $grm_search_params->{download_format} = 'three_column_stock_id_integer';
+
+                    my $geno = CXGN::Genotype::GRM->new($grm_search_params);
+                    my $grm_data = $geno->download_grm(
+                        'data',
+                        $shared_cluster_dir_config,
+                        $c->config->{backend},
+                        $c->config->{cluster_host},
+                        $c->config->{'web_cluster_queue'},
+                        $c->config->{basepath}
+                    );
+
+                    open(my $F2, ">", $grm_out_tempfile) || die "Can't open file ".$grm_out_tempfile;
+                        print $F2 $grm_data;
+                    close($F2);
+                    $grm_file_ar1 = $grm_out_tempfile;
                 }
 
-                open(my $F4, ">", $grm_out_posdef_tempfile) || die "Can't open file ".$grm_out_posdef_tempfile;
-                    print $F4 $data_pos_def;
-                close($F4);
-
-                $grm_file_ar1 = $grm_out_posdef_tempfile;
             }
-            elsif ($use_parental_grms_if_compute_from_parents) {
-                my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
-                my $tmp_arm_dir = $shared_cluster_dir_config."/tmp_download_arm";
-                mkdir $tmp_arm_dir if ! -d $tmp_arm_dir;
-                my ($arm_tempfile_fh, $arm_tempfile) = tempfile("drone_stats_download_arm_XXXXX", DIR=> $tmp_arm_dir);
-                my ($grm1_tempfile_fh, $grm1_tempfile) = tempfile("drone_stats_download_grm1_XXXXX", DIR=> $tmp_arm_dir);
-                my ($grm_out_temp_tempfile_fh, $grm_out_temp_tempfile) = tempfile("drone_stats_download_grm_temp_out_XXXXX", DIR=> $tmp_arm_dir);
-                my ($grm_out_tempfile_fh, $grm_out_tempfile) = tempfile("drone_stats_download_grm_out_XXXXX", DIR=> $tmp_arm_dir);
-                my ($grm_out_posdef_tempfile_fh, $grm_out_posdef_tempfile) = tempfile("drone_stats_download_grm_out_XXXXX", DIR=> $tmp_arm_dir);
-
-                if (!$genotyping_protocol_id) {
-                    $genotyping_protocol_id = undef;
-                }
-
-                my $pedigree_arm = CXGN::Pedigree::ARM->new({
-                    bcs_schema=>$schema,
-                    arm_temp_file=>$arm_tempfile,
-                    people_schema=>$people_schema,
-                    accession_id_list=>\@accession_ids,
-                    # plot_id_list=>\@plot_id_list,
-                    cache_root=>$c->config->{cache_file_path},
-                    download_format=>'matrix', #either 'matrix', 'three_column', or 'heatmap'
-                });
-                my ($parent_hash, $stock_ids, $all_accession_stock_ids, $female_stock_ids, $male_stock_ids) = $pedigree_arm->get_arm(
-                    $shared_cluster_dir_config,
-                    $c->config->{backend},
-                    $c->config->{cluster_host},
-                    $c->config->{'web_cluster_queue'},
-                    $c->config->{basepath}
-                );
-                # print STDERR Dumper $parent_hash;
-
-                my $female_geno = CXGN::Genotype::GRM->new({
-                    bcs_schema=>$schema,
-                    grm_temp_file=>$grm1_tempfile,
-                    people_schema=>$people_schema,
-                    cache_root=>$c->config->{cache_file_path},
-                    accession_id_list=>$female_stock_ids,
-                    protocol_id=>$genotyping_protocol_id,
-                    get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
-                    # minor_allele_frequency=>$minor_allele_frequency,
-                    # marker_filter=>$marker_filter,
-                    # individuals_filter=>$individuals_filter
-                });
-                my $female_grm_data = $female_geno->download_grm(
-                    'data',
-                    $shared_cluster_dir_config,
-                    $c->config->{backend},
-                    $c->config->{cluster_host},
-                    $c->config->{'web_cluster_queue'},
-                    $c->config->{basepath}
-                );
-                my @fl = split '\n', $female_grm_data;
-                my %female_parent_grm;
-                foreach (@fl) {
-                    my @l = split '\t', $_;
-                    $female_parent_grm{$l[0]}->{$l[1]} = $l[2];
-                }
-                # print STDERR Dumper \%female_parent_grm;
-
-                my $male_geno = CXGN::Genotype::GRM->new({
-                    bcs_schema=>$schema,
-                    grm_temp_file=>$grm1_tempfile,
-                    people_schema=>$people_schema,
-                    cache_root=>$c->config->{cache_file_path},
-                    accession_id_list=>$male_stock_ids,
-                    protocol_id=>$genotyping_protocol_id,
-                    get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
-                    # minor_allele_frequency=>$minor_allele_frequency,
-                    # marker_filter=>$marker_filter,
-                    # individuals_filter=>$individuals_filter
-                });
-                my $male_grm_data = $male_geno->download_grm(
-                    'data',
-                    $shared_cluster_dir_config,
-                    $c->config->{backend},
-                    $c->config->{cluster_host},
-                    $c->config->{'web_cluster_queue'},
-                    $c->config->{basepath}
-                );
-                my @ml = split '\n', $male_grm_data;
-                my %male_parent_grm;
-                foreach (@ml) {
-                    my @l = split '\t', $_;
-                    $male_parent_grm{$l[0]}->{$l[1]} = $l[2];
-                }
-                # print STDERR Dumper \%male_parent_grm;
-
-                my %rel_result_hash;
-                foreach my $a1 (@accession_ids) {
-                    foreach my $a2 (@accession_ids) {
-                        my $female_parent1 = $parent_hash->{$a1}->{female_stock_id};
-                        my $male_parent1 = $parent_hash->{$a1}->{male_stock_id};
-                        my $female_parent2 = $parent_hash->{$a2}->{female_stock_id};
-                        my $male_parent2 = $parent_hash->{$a2}->{male_stock_id};
-
-                        my $female_rel = 0;
-                        if ($female_parent1 && $female_parent2 && $female_parent_grm{'S'.$female_parent1}->{'S'.$female_parent2}) {
-                            $female_rel = $female_parent_grm{'S'.$female_parent1}->{'S'.$female_parent2};
-                        }
-                        elsif ($a1 == $a2) {
-                            $female_rel = 1;
-                        }
-
-                        my $male_rel = 0;
-                        if ($male_parent1 && $male_parent2 && $male_parent_grm{'S'.$male_parent1}->{'S'.$male_parent2}) {
-                            $male_rel = $male_parent_grm{'S'.$male_parent1}->{'S'.$male_parent2};
-                        }
-                        elsif ($a1 == $a2) {
-                            $male_rel = 1;
-                        }
-                        # print STDERR "$a1 $a2 $female_rel $male_rel\n";
-
-                        my $rel = 0.5*($female_rel + $male_rel);
-                        $rel_result_hash{$a1}->{$a2} = $rel;
-                    }
-                }
-                # print STDERR Dumper \%rel_result_hash;
-
-                my $data = '';
-                my %result_hash;
-                foreach my $s (sort @accession_ids) {
-                    foreach my $c (sort @accession_ids) {
-                        if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
-                            my $val = $rel_result_hash{$s}->{$c};
-                            if (defined $val and length $val) {
-                                $result_hash{$s}->{$c} = $val;
-                                $data .= "S$s\tS$c\t$val\n";
-                            }
-                        }
-                    }
-                }
-
-                # print STDERR Dumper $data;
-                open(my $F2, ">", $grm_out_temp_tempfile) || die "Can't open file ".$grm_out_temp_tempfile;
-                    print $F2 $data;
-                close($F2);
-
-                my $cmd = 'R -e "library(data.table); library(scales); library(tidyr); library(reshape2);
-                three_col <- fread(\''.$grm_out_temp_tempfile.'\', header=FALSE, sep=\'\t\');
-                A_wide <- dcast(three_col, V1~V2, value.var=\'V3\');
-                A_1 <- A_wide[,-1];
-                A_1[is.na(A_1)] <- 0;
-                A <- A_1 + t(A_1);
-                diag(A) <- diag(as.matrix(A_1));
-                E = eigen(A);
-                ev = E\$values;
-                U = E\$vectors;
-                no = dim(A)[1];
-                nev = which(ev < 0);
-                wr = 0;
-                k=length(nev);
-                if(k > 0){
-                    p = ev[no - k];
-                    B = sum(ev[nev])*2.0;
-                    wr = (B*B*100.0)+1;
-                    val = ev[nev];
-                    ev[nev] = p*(B-val)*(B-val)/wr;
-                    A = U%*%diag(ev)%*%t(U);
-                }
-                A <- as.data.frame(A);
-                colnames(A) <- A_wide[,1];
-                A\$stock_id <- A_wide[,1];
-                A_threecol <- melt(A, id.vars = c(\'stock_id\'), measure.vars = A_wide[,1]);
-                A_threecol\$stock_id <- substring(A_threecol\$stock_id, 2);
-                A_threecol\$variable <- substring(A_threecol\$variable, 2);
-                write.table(data.frame(variable = A_threecol\$variable, stock_id = A_threecol\$stock_id, value = A_threecol\$value), file=\''.$grm_out_tempfile.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');"';
-                print STDERR $cmd."\n";
-                my $status = system($cmd);
-
-                my %rel_pos_def_result_hash;
-                open(my $F3, '<', $grm_out_tempfile) or die "Could not open file '$grm_out_tempfile' $!";
-                    print STDERR "Opened $grm_out_tempfile\n";
-
-                    while (my $row = <$F3>) {
-                        my @columns;
-                        if ($csv->parse($row)) {
-                            @columns = $csv->fields();
-                        }
-                        my $stock_id1 = $columns[0];
-                        my $stock_id2 = $columns[1];
-                        my $val = $columns[2];
-                        $rel_pos_def_result_hash{$stock_id1}->{$stock_id2} = $val;
-                    }
-                close($F3);
-
-                my $data_pos_def = '';
-                %result_hash = ();
-                foreach my $s (sort @accession_ids) {
-                    foreach my $c (sort @accession_ids) {
-                        if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
-                            my $val = $rel_pos_def_result_hash{$s}->{$c};
-                            if (defined $val and length $val) {
-                                $result_hash{$s}->{$c} = $val;
-                                $data_pos_def .= "$s\t$c\t$val\n";
-                            }
-                        }
-                    }
-                }
-
-                open(my $F4, ">", $grm_out_posdef_tempfile) || die "Can't open file ".$grm_out_posdef_tempfile;
-                    print $F4 $data_pos_def;
-                close($F4);
-
-                $grm_file_ar1 = $grm_out_posdef_tempfile;
-            }
-            else {
+            elsif ($compute_relationship_matrix_from_htp_phenotypes eq 'htp_phenotypes') {
                 my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
                 my $tmp_grm_dir = $shared_cluster_dir_config."/tmp_genotype_download_grm";
                 mkdir $tmp_grm_dir if ! -d $tmp_grm_dir;
-                my ($grm_tempfile_fh, $grm_tempfile) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
-                my ($grm_out_tempfile_fh, $grm_out_tempfile) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
+                my ($stats_out_htp_rel_tempfile_input_fh, $stats_out_htp_rel_tempfile_input) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
+                my ($stats_out_htp_rel_tempfile_fh, $stats_out_htp_rel_tempfile) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
+                my ($stats_out_htp_rel_tempfile_out_fh, $stats_out_htp_rel_tempfile_out) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
 
-                if (!$genotyping_protocol_id) {
-                    $genotyping_protocol_id = undef;
-                }
-
-                my $grm_search_params = {
-                    bcs_schema=>$schema,
-                    grm_temp_file=>$grm_tempfile,
-                    people_schema=>$people_schema,
-                    cache_root=>$c->config->{cache_file_path},
-                    accession_id_list=>\@accession_ids,
-                    protocol_id=>$genotyping_protocol_id,
-                    get_grm_for_parental_accessions=>$compute_from_parents,
-                    # minor_allele_frequency=>$minor_allele_frequency,
-                    # marker_filter=>$marker_filter,
-                    # individuals_filter=>$individuals_filter
-                };
-                $grm_search_params->{download_format} = 'three_column_stock_id_integer';
-
-                my $geno = CXGN::Genotype::GRM->new($grm_search_params);
-                my $grm_data = $geno->download_grm(
-                    'data',
-                    $shared_cluster_dir_config,
-                    $c->config->{backend},
-                    $c->config->{cluster_host},
-                    $c->config->{'web_cluster_queue'},
-                    $c->config->{basepath}
+                my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
+                    'MaterializedViewTable',
+                    {
+                        bcs_schema=>$schema,
+                        data_level=>'plot',
+                        trial_list=>$field_trial_id_list,
+                        include_timestamp=>0,
+                        exclude_phenotype_outlier=>0
+                    }
                 );
+                my ($data, $unique_traits) = $phenotypes_search->search();
 
-                open(my $F2, ">", $grm_out_tempfile) || die "Can't open file ".$grm_out_tempfile;
-                    print $F2 $grm_data;
-                close($F2);
-                $grm_file_ar1 = $grm_out_tempfile;
-            }
-
-        }
-        elsif ($compute_relationship_matrix_from_htp_phenotypes eq 'htp_phenotypes') {
-            my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
-            my $tmp_grm_dir = $shared_cluster_dir_config."/tmp_genotype_download_grm";
-            mkdir $tmp_grm_dir if ! -d $tmp_grm_dir;
-            my ($stats_out_htp_rel_tempfile_input_fh, $stats_out_htp_rel_tempfile_input) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
-            my ($stats_out_htp_rel_tempfile_fh, $stats_out_htp_rel_tempfile) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
-            my ($stats_out_htp_rel_tempfile_out_fh, $stats_out_htp_rel_tempfile_out) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
-
-            my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
-                'MaterializedViewTable',
-                {
-                    bcs_schema=>$schema,
-                    data_level=>'plot',
-                    trial_list=>$field_trial_id_list,
-                    include_timestamp=>0,
-                    exclude_phenotype_outlier=>0
+                if (scalar(@$data) == 0) {
+                    $c->stash->{rest} = { error => "There are no phenotypes for the trial you have selected!"};
+                    return;
                 }
-            );
-            my ($data, $unique_traits) = $phenotypes_search->search();
 
-            if (scalar(@$data) == 0) {
-                $c->stash->{rest} = { error => "There are no phenotypes for the trial you have selected!"};
-                return;
-            }
+                my $q_time = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
+                my $h_time = $schema->storage->dbh()->prepare($q_time);
 
-            my $q_time = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
-            my $h_time = $schema->storage->dbh()->prepare($q_time);
+                my %seen_plot_names_htp_rel;
+                my %phenotype_data_htp_rel;
+                my %seen_times_htp_rel;
+                foreach my $obs_unit (@$data){
+                    my $germplasm_name = $obs_unit->{germplasm_uniquename};
+                    my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
+                    my $row_number = $obs_unit->{obsunit_row_number} || '';
+                    my $col_number = $obs_unit->{obsunit_col_number} || '';
+                    my $rep = $obs_unit->{obsunit_rep};
+                    my $block = $obs_unit->{obsunit_block};
+                    $seen_plot_names_htp_rel{$obs_unit->{observationunit_uniquename}} = $obs_unit;
+                    my $observations = $obs_unit->{observations};
+                    foreach (@$observations){
+                        if ($_->{associated_image_project_time_json}) {
+                            my $related_time_terms_json = decode_json $_->{associated_image_project_time_json};
 
-            my %seen_plot_names_htp_rel;
-            my %phenotype_data_htp_rel;
-            my %seen_times_htp_rel;
-            foreach my $obs_unit (@$data){
-                my $germplasm_name = $obs_unit->{germplasm_uniquename};
-                my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
-                my $row_number = $obs_unit->{obsunit_row_number} || '';
-                my $col_number = $obs_unit->{obsunit_col_number} || '';
-                my $rep = $obs_unit->{obsunit_rep};
-                my $block = $obs_unit->{obsunit_block};
-                $seen_plot_names_htp_rel{$obs_unit->{observationunit_uniquename}} = $obs_unit;
-                my $observations = $obs_unit->{observations};
-                foreach (@$observations){
-                    if ($_->{associated_image_project_time_json}) {
-                        my $related_time_terms_json = decode_json $_->{associated_image_project_time_json};
+                            my $time_days_cvterm = $related_time_terms_json->{day};
+                            my $time_days_term_string = $time_days_cvterm;
+                            my $time_days = (split '\|', $time_days_cvterm)[0];
+                            my $time_days_value = (split ' ', $time_days)[1];
 
-                        my $time_days_cvterm = $related_time_terms_json->{day};
-                        my $time_days_term_string = $time_days_cvterm;
-                        my $time_days = (split '\|', $time_days_cvterm)[0];
-                        my $time_days_value = (split ' ', $time_days)[1];
+                            my $time_gdd_value = $related_time_terms_json->{gdd_average_temp} + 0;
+                            my $gdd_term_string = "GDD $time_gdd_value";
+                            $h_time->execute($gdd_term_string, 'cxgn_time_ontology');
+                            my ($gdd_cvterm_id) = $h_time->fetchrow_array();
+                            if (!$gdd_cvterm_id) {
+                                my $new_gdd_term = $schema->resultset("Cv::Cvterm")->create_with({
+                                   name => $gdd_term_string,
+                                   cv => 'cxgn_time_ontology'
+                                });
+                                $gdd_cvterm_id = $new_gdd_term->cvterm_id();
+                            }
+                            my $time_gdd_term_string = SGN::Model::Cvterm::get_trait_from_cvterm_id($schema, $gdd_cvterm_id, 'extended');
 
-                        my $time_gdd_value = $related_time_terms_json->{gdd_average_temp} + 0;
-                        my $gdd_term_string = "GDD $time_gdd_value";
-                        $h_time->execute($gdd_term_string, 'cxgn_time_ontology');
-                        my ($gdd_cvterm_id) = $h_time->fetchrow_array();
-                        if (!$gdd_cvterm_id) {
-                            my $new_gdd_term = $schema->resultset("Cv::Cvterm")->create_with({
-                               name => $gdd_term_string,
-                               cv => 'cxgn_time_ontology'
-                            });
-                            $gdd_cvterm_id = $new_gdd_term->cvterm_id();
+                            $phenotype_data_htp_rel{$obs_unit->{observationunit_uniquename}}->{$_->{trait_name}} = $_->{value};
+                            $seen_times_htp_rel{$_->{trait_name}} = [$time_days_value, $time_days_term_string, $time_gdd_value, $time_gdd_term_string];
                         }
-                        my $time_gdd_term_string = SGN::Model::Cvterm::get_trait_from_cvterm_id($schema, $gdd_cvterm_id, 'extended');
-
-                        $phenotype_data_htp_rel{$obs_unit->{observationunit_uniquename}}->{$_->{trait_name}} = $_->{value};
-                        $seen_times_htp_rel{$_->{trait_name}} = [$time_days_value, $time_days_term_string, $time_gdd_value, $time_gdd_term_string];
-                    }
-                }
-            }
-
-            my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
-            my %filtered_seen_times_htp_rel;
-            while (my ($t, $time) = each %seen_times_htp_rel) {
-                my $allowed = 0;
-                foreach (@allowed_standard_htp_values) {
-                    if (index($t, $_) != -1) {
-                        $allowed = 1;
-                        last;
-                    }
-                }
-                if ($allowed) {
-                    $filtered_seen_times_htp_rel{$t} = $time;
-                }
-            }
-
-            my @seen_plot_names_htp_rel_sorted = sort keys %seen_plot_names_htp_rel;
-            my @filtered_seen_times_htp_rel_sorted = sort keys %filtered_seen_times_htp_rel;
-
-            my @header_htp = ('plot_id', 'plot_name', 'accession_id', 'accession_name', 'rep', 'block');
-
-            my %trait_name_encoder_htp;
-            my %trait_name_encoder_rev_htp;
-            my $trait_name_encoded_htp = 1;
-            my @header_traits_htp;
-            foreach my $trait_name (@filtered_seen_times_htp_rel_sorted) {
-                if (!exists($trait_name_encoder_htp{$trait_name})) {
-                    my $trait_name_e = 't'.$trait_name_encoded_htp;
-                    $trait_name_encoder_htp{$trait_name} = $trait_name_e;
-                    $trait_name_encoder_rev_htp{$trait_name_e} = $trait_name;
-                    push @header_traits_htp, $trait_name_e;
-                    $trait_name_encoded_htp++;
-                }
-            }
-
-            my @htp_pheno_matrix;
-            if ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'all') {
-                push @header_htp, @header_traits_htp;
-                push @htp_pheno_matrix, \@header_htp;
-
-                foreach my $p (@seen_plot_names_htp_rel_sorted) {
-                    my $obj = $seen_plot_names_htp_rel{$p};
-                    my @row = ($obj->{observationunit_stock_id}, $obj->{observationunit_uniquename}, $obj->{germplasm_stock_id}, $obj->{germplasm_uniquename}, $obj->{obsunit_rep}, $obj->{obsunit_block});
-                    foreach my $t (@filtered_seen_times_htp_rel_sorted) {
-                        my $val = $phenotype_data_htp_rel{$p}->{$t} + 0;
-                        push @row, $val;
-                    }
-                    push @htp_pheno_matrix, \@row;
-                }
-            }
-            elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'latest_trait') {
-                my $max_day = 0;
-                foreach (keys %seen_days_after_plantings) {
-                    if ($_ + 0 > $max_day) {
-                        $max_day = $_;
                     }
                 }
 
-                foreach my $t (@filtered_seen_times_htp_rel_sorted) {
-                    my $day = $filtered_seen_times_htp_rel{$t}->[0];
-                    if ($day <= $max_day) {
-                        push @header_htp, $t;
+                my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
+                my %filtered_seen_times_htp_rel;
+                while (my ($t, $time) = each %seen_times_htp_rel) {
+                    my $allowed = 0;
+                    foreach (@allowed_standard_htp_values) {
+                        if (index($t, $_) != -1) {
+                            $allowed = 1;
+                            last;
+                        }
+                    }
+                    if ($allowed) {
+                        $filtered_seen_times_htp_rel{$t} = $time;
                     }
                 }
-                push @htp_pheno_matrix, \@header_htp;
 
-                foreach my $p (@seen_plot_names_htp_rel_sorted) {
-                    my $obj = $seen_plot_names_htp_rel{$p};
-                    my @row = ($obj->{observationunit_stock_id}, $obj->{observationunit_uniquename}, $obj->{germplasm_stock_id}, $obj->{germplasm_uniquename}, $obj->{obsunit_rep}, $obj->{obsunit_block});
-                    foreach my $t (@filtered_seen_times_htp_rel_sorted) {
-                        my $day = $filtered_seen_times_htp_rel{$t}->[0];
-                        if ($day <= $max_day) {
+                my @seen_plot_names_htp_rel_sorted = sort keys %seen_plot_names_htp_rel;
+                my @filtered_seen_times_htp_rel_sorted = sort keys %filtered_seen_times_htp_rel;
+
+                my @header_htp = ('plot_id', 'plot_name', 'accession_id', 'accession_name', 'rep', 'block');
+
+                my %trait_name_encoder_htp;
+                my %trait_name_encoder_rev_htp;
+                my $trait_name_encoded_htp = 1;
+                my @header_traits_htp;
+                foreach my $trait_name (@filtered_seen_times_htp_rel_sorted) {
+                    if (!exists($trait_name_encoder_htp{$trait_name})) {
+                        my $trait_name_e = 't'.$trait_name_encoded_htp;
+                        $trait_name_encoder_htp{$trait_name} = $trait_name_e;
+                        $trait_name_encoder_rev_htp{$trait_name_e} = $trait_name;
+                        push @header_traits_htp, $trait_name_e;
+                        $trait_name_encoded_htp++;
+                    }
+                }
+
+                my @htp_pheno_matrix;
+                if ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'all') {
+                    push @header_htp, @header_traits_htp;
+                    push @htp_pheno_matrix, \@header_htp;
+
+                    foreach my $p (@seen_plot_names_htp_rel_sorted) {
+                        my $obj = $seen_plot_names_htp_rel{$p};
+                        my @row = ($obj->{observationunit_stock_id}, $obj->{observationunit_uniquename}, $obj->{germplasm_stock_id}, $obj->{germplasm_uniquename}, $obj->{obsunit_rep}, $obj->{obsunit_block});
+                        foreach my $t (@filtered_seen_times_htp_rel_sorted) {
                             my $val = $phenotype_data_htp_rel{$p}->{$t} + 0;
                             push @row, $val;
                         }
-                    }
-                    push @htp_pheno_matrix, \@row;
-                }
-            }
-            elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'vegetative') {
-
-            }
-            elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'reproductive') {
-
-            }
-            elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'mature') {
-
-            }
-            else {
-                $c->stash->{rest} = { error => "The value of $compute_relationship_matrix_from_htp_phenotypes_time_points htp_pheno_rel_matrix_time_points is not valid!" };
-                return;
-            }
-
-            open(my $htp_pheno_f, ">", $stats_out_htp_rel_tempfile_input) || die "Can't open file ".$stats_out_htp_rel_tempfile_input;
-                foreach (@htp_pheno_matrix) {
-                    my $line = join "\t", @$_;
-                    print $htp_pheno_f $line."\n";
-                }
-            close($htp_pheno_f);
-
-            my %rel_htp_result_hash;
-            if ($compute_relationship_matrix_from_htp_phenotypes_type eq 'correlations') {
-                my $htp_cmd = 'R -e "library(lme4); library(data.table);
-                mat <- fread(\''.$stats_out_htp_rel_tempfile_input.'\', header=TRUE, sep=\'\t\');
-                mat_agg <- aggregate(mat[, 7:ncol(mat)], list(mat\$accession_id), mean);
-                mat_pheno <- mat_agg[,2:ncol(mat_agg)];
-                cor_mat <- cor(t(mat_pheno));
-                rownames(cor_mat) <- mat_agg[,1];
-                colnames(cor_mat) <- mat_agg[,1];
-                range01 <- function(x){(x-min(x))/(max(x)-min(x))};
-                cor_mat <- range01(cor_mat);
-                write.table(cor_mat, file=\''.$stats_out_htp_rel_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');"';
-                print STDERR Dumper $htp_cmd;
-                my $status = system($htp_cmd);
-            }
-            elsif ($compute_relationship_matrix_from_htp_phenotypes_type eq 'blues') {
-                my $htp_cmd = 'R -e "library(lme4); library(data.table);
-                mat <- fread(\''.$stats_out_htp_rel_tempfile_input.'\', header=TRUE, sep=\'\t\');
-                blues <- data.frame(id = seq(1,length(unique(mat\$accession_id))));
-                varlist <- names(mat)[7:ncol(mat)];
-                blues.models <- lapply(varlist, function(x) {
-                    tryCatch(
-                        lmer(substitute(i ~ 1 + (1|accession_id), list(i = as.name(x))), data = mat, REML = FALSE, control = lmerControl(optimizer =\'Nelder_Mead\', boundary.tol='.$compute_relationship_matrix_from_htp_phenotypes_blues_inversion.' ) ), error=function(e) {}
-                    )
-                });
-                counter = 1;
-                for (m in blues.models) {
-                    if (!is.null(m)) {
-                        blues\$accession_id <- row.names(ranef(m)\$accession_id);
-                        blues[,ncol(blues) + 1] <- ranef(m)\$accession_id\$\`(Intercept)\`;
-                        colnames(blues)[ncol(blues)] <- varlist[counter];
-                    }
-                    counter = counter + 1;
-                }
-                blues_vals <- as.matrix(blues[,3:ncol(blues)]);
-                blues_vals <- apply(blues_vals, 2, function(y) (y - mean(y)) / sd(y) ^ as.logical(sd(y)));
-                rel <- (1/ncol(blues_vals)) * (blues_vals %*% t(blues_vals));
-                rownames(rel) <- blues[,2];
-                colnames(rel) <- blues[,2];
-                write.table(rel, file=\''.$stats_out_htp_rel_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');"';
-                print STDERR Dumper $htp_cmd;
-                my $status = system($htp_cmd);
-            }
-            else {
-                $c->stash->{rest} = { error => "The value of $compute_relationship_matrix_from_htp_phenotypes_type htp_pheno_rel_matrix_type is not valid!" };
-                return;
-            }
-
-            open(my $htp_rel_res, '<', $stats_out_htp_rel_tempfile) or die "Could not open file '$stats_out_htp_rel_tempfile' $!";
-                print STDERR "Opened $stats_out_htp_rel_tempfile\n";
-                my $header_row = <$htp_rel_res>;
-                my @header;
-                if ($csv->parse($header_row)) {
-                    @header = $csv->fields();
-                }
-
-                while (my $row = <$htp_rel_res>) {
-                    my @columns;
-                    if ($csv->parse($row)) {
-                        @columns = $csv->fields();
-                    }
-                    my $stock_id1 = $columns[0];
-                    my $counter = 1;
-                    foreach my $stock_id2 (@header) {
-                        my $val = $columns[$counter];
-                        $rel_htp_result_hash{$stock_id1}->{$stock_id2} = $val;
-                        $counter++;
+                        push @htp_pheno_matrix, \@row;
                     }
                 }
-            close($htp_rel_res);
+                elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'latest_trait') {
+                    my $max_day = 0;
+                    foreach (keys %seen_days_after_plantings) {
+                        if ($_ + 0 > $max_day) {
+                            $max_day = $_;
+                        }
+                    }
 
-            my $data_rel_htp = '';
-            my %result_hash;
-            foreach my $s (sort @accession_ids) {
-                foreach my $c (sort @accession_ids) {
-                    if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
-                        my $val = $rel_htp_result_hash{$s}->{$c};
-                        if (defined $val and length $val) {
-                            $result_hash{$s}->{$c} = $val;
-                            $data_rel_htp .= "$s\t$c\t$val\n";
+                    foreach my $t (@filtered_seen_times_htp_rel_sorted) {
+                        my $day = $filtered_seen_times_htp_rel{$t}->[0];
+                        if ($day <= $max_day) {
+                            push @header_htp, $t;
+                        }
+                    }
+                    push @htp_pheno_matrix, \@header_htp;
+
+                    foreach my $p (@seen_plot_names_htp_rel_sorted) {
+                        my $obj = $seen_plot_names_htp_rel{$p};
+                        my @row = ($obj->{observationunit_stock_id}, $obj->{observationunit_uniquename}, $obj->{germplasm_stock_id}, $obj->{germplasm_uniquename}, $obj->{obsunit_rep}, $obj->{obsunit_block});
+                        foreach my $t (@filtered_seen_times_htp_rel_sorted) {
+                            my $day = $filtered_seen_times_htp_rel{$t}->[0];
+                            if ($day <= $max_day) {
+                                my $val = $phenotype_data_htp_rel{$p}->{$t} + 0;
+                                push @row, $val;
+                            }
+                        }
+                        push @htp_pheno_matrix, \@row;
+                    }
+                }
+                elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'vegetative') {
+
+                }
+                elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'reproductive') {
+
+                }
+                elsif ($compute_relationship_matrix_from_htp_phenotypes_time_points eq 'mature') {
+
+                }
+                else {
+                    $c->stash->{rest} = { error => "The value of $compute_relationship_matrix_from_htp_phenotypes_time_points htp_pheno_rel_matrix_time_points is not valid!" };
+                    return;
+                }
+
+                open(my $htp_pheno_f, ">", $stats_out_htp_rel_tempfile_input) || die "Can't open file ".$stats_out_htp_rel_tempfile_input;
+                    foreach (@htp_pheno_matrix) {
+                        my $line = join "\t", @$_;
+                        print $htp_pheno_f $line."\n";
+                    }
+                close($htp_pheno_f);
+
+                my %rel_htp_result_hash;
+                if ($compute_relationship_matrix_from_htp_phenotypes_type eq 'correlations') {
+                    my $htp_cmd = 'R -e "library(lme4); library(data.table);
+                    mat <- fread(\''.$stats_out_htp_rel_tempfile_input.'\', header=TRUE, sep=\'\t\');
+                    mat_agg <- aggregate(mat[, 7:ncol(mat)], list(mat\$accession_id), mean);
+                    mat_pheno <- mat_agg[,2:ncol(mat_agg)];
+                    cor_mat <- cor(t(mat_pheno));
+                    rownames(cor_mat) <- mat_agg[,1];
+                    colnames(cor_mat) <- mat_agg[,1];
+                    range01 <- function(x){(x-min(x))/(max(x)-min(x))};
+                    cor_mat <- range01(cor_mat);
+                    write.table(cor_mat, file=\''.$stats_out_htp_rel_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');"';
+                    print STDERR Dumper $htp_cmd;
+                    my $status = system($htp_cmd);
+                }
+                elsif ($compute_relationship_matrix_from_htp_phenotypes_type eq 'blues') {
+                    my $htp_cmd = 'R -e "library(lme4); library(data.table);
+                    mat <- fread(\''.$stats_out_htp_rel_tempfile_input.'\', header=TRUE, sep=\'\t\');
+                    blues <- data.frame(id = seq(1,length(unique(mat\$accession_id))));
+                    varlist <- names(mat)[7:ncol(mat)];
+                    blues.models <- lapply(varlist, function(x) {
+                        tryCatch(
+                            lmer(substitute(i ~ 1 + (1|accession_id), list(i = as.name(x))), data = mat, REML = FALSE, control = lmerControl(optimizer =\'Nelder_Mead\', boundary.tol='.$compute_relationship_matrix_from_htp_phenotypes_blues_inversion.' ) ), error=function(e) {}
+                        )
+                    });
+                    counter = 1;
+                    for (m in blues.models) {
+                        if (!is.null(m)) {
+                            blues\$accession_id <- row.names(ranef(m)\$accession_id);
+                            blues[,ncol(blues) + 1] <- ranef(m)\$accession_id\$\`(Intercept)\`;
+                            colnames(blues)[ncol(blues)] <- varlist[counter];
+                        }
+                        counter = counter + 1;
+                    }
+                    blues_vals <- as.matrix(blues[,3:ncol(blues)]);
+                    blues_vals <- apply(blues_vals, 2, function(y) (y - mean(y)) / sd(y) ^ as.logical(sd(y)));
+                    rel <- (1/ncol(blues_vals)) * (blues_vals %*% t(blues_vals));
+                    rownames(rel) <- blues[,2];
+                    colnames(rel) <- blues[,2];
+                    write.table(rel, file=\''.$stats_out_htp_rel_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');"';
+                    print STDERR Dumper $htp_cmd;
+                    my $status = system($htp_cmd);
+                }
+                else {
+                    $c->stash->{rest} = { error => "The value of $compute_relationship_matrix_from_htp_phenotypes_type htp_pheno_rel_matrix_type is not valid!" };
+                    return;
+                }
+
+                open(my $htp_rel_res, '<', $stats_out_htp_rel_tempfile) or die "Could not open file '$stats_out_htp_rel_tempfile' $!";
+                    print STDERR "Opened $stats_out_htp_rel_tempfile\n";
+                    my $header_row = <$htp_rel_res>;
+                    my @header;
+                    if ($csv->parse($header_row)) {
+                        @header = $csv->fields();
+                    }
+
+                    while (my $row = <$htp_rel_res>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        my $stock_id1 = $columns[0];
+                        my $counter = 1;
+                        foreach my $stock_id2 (@header) {
+                            my $val = $columns[$counter];
+                            $rel_htp_result_hash{$stock_id1}->{$stock_id2} = $val;
+                            $counter++;
+                        }
+                    }
+                close($htp_rel_res);
+
+                my $data_rel_htp = '';
+                my %result_hash;
+                foreach my $s (sort @accession_ids) {
+                    foreach my $c (sort @accession_ids) {
+                        if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
+                            my $val = $rel_htp_result_hash{$s}->{$c};
+                            if (defined $val and length $val) {
+                                $result_hash{$s}->{$c} = $val;
+                                $data_rel_htp .= "$s\t$c\t$val\n";
+                            }
                         }
                     }
                 }
+
+                open(my $htp_rel_out, ">", $stats_out_htp_rel_tempfile_out) || die "Can't open file ".$stats_out_htp_rel_tempfile_out;
+                    print $htp_rel_out $data_rel_htp;
+                close($htp_rel_out);
+
+                $grm_file_ar1 = $stats_out_htp_rel_tempfile_out;
             }
-
-            open(my $htp_rel_out, ">", $stats_out_htp_rel_tempfile_out) || die "Can't open file ".$stats_out_htp_rel_tempfile_out;
-                print $htp_rel_out $data_rel_htp;
-            close($htp_rel_out);
-
-            $grm_file_ar1 = $stats_out_htp_rel_tempfile_out;
-        }
-        else {
-            $c->stash->{rest} = { error => "The value of $compute_relationship_matrix_from_htp_phenotypes is not valid!" };
-            return;
-        }
-    };
+            else {
+                $c->stash->{rest} = { error => "The value of $compute_relationship_matrix_from_htp_phenotypes is not valid!" };
+                return;
+            }
+        };
+    }
 
     my %accession_id_factor_map;
     my %accession_id_factor_map_reverse;
