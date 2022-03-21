@@ -623,6 +623,7 @@ sub download_grm {
     my $schema = $self->bcs_schema();
     my $protocol_id = $self->protocol_id();
 
+    print STDERR "$download_format\n";
     my $version_string = "download_grm_v04";
     my $target_key = $version_string.$download_format;
 
@@ -727,7 +728,11 @@ sub download_grm {
         }
 
         $self->cache()->set($matrix_key, $matrix_data);
+        print STDERR "CACHED GRM MATRIX\n";
+        sleep(2);
         $self->cache()->set($matrix_uniquenames_key, $matrix_uniquenames_data);
+        print STDERR "CACHED GRM MATRIX UNIQUENAMES\n";
+        sleep(2);
 
         my %three_column_result_hash;
         my $three_column_data = '';
@@ -760,8 +765,14 @@ sub download_grm {
         }
 
         $self->cache()->set($three_column_key, $three_column_data);
+        print STDERR "CACHED GRM THREE COLUMN\n";
+        sleep(2);
         $self->cache()->set($three_column_stock_id_integer_key, $three_column_stock_id_integer_data);
+        print STDERR "CACHED GRM THREE COLUMN STOCK ID\n";
+        sleep(2);
         $self->cache()->set($three_column_uniquenames_key, $three_column_uniquenames_data);
+        print STDERR "CACHED GRM THREE COLUMN UNIQUENAMES\n";
+        sleep(2);
 
         my $three_column_reciprocal_data = '';
         my $three_column_reciprocal_stock_id_integer_data = '';
@@ -789,8 +800,14 @@ sub download_grm {
         }
 
         $self->cache()->set($three_column_reciprocal_key, $three_column_reciprocal_data);
+        print STDERR "CACHED GRM THREE COLUMN Reciprocal\n";
+        sleep(2);
         $self->cache()->set($three_column_reciprocal_uniquenames_key, $three_column_reciprocal_uniquenames_data);
+        print STDERR "CACHED GRM THREE COLUMN Reciprocal UNIQUENAMES\n";
+        sleep(2);
         $self->cache()->set($three_column_reciprocal_stock_id_integer_key, $three_column_reciprocal_stock_id_integer_data);
+        print STDERR "CACHED GRM THREE COLUMN Reciprocal STOCK IDS\n";
+        sleep(2);
 
         my $grm_tempfile_heatmap_data = $grm_tempfile . "_heatmap_data";
         open(my $heatmap_fh, '>', $grm_tempfile_heatmap_data) or die $!;
@@ -813,7 +830,8 @@ sub download_grm {
         my $file_handle = $self->cache()->handle($heatmap_key);
         copy($out_copy, $file_handle);
         close $out_copy;
-
+        print STDERR "CACHED GRM HEATMAP\n";
+        sleep(5);
 
         if ($return_type eq 'filehandle') {
             $return = $self->cache()->handle($key);
