@@ -108,8 +108,6 @@ sub trial_info : Chained('trial_init') PathPart('') Args(0) {
 
     $c->stash->{user_can_modify} = ($user->check_roles("submitter") && $user->check_roles($c->stash->{breeding_program_name})) || $user->check_roles("curator") ;
 
-
-
     $c->stash->{year} = $trial->get_year();
 
     $c->stash->{trial_id} = $c->stash->{trial_id};

@@ -40,7 +40,7 @@ $is_curator => undef
 <script>
 
 jQuery(document).ready(function() {
-    jQuery('#manage_user_roles_table').DataTable();
+    //jQuery('#manage_user_roles_table').DataTable();
 
     jQuery('span[name="manage_roles_remove_user_role"]').click(function(){
         var role = jQuery(this).data('role');
