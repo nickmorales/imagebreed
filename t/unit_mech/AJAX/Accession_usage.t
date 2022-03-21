@@ -17,7 +17,13 @@ my $schema = $f->bcs_schema;
 my $mech = Test::WWW::Mechanize->new;
 my $response;
 
-$mech->get_ok('http://localhost:3010/ajax/accession_usage_trials');
+$mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw"=> "grant_type"=> "password" ]);
+$response = decode_json $mech->content;
+print STDERR Dumper $response;
+is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
+my $sgn_session_id = $response->{access_token};
+
+$mech->get_ok('http://localhost:3010/ajax/accession_usage_trials?sgn_session_id='.$sgn_session_id);
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
 my $data = $response->{data};
@@ -38,20 +44,20 @@ is_deeply($data->[100],
 , '101th row');
 
 
-$mech->get_ok('http://localhost:3010/ajax/accession_usage_female');
+$mech->get_ok('http://localhost:3010/ajax/accession_usage_female?sgn_session_id='.$sgn_session_id);
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
 
 is_deeply($response,{'data' => [['<a href="/stock/38843/view">test_accession4</a>',15],['<a href="/stock/38840/view">test_accession1</a>',1],['<a href="/stock/38842/view">test_accession3</a>',1]]}, 'female usage');
 
 
-$mech->get_ok('http://localhost:3010/ajax/accession_usage_male');
+$mech->get_ok('http://localhost:3010/ajax/accession_usage_male?sgn_session_id='.$sgn_session_id);
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
 
 is_deeply($response, {'data' => [['<a href="/stock/38844/view">test_accession5</a>',15],['<a href="/stock/38841/view">test_accession2</a>',1]]}, 'male usage');
 
-$mech->get_ok('http://localhost:3010/ajax/accession_usage_phenotypes?display=plots_accession');
+$mech->get_ok('http://localhost:3010/ajax/accession_usage_phenotypes?display=plots_accession&sgn_session_id='.$sgn_session_id);
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
 print STDERR Dumper scalar(@{$response->{data}});

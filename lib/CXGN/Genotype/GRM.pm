@@ -452,6 +452,7 @@ sub get_grm {
 
         my $cmd = 'R -e "library(rrBLUP); library(data.table); library(scales);
         mat_full <- fread(\''.$grm_tempfile.'\', header=FALSE, sep=\'\t\');
+        if (ncol(mat_full)<1) { opt <- options(show.error.messages = FALSE); on.exit(options(opt)); stop(); }
         mat <- mat_full[,-1];
         stock_ids <- mat_full[,1];
         write.table(stock_ids, file=\''.$grm_tempfile_stock_ids_out.'\', row.names=FALSE, col.names=FALSE, sep=\'\t\');
@@ -595,6 +596,9 @@ sub grm_cache_key {
     my $maf = $self->minor_allele_frequency();
     my $marker_filter = $self->marker_filter();
     my $individuals_filter = $self->individuals_filter();
+    my $return_imputed_matrix = $self->return_imputed_matrix();
+    my $return_imputed_matrix_key = $return_imputed_matrix ? '_returnimputed' : '';
+
     my $q_params = $accessions.$plots.$protocol.$genotypeprophash.$protocolprophash.$protocolpropmarkerhash.$self->get_grm_for_parental_accessions().$self->return_only_first_genotypeprop_for_stock()."_MAF$maf"."_mfilter$marker_filter"."_ifilter$individuals_filter"."_$datatype";
     if ($self->return_inverse()) {
         $q_params .= $self->return_inverse();
@@ -615,15 +619,24 @@ sub download_grm {
     my $web_cluster_queue_config = shift;
     my $basepath_config = shift;
     my $download_format = $self->download_format();
-    my $return_imputed_matrix = $self->return_imputed_matrix();
     my $grm_tempfile = $self->grm_temp_file();
     my $schema = $self->bcs_schema();
     my $protocol_id = $self->protocol_id();
 
-    my $return_imputed_matrix_key = $return_imputed_matrix ? '_returnimputed' : '';
+    my $version_string = "download_grm_v04";
+    my $target_key = $version_string.$download_format;
 
-    my $key = $self->grm_cache_key("download_grm_v03".$download_format.$return_imputed_matrix_key);
-    $self->_cache_key($key);
+    my $matrix_key = $self->grm_cache_key($version_string.'matrix');
+    my $matrix_uniquenames_key = $self->grm_cache_key($version_string.'matrix_uniquenames');
+    my $three_column_key = $self->grm_cache_key($version_string.'three_column');
+    my $three_column_uniquenames_key = $self->grm_cache_key($version_string.'three_column_uniquenames');
+    my $three_column_stock_id_integer_key = $self->grm_cache_key($version_string.'three_column_stock_id_integer');
+    my $three_column_reciprocal_key = $self->grm_cache_key($version_string.'three_column_reciprocal');
+    my $three_column_reciprocal_uniquenames_key = $self->grm_cache_key($version_string.'three_column_reciprocal_uniquenames');
+    my $three_column_reciprocal_stock_id_integer_key = $self->grm_cache_key($version_string.'three_column_reciprocal_stock_id_integer');
+    my $heatmap_key = $self->grm_cache_key($version_string.'heatmap');
+
+    my $key = $self->grm_cache_key($target_key);
     $self->cache( Cache::File->new( cache_root => $self->cache_root() ));
 
     my $return;
@@ -670,19 +683,59 @@ sub download_grm {
             $all_names{$stock_id} = $uniquename;
         }
 
-        my $data = '';
-        if ($download_format eq 'matrix') {
-            my @header = ("stock_id");
-            foreach (@$all_accession_stock_ids) {
-                push @header, "S".$_;
+        my $matrix_data = '';
+        my @matrix_header = ("stock_id");
+
+        my $matrix_uniquenames_data = '';
+        my @matrix_uniquenames_header = ("stock_uniquename");
+
+        foreach (@$all_accession_stock_ids) {
+            my $s1 = $all_names{$_};
+            push @matrix_header, "S".$_;
+            push @matrix_uniquenames_header, $s1;
+        }
+
+        my $matrix_header_line = join "\t", @matrix_header;
+        $matrix_data = "$matrix_header_line\n";
+
+        my $matrix_uniquenames_header_line = join "\t", @matrix_uniquenames_header;
+        $matrix_uniquenames_data = "$matrix_uniquenames_header_line\n";
+
+        foreach my $s (@$all_accession_stock_ids) {
+            my $s2 = $all_names{$s};
+            my @matrix_row = ("S".$s);
+            my @matrix_uniquenames_row = ($s2);
+            foreach my $c (@$all_accession_stock_ids) {
+                my $val;
+                if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                    $val = $grm_hash{$s}->{$c};
+                }
+                elsif ($s == $c) {
+                    $val = 1;
+                }
+                else {
+                    $val = 0;
+                }
+
+                push @matrix_row, $val;
+                push @matrix_uniquenames_row, $val;
             }
+            my $matrix_line = join "\t", @matrix_row;
+            my $matrix_uniquenames_line = join "\t", @matrix_uniquenames_row;
+            $matrix_data .= "$matrix_line\n";
+            $matrix_uniquenames_data .= "$matrix_uniquenames_line\n";
+        }
 
-            my $header_line = join "\t", @header;
-            $data = "$header_line\n";
+        $self->cache()->set($matrix_key, $matrix_data);
+        $self->cache()->set($matrix_uniquenames_key, $matrix_uniquenames_data);
 
-            foreach my $s (@$all_accession_stock_ids) {
-                my @row = ("S".$s);
-                foreach my $c (@$all_accession_stock_ids) {
+        my %three_column_result_hash;
+        my $three_column_data = '';
+        my $three_column_stock_id_integer_data = '';
+        my $three_column_uniquenames_data = '';
+        foreach my $s (@$all_accession_stock_ids) {
+            foreach my $c (@$all_accession_stock_ids) {
+                if (!exists($three_column_result_hash{$s}->{$c}) && !exists($three_column_result_hash{$c}->{$s})) {
                     my $val;
                     if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
                         $val = $grm_hash{$s}->{$c};
@@ -694,299 +747,107 @@ sub download_grm {
                         $val = 0;
                     }
 
-                    push @row, $val;
-                }
-                my $line = join "\t", @row;
-                $data .= "$line\n";
-            }
-
-            $self->cache()->set($key, $data);
-            if ($return_type eq 'filehandle') {
-                $return = $self->cache()->handle($key);
-            }
-            elsif ($return_type eq 'data') {
-                $return = $data;
-            }
-        }
-        elsif ($download_format eq 'matrix_uniquenames') {
-            my @header = ("stock_uniquename");
-            foreach (@$all_accession_stock_ids) {
-                my $s1 = $all_names{$_};
-                push @header, $s1;
-            }
-
-            my $header_line = join "\t", @header;
-            $data = "$header_line\n";
-
-            foreach my $s (@$all_accession_stock_ids) {
-                my $s2 = $all_names{$s};
-                my @row = ($s2);
-                foreach my $c (@$all_accession_stock_ids) {
-                    my $val;
-                    if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
-                        $val = $grm_hash{$s}->{$c};
-                    }
-                    elsif ($s == $c) {
-                        $val = 1;
-                    }
-                    else {
-                        $val = 0;
-                    }
-
-                    push @row, $val;
-                }
-                my $line = join "\t", @row;
-                $data .= "$line\n";
-            }
-
-            $self->cache()->set($key, $data);
-            if ($return_type eq 'filehandle') {
-                $return = $self->cache()->handle($key);
-            }
-            elsif ($return_type eq 'data') {
-                $return = $data;
-            }
-        }
-        elsif ($download_format eq 'three_column') {
-            my %result_hash;
-            foreach my $s (@$all_accession_stock_ids) {
-                foreach my $c (@$all_accession_stock_ids) {
-                    if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
-                        my $val;
-                        if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
-                            $val = $grm_hash{$s}->{$c};
-                        }
-                        elsif ($s == $c) {
-                            $val = 1;
-                        }
-                        else {
-                            $val = 0;
-                        }
-
-                        $data .= "S$s\tS$c\t$val\n";
-                        $result_hash{$s}->{$c} = $val;
-                    }
-                }
-            }
-
-            $self->cache()->set($key, $data);
-            if ($return_type eq 'filehandle') {
-                $return = $self->cache()->handle($key);
-            }
-            elsif ($return_type eq 'data') {
-                $return = $data;
-            }
-        }
-        elsif ($download_format eq 'three_column_uniquenames') {
-            my %result_hash;
-            foreach my $s (@$all_accession_stock_ids) {
-                foreach my $c (@$all_accession_stock_ids) {
-                    if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
-                        my $val;
-                        if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
-                            $val = $grm_hash{$s}->{$c};
-                        }
-                        elsif ($s == $c) {
-                            $val = 1;
-                        }
-                        else {
-                            $val = 0;
-                        }
-
-                        my $s1 = $all_names{$s};
-                        my $s2 = $all_names{$c};
-                        $data .= "$s1\t$s2\t$val\n";
-                        $result_hash{$s}->{$c} = $val;
-                    }
-                }
-            }
-
-            $self->cache()->set($key, $data);
-            if ($return_type eq 'filehandle') {
-                $return = $self->cache()->handle($key);
-            }
-            elsif ($return_type eq 'data') {
-                $return = $data;
-            }
-        }
-        elsif ($download_format eq 'three_column_stock_id_integer') {
-            my %result_hash;
-            foreach my $s (@$all_accession_stock_ids) {
-                foreach my $c (@$all_accession_stock_ids) {
-                    if (!exists($result_hash{$s}->{$c}) && !exists($result_hash{$c}->{$s})) {
-                        my $val;
-                        if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
-                            $val = $grm_hash{$s}->{$c};
-                        }
-                        elsif ($s == $c) {
-                            $val = 1;
-                        }
-                        else {
-                            $val = 0;
-                        }
-
-                        $data .= "$s\t$c\t$val\n";
-                        $result_hash{$s}->{$c} = $val;
-                    }
-                }
-            }
-
-            $self->cache()->set($key, $data);
-            if ($return_type eq 'filehandle') {
-                $return = $self->cache()->handle($key);
-            }
-            elsif ($return_type eq 'data') {
-                $return = $data;
-            }
-        }
-        elsif ($download_format eq 'three_column_reciprocal') {
-            foreach my $s (@$all_accession_stock_ids) {
-                foreach my $c (@$all_accession_stock_ids) {
-                    my $val;
-                    if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
-                        $val = $grm_hash{$s}->{$c};
-                    }
-                    elsif ($s == $c) {
-                        $val = 1;
-                    }
-                    else {
-                        $val = 0;
-                    }
-
-                    $data .= "S$s\tS$c\t$val\n";
-                }
-            }
-
-            $self->cache()->set($key, $data);
-            if ($return_type eq 'filehandle') {
-                $return = $self->cache()->handle($key);
-            }
-            elsif ($return_type eq 'data') {
-                $return = $data;
-            }
-        }
-        elsif ($download_format eq 'three_column_reciprocal_uniquenames') {
-            foreach my $s (@$all_accession_stock_ids) {
-                foreach my $c (@$all_accession_stock_ids) {
-                    my $val;
-                    if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
-                        $val = $grm_hash{$s}->{$c};
-                    }
-                    elsif ($s == $c) {
-                        $val = 1;
-                    }
-                    else {
-                        $val = 0;
-                    }
+                    $three_column_data .= "S$s\tS$c\t$val\n";
+                    $three_column_stock_id_integer_data .= "$s\t$c\t$val\n";
 
                     my $s1 = $all_names{$s};
                     my $s2 = $all_names{$c};
-                    $data .= "$s1\t$s2\t$val\n";
-                }
-            }
+                    $three_column_uniquenames_data .= "$s1\t$s2\t$val\n";
 
-            $self->cache()->set($key, $data);
-            if ($return_type eq 'filehandle') {
-                $return = $self->cache()->handle($key);
-            }
-            elsif ($return_type eq 'data') {
-                $return = $data;
+                    $three_column_result_hash{$s}->{$c} = $val;
+                }
             }
         }
-        elsif ($download_format eq 'three_column_reciprocal_stock_id_integer') {
-            foreach my $s (@$all_accession_stock_ids) {
-                foreach my $c (@$all_accession_stock_ids) {
-                    my $val;
-                    if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
-                        $val = $grm_hash{$s}->{$c};
-                    }
-                    elsif ($s == $c) {
-                        $val = 1;
-                    }
-                    else {
-                        $val = 0;
-                    }
 
-                    $data .= "$s\t$c\t$val\n";
+        $self->cache()->set($three_column_key, $three_column_data);
+        $self->cache()->set($three_column_stock_id_integer_key, $three_column_stock_id_integer_data);
+        $self->cache()->set($three_column_uniquenames_key, $three_column_uniquenames_data);
+
+        my $three_column_reciprocal_data = '';
+        my $three_column_reciprocal_stock_id_integer_data = '';
+        my $three_column_reciprocal_uniquenames_data = '';
+        foreach my $s (@$all_accession_stock_ids) {
+            foreach my $c (@$all_accession_stock_ids) {
+                my $val;
+                if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                    $val = $grm_hash{$s}->{$c};
                 }
-            }
+                elsif ($s == $c) {
+                    $val = 1;
+                }
+                else {
+                    $val = 0;
+                }
 
-            $self->cache()->set($key, $data);
-            if ($return_type eq 'filehandle') {
-                $return = $self->cache()->handle($key);
-            }
-            elsif ($return_type eq 'data') {
-                $return = $data;
+                $three_column_reciprocal_data .= "S$s\tS$c\t$val\n";
+                $three_column_reciprocal_stock_id_integer_data .= "$s\t$c\t$val\n";
+
+                my $s1 = $all_names{$s};
+                my $s2 = $all_names{$c};
+                $three_column_reciprocal_uniquenames_data .= "$s1\t$s2\t$val\n";
             }
         }
-        elsif ($download_format eq 'heatmap') {
-            foreach my $s (@$all_accession_stock_ids) {
-                foreach my $c (@$all_accession_stock_ids) {
-                    my $val;
-                    if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
-                        $val = $grm_hash{$s}->{$c};
-                    }
-                    elsif ($s == $c) {
-                        $val = 1;
-                    }
-                    else {
-                        $val = 0;
-                    }
-                    my $s1 = $all_names{$s};
-                    my $s2 = $all_names{$c};
-                    $data .= "$s1\t$s2\t$val\n";
-                }
+
+        $self->cache()->set($three_column_reciprocal_key, $three_column_reciprocal_data);
+        $self->cache()->set($three_column_reciprocal_uniquenames_key, $three_column_reciprocal_uniquenames_data);
+        $self->cache()->set($three_column_reciprocal_stock_id_integer_key, $three_column_reciprocal_stock_id_integer_data);
+
+        my $grm_tempfile_heatmap_data = $grm_tempfile . "_heatmap_data";
+        open(my $heatmap_fh, '>', $grm_tempfile_heatmap_data) or die $!;
+            print $heatmap_fh $three_column_reciprocal_uniquenames_data;
+        close($heatmap_fh);
+
+        my $grm_tempfile_heatmap_out = $grm_tempfile . "_plot_out";
+        my $heatmap_cmd = 'R -e "library(ggplot2); library(data.table); library(viridis); library(GGally); library(gridExtra);
+        mat <- fread(\''.$grm_tempfile_heatmap_data.'\', header=FALSE, sep=\'\t\', stringsAsFactors=FALSE);
+        gg <- ggplot(mat, aes(V1, V2, fill=V3)) +
+            geom_tile() +
+            scale_fill_viridis(discrete=FALSE);
+        ggsave(\''.$grm_tempfile_heatmap_out.'\', gg, device=\'pdf\', width=8.5, height=11, units=\'in\');
+        "';
+        print STDERR Dumper $heatmap_cmd;
+        my $status_heatmap = system($heatmap_cmd);
+
+        open my $out_copy, '<', $grm_tempfile_heatmap_out or die "Can't open output file: $!";
+        $self->cache()->set($heatmap_key, '');
+        my $file_handle = $self->cache()->handle($heatmap_key);
+        copy($out_copy, $file_handle);
+        close $out_copy;
+
+
+        if ($return_type eq 'filehandle') {
+            $return = $self->cache()->handle($key);
+        }
+        elsif ($return_type eq 'data') {
+            my $data = '';
+            if ($download_format eq 'matrix') {
+                $data = $matrix_data;
             }
-
-            open(my $heatmap_fh, '>', $grm_tempfile) or die $!;
-                print $heatmap_fh $data;
-            close($heatmap_fh);
-
-            my $grm_tempfile_out = $grm_tempfile . "_plot_out";
-            my $heatmap_cmd = 'R -e "library(ggplot2); library(data.table); library(viridis); library(GGally); library(gridExtra);
-            mat <- fread(\''.$grm_tempfile.'\', header=FALSE, sep=\'\t\', stringsAsFactors=FALSE);
-            gg <- ggplot(mat, aes(V1, V2, fill=V3)) +
-                geom_tile() +
-                scale_fill_viridis(discrete=FALSE);
-            ggsave(\''.$grm_tempfile_out.'\', gg, device=\'pdf\', width=8.5, height=11, units=\'in\');
-            "';
-            print STDERR Dumper $heatmap_cmd;
-            my $status_heatmap = system($heatmap_cmd);
-
-            # my $tmp_output_dir = $shared_cluster_dir_config."/tmp_genotype_download_grm_heatmap";
-            # mkdir $tmp_output_dir if ! -d $tmp_output_dir;
-            #
-            # # Do the GRM on the cluster
-            # my $plot_cmd = CXGN::Tools::Run->new(
-            #     {
-            #         backend => $backend_config,
-            #         submit_host => $cluster_host_config,
-            #         temp_base => $tmp_output_dir,
-            #         queue => $web_cluster_queue_config,
-            #         do_cleanup => 0,
-            #         out_file => $grm_tempfile_out,
-            #         # don't block and wait if the cluster looks full
-            #         max_cluster_jobs => 1_000_000_000,
-            #     }
-            # );
-            #
-            # $plot_cmd->run_cluster($heatmap_cmd);
-            # $plot_cmd->is_cluster(1);
-            # $plot_cmd->wait;
-
-            if ($return_type eq 'filehandle') {
-                open my $out_copy, '<', $grm_tempfile_out or die "Can't open output file: $!";
-
-                $self->cache()->set($key, '');
-                my $file_handle = $self->cache()->handle($key);
-                copy($out_copy, $file_handle);
-
-                close $out_copy;
-                $return = $self->cache()->handle($key);
+            elsif ($download_format eq 'matrix_uniquenames') {
+                $data = $matrix_uniquenames_data;
             }
-            elsif ($return_type eq 'data') {
-                die "Can only return the filehandle for GRM heatmap!\n";
+            elsif ($download_format eq 'three_column') {
+                $data = $three_column_data;
             }
+            elsif ($download_format eq 'three_column_uniquenames') {
+                $data = $three_column_uniquenames_data;
+            }
+            elsif ($download_format eq 'three_column_stock_id_integer') {
+                $data = $three_column_stock_id_integer_data;
+            }
+            elsif ($download_format eq 'three_column_reciprocal') {
+                $data = $three_column_reciprocal_data;
+            }
+            elsif ($download_format eq 'three_column_reciprocal_uniquenames') {
+                $data = $three_column_reciprocal_uniquenames_data;
+            }
+            elsif ($download_format eq 'three_column_reciprocal_stock_id_integer') {
+                $data = $three_column_reciprocal_stock_id_integer_data;
+            }
+            elsif ($download_format eq 'heatmap') {
+                die "Can only return the filehandle (Not Data) for GRM heatmap!\n";
+            }
+            $return = $data;
         }
     }
     return $return;

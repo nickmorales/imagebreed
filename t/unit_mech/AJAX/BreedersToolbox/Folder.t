@@ -22,7 +22,7 @@ my $trial_id = $schema->resultset('Project::Project')->find({name=>'test_trial'}
 $mech->post_ok('http://localhost:3010/ajax/folder/new', [ "folder_name"=> "test_folder_1", "breeding_program_id"=> $breeding_program_id, "project_type" => 'field_trial', 'private_company_id' => 1]);
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
-is_deeply($response, {'error' => 'You need to be logged in.'}, 'check not logged in create new folder.');
+is_deeply($response, {'error' => 'You must be logged in to do this!'}, 'check not logged in create new folder.');
 
 $mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw"=> "grant_type"=> "password" ]);
 $response = decode_json $mech->content;

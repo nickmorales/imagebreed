@@ -5296,7 +5296,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     close($Fs_ar1);
 
     my $grm_file_ar1;
-    if ($analysis_run_type eq 'ar1' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq 'ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq 'ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol' || $analysis_run_type eq '2dspl_ar1_wRowPlusCol' || $analysis_run_type eq '2dspl_ar1_wColPlusRow') {
+    # if ($analysis_run_type eq 'ar1' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq 'ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq 'ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol' || $analysis_run_type eq '2dspl_ar1_wRowPlusCol' || $analysis_run_type eq '2dspl_ar1_wColPlusRow') {
         # Prepare GRM for AR1 Trait Spatial Correction
         eval {
             print STDERR Dumper [$compute_relationship_matrix_from_htp_phenotypes, $include_pedgiree_info_if_compute_from_parents, $use_parental_grms_if_compute_from_parents, $compute_from_parents];
@@ -6071,7 +6071,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 }
             }
         close($fh_grm_new);
-    }
+    # }
 
     my $tol_asr = 'c(-8,-10)';
     if ($tolparinv eq '0.000001') {
