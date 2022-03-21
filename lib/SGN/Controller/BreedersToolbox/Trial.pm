@@ -62,19 +62,21 @@ sub trial_info : Chained('trial_init') PathPart('') Args(0) {
         $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
         return;
     }
+    my $sp_person_id = $c->user()->get_object()->get_sp_person_id();
 
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $trial = $c->stash->{trial};
     my $program_object = CXGN::BreedersToolbox::Projects->new( { schema => $schema });
 
     if (!$program_object->trial_exists($c->stash->{trial_id})) {
-	$c->stash->{message} = "The requested trial does not exist or has been deleted.";
-	$c->stash->{template} = 'generic_message.mas';
-	return;
+        $c->stash->{message} = "The requested trial does not exist or has been deleted.";
+        $c->stash->{template} = 'generic_message.mas';
+        return;
     }
 
+    my $private_company_id = $trial->private_company_id();
     $c->stash->{trial_name} = $trial->get_name();
-    $c->stash->{private_company_id} = $trial->private_company_id();
+    $c->stash->{private_company_id} = $private_company_id;
     $c->stash->{private_company_name} = $trial->private_company_name();
     $c->stash->{private_company_project_is_private} = $trial->private_company_project_is_private();
     $c->stash->{trial_owner} = $trial->get_owner_link();
@@ -106,7 +108,10 @@ sub trial_info : Chained('trial_init') PathPart('') Args(0) {
     $c->stash->{breeding_program_id} = $breeding_program_data->[0]->[0];
     $c->stash->{breeding_program_name} = $breeding_program_data->[0]->[1];
 
-    $c->stash->{user_can_modify} = ($user->check_roles("submitter") && $user->check_roles($c->stash->{breeding_program_name})) || $user->check_roles("curator") ;
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
+    my $company_access = $allowed_private_company_access_hash->{$private_company_id};
+    $c->stash->{user_can_modify} = $company_access eq 'submitter_access' || $company_access eq 'curator_access' ? 1 : 0;
 
     $c->stash->{year} = $trial->get_year();
 
