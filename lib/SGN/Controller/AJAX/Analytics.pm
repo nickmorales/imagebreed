@@ -5203,6 +5203,98 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         gcorr_arr => \@gcorr_grm_trait_2dspl_q_array
     };
 
+    my %accession_id_factor_map;
+    my %accession_id_factor_map_reverse;
+    my %stock_row_col;
+
+    my $cmd_factor = 'R -e "library(data.table); library(dplyr);
+    mat <- fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\');
+    mat\$accession_id_factor <- as.numeric(as.factor(mat\$id));
+    mat\$plot_id_factor <- as.numeric(as.factor(mat\$plot_id));
+    write.table(mat, file=\''.$stats_out_tempfile_factors.'\', row.names=FALSE, col.names=TRUE, sep=\',\');"';
+    print STDERR Dumper $cmd_factor;
+    my $status_factor = system($cmd_factor);
+
+    open(my $fh_factor, '<', $stats_out_tempfile_factors) or die "Could not open file '$stats_out_tempfile_factors' $!";
+        print STDERR "Opened $stats_out_tempfile_factors\n";
+        my $header_factor = <$fh_factor>;
+        my @header_cols_factor;
+        if ($csv->parse($header_factor)) {
+            @header_cols_factor = $csv->fields();
+        }
+
+        my $line_factor_count = 0;
+        while (my $row = <$fh_factor>) {
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+            # my @phenotype_header = ("replicate", "block", "id", "plot_id", "rowNumber", "colNumber", "rowNumberFactor", "colNumberFactor", "accession_id_factor", "plot_id_factor");
+            my $rep = $columns[0];
+            my $block = $columns[1];
+            my $accession_id = $columns[2];
+            my $plot_id = $columns[3];
+            my $accession_id_factor = $columns[8];
+            my $plot_id_factor = $columns[9];
+            $stock_row_col{$plot_id}->{plot_id_factor} = $plot_id_factor;
+            $accession_id_factor_map{$accession_id} = $accession_id_factor;
+            $accession_id_factor_map_reverse{$accession_id_factor} = $stock_info{$accession_id}->{uniquename};
+            $line_factor_count++;
+        }
+    close($fh_factor);
+
+    my @data_matrix_original_ar1;
+    my %seen_col_numbers;
+    my %seen_row_numbers;
+    foreach my $p (@seen_plots) {
+        my $obsunit_stock_id = $stock_name_row_col{$p}->{obsunit_stock_id};
+        my $row_number = $stock_name_row_col{$p}->{row_number};
+        my $col_number = $stock_name_row_col{$p}->{col_number};
+        my $replicate = $stock_name_row_col{$p}->{rep};
+        my $block = $stock_name_row_col{$p}->{block};
+        my $germplasm_stock_id = $stock_name_row_col{$p}->{germplasm_stock_id};
+        my $germplasm_name = $stock_name_row_col{$p}->{germplasm_name};
+        $seen_col_numbers{$col_number}++;
+        $seen_row_numbers{$row_number}++;
+
+        my @row = (
+            $germplasm_stock_id,
+            $obsunit_stock_id,
+            $replicate,
+            $row_number,
+            $col_number,
+            $accession_id_factor_map{'S'.$germplasm_stock_id},
+            $stock_row_col{$obsunit_stock_id}->{plot_id_factor}
+        );
+
+        foreach my $t (@sorted_trait_names) {
+            if (defined($plot_phenotypes{$p}->{$t})) {
+                push @row, $plot_phenotypes{$p}->{$t};
+            } else {
+                print STDERR $p." : $t : $germplasm_name : NA \n";
+                push @row, 'NA';
+            }
+        }
+        push @data_matrix_original_ar1, \@row;
+    }
+    # print STDERR Dumper \@data_matrix_original_ar1;
+    my @seen_cols_numbers_sorted = sort keys %seen_col_numbers;
+    my @seen_rows_numbers_sorted = sort keys %seen_row_numbers;
+
+    my @phenotype_header_ar1 = ("id", "plot_id", "replicate", "rowNumber", "colNumber", "id_factor", "plot_id_factor");
+    foreach (@sorted_trait_names) {
+        push @phenotype_header_ar1, $trait_name_encoder_s{$_};
+    }
+    my $header_string_ar1 = join ',', @phenotype_header_ar1;
+
+    open(my $Fs_ar1, ">", $stats_out_tempfile_ar1_indata) || die "Can't open file ".$stats_out_tempfile_ar1_indata;
+        print $Fs_ar1 $header_string_ar1."\n";
+        foreach (@data_matrix_original_ar1) {
+            my $line = join ',', @$_;
+            print $Fs_ar1 "$line\n";
+        }
+    close($Fs_ar1);
+
     my $grm_file_ar1;
     if ($analysis_run_type eq 'ar1' || $analysis_run_type eq '2dspl_ar1' || $analysis_run_type eq 'ar1_wCol' || $analysis_run_type eq '2dspl_ar1_wCol' || $analysis_run_type eq 'ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRow' || $analysis_run_type eq '2dspl_ar1_wRowCol' || $analysis_run_type eq '2dspl_ar1_wRowPlusCol' || $analysis_run_type eq '2dspl_ar1_wColPlusRow') {
         # Prepare GRM for AR1 Trait Spatial Correction
@@ -5939,139 +6031,47 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 return;
             }
         };
-    }
 
-    my %accession_id_factor_map;
-    my %accession_id_factor_map_reverse;
-    my %stock_row_col;
+        my $csv_tsv = Text::CSV->new({ sep_char => "\t" });
 
-    my $cmd_factor = 'R -e "library(data.table); library(dplyr);
-    mat <- fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\');
-    mat\$accession_id_factor <- as.numeric(as.factor(mat\$id));
-    mat\$plot_id_factor <- as.numeric(as.factor(mat\$plot_id));
-    write.table(mat, file=\''.$stats_out_tempfile_factors.'\', row.names=FALSE, col.names=TRUE, sep=\',\');"';
-    print STDERR Dumper $cmd_factor;
-    my $status_factor = system($cmd_factor);
+        my @grm_old;
+        open(my $fh_grm_old, '<', $grm_file_ar1) or die "Could not open file '$grm_file_ar1' $!";
+            print STDERR "Opened $grm_file_ar1\n";
 
-    open(my $fh_factor, '<', $stats_out_tempfile_factors) or die "Could not open file '$stats_out_tempfile_factors' $!";
-        print STDERR "Opened $stats_out_tempfile_factors\n";
-        my $header_factor = <$fh_factor>;
-        my @header_cols_factor;
-        if ($csv->parse($header_factor)) {
-            @header_cols_factor = $csv->fields();
-        }
-
-        my $line_factor_count = 0;
-        while (my $row = <$fh_factor>) {
-            my @columns;
-            if ($csv->parse($row)) {
-                @columns = $csv->fields();
+            while (my $row = <$fh_grm_old>) {
+                my @columns;
+                if ($csv_tsv->parse($row)) {
+                    @columns = $csv_tsv->fields();
+                }
+                push @grm_old, \@columns;
             }
-            # my @phenotype_header = ("replicate", "block", "id", "plot_id", "rowNumber", "colNumber", "rowNumberFactor", "colNumberFactor", "accession_id_factor", "plot_id_factor");
-            my $rep = $columns[0];
-            my $block = $columns[1];
-            my $accession_id = $columns[2];
-            my $plot_id = $columns[3];
-            my $accession_id_factor = $columns[8];
-            my $plot_id_factor = $columns[9];
-            $stock_row_col{$plot_id}->{plot_id_factor} = $plot_id_factor;
-            $accession_id_factor_map{$accession_id} = $accession_id_factor;
-            $accession_id_factor_map_reverse{$accession_id_factor} = $stock_info{$accession_id}->{uniquename};
-            $line_factor_count++;
-        }
-    close($fh_factor);
+        close($fh_grm_old);
 
-    my @data_matrix_original_ar1;
-    my %seen_col_numbers;
-    my %seen_row_numbers;
-    foreach my $p (@seen_plots) {
-        my $obsunit_stock_id = $stock_name_row_col{$p}->{obsunit_stock_id};
-        my $row_number = $stock_name_row_col{$p}->{row_number};
-        my $col_number = $stock_name_row_col{$p}->{col_number};
-        my $replicate = $stock_name_row_col{$p}->{rep};
-        my $block = $stock_name_row_col{$p}->{block};
-        my $germplasm_stock_id = $stock_name_row_col{$p}->{germplasm_stock_id};
-        my $germplasm_name = $stock_name_row_col{$p}->{germplasm_name};
-        $seen_col_numbers{$col_number}++;
-        $seen_row_numbers{$row_number}++;
-
-        my @row = (
-            $germplasm_stock_id,
-            $obsunit_stock_id,
-            $replicate,
-            $row_number,
-            $col_number,
-            $accession_id_factor_map{'S'.$germplasm_stock_id},
-            $stock_row_col{$obsunit_stock_id}->{plot_id_factor}
-        );
-
-        foreach my $t (@sorted_trait_names) {
-            if (defined($plot_phenotypes{$p}->{$t})) {
-                push @row, $plot_phenotypes{$p}->{$t};
-            } else {
-                print STDERR $p." : $t : $germplasm_name : NA \n";
-                push @row, 'NA';
+        my %grm_hash_ordered;
+        foreach (@grm_old) {
+            my $l1 = $accession_id_factor_map{"S".$_->[0]};
+            my $l2 = $accession_id_factor_map{"S".$_->[1]};
+            my $val = sprintf("%.8f", $_->[2]);
+            if ($l1 > $l2) {
+                $grm_hash_ordered{$l1}->{$l2} = $val;
+            }
+            else {
+                $grm_hash_ordered{$l2}->{$l1} = $val;
             }
         }
-        push @data_matrix_original_ar1, \@row;
-    }
-    # print STDERR Dumper \@data_matrix_original_ar1;
-    my @seen_cols_numbers_sorted = sort keys %seen_col_numbers;
-    my @seen_rows_numbers_sorted = sort keys %seen_row_numbers;
 
-    my @phenotype_header_ar1 = ("id", "plot_id", "replicate", "rowNumber", "colNumber", "id_factor", "plot_id_factor");
-    foreach (@sorted_trait_names) {
-        push @phenotype_header_ar1, $trait_name_encoder_s{$_};
-    }
-    my $header_string_ar1 = join ',', @phenotype_header_ar1;
+        open(my $fh_grm_new, '>', $grm_rename_tempfile) or die "Could not open file '$grm_rename_tempfile' $!";
+            print STDERR "Opened $grm_rename_tempfile\n";
 
-    open(my $Fs_ar1, ">", $stats_out_tempfile_ar1_indata) || die "Can't open file ".$stats_out_tempfile_ar1_indata;
-        print $Fs_ar1 $header_string_ar1."\n";
-        foreach (@data_matrix_original_ar1) {
-            my $line = join ',', @$_;
-            print $Fs_ar1 "$line\n";
-        }
-    close($Fs_ar1);
-
-    my $csv_tsv = Text::CSV->new({ sep_char => "\t" });
-
-    my @grm_old;
-    open(my $fh_grm_old, '<', $grm_file_ar1) or die "Could not open file '$grm_file_ar1' $!";
-        print STDERR "Opened $grm_file_ar1\n";
-
-        while (my $row = <$fh_grm_old>) {
-            my @columns;
-            if ($csv_tsv->parse($row)) {
-                @columns = $csv_tsv->fields();
+            foreach my $i (sort {$a <=> $b} keys %grm_hash_ordered) {
+                my $v = $grm_hash_ordered{$i};
+                foreach my $j (sort {$a <=> $b} keys %$v) {
+                    my $val = $v->{$j};
+                    print $fh_grm_new "$i $j $val\n";
+                }
             }
-            push @grm_old, \@columns;
-        }
-    close($fh_grm_old);
-
-    my %grm_hash_ordered;
-    foreach (@grm_old) {
-        my $l1 = $accession_id_factor_map{"S".$_->[0]};
-        my $l2 = $accession_id_factor_map{"S".$_->[1]};
-        my $val = sprintf("%.8f", $_->[2]);
-        if ($l1 > $l2) {
-            $grm_hash_ordered{$l1}->{$l2} = $val;
-        }
-        else {
-            $grm_hash_ordered{$l2}->{$l1} = $val;
-        }
+        close($fh_grm_new);
     }
-
-    open(my $fh_grm_new, '>', $grm_rename_tempfile) or die "Could not open file '$grm_rename_tempfile' $!";
-        print STDERR "Opened $grm_rename_tempfile\n";
-
-        foreach my $i (sort {$a <=> $b} keys %grm_hash_ordered) {
-            my $v = $grm_hash_ordered{$i};
-            foreach my $j (sort {$a <=> $b} keys %$v) {
-                my $val = $v->{$j};
-                print $fh_grm_new "$i $j $val\n";
-            }
-        }
-    close($fh_grm_new);
 
     my $tol_asr = 'c(-8,-10)';
     if ($tolparinv eq '0.000001') {
