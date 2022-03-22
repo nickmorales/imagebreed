@@ -94,6 +94,13 @@ has 'header_information_lines' => (
     is => 'rw'
 );
 
+has 'grm_stock_relatedness' => (
+    isa => 'HashRef',
+    is => 'rw',
+    lazy     => 1,
+    builder  => '_retrieve_stock_relatedness_grm',
+);
+
 has 'reference_genome_name' => (
     isa => 'Str',
     is => 'rw'
@@ -259,13 +266,53 @@ sub _retrieve_nd_protocolprop_markers_array {
     my $geno_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'genotyping_experiment', 'experiment_type')->cvterm_id();
     my $protocol_vcf_details_markers_array_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'vcf_map_details_markers_array', 'protocol_property')->cvterm_id();
 
-    my $q = "SELECT nd_protocol_id, value FROM nd_protocolprop WHERE type_id = $protocol_vcf_details_markers_array_cvterm_id AND nd_protocol_id =?;";
+    my $q = "SELECT nd_protocol_id, value
+        FROM nd_protocolprop
+        WHERE type_id = $protocol_vcf_details_markers_array_cvterm_id AND nd_protocol_id =?;";
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($self->nd_protocol_id);
     my ($nd_protocol_id, $value) = $h->fetchrow_array();
 
     my $markers_array = $value ? decode_json $value : [];
     $self->markers_array($markers_array);
+}
+
+sub _retrieve_stock_relatedness_grm {
+    my $self = shift;
+    my $schema = $self->bcs_schema;
+
+    my $q = "SELECT a_stock_id, a.uniquename, b_stock_id, b.uniquename, value
+        FROM stock_relatedness
+        JOIN stock AS a ON(stock_relatedness.a_stock_id = a.stock_id)
+        JOIN stock AS b ON(stock_relatedness.b_stock_id = b.stock_id)
+        WHERE nd_protocol_id =?;";
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute($self->nd_protocol_id);
+    my %grm_data;
+    my %all_a_stock_ids;
+    my %all_b_stock_ids;
+    my $minimum_value = 100000;
+    my $maximum_value = -100000;
+    while(my ($a_stock_id, $a_uniquename, $b_stock_id, $b_uniquename, $value) = $h->fetchrow_array()) {
+        $grm_data{$a_stock_id}->{$b_stock_id} = $value;
+        $all_a_stock_ids{$a_stock_id} = $a_uniquename;
+        $all_b_stock_ids{$b_stock_id} = $b_uniquename;
+
+        if ($value < $minimum_value) {
+            $minimum_value = $value;
+        }
+        if ($value > $maximum_value) {
+            $maximum_value = $value;
+        }
+    }
+
+    $self->grm_stock_relatedness({
+        a_stock_id_map => \%all_a_stock_ids,
+        b_stock_id_map => \%all_b_stock_ids,
+        data => \%grm_data,
+        max => $maximum_value,
+        min => $minimum_value
+    });
 }
 
 #class method

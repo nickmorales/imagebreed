@@ -27,10 +27,29 @@ __PACKAGE__->config(
     default   => 'application/json',
     stash_key => 'rest',
     map       => { 'application/json' => 'JSON', 'text/html' => 'JSON'  },
-   );
+);
+
+sub genotyping_protocol_grm_genotype_relationships : Path('/ajax/genotyping_protocol/grm_genotype_relationships') : ActionClass('REST') { }
+sub genotyping_protocol_grm_genotype_relationships_GET : Args(1) {
+   my $self = shift;
+   my $c = shift;
+   my $protocol_id = shift;
+   my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+
+   my $protocol = CXGN::Genotype::Protocol->new({
+       bcs_schema => $bcs_schema,
+       nd_protocol_id => $protocol_id
+   });
+   my $private_company_id = $protocol->private_company_id();
+
+   my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_protocol($c, 'user', $private_company_id, 'user_access');
+
+   my $grm = $protocol->grm_stock_relatedness();
+
+   $c->stash->{rest} = {grm => $grm};
+}
 
 sub genotyping_protocol_delete : Path('/ajax/genotyping_protocol/delete') : ActionClass('REST') { }
-
 sub genotyping_protocol_delete_GET : Args(1) {
     my $self = shift;
     my $c = shift;

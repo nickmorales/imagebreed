@@ -656,7 +656,7 @@ sub upload_genotype_verify_POST : Args(0) {
 
     } elsif ($parser_plugin eq 'GRMTSV') {
         my $parsed_data = $parser->parse();
-        print STDERR "GRM TSV PARSED DATA =".Dumper($parsed_data)."\n";
+        # print STDERR "GRM TSV PARSED DATA =".Dumper($parsed_data)."\n";
         my $parse_errors;
         if (!$parsed_data) {
             my $return_error = '';
