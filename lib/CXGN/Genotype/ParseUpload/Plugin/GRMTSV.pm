@@ -25,11 +25,11 @@ sub _validate_with_plugin {
             if (!$header) {
                 $header = $_;
                 my @fields = split /\t/, $header;
-                if ($fields[0] ne 'a_stock_uniquename'){
-                    push @error_messages, 'Column 1 header must be "a_stock_uniquename".';
+                if ($fields[0] ne 'a_accession'){
+                    push @error_messages, 'Column 1 header must be "a_accession".';
                 }
-                if ($fields[1] ne 'b_stock_uniquename'){
-                    push @error_messages, 'Column 2 header must be "b_stock_uniquename".';
+                if ($fields[1] ne 'b_accession'){
+                    push @error_messages, 'Column 2 header must be "b_accession".';
                 }
                 if ($fields[2] ne 'value'){
                     push @error_messages, 'Column 3 header must be "value".';
@@ -42,10 +42,10 @@ sub _validate_with_plugin {
                 my $value = $fields[2];
 
                 if (!defined($a_stock_name)) {
-                    push @error_messages, 'Column 1 "a_stock_uniquename" is missing on row '.$row_number.'.';
+                    push @error_messages, 'Column 1 "a_accession" is missing on row '.$row_number.'.';
                 }
                 if (!defined($b_stock_name)) {
-                    push @error_messages, 'Column 2 "b_stock_uniquename" is missing on row '.$row_number.'.';
+                    push @error_messages, 'Column 2 "b_accession" is missing on row '.$row_number.'.';
                 }
                 if (!defined($value)) {
                     push @error_messages, 'Column 3 "value" is missing on row '.$row_number.'.';

@@ -19,10 +19,12 @@ $facilities
                         <&| /util/workflow.mas, id=> "upload_genotypes_workflow" &>
                             <&| /util/workflow.mas:step, title=> "Intro" &>
                                 <& /page/page_title.mas, title=>"This workflow will guide you through uploading genotypes into the database" &>
-                                <p>Select a genotyping project on the next screen. This project can represent a series of genotyping plates sent to a genotyping facilty.</p>
-                                <p>Ideally the sample names in your VCF file will match sample names in genotyping plates in the database; however, the sample names in your file can also match accession names in the database.</p>
-                                <p>Curently we support the VCF format, the Tassel HDF5 format, the Intertek CSV format and SSR for upload.</p>
-                                <p>If you are uploading many files that used the same genotyping protocol, you can do so, and the database will ensure that the marker information is consistent across the genotyping data (e.g. the same reference, alternate, position, etc.).</p>
+                                <ul>
+                                    <li>Select a genotyping project on the next screen. This project can represent a series of genotyping plates sent to a genotyping facilty.</li>
+                                    <li>Ideally the sample names in your VCF file will match sample names in genotyping plates in the database; however, the sample names in your file can also match accession names in the database.</li>
+                                    <li>Curently we support the VCF format, the Tassel HDF5 format, the Intertek CSV format and SSR for upload. Genomic relationship matrices (GRM) can also be uploaded in a three column format.</li>
+                                    <li>If you are uploading many files that used the same genotyping protocol, you can do so, and the database will ensure that the marker information is consistent across the genotyping data (e.g. the markers had the same reference, alternate, position, etc.).</li>
+                                </ul>
 
                                 <br/><br/>
                                 <center>
@@ -40,11 +42,60 @@ $facilities
                                             <option value="vcf">VCF</option>
                                             <option value="tassel_hdf5">Tassel HDF5</option>
                                             <option value="intertek">Intertek</option>
-                                            <option value="grm">Genomic Relationships</option>
+                                            <option value="grm">Genomic Relationship Matrix (GRM)</option>
                                             <option value="ssr">SSR</option>
                                         </select>
                                     </div>
                                 </div>
+
+                                <center>
+                                    <div id="genotype_data_type_select_format_vcf_div" style="display:none">
+                                        <&| /page/explanation.mas, title=>'Template information' &>
+                                            <p>
+                                                <b>File Format Information</b>
+                                                <br>
+                                                <a id="upload_genotype_vcf_spreadsheet_info_format">VCF Format</a>
+                                            </p>
+                                        </&>
+                                    </div>
+                                    <div id="genotype_data_type_select_format_hdf5_vcf_div" style="display:none">
+                                        <&| /page/explanation.mas, title=>'Template information' &>
+                                            <p>
+                                                <b>File Format Information</b>
+                                                <br>
+                                                <a id="upload_genotype_tassel_hdf5_info_format">Tassel HDF5 VCF Format</a>
+                                            </p>
+                                        </&>
+                                    </div>
+                                    <div id="genotype_data_type_select_format_intertek_div" style="display:none">
+                                        <&| /page/explanation.mas, title=>'Template information' &>
+                                            <p>
+                                                <b>File Format Information</b>
+                                                <br>
+                                                <a id="upload_genotype_intertek_spreadsheet_info_format">Intertek Format</a>
+                                            </p>
+                                        </&>
+                                    </div>
+                                    <div id="genotype_data_type_select_format_ssr_div" style="display:none">
+                                        <&| /page/explanation.mas, title=>'Template information' &>
+                                            <p>
+                                                <b>File Format Information</b>
+                                                <br>
+                                                <a id="upload_ssr_data_spreadsheet_info">SSR Format</a>
+                                            </p>
+                                        </&>
+                                    </div>
+                                    <div id="genotype_data_type_select_format_grm_div" style="display:none">
+                                        <&| /page/explanation.mas, title=>'Template information' &>
+                                            <p>
+                                                <b>File Format Information</b>
+                                                <br>
+                                                <a id="upload_grm_data_spreadsheet_info">Genomic Relationships Matrix (GRM) Format</a>
+                                            </p>
+                                        </&>
+                                    </div>
+                                </center>
+
                                 <br/><br/>
                                 <center>
                                 <button class="btn btn-primary" id="genotype_data_type_select_submit">Go to Next Step</button>
@@ -121,7 +172,9 @@ $facilities
                                 </center>
                             </&>
                             <&| /util/workflow.mas:step, title=> "Genotyping Protocol" &>
-                                <& /page/page_title.mas, title=>"Provide info about the genotyping protocol used. The genotyping protocol represents a specific instance of how genotypes were called for a set of markers in a genotyping platform. Many genotyping projects can use the same genotyping protocol." &>
+                                <& /page/page_title.mas, title=>"Select or Create a New Genotyping Protocol<br/><small>The genotyping protocol represents a specific instance of how genotypes were called for a set of markers in a genotyping platform. Many genotyping projects can use the same genotyping protocol.</small>" &>
+
+                                <hr>
 
                                 <table id="upload_genotyping_data_protocol_search_results" width="100%" class="table table-hover table-striped">
                                     <thead>
@@ -217,26 +270,12 @@ $facilities
                                 <input class="form-control" id="upload_genotype_data_type" name="upload_genotype_data_type" type="hidden" value = "" />
 
                                 <div class="well well-sm" id="upload_genotype_data_format_vcf">
-                                    <div class="row">
-                                        <div class="col-sm-4">
-                                            <&| /page/explanation.mas, title=>'Template information' &>
-                                                <p>
-                                                    <b>File Format Information</b>
-                                                    <br>
-                                                    <a id="upload_genotype_vcf_spreadsheet_info_format">VCF Format</a>
-                                                </p>
-                                            </&>
-                                        </div>
-                                        <div class="col-sm-8">
-                                            <br/>
-                                            <div class="panel panel-default">
-                                                <div class="panel-body">
-                                                    <div class="form-group">
-                                                        <label class="col-sm-6 control-label">Select VCF File: </label>
-                                                        <div class="col-sm-6">
-                                                            <input type="file" name="upload_genotype_vcf_file_input" id="upload_genotype_vcf_file_input" encoding="multipart/form-data" />
-                                                        </div>
-                                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-body">
+                                            <div class="form-group">
+                                                <label class="col-sm-6 control-label">Select VCF File: </label>
+                                                <div class="col-sm-6">
+                                                    <input type="file" name="upload_genotype_vcf_file_input" id="upload_genotype_vcf_file_input" encoding="multipart/form-data" />
                                                 </div>
                                             </div>
                                         </div>
@@ -244,26 +283,12 @@ $facilities
                                 </div>
 
                                 <div class="well well-sm" id="upload_genotype_data_format_tassel_hdf5" style="display:none">
-                                    <div class="row">
-                                        <div class="col-sm-4">
-                                            <&| /page/explanation.mas, title=>'Template information' &>
-                                                <p>
-                                                    <b>File Format Information</b>
-                                                    <br>
-                                                    <a id="upload_genotype_tassel_hdf5_info_format">VCF Format</a>
-                                                </p>
-                                            </&>
-                                        </div>
-                                        <div class="col-sm-8">
-                                            <br/>
-                                            <div class="panel panel-default">
-                                                <div class="panel-body">
-                                                    <div class="form-group">
-                                                        <label class="col-sm-6 control-label">Select Tassel HDF5 (.h5) File: </label>
-                                                        <div class="col-sm-6">
-                                                            <input type="file" name="upload_genotype_tassel_hdf5_file_input" id="upload_genotype_tassel_hdf5_file_input" encoding="multipart/form-data" />
-                                                        </div>
-                                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-body">
+                                            <div class="form-group">
+                                                <label class="col-sm-6 control-label">Select Tassel HDF5 (.h5) File: </label>
+                                                <div class="col-sm-6">
+                                                    <input type="file" name="upload_genotype_tassel_hdf5_file_input" id="upload_genotype_tassel_hdf5_file_input" encoding="multipart/form-data" />
                                                 </div>
                                             </div>
                                         </div>
@@ -271,36 +296,22 @@ $facilities
                                 </div>
 
                                 <div class="well well-sm" id="upload_genotype_data_format_intertek" style="display:none">
-                                    <div class="row">
-                                        <div class="col-sm-4">
-                                            <&| /page/explanation.mas, title=>'Template information' &>
-                                                <p>
-                                                    <b>File Format Information</b>
-                                                    <br>
-                                                    <a id="upload_genotype_intertek_spreadsheet_info_format">Intertek Format</a>
-                                                </p>
-                                            </&>
-                                        </div>
-                                        <div class="col-sm-8">
-                                            <br/>
-                                            <div class="panel panel-default">
-                                                <div class="panel-body">
-                                                    <div class="form-group">
-                                                        <label class="col-sm-6 control-label">Select Intertek SNP Result Grid File: </label>
-                                                        <div class="col-sm-6">
-                                                            <input type="file" name="upload_genotype_intertek_file_input" id="upload_genotype_intertek_file_input" encoding="multipart/form-data" />
-                                                        </div>
-                                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-body">
+                                            <div class="form-group">
+                                                <label class="col-sm-6 control-label">Select Intertek SNP Result Grid File: </label>
+                                                <div class="col-sm-6">
+                                                    <input type="file" name="upload_genotype_intertek_file_input" id="upload_genotype_intertek_file_input" encoding="multipart/form-data" />
                                                 </div>
                                             </div>
-                                            <div class="panel panel-default">
-                                                <div class="panel-body">
-                                                    <div class="form-group">
-                                                        <label class="col-sm-6 control-label">Select Intertek SNP Information File: </label>
-                                                        <div class="col-sm-6">
-                                                            <input type="file" name="upload_genotype_intertek_snp_file_input" id="upload_genotype_intertek_snp_file_input" encoding="multipart/form-data" />
-                                                        </div>
-                                                    </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-body">
+                                            <div class="form-group">
+                                                <label class="col-sm-6 control-label">Select Intertek SNP Information File: </label>
+                                                <div class="col-sm-6">
+                                                    <input type="file" name="upload_genotype_intertek_snp_file_input" id="upload_genotype_intertek_snp_file_input" encoding="multipart/form-data" />
                                                 </div>
                                             </div>
                                         </div>
@@ -308,26 +319,12 @@ $facilities
                                 </div>
 
                                 <div class="well well-sm" id="upload_genotype_data_format_ssr" style="display:none">
-                                    <div class="row">
-                                        <div class="col-sm-4">
-                                            <&| /page/explanation.mas, title=>'Template information' &>
-                                                <p>
-                                                    <b>File Format Information</b>
-                                                    <br>
-                                                    <a id="upload_ssr_data_spreadsheet_info">SSR Format</a>
-                                                </p>
-                                            </&>
-                                        </div>
-                                        <div class="col-sm-8">
-                                            <br/>
-                                            <div class="panel panel-default">
-                                                <div class="panel-body">
-                                                    <div class="form-group">
-                                                        <label class="col-sm-6 control-label">Select SSR File: </label>
-                                                        <div class="col-sm-6">
-                                                            <input type="file" name="upload_genotype_ssr_file_input" id="upload_genotype_ssr_file_input" encoding="multipart/form-data" />
-                                                        </div>
-                                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-body">
+                                            <div class="form-group">
+                                                <label class="col-sm-6 control-label">Select SSR File: </label>
+                                                <div class="col-sm-6">
+                                                    <input type="file" name="upload_genotype_ssr_file_input" id="upload_genotype_ssr_file_input" encoding="multipart/form-data" />
                                                 </div>
                                             </div>
                                         </div>
@@ -335,26 +332,12 @@ $facilities
                                 </div>
 
                                 <div class="well well-sm" id="upload_genotype_data_format_grm" style="display:none">
-                                    <div class="row">
-                                        <div class="col-sm-4">
-                                            <&| /page/explanation.mas, title=>'Template information' &>
-                                                <p>
-                                                    <b>File Format Information</b>
-                                                    <br>
-                                                    <a id="upload_grm_data_spreadsheet_info">Genomic Relationships Format</a>
-                                                </p>
-                                            </&>
-                                        </div>
-                                        <div class="col-sm-8">
-                                            <br/>
-                                            <div class="panel panel-default">
-                                                <div class="panel-body">
-                                                    <div class="form-group">
-                                                        <label class="col-sm-6 control-label">Select Genomic Relationships File: </label>
-                                                        <div class="col-sm-6">
-                                                            <input type="file" name="upload_genotype_grm_file_input" id="upload_genotype_grm_file_input" encoding="multipart/form-data" />
-                                                        </div>
-                                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-body">
+                                            <div class="form-group">
+                                                <label class="col-sm-6 control-label">Select Genomic Relationships File: </label>
+                                                <div class="col-sm-6">
+                                                    <input type="file" name="upload_genotype_grm_file_input" id="upload_genotype_grm_file_input" encoding="multipart/form-data" />
                                                 </div>
                                             </div>
                                         </div>
@@ -599,11 +582,11 @@ $facilities
             </div>
             <div class="modal-body">
                 <div class="container-fluid">
-                    <b>This is for uploading Tassel HDF5 genotype data.</b>
+                    <b>This is for uploading Tassel HDF5 VCF genotype data.</b>
                     <br/>
                     <b>Please use HDF5 (.h5) formatted files that work with Tassel</b>
                     <br/>
-                    <b>Uploading an HDF5 file is important when the size of the VCF grows greater than 10GB</b>
+                    <b>Uploading an HDF5 file is important when the size of the VCF grows very large (e.g. greater than 20GB)</b>
                     <br/>
                 </div>
             </div>
@@ -807,16 +790,16 @@ $facilities
                         <thead></thead>
                         <tbody>
                             <tr>
-                                <td>a_stock_uniquename</td>
-                                <td>b_stock_uniquename</td>
+                                <td>a_accession</td>
+                                <td>b_accession</td>
                                 <td>value</td>
                             </tr>
                         </tbody>
                     </table>
                     <b>Required columns:</b>
                     <ul>
-                        <li><b>a_stock_uniquename</b>: The uniquename of the first accession. Must already exist in the database.</li>
-                        <li><b>b_stock_uniquename</b>: The uniquename of the second accession. Must already exist in the database.</li>
+                        <li><b>a_accession</b>: The uniquename or synonym of the first accession. Must already exist in the database.</li>
+                        <li><b>b_accession</b>: The uniquename or synonym of the second accession. Must already exist in the database.</li>
                         <li><b>value</b>: The genomic relationship value between the two accessions.</li>
                     </ul>
                     <b>Note: Only upload a one-sided (upper or lower diagonal) relationship because the database will automatically save both sides.</b>
@@ -938,30 +921,60 @@ jQuery(document).ready(function(){
         document.getElementById('upload_genotype_data_type').value = data_type;
 
         if (data_type == 'vcf') {
+            jQuery('#genotype_data_type_select_format_vcf_div').show();
+            jQuery('#genotype_data_type_select_format_intertek_div').hide();
+            jQuery('#genotype_data_type_select_format_hdf5_vcf_div').hide();
+            jQuery('#genotype_data_type_select_format_ssr_div').hide();
+            jQuery('#genotype_data_type_select_format_grm_div').hide();
+
             jQuery('#upload_genotype_data_format_vcf').show();
             jQuery('#upload_genotype_data_format_intertek').hide();
             jQuery('#upload_genotype_data_format_tassel_hdf5').hide();
             jQuery('#upload_genotype_data_format_ssr').hide();
             jQuery('#upload_genotype_data_format_grm').hide();
         } else if (data_type == 'intertek') {
+            jQuery('#genotype_data_type_select_format_vcf_div').hide();
+            jQuery('#genotype_data_type_select_format_intertek_div').show();
+            jQuery('#genotype_data_type_select_format_hdf5_vcf_div').hide();
+            jQuery('#genotype_data_type_select_format_ssr_div').hide();
+            jQuery('#genotype_data_type_select_format_grm_div').hide();
+
             jQuery('#upload_genotype_data_format_vcf').hide();
             jQuery('#upload_genotype_data_format_intertek').show();
             jQuery('#upload_genotype_data_format_tassel_hdf5').hide();
             jQuery('#upload_genotype_data_format_ssr').hide();
             jQuery('#upload_genotype_data_format_grm').hide();
         } else if (data_type == 'tassel_hdf5') {
+            jQuery('#genotype_data_type_select_format_vcf_div').hide();
+            jQuery('#genotype_data_type_select_format_intertek_div').hide();
+            jQuery('#genotype_data_type_select_format_hdf5_vcf_div').show();
+            jQuery('#genotype_data_type_select_format_ssr_div').hide();
+            jQuery('#genotype_data_type_select_format_grm_div').hide();
+
             jQuery('#upload_genotype_data_format_vcf').hide();
             jQuery('#upload_genotype_data_format_intertek').hide();
             jQuery('#upload_genotype_data_format_tassel_hdf5').show();
             jQuery('#upload_genotype_data_format_ssr').hide();
             jQuery('#upload_genotype_data_format_grm').hide();
         } else if (data_type == 'ssr') {
+            jQuery('#genotype_data_type_select_format_vcf_div').hide();
+            jQuery('#genotype_data_type_select_format_intertek_div').hide();
+            jQuery('#genotype_data_type_select_format_hdf5_vcf_div').hide();
+            jQuery('#genotype_data_type_select_format_ssr_div').show();
+            jQuery('#genotype_data_type_select_format_grm_div').hide();
+
             jQuery('#upload_genotype_data_format_vcf').hide();
             jQuery('#upload_genotype_data_format_intertek').hide();
             jQuery('#upload_genotype_data_format_tassel_hdf5').hide();
             jQuery('#upload_genotype_data_format_ssr').show();
             jQuery('#upload_genotype_data_format_grm').hide();
         } else if (data_type == 'grm') {
+            jQuery('#genotype_data_type_select_format_vcf_div').hide();
+            jQuery('#genotype_data_type_select_format_intertek_div').hide();
+            jQuery('#genotype_data_type_select_format_hdf5_vcf_div').hide();
+            jQuery('#genotype_data_type_select_format_ssr_div').hide();
+            jQuery('#genotype_data_type_select_format_grm_div').show();
+
             jQuery('#upload_genotype_data_format_vcf').hide();
             jQuery('#upload_genotype_data_format_intertek').hide();
             jQuery('#upload_genotype_data_format_tassel_hdf5').hide();
@@ -996,7 +1009,7 @@ jQuery(document).ready(function(){
 
     var upload_genotyping_data_protocol_table = jQuery('#upload_genotyping_data_protocol_search_results').DataTable( {
         'ajax': {
-            'url':'/ajax/genotyping_data/protocols?select_checkbox_name=upload_genotyping_data_protocol_select',
+            'url':'/ajax/genotyping_data/protocols?select_checkbox_name=upload_genotyping_data_protocol_select&trim_header_info_lines=10',
         },
     });
 

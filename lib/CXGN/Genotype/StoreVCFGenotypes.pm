@@ -900,7 +900,11 @@ sub store_metadata {
         $project->create_projectprops( { $self->genotyping_facility_cvterm()->name() => $genotype_facility } );
         if ($genotyping_data_type eq 'ssr') {
             $project->create_projectprops( { $self->design_cvterm->name() => 'pcr_genotype_data_project' } );
-        } else {
+        }
+        elsif ($genotyping_data_type eq 'grm') {
+            $project->create_projectprops( { $self->design_cvterm->name() => 'grm_genotype_data_project' } );
+        }
+        else {
             $project->create_projectprops( { $self->design_cvterm->name() => 'genotype_data_project' } );
         }
 
@@ -1217,8 +1221,8 @@ sub store_identifiers {
 
         while(my($a_stock_name, $o) = each %$genotypeprop_observation_units) {
             while(my($b_stock_name, $value) = each %$o) {
-                my $a_stock_name = $observation_unit_uniquenames_map->{$a_stock_name};
-                my $b_stock_name = $observation_unit_uniquenames_map->{$b_stock_name};
+                my $a_stock_name = $observation_unit_uniquenames_map->{$a_stock_name}->{name};
+                my $b_stock_name = $observation_unit_uniquenames_map->{$b_stock_name}->{name};
                 my $a_stock_lookup_obj = $self->stock_lookup()->{$a_stock_name};
                 my $a_stock_id = $a_stock_lookup_obj->{stock_id};
                 my $b_stock_lookup_obj = $self->stock_lookup()->{$b_stock_name};

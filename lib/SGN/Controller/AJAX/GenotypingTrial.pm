@@ -435,6 +435,7 @@ sub get_genotyping_data_protocols_GET : Args(0) {
     my $c = shift;
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $checkbox_select_name = $c->req->param('select_checkbox_name');
+    my $trim_header_info_lines = $c->req->param('trim_header_info_lines') || 10000;
     # my @protocol_list = $c->req->param('protocol_ids') ? split ',', $c->req->param('protocol_ids') : ();
     # my @accession_list = $c->req->param('accession_ids') ? split ',', $c->req->param('accession_ids') : ();
     # my @tissue_sample_list = $c->req->param('tissue_sample_ids') ? split ',', $c->req->param('tissue_sample_ids') : ();
@@ -452,9 +453,16 @@ sub get_genotyping_data_protocols_GET : Args(0) {
         }
         my $num_markers = $_->{marker_count};
         my @trimmed;
+        my $header_count = 1;
         foreach (@{$_->{header_information_lines}}){
             $_ =~ tr/<>//d;
             push @trimmed, $_;
+
+            if ($header_count >= $trim_header_info_lines) {
+                push @trimmed, "### TRIMMED: Only Showing $trim_header_info_lines HEADER LINES ###";
+                last;
+            }
+            $header_count++;
         }
         my $description = join '<br/>', @trimmed;
         push @res, (

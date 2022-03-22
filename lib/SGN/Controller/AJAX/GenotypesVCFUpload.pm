@@ -703,7 +703,8 @@ sub upload_genotype_verify_POST : Args(0) {
             observation_unit_uniquenames=>$observation_unit_names_all,
             protocol_info=>{
                 reference_genome_name => $reference_genome_name,
-                species_name => $organism_species
+                species_name => $organism_species,
+                is_grm => 1
             },
             genotype_info=>$grm_info
         };
