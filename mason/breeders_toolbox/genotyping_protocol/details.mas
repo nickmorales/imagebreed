@@ -9,6 +9,7 @@ $species_name
 $create_date
 $sample_observation_unit_type_name
 $marker_type
+$protocol_is_grm
 </%args>
 
 <div class="row">
@@ -37,6 +38,7 @@ $marker_type
                 </td>
             </tr>
 
+%  if (!$protocol_is_grm) {
             <tr>
                 <td><b>Number of Markers</b></td>
                 <td>
@@ -65,6 +67,7 @@ $marker_type
 % print "$description";
                 </td>
             </tr>
+%  }
 
             <tr><td><b>Reference Genome</b></td>
                 <td>

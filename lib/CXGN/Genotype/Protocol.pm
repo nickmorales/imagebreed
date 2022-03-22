@@ -37,6 +37,7 @@ use Data::Dumper;
 use SGN::Model::Cvterm;
 use CXGN::Trial;
 use JSON;
+use CXGN::Tools::Run;
 
 has 'bcs_schema' => (
     isa => 'Bio::Chado::Schema',
@@ -51,6 +52,16 @@ has 'nd_protocol_id' => (
 
 has 'protocol_name' => (
     isa => 'Str',
+    is => 'rw',
+);
+
+has 'private_company_id' => (
+    isa => 'Int',
+    is => 'rw',
+);
+
+has 'private_company_protocol_is_private' => (
+    isa => 'Bool',
     is => 'rw',
 );
 
@@ -98,6 +109,11 @@ has 'sample_observation_unit_type_name' => (
     is => 'rw'
 );
 
+has 'is_grm_protocol' => (
+    isa => 'Bool',
+    is => 'rw'
+);
+
 has 'create_date' => (
     isa => 'Str',
     is => 'rw'
@@ -138,16 +154,22 @@ sub BUILD {
     my $pcr_marker_protocolprop_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'pcr_marker_details', 'protocol_property')->cvterm_id();
     my $pcr_marker_protocol_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'pcr_marker_protocol', 'protocol_type')->cvterm_id();
 
-    my $q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocolprop.value, nd_protocol.create_date, nd_protocol.description
+    my $q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocolprop.value, nd_protocol.create_date, nd_protocol.description, nd_protocol.private_company_id, nd_protocol.is_private
         FROM nd_protocol
         LEFT JOIN nd_protocolprop ON(nd_protocol.nd_protocol_id = nd_protocolprop.nd_protocol_id AND nd_protocolprop.type_id IN (?,?))
         WHERE nd_protocol.type_id IN (?,?) AND nd_protocol.nd_protocol_id=?;";
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($protocol_vcf_details_cvterm_id, $pcr_marker_protocolprop_cvterm_id, $geno_cvterm_id, $pcr_marker_protocol_cvterm_id, $self->nd_protocol_id);
-    my ($nd_protocol_id, $nd_protocol_name, $value, $create_date, $description) = $h->fetchrow_array();
-
+    my ($nd_protocol_id, $nd_protocol_name, $value, $create_date, $description, $private_company_id, $is_private) = $h->fetchrow_array();
     my $map_details = $value ? decode_json $value : {};
+    # print STDERR Dumper $map_details;
+    $self->private_company_id($private_company_id);
+    $self->private_company_protocol_is_private($is_private);
+
     my $marker_names = $map_details->{marker_names} || [];
+    my $is_grm_protocol = $map_details->{is_grm};
+    $self->is_grm_protocol($is_grm_protocol);
+
     my $marker_type = $map_details->{marker_type};
     if (!$marker_type) {
         $marker_type = 'SNP';
@@ -159,8 +181,13 @@ sub BUILD {
     } else {
         $reference_genome_name = $map_details->{reference_genome_name} || 'Not set. Please reload these genotypes using new genotype format!';
     }
+
     my $species_name = $map_details->{species_name} || 'Not set. Please reload these genotypes using new genotype format!';
     my $sample_observation_unit_type_name = $map_details->{sample_observation_unit_type_name} || 'Not set. Please reload these genotypes using new genotype format!';
+    if ($is_grm_protocol) {
+        $sample_observation_unit_type_name = 'accessions';
+    }
+
     $self->marker_names($marker_names);
     $self->protocol_name($nd_protocol_name);
     $self->marker_type($marker_type);
@@ -397,6 +424,88 @@ sub list_simple {
     }
     #print STDERR "SIMPLE LIST =".Dumper \@results."\n";
     return \@results;
+}
+
+sub delete_protocol {
+    my $self = shift;
+    my $basepath = shift;
+    my $dbhost = shift;
+    my $dbname = shift;
+    my $dbuser = shift;
+    my $dbpass = shift;
+    my $temp_file_nd_experiment_id = shift;
+    my $bcs_schema = $self->bcs_schema();
+    my $protocol_id = $self->nd_protocol_id();
+
+    my $geno_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'genotyping_experiment', 'experiment_type')->cvterm_id();
+
+    my $q = "SELECT nd_experiment_id, genotype_id
+        FROM genotype
+        JOIN nd_experiment_genotype USING(genotype_id)
+        JOIN nd_experiment USING(nd_experiment_id)
+        JOIN nd_experiment_protocol USING(nd_experiment_id)
+        WHERE nd_protocol_id = $protocol_id AND nd_experiment.type_id = $geno_cvterm_id;
+    ";
+    my $h = $bcs_schema->storage->dbh()->prepare($q);
+    $h->execute();
+    my %genotype_ids_and_nd_experiment_ids_to_delete;
+    while (my ($nd_experiment_id, $genotype_id) = $h->fetchrow_array()) {
+        push @{$genotype_ids_and_nd_experiment_ids_to_delete{genotype_ids}}, $genotype_id;
+        push @{$genotype_ids_and_nd_experiment_ids_to_delete{nd_experiment_ids}}, $nd_experiment_id;
+    }
+
+    my $q_grm = "SELECT stock_relatedness_id, nd_experiment_id
+        FROM stock_relatedness
+        WHERE nd_protocol_id = $protocol_id;
+    ";
+    my $h_grm = $bcs_schema->storage->dbh()->prepare($q_grm);
+    $h_grm->execute();
+    while (my ($stock_relatedness_id, $nd_experiment_id) = $h_grm->fetchrow_array()) {
+        push @{$genotype_ids_and_nd_experiment_ids_to_delete{stock_relatedness_ids}}, $stock_relatedness_id;
+        push @{$genotype_ids_and_nd_experiment_ids_to_delete{nd_experiment_ids}}, $nd_experiment_id;
+    }
+
+    # Cascade will delete from genotypeprop
+    if ($genotype_ids_and_nd_experiment_ids_to_delete{genotype_ids}) {
+        my $genotype_id_sql = join (",", @{$genotype_ids_and_nd_experiment_ids_to_delete{genotype_ids}});
+        my $del_geno_q = "DELETE from genotype WHERE genotype_id IN ($genotype_id_sql);";
+        my $h_del_geno = $bcs_schema->storage->dbh()->prepare($del_geno_q);
+        $h_del_geno->execute();
+    }
+
+    # Cascade will delete from nd_protocolprop
+    my $del_geno_prot_q = "DELETE from nd_protocol WHERE nd_protocol_id=?;";
+    my $h_del_geno_prot = $bcs_schema->storage->dbh()->prepare($del_geno_prot_q);
+    $h_del_geno_prot->execute($protocol_id);
+
+    # Delete nd_experiment_md_files entries linking genotypes to archived genotyping upload file e.g. original VCF
+    my $nd_experiment_id_sql = join (",", @{$genotype_ids_and_nd_experiment_ids_to_delete{nd_experiment_ids}});
+    my $q_nd_exp_files_delete = "DELETE FROM phenome.nd_experiment_md_files WHERE nd_experiment_id IN ($nd_experiment_id_sql);";
+    my $h3 = $bcs_schema->storage->dbh()->prepare($q_nd_exp_files_delete);
+    $h3->execute();
+
+    # Delete stock_relatedness_ids for GRM protocols
+    if ($genotype_ids_and_nd_experiment_ids_to_delete{stock_relatedness_ids}) {
+        my $stock_relatedness_id_sql = join (",", @{$genotype_ids_and_nd_experiment_ids_to_delete{stock_relatedness_ids}});
+        my $q_stock_relatedness_delete = "DELETE FROM stock_relatedness WHERE stock_relatedness_id IN ($stock_relatedness_id_sql);";
+        my $h4 = $bcs_schema->storage->dbh()->prepare($q_stock_relatedness_delete);
+        $h4->execute();
+    }
+
+    # Delete from nd_experiment asynchronously because it takes long
+    open (my $fh, "> :encoding(UTF-8)", $temp_file_nd_experiment_id ) || die ("\nERROR: the file $temp_file_nd_experiment_id could not be found\n" );
+        foreach (@{$genotype_ids_and_nd_experiment_ids_to_delete{nd_experiment_ids}}) {
+            print $fh "$_\n";
+        }
+    close($fh);
+    my $async_delete = CXGN::Tools::Run->new();
+    $async_delete->run_async("perl $basepath/bin/delete_nd_experiment_entries.pl -H $dbhost -D $dbname -U $dbuser -P $dbpass -i $temp_file_nd_experiment_id");
+
+    # Rebuild and refresh the materialized_markerview table
+    my $async_refresh = CXGN::Tools::Run->new();
+    $async_refresh->run_async("perl $basepath/bin/refresh_materialized_markerview.pl -H $dbhost -D $dbname -U $dbuser -P $dbpass");
+
+    return { success => 1};
 }
 
 1;

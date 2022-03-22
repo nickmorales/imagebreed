@@ -51,6 +51,7 @@ sub protocol_page :Path("/breeders_toolbox/protocol") Args(1) {
     $c->stash->{protocol_id} = $protocol_id;
     $c->stash->{protocol_name} = $protocol->protocol_name;
     $c->stash->{protocol_description} = $protocol->protocol_description;
+    $c->stash->{protocol_is_grm} = $protocol->is_grm_protocol;
     $c->stash->{markers} = $protocol->markers || {};
     $c->stash->{marker_names} = $protocol->marker_names || [];
     $c->stash->{header_information_lines} = $protocol->header_information_lines || [];
