@@ -885,6 +885,8 @@ sub get_analytics_protocols : Path('/ajax/html/select/analytics_protocols') Args
     my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $checkbox_name = $c->req->param('checkbox_name');
     my $protocol_type = $c->req->param('analytics_protocol_type');
+    my $limit = $c->req->param('limit') || 10;
+    my $disabled = $c->req->param('disabled') ? 'disabled' : '';
     my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
     my $protocol_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, $protocol_type, 'protocol_type')->cvterm_id();
@@ -901,7 +903,7 @@ sub get_analytics_protocols : Path('/ajax/html/select/analytics_protocols') Args
 
     while (my ($nd_protocol_id, $name, $description, $create_date, $props_json) = $h->fetchrow_array()) {
         my $props = decode_json $props_json;
-        $html .= '<tr><td><input type="checkbox" name="'.$checkbox_name.'" value="'.$nd_protocol_id.'"></td><td>'.$name.'</td><td>'.$description.'</td><td>'.$create_date.'</td><td>';
+        $html .= '<tr><td><input type="checkbox" name="'.$checkbox_name.'" value="'.$nd_protocol_id.'" '.$disabled.' ></td><td>'.$name.'</td><td>'.$description.'</td><td>'.$create_date.'</td><td>';
         while (my($k,$v) = each %$props) {
             $html .= "$k: $v<br/>";
         }
@@ -909,7 +911,7 @@ sub get_analytics_protocols : Path('/ajax/html/select/analytics_protocols') Args
     }
     $html .= "</tbody></table>";
 
-    $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-analyticsprotocol-table').DataTable({ 'lengthMenu': [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, 'All']] }); } );</script>";
+    $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-analyticsprotocol-table').DataTable({ 'lengthMenu': [[$limit, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, 'All']] }); } );</script>";
 
     $c->stash->{rest} = { select => $html };
 }

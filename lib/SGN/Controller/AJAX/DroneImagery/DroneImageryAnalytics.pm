@@ -1050,8 +1050,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
             permanent_environment_structure => $c->req->param('permanent_environment_structure'),
             permanent_environment_structure_phenotype_correlation_traits => $c->req->param('permanent_environment_structure_phenotype_correlation_traits') ? decode_json $c->req->param('permanent_environment_structure_phenotype_correlation_traits') : [],
             permanent_environment_structure_phenotype_trait_ids => $c->req->param('permanent_environment_structure_phenotype_trait_ids') ? decode_json $c->req->param('permanent_environment_structure_phenotype_trait_ids') : [],
-            env_variance_percent => $c->req->param('env_variance_percent') || "0.2,0.1,0.05,0.01,0.3",
-            number_iterations => $number_iterations,
+            env_variance_percent => $c->req->param('env_variance_percent') || '0.2',
+            number_iterations => $number_iterations || 2,
             simulated_environment_real_data_trait_id => $c->req->param('simulated_environment_real_data_trait_id'),
             sim_env_change_over_time_correlation => $c->req->param('sim_env_change_over_time_correlation') || '0.9',
             fixed_effect_type => $c->req->param('fixed_effect_type'),
@@ -1094,15 +1094,15 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
         ($analytics_nd_experiment_id) = $h3->fetchrow_array();
     }
 
-    my $analytics_select = $protocol_properties->{analytics_select};
+    my $analytics_select = $protocol_properties->{analytics_select} || 'minimize_local_env_effect';
     my $trait_id_list = $protocol_properties->{observation_variable_id_list};
     my $compute_relationship_matrix_from_htp_phenotypes = $protocol_properties->{relationship_matrix_type};
     my $compute_relationship_matrix_from_htp_phenotypes_type = $protocol_properties->{htp_pheno_rel_matrix_type};
     my $compute_relationship_matrix_from_htp_phenotypes_time_points = $protocol_properties->{htp_pheno_rel_matrix_time_points};
     my $compute_relationship_matrix_from_htp_phenotypes_blues_inversion = $protocol_properties->{htp_pheno_rel_matrix_blues_inversion};
     my $compute_from_parents = $protocol_properties->{genotype_compute_from_parents};
-    my $include_pedgiree_info_if_compute_from_parents = $protocol_properties->{include_pedgiree_info_if_compute_from_parents};
-    my $use_parental_grms_if_compute_from_parents = $protocol_properties->{use_parental_grms_if_compute_from_parents};
+    my $include_pedgiree_info_if_compute_from_parents = $protocol_properties->{include_pedgiree_info_if_compute_from_parents} || 0;
+    my $use_parental_grms_if_compute_from_parents = $protocol_properties->{use_parental_grms_if_compute_from_parents} || 0;
     my $use_area_under_curve = $protocol_properties->{use_area_under_curve};
     my $protocol_id = $protocol_properties->{genotyping_protocol_id};
     my $tolparinv = $protocol_properties->{tolparinv};
@@ -1111,8 +1111,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     my $permanent_environment_structure = $protocol_properties->{permanent_environment_structure};
     my $permanent_environment_structure_phenotype_correlation_traits = $protocol_properties->{permanent_environment_structure_phenotype_correlation_traits};
     my $permanent_environment_structure_phenotype_trait_ids = $protocol_properties->{permanent_environment_structure_phenotype_trait_ids};
-    my @env_variance_percents = split ',', $protocol_properties->{env_variance_percent};
-    my $number_iterations = $protocol_properties->{number_iterations};
+    my @env_variance_percents = $protocol_properties->{env_variance_percent} ? split ',', $protocol_properties->{env_variance_percent} : '0.2';
+    my $number_iterations = $protocol_properties->{number_iterations} || 2;
     my $simulated_environment_real_data_trait_id = $protocol_properties->{simulated_environment_real_data_trait_id};
     my $correlation_between_times = $protocol_properties->{sim_env_change_over_time_correlation} || 0.9;
     my $fixed_effect_type = $protocol_properties->{fixed_effect_type} || 'replicate';

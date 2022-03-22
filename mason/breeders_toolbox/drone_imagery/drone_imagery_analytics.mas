@@ -6,7 +6,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="droneImageryAnalyticsDialog">Perform analytics on aerial image phenotypes</h4>
+        <h4 class="modal-title" id="droneImageryAnalyticsDialog">Perform Analytics on Aerial Image Phenotypes</h4>
       </div>
       <div class="modal-body">
         <div class="container-fluid">
@@ -28,392 +28,398 @@
                     </center>
                 </&>
                 <&| /util/workflow.mas:step, title=> "Analytics Reporting" &>
-                    <& /page/page_title.mas, title=>"Select an Analytics Protocol to save the results to or create a new one" &>
+                    <& /page/page_title.mas, title=>"View Analytics Protocols and Create a New One Below" &>
 
                     <div id="drone_imagery_analytics_analytics_protocols_select_div">Loading...</div>
 
-                    <& /page/page_title.mas, title=>"Select the type of analysis to run" &>
+                    <& /page/page_title.mas, title=>"Define the Analysis to Run" &>
 
                     <div class="well well-sm">
-                        <select class="form-control" id="drone_imagery_analytics_select_input">
-                            <!--option value="">Sommer Multi/Uni Spatial 2Dspl, REMLf90 RR Identiy/Env, ASREML Uni Spatial AR1xAR1</option-->
-                            <!--option value="lmer_germplasmname_replicate">LMER BLUPs y~replicate+1|Germplasm. Univariate genetic effects</option-->
-
-                            <!--option value="sommer_grm_genetic_blups">Sommer GBLUPs Y~replicate+GRM. Multivariate genetic effects using GRM</option-->
-
-                            <!--option value="sommer_grm_univariate_spatial_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+Row+Col+2Dspline. Univariate genetic + 2Dspl spatial effects</option-->
-                            <option value="sommer_grm_univariate_spatial_pure_2dspl_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+2Dspline. Univariate genetic + 2Dspl spatial effects</option>
-
-                            <!-- option value="sommer_grm_spatial_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+Row+Col+2Dspline. Multivariate genetic + 2Dspl spatial effects</option-->
-                            <option value="sommer_grm_spatial_pure_2dspl_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+2Dspline. Multivariate genetic + 2Dspl spatial effects</option>
-
-                            <!--option value="blupf90_grm_random_regression_dap_blups">BLUPf90 GBLUPs Y~replicate+GRM+temporal random regression using days after planting. Multivariate genetic + permanent environment effects</option>
-                            <option value="blupf90_grm_random_regression_gdd_blups">BLUPf90 GBLUPs Y~replicate+GRM+temporal random regression using growing degree days. Multivariate genetic + permanent environment effects</option-->
-
-                            <option value="airemlf90_grm_random_regression_dap_blups">AIREMLf90 GBLUPs Y~replicate+GRM+temporal random regression using days after planting. Multivariate genetic + permanent environment effects</option>
-
-                            <!--option value="asreml_grm_univariate_spatial_genetic_blups">ASREML Spatial GBLUPs Y~replicate+GRM+Row+Col+spatial. Univariate genetic + AR1xAR1 spatial effects</option-->
-                            <option value="asreml_grm_univariate_pure_spatial_genetic_blups">ASREML Spatial GBLUPs Y~replicate+GRM+spatial. Univariate genetic + AR1xAR1 spatial effects</option>
-                            <option value="asreml_grm_multivariate_spatial_genetic_blups">ASREML Spatial GBLUPs Y~replicate+GRM+spatial. Multivariate genetic + AR1xAR1 spatial effects</option>
-
-                            <!--option value="airemlf90_grm_random_regression_gdd_blups">AIREMLf90 GBLUPs Y~replicate+GRM+temporal random regression using growing degree days. Multivariate genetic + permanent environment effects</option-->
-
-                            <!--option value="sommer_grm_temporal_random_regression_dap_genetic_blups">Sommer Temporal Random Regression GBLUPs Y~replicate+GRM+LegendrePoly. Multivariate genetic + permanent environment effects using days after planting</option>
-                            <option value="sommer_grm_temporal_random_regression_gdd_genetic_blups">Sommer Temporal Random Regression GBLUPs Y~replicate+GRM+LegendrePoly. Multivariate genetic + permanent environment effects using growing degree days</option>
-                            <option value="sommer_grm_genetic_only_random_regression_dap_genetic_blups">Sommer Random Regression GBLUPs Y~replicate+GRM+LegendrePoly. Multivariate genetic effects using days after planting</option>
-                            <option value="sommer_grm_genetic_only_random_regression_gdd_genetic_blups">Sommer Random Regression GBLUPs Y~replicate+GRM+LegendrePoly. Multivariate genetic effects using growing degree days</option-->
-
-                        </select>
-
-                        <br/><br/>
                         <div class="form-horizontal">
                             <div class="form-group">
-                                <label class="col-sm-5 control-label">Simulated Environments (Linear, 1D-Normal, 2D-Normal, Random, AR1xAR1): </label>
-                                <div class="col-sm-7" >
-                                    <select class="form-control" id="drone_imagery_analytics_select_sim_env_change_over_time_type">
-                                        <option value="">Constant over timepoints</option>
-                                        <option value="changing_gradual">Gradual change over timepoints</option>
+                                <label class="col-sm-3 control-label">Model: </label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_imagery_analytics_select_input">
+                                        <!--option value="">Sommer Multi/Uni Spatial 2Dspl, REMLf90 RR Identiy/Env, ASREML Uni Spatial AR1xAR1</option-->
+                                        <!--option value="lmer_germplasmname_replicate">LMER BLUPs y~replicate+1|Germplasm. Univariate genetic effects</option-->
+
+                                        <!--option value="sommer_grm_genetic_blups">Sommer GBLUPs Y~replicate+GRM. Multivariate genetic effects using GRM</option-->
+
+                                        <!--option value="sommer_grm_univariate_spatial_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+Row+Col+2Dspline. Univariate genetic + 2Dspl spatial effects</option-->
+                                        <option value="sommer_grm_univariate_spatial_pure_2dspl_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+2Dspline. Univariate genetic + 2Dspl spatial effects</option>
+
+                                        <!-- option value="sommer_grm_spatial_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+Row+Col+2Dspline. Multivariate genetic + 2Dspl spatial effects</option-->
+                                        <option value="sommer_grm_spatial_pure_2dspl_genetic_blups">Sommer Spatial GBLUPs Y~replicate+GRM+2Dspline. Multivariate genetic + 2Dspl spatial effects</option>
+
+                                        <!--option value="blupf90_grm_random_regression_dap_blups">BLUPf90 GBLUPs Y~replicate+GRM+temporal random regression using days after planting. Multivariate genetic + permanent environment effects</option>
+                                        <option value="blupf90_grm_random_regression_gdd_blups">BLUPf90 GBLUPs Y~replicate+GRM+temporal random regression using growing degree days. Multivariate genetic + permanent environment effects</option-->
+
+                                        <option value="airemlf90_grm_random_regression_dap_blups">AIREMLf90 GBLUPs Y~replicate+GRM+temporal random regression using days after planting. Multivariate genetic + permanent environment effects</option>
+
+                                        <!--option value="asreml_grm_univariate_spatial_genetic_blups">ASREML Spatial GBLUPs Y~replicate+GRM+Row+Col+spatial. Univariate genetic + AR1xAR1 spatial effects</option-->
+                                        <option value="asreml_grm_univariate_pure_spatial_genetic_blups">ASREML Spatial GBLUPs Y~replicate+GRM+spatial. Univariate genetic + AR1xAR1 spatial effects (License Required)</option>
+                                        <option value="asreml_grm_multivariate_spatial_genetic_blups">ASREML Spatial GBLUPs Y~replicate+GRM+spatial. Multivariate genetic + AR1xAR1 spatial effects (License Required)</option>
+
+                                        <!--option value="airemlf90_grm_random_regression_gdd_blups">AIREMLf90 GBLUPs Y~replicate+GRM+temporal random regression using growing degree days. Multivariate genetic + permanent environment effects</option-->
+
+                                        <!--option value="sommer_grm_temporal_random_regression_dap_genetic_blups">Sommer Temporal Random Regression GBLUPs Y~replicate+GRM+LegendrePoly. Multivariate genetic + permanent environment effects using days after planting</option>
+                                        <option value="sommer_grm_temporal_random_regression_gdd_genetic_blups">Sommer Temporal Random Regression GBLUPs Y~replicate+GRM+LegendrePoly. Multivariate genetic + permanent environment effects using growing degree days</option>
+                                        <option value="sommer_grm_genetic_only_random_regression_dap_genetic_blups">Sommer Random Regression GBLUPs Y~replicate+GRM+LegendrePoly. Multivariate genetic effects using days after planting</option>
+                                        <option value="sommer_grm_genetic_only_random_regression_gdd_genetic_blups">Sommer Random Regression GBLUPs Y~replicate+GRM+LegendrePoly. Multivariate genetic effects using growing degree days</option-->
+
                                     </select>
                                 </div>
                             </div>
+
                             <div class="form-group">
-                                <label class="col-sm-5 control-label">Perform Cross Validation (Can take a long time): </label>
-                                <div class="col-sm-7" >
-                                    <select class="form-control" id="drone_imagery_analytics_select_perform_cv">
-                                        <option value="0">No</option>
-                                        <option value="1">Yes</option>
+                                <label class="col-sm-3 control-label">Analytics Name: </label>
+                                <div class="col-sm-9" >
+                                    <input type="text" class="form-control" id="drone_imagery_analytics_select_analytics_name" />
+                                </div>
+                            </div>
+                            <!-- div class="form-group">
+                                <label class="col-sm-3 control-label">Analytics Type: </label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_imagery_analytics_select_analytics_type">
+                                        <option value="minimize_local_env_effect">Minimize Spatial or PE Effects</option>
                                     </select>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr>
-                    <center>
-                        <button class="btn btn-default" id="drone_imagery_analytics_analytics_project_new_button">Create a New Analytics Protocol</button>
-                    </center>
-
-                    <div id="drone_imagery_analytics_analytics_project_new_div" style="display:none">
-                        <br/><br/>
-                        <div class="well well-sm">
-                            <div class="form-horizontal">
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Analytics Name: </label>
-                                    <div class="col-sm-9" >
-                                        <input type="text" class="form-control" id="drone_imagery_analytics_select_analytics_name" />
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Analytics Type: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_imagery_analytics_select_analytics_type">
-                                            <option value="minimize_local_env_effect">Minimize Spatial or PE Effects</option>
-                                            <!--option value="minimize_genetic_effect">Minimize Genetic Effects</option-->
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Analytics Description: </label>
-                                    <div class="col-sm-9" >
-                                        <input type="text" class="form-control" id="drone_imagery_analytics_select_analytics_desc" />
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Number Interations: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_imagery_analytics_number_iterations">
-                                            <option value="2">2</option>
-                                            <option value="10">10</option>
-                                            <option value="25">25</option>
-                                            <option value="1">1</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Env Variance: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_imagery_analytics_env_variance">
-                                            <option value="0.2">0.2</option>
-                                            <option value="0.1">0.1</option>
-                                            <option value="0.05">0.05</option>
-                                            <option value="0.01">0.01</option>
-                                            <option value="0.3">0.3</option>
-                                            <option value="0.2,0.1,0.05,0.01,0.3">0.2,0.1,0.05,0.01,0.3</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Simulated Environment Correlation Through Time: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_imagery_analytics_sim_env_change_over_time_correlation">
-                                            <option value="0.9">0.9</option>
-                                            <option value="0.75">0.75</option>
-                                            <option value="0.6">0.6</option>
-                                        </select>
-                                    </div>
+                            </div-->
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Analytics Description: </label>
+                                <div class="col-sm-9" >
+                                    <input type="text" class="form-control" id="drone_imagery_analytics_select_analytics_desc" />
                                 </div>
                             </div>
-                        </div>
-
-                        <& /page/page_title.mas, title=>"Select the observation variable(s) you are interested in" &>
-
-                        <div class="well well-sm">
-                            <div class="form-horizontal">
+                            <!--div class="form-group">
+                                <label class="col-sm-3 control-label">Number Interations: </label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_imagery_analytics_number_iterations">
+                                        <option value="2">2</option>
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="1">1</option>
+                                    </select>
+                                </div>
+                            </div-->
+                            <!--div class="form-horizontal">
                                 <div class="form-group">
-                                    <label class="col-sm-3 control-label">Observation Variable Type: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_imagery_analytics_select_observation_variable_type">
-                                            <option value="time_ontology">Time Series</option>
-                                            <option value="">Single Trait</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Observation Variables Phenotyped in the Selected Field Trial: </label>
-                                    <div class="col-sm-9" >
-                                        <div id="drone_imagery_analytics_trait_select_div">Loading...</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <& /page/page_title.mas, title=>"Statistics Parameters" &>
-
-                        <div class="well well-sm">
-                            <div class="form-horizontal">
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Relationship Matrix Type: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_imagery_analytics_relationship_matrix_type_select_div">
-                                            <option value="">Identity</option>
-                                            <option value="genotypes">Genotyping Data</option>
-                                            <option value="htp_phenotypes">High-throughput Phenotyping Data</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="drone_imagery_analytics_genotyping_protocol_div" class="well well-sm" style="display:none">
-                                <div class="form-horizontal">
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">Genotyping Protocol To Calculate Genomic Relationship Matrix (optional. If none selected, an identity matrix is used): </label>
-                                        <div class="col-sm-9" >
-                                            <div id="drone_imagery_analytics_genotyping_protocol_select_div"></div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">Compute Genotypes From Parents: </label>
-                                        <div class="col-sm-9" >
-                                            <select class="form-control" id="drone_image_analytics_genotyping_protocol_compute_from_parents_select">
-                                                <option value="no">No</option>
-                                                <option value="yes">Yes</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group" id="drone_image_analytics_genotyping_protocol_use_parental_grms_select_div" style="display:none">
-                                        <label class="col-sm-3 control-label">Use Parental Relationship Matrices: </label>
-                                        <div class="col-sm-9" >
-                                            <select class="form-control" id="drone_image_analytics_genotyping_protocol_use_parental_grms_select">
-                                                <option value="no">No</option>
-                                                <option value="yes">Yes</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group" id="drone_image_analytics_genotyping_protocol_include_pedigree_select_div" style="display:none">
-                                        <label class="col-sm-3 control-label">Include Pedigree Info Into Relationship Matrix: </label>
-                                        <div class="col-sm-9" >
-                                            <select class="form-control" id="drone_image_analytics_genotyping_protocol_include_pedigree_select">
-                                                <option value="no">No</option>
-                                                <option value="yes">Yes</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="drone_imagery_analytics_htp_phenotypes_rel_matrix_div" class="well well-sm" style="display:none">
-                                <div class="form-horizontal">
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">How to calculate the relationship matrix with high-throughput phenotypes: </label>
-                                        <div class="col-sm-9" >
-                                            <select class="form-control" id="drone_image_analytics_htp_phenotypes_rel_matrix_select">
-                                                <option value="correlations">Correlations</option>
-                                                <option value="blues">BLUEs</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">Time Points to Use: </label>
-                                        <div class="col-sm-9" >
-                                            <select class="form-control" id="drone_image_analytics_htp_phenotypes_rel_matrix_times_select">
-                                                <option value="all">All Available</option>
-                                                <option value="latest_trait">Up to latest days after planting selecting in traits</option>
-                                                <option value="vegetative" disabled>Vegetative Growth Stage</option>
-                                                <option value="reproductive" disabled>Reproductive Growth Stage</option>
-                                                <option value="mature" disabled>Mature Growth Stage</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group" id="drone_image_analytics_htp_phenotypes_rel_matrix_inversion_select_div" style="display:none">
-                                        <label class="col-sm-3 control-label">HTP BLUEs Inversion Tolerance: </label>
-                                        <div class="col-sm-9" >
-                                            <select class="form-control" id="drone_image_analytics_htp_phenotypes_rel_matrix_inversion_select">
-                                                <option value="0.00001">0.00001</option>
-                                                <option value="0.0001">0.0001</option>
-                                                <option value="0.001">0.001</option>
-                                                <option value="0.01">0.01</option>
-                                                <option value="0.1">0.1</option>
-                                                <option value="0.5">0.5</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!--hr>
-                            <div class="form-horizontal">
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Use Cumulative Area-Under-Curve Phenotype in Analysis: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_image_analytics_use_area_under_curve_select">
-                                            <option value="no">No</option>
-                                            <option value="yes">Yes</option>
+                                    <label class="col-sm-5 control-label">Perform Cross Validation (Can take a long time): </label>
+                                    <div class="col-sm-7" >
+                                        <select class="form-control" id="drone_imagery_analytics_select_perform_cv">
+                                            <option value="0">No</option>
+                                            <option value="1">Yes</option>
                                         </select>
                                     </div>
                                 </div>
                             </div-->
+                        </div>
+                    </div>
 
-                            <hr>
-                            <div class="form-horizontal">
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Inversion Tolerance: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_image_analytics_tolparinv_select">
-                                            <option value="0.000001">0.000001</option>
-                                            <option value="0.00001">0.00001</option>
-                                            <option value="0.0001">0.0001</option>
-                                            <option value="0.0005">0.0005</option>
-                                            <option value="0.0008">0.0008</option>
-                                            <option value="0.001">0.001</option>
-                                            <option value="0.01">0.01</option>
-                                            <option value="0.05">0.05</option>
-                                            <option value="0.08">0.08</option>
-                                            <option value="0.1">0.1</option>
-                                            <option value="0.2">0.2</option>
-                                            <option value="0.5">0.5</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Legendre Polynomial Order: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_image_analytics_legendre_order_number_select">
-                                            <option value="3">3</option>
-                                            <!--option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option-->
-                                        </select>
-                                    </div>
+                    <& /page/page_title.mas, title=>"Select the Aerial Image Phenotype(s) You Are Interested in. Only Select Time Points For a Single Variable!" &>
+
+                    <div class="well well-sm">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Observation Variable Type: </label>
+                                <div class="col-sm-8" >
+                                    <select class="form-control" id="drone_imagery_analytics_select_observation_variable_type">
+                                        <option value="time_ontology">Time Series</option>
+                                        <option value="">Variable List</option>
+                                    </select>
                                 </div>
                             </div>
-
-                            <hr>
-                            <div class="form-horizontal">
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">AIMREMLf90 Permanent Environment Structure: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_image_analytics_permanent_env_structure_select">
-                                            <option value="identity">Identity Matrix</option>
-                                            <option value="env_corr_structure">Simulated Phenotype Correlation Matrix</option>
-                                            <option value="phenotype_correlation">Phenotype Correlation Matrix</option>
-                                            <option value="phenotype_2dspline_effect">Multi 2D-Spline Effect of Phenotype Correlation Matrix</option>
-                                            <option value="phenotype_2dspline_uni_effect">Uni 2D-Spline Effect of Phenotype Correlation Matrix</option>
-                                            <option value="phenotype_ar1xar1_effect">Multi AR1xAR1 Effect of Phenotype Correlation Matrix</option>
-                                            <option value="phenotype_ar1xar1_uni_effect">Uni AR1xAR1 Effect of Phenotype Correlation Matrix</option>
-                                            <option value="euclidean_rows_and_columns">Euclidean Distance From Rows and Columns Matrix</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="drone_imagery_analytics_permanent_env_structure_phenotype_correlation_div" style="display:none">
-                                <div class="form-horizontal">
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">Phenotypes For Correlation Matrix: </label>
-                                        <div class="col-sm-9" >
-                                            <div id="drone_imagery_analytics_permanent_env_structure_phenotype_correlation_select_div"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div id="drone_imagery_analytics_permanent_env_structure_phenotype_effect_select_div" style="display:none">
-                                <div class="form-horizontal">
-                                    <div class="form-group">
-                                        <label class="col-sm-3 control-label">Phenotype For 2D-spline or AR1xAR1 Effects in Permanent Environment Structure: </label>
-                                        <div class="col-sm-9" >
-                                            <div id="drone_imagery_analytics_permanent_env_structure_phenotype_select_div"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr>
-                            <div class="form-horizontal">
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Simulated Environment Processes: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_imagery_analytics_simulated_environment_processes_select_div">
-                                            <option value="none">No Simulation Process</option>
-                                            <option value="6sims">Linear, 1D Normal, 2D Normal, AR1xAR1, Random, Real Data</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group" style="display:none" id="drone_imagery_analytics_simulated_environment_real_data_trait_select_section">
-                                    <label class="col-sm-3 control-label">Trait For Real Data Environment Simulation: </label>
-                                    <div class="col-sm-6" >
-                                        <div id="drone_imagery_analytics_simulated_environment_real_data_trait_select_div"></div>
-                                    </div>
-                                    <div class="col-sm-3" >
-                                        <button class="btn btn-default" id="drone_imagery_analytics_simulated_environment_processes_select_example_button">Show Simulations Example</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr>
-                            <div class="form-horizontal">
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Fixed Effects: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_imagery_analytics_fixed_effect_select_div">
-                                            <option value="replicate">Replicate</option>
-                                            <option value="fixed_effect_trait">Select a continuous trait (e.g. soil elevation curvature)</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-group" id="drone_imagery_analytics_fixed_effect_select_trait_div" style="display:none">
-                                    <label class="col-sm-3 control-label">Fixed Effect Trait: </label>
-                                    <div class="col-sm-9" >
-                                        <div id="drone_imagery_analytics_fixed_effect_trait_select_div"></div>
-                                    </div>
-                                </div>
-                                <div class="form-group" id="drone_imagery_analytics_fixed_effect_select_quantile_div" style="display:none">
-                                    <label class="col-sm-3 control-label">Fixed Effect Continuous Trait Quantile Binning: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="drone_imagery_analytics_fixed_effect_select_quantile">
-                                            <option value="4">25% Quantiles</option>
-                                            <option value="5">20% Quantiles</option>
-                                            <option value="10">10% Quantiles</option>
-                                            <option value="3">33% Quantiles</option>
-                                        </select>
-                                    </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">Observation Variable(s) Phenotyped in the Selected Field Trial: </label>
+                                <div class="col-sm-8" >
+                                    <div id="drone_imagery_analytics_trait_select_div">Loading...</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <hr>
+                    <& /page/page_title.mas, title=>"Statistics Parameters" &>
+
+                    <div class="well well-sm">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Genetic Relationship Matrix Type: </label>
+                                        <div class="col-sm-8" >
+                                            <select class="form-control" id="drone_imagery_analytics_relationship_matrix_type_select_div">
+                                                <option value="">Identity</option>
+                                                <option value="genotypes">Genotyping Data</option>
+                                                <option value="htp_phenotypes">High-throughput Phenotyping Data</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="drone_imagery_analytics_genotyping_protocol_div" style="display:none">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Genotyping Protocol To Calculate Genomic Relationship Matrix (optional. If none selected, an identity matrix is used): </label>
+                                            <div class="col-sm-8" >
+                                                <div id="drone_imagery_analytics_genotyping_protocol_select_div"></div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Compute Genotypes From Parents: </label>
+                                            <div class="col-sm-8" >
+                                                <select class="form-control" id="drone_image_analytics_genotyping_protocol_compute_from_parents_select">
+                                                    <option value="no">No</option>
+                                                    <option value="yes">Yes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" id="drone_image_analytics_genotyping_protocol_use_parental_grms_select_div" style="display:none">
+                                            <label class="col-sm-4 control-label">Use Parental Relationship Matrices: </label>
+                                            <div class="col-sm-8" >
+                                                <select class="form-control" id="drone_image_analytics_genotyping_protocol_use_parental_grms_select">
+                                                    <option value="no">No</option>
+                                                    <option value="yes">Yes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" id="drone_image_analytics_genotyping_protocol_include_pedigree_select_div" style="display:none">
+                                            <label class="col-sm-4 control-label">Include Pedigree Info Into Relationship Matrix: </label>
+                                            <div class="col-sm-8" >
+                                                <select class="form-control" id="drone_image_analytics_genotyping_protocol_include_pedigree_select">
+                                                    <option value="no">No</option>
+                                                    <option value="yes">Yes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="drone_imagery_analytics_htp_phenotypes_rel_matrix_div" style="display:none">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">How to calculate the relationship matrix with high-throughput phenotypes: </label>
+                                            <div class="col-sm-8" >
+                                                <select class="form-control" id="drone_image_analytics_htp_phenotypes_rel_matrix_select">
+                                                    <option value="correlations">Correlations</option>
+                                                    <option value="blues">BLUEs</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Time Points to Use: </label>
+                                            <div class="col-sm-8" >
+                                                <select class="form-control" id="drone_image_analytics_htp_phenotypes_rel_matrix_times_select">
+                                                    <option value="all">All Available</option>
+                                                    <option value="latest_trait">Up to latest days after planting selecting in traits</option>
+                                                    <option value="vegetative" disabled>Vegetative Growth Stage</option>
+                                                    <option value="reproductive" disabled>Reproductive Growth Stage</option>
+                                                    <option value="mature" disabled>Mature Growth Stage</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" id="drone_image_analytics_htp_phenotypes_rel_matrix_inversion_select_div" style="display:none">
+                                            <label class="col-sm-4 control-label">HTP BLUEs Inversion Tolerance: </label>
+                                            <div class="col-sm-8" >
+                                                <select class="form-control" id="drone_image_analytics_htp_phenotypes_rel_matrix_inversion_select">
+                                                    <option value="0.00001">0.00001</option>
+                                                    <option value="0.0001">0.0001</option>
+                                                    <option value="0.001">0.001</option>
+                                                    <option value="0.01">0.01</option>
+                                                    <option value="0.1">0.1</option>
+                                                    <option value="0.5">0.5</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Legendre Polynomial Order: </label>
+                                        <div class="col-sm-8" >
+                                            <select class="form-control" id="drone_image_analytics_legendre_order_number_select">
+                                                <option value="3">3</option>
+                                                <!--option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option-->
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">AIMREMLf90 Permanent Environment Structure: </label>
+                                        <div class="col-sm-8" >
+                                            <select class="form-control" id="drone_image_analytics_permanent_env_structure_select">
+                                                <option value="identity">Identity Matrix</option>
+                                                <option value="phenotype_correlation">Phenotype Correlation Matrix</option>
+                                                <option value="phenotype_2dspline_effect">Multi 2D-Spline Effect of Phenotype Correlation Matrix</option>
+                                                <option value="phenotype_2dspline_uni_effect">Uni 2D-Spline Effect of Phenotype Correlation Matrix</option>
+                                                <option value="phenotype_ar1xar1_effect">Multi AR1xAR1 Effect of Phenotype Correlation Matrix</option>
+                                                <option value="phenotype_ar1xar1_uni_effect">Uni AR1xAR1 Effect of Phenotype Correlation Matrix</option>
+                                                <option value="euclidean_rows_and_columns">Euclidean Distance From Rows and Columns Matrix</option>
+                                                <option value="env_corr_structure">Simulated Phenotype Correlation Matrix</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="drone_imagery_analytics_permanent_env_structure_phenotype_correlation_div" style="display:none">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Phenotypes For Correlation Matrix: </label>
+                                            <div class="col-sm-8" >
+                                                <div id="drone_imagery_analytics_permanent_env_structure_phenotype_correlation_select_div"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="drone_imagery_analytics_permanent_env_structure_phenotype_effect_select_div" style="display:none">
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Phenotype For 2D-spline or AR1xAR1 Effects in Permanent Environment Structure: </label>
+                                            <div class="col-sm-8" >
+                                                <div id="drone_imagery_analytics_permanent_env_structure_phenotype_select_div"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Simulated Environment Processes: </label>
+                                        <div class="col-sm-8" >
+                                            <select class="form-control" id="drone_imagery_analytics_simulated_environment_processes_select_div">
+                                                <option value="none">No Simulation Process</option>
+                                                <option value="6sims">Linear, 1D Normal, 2D Normal, AR1xAR1, Random, Real Data</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div style="display:none" id="drone_imagery_analytics_simulated_environment_real_data_trait_select_section">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Simulated Environments (Linear, 1D-Normal, 2D-Normal, Random, AR1xAR1): </label>
+                                            <div class="col-sm-8" >
+                                                <select class="form-control" id="drone_imagery_analytics_select_sim_env_change_over_time_type">
+                                                    <option value="">Constant over timepoints</option>
+                                                    <option value="changing_gradual">Gradual change over timepoints</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Simulated Environment Correlation Through Time: </label>
+                                            <div class="col-sm-8" >
+                                                <select class="form-control" id="drone_imagery_analytics_sim_env_change_over_time_correlation">
+                                                    <option value="0.9">0.9</option>
+                                                    <option value="0.75">0.75</option>
+                                                    <option value="0.6">0.6</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Simulated Environment Variance: </label>
+                                            <div class="col-sm-8" >
+                                                <select class="form-control" id="drone_imagery_analytics_env_variance">
+                                                    <option value="0.2">0.2</option>
+                                                    <option value="0.1">0.1</option>
+                                                    <option value="0.05">0.05</option>
+                                                    <option value="0.01">0.01</option>
+                                                    <option value="0.3">0.3</option>
+                                                    <option value="0.2,0.1,0.05,0.01,0.3">0.2,0.1,0.05,0.01,0.3</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Trait For Real Data Environment Simulation: </label>
+                                            <div class="col-sm-5" >
+                                                <div id="drone_imagery_analytics_simulated_environment_real_data_trait_select_div"></div>
+                                            </div>
+                                            <div class="col-sm-3" >
+                                                <button class="btn btn-default" id="drone_imagery_analytics_simulated_environment_processes_select_example_button">Show Simulations Example</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Fixed Effects: </label>
+                                        <div class="col-sm-8" >
+                                            <select class="form-control" id="drone_imagery_analytics_fixed_effect_select_div">
+                                                <option value="replicate">Replicate</option>
+                                                <option value="fixed_effect_trait">Select a continuous trait (e.g. soil elevation curvature)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="drone_imagery_analytics_fixed_effect_select_trait_div" style="display:none">
+                                        <label class="col-sm-4 control-label">Fixed Effect Trait: </label>
+                                        <div class="col-sm-8" >
+                                            <div id="drone_imagery_analytics_fixed_effect_trait_select_div"></div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="drone_imagery_analytics_fixed_effect_select_quantile_div" style="display:none">
+                                        <label class="col-sm-4 control-label">Fixed Effect Continuous Trait Quantile Binning: </label>
+                                        <div class="col-sm-8" >
+                                            <select class="form-control" id="drone_imagery_analytics_fixed_effect_select_quantile">
+                                                <option value="4">25% Quantiles</option>
+                                                <option value="5">20% Quantiles</option>
+                                                <option value="10">10% Quantiles</option>
+                                                <option value="3">33% Quantiles</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Inversion Tolerance: </label>
+                                        <div class="col-sm-8" >
+                                            <select class="form-control" id="drone_image_analytics_tolparinv_select">
+                                                <option value="0.000001">0.000001</option>
+                                                <option value="0.00001">0.00001</option>
+                                                <option value="0.0001">0.0001</option>
+                                                <option value="0.0005">0.0005</option>
+                                                <option value="0.0008">0.0008</option>
+                                                <option value="0.001">0.001</option>
+                                                <option value="0.01">0.01</option>
+                                                <option value="0.05">0.05</option>
+                                                <option value="0.08">0.08</option>
+                                                <option value="0.1">0.1</option>
+                                                <option value="0.2">0.2</option>
+                                                <option value="0.5">0.5</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!--div class="form-group">
+                                        <label class="col-sm-4 control-label">Use Cumulative Area-Under-Curve Phenotype in Analysis: </label>
+                                        <div class="col-sm-8" >
+                                            <select class="form-control" id="drone_image_analytics_use_area_under_curve_select">
+                                                <option value="no">No</option>
+                                                <option value="yes">Yes</option>
+                                            </select>
+                                        </div>
+                                    </div-->
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
                     <center>
                     <button class="btn btn-primary" id="drone_imagery_analytics_select_step">Submit</button>
                     </center>
@@ -519,7 +525,7 @@ jQuery(document).ready(function() {
 
             get_select_box('traits', 'drone_imagery_analytics_fixed_effect_trait_select_div', { 'name' : 'drone_imagery_analytics_fixed_effect_trait_select', 'id' : 'drone_imagery_analytics_fixed_effect_trait_select', 'empty':0, 'multiple':0, 'trial_ids':manage_drone_imagery_analytics_field_trial_id_string, 'stock_type':'plot' });
 
-            get_select_box('analytics_protocols', 'drone_imagery_analytics_analytics_protocols_select_div', { 'checkbox_name' : 'drone_imagery_analytics_analytics_protocols_select_id', 'analytics_protocol_type' : 'drone_imagery_analytics_env_simulation_protocol' });
+            get_select_box('analytics_protocols', 'drone_imagery_analytics_analytics_protocols_select_div', { 'checkbox_name' : 'drone_imagery_analytics_analytics_protocols_select_id', 'analytics_protocol_type' : 'drone_imagery_analytics_env_simulation_protocol', 'limit':1, 'disabled':1 });
 
             get_select_box('genotyping_protocol', 'drone_imagery_analytics_genotyping_protocol_select_div', { 'name' : 'drone_image_analytics_genotyping_protocol_select', 'id' : 'drone_image_analytics_genotyping_protocol_select', 'empty':1 });
 
@@ -610,10 +616,6 @@ jQuery(document).ready(function() {
         else {
             get_select_box('traits', 'drone_imagery_analytics_trait_select_div', { 'name' : 'drone_imagery_analytics_trait_id_select', 'id' : 'drone_imagery_analytics_trait_id_select', 'empty':1, 'multiple':1, 'size': 20, 'trial_ids':manage_drone_imagery_analytics_field_trial_id_string, 'stock_type':'plot', 'contains_composable_cv_type':manage_drone_imagery_analytics_observation_variable_type });
         }
-    });
-
-    jQuery('#drone_imagery_analytics_analytics_project_new_button').click(function(){
-        jQuery('#drone_imagery_analytics_analytics_project_new_div').show();
     });
 
     jQuery('#drone_imagery_analytics_select_input').change(function(){
@@ -721,8 +723,8 @@ jQuery(document).ready(function() {
 
     jQuery('#drone_image_analytics_genotyping_protocol_compute_from_parents_select').change(function(){
         if (jQuery(this).val() == 'yes') {
-            jQuery('#drone_image_analytics_genotyping_protocol_include_pedigree_select_div').show();
-            jQuery('#drone_image_analytics_genotyping_protocol_use_parental_grms_select_div').show();
+            //jQuery('#drone_image_analytics_genotyping_protocol_include_pedigree_select_div').show();
+            //jQuery('#drone_image_analytics_genotyping_protocol_use_parental_grms_select_div').show();
         }
         if (jQuery(this).val() == 'no') {
             jQuery('#drone_image_analytics_genotyping_protocol_include_pedigree_select_div').hide();
