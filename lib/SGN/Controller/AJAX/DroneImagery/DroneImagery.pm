@@ -5397,6 +5397,8 @@ sub _perform_image_rotate {
         }
     }
 
+    sleep(1);
+
     print STDERR Dumper \@original_image_resize_ratio;
     unlink($archive_rotate_temp_image);
     return {
@@ -5784,6 +5786,8 @@ sub _perform_plot_polygon_assign {
             # $pm->wait_all_children;
         }
     }
+
+    sleep(1);
 
     return {
         image_url => $image_url,
@@ -6185,7 +6189,9 @@ sub _perform_image_denoise {
         my $ret = $image_store->associate_project($_, $linking_table_type_id);
     }
 
+    sleep(1);
     unlink($archive_denoise_temp_image);
+
     return {
         image_url => $image_url, image_fullpath => $image_fullpath, denoised_image_id => $denoised_image_id, denoised_image_url => $denoised_image_url, denoised_image_fullpath => $denoised_image_fullpath
     };
@@ -6479,7 +6485,9 @@ sub _perform_image_background_remove_threshold_percentage {
         $iterator++;
     }
 
+    sleep(1);
     unlink($archive_remove_background_temp_image);
+
     return {
         image_url => $image_url, image_fullpath => $image_fullpath, removed_background_image_id => $removed_background_image_id, removed_background_image_url => $removed_background_image_url, removed_background_image_fullpath => $removed_background_image_fullpath
     };
@@ -10109,6 +10117,8 @@ sub _perform_minimal_vi_standard_process {
             _perform_standard_process_minimal_vi_calc($c, $bcs_schema, $metadata_schema, $denoised_image_id, $merged_drone_run_band_project_id, $merged_drone_run_band_project_ids_same_ortho, $user_id, $user_name, $user_role, $drone_run_band_info->{$selected_drone_run_band_types->{'NIR (780-3000nm)'}}->{plot_polygons_value}, 'NDRE', 'NReN', $cropping_polygon_type, $private_company_id, $private_company_is_private);
         }
     }
+
+    sleep(1);
 }
 
 sub _perform_extended_vi_standard_process {
@@ -10402,7 +10412,9 @@ sub _perform_image_cropping {
         });
     }
 
+    sleep(1);
     unlink($archive_temp_image);
+
     return {
         cropped_image_id => $cropped_image_id, image_url => $image_url, image_fullpath => $image_fullpath, cropped_image_url => $cropped_image_url, cropped_image_fullpath => $cropped_image_fullpath
     };
@@ -10651,7 +10663,9 @@ sub _perform_vegetative_index_calculation {
         $iterator++;
     }
 
+    sleep(1);
     unlink($archive_temp_image);
+
     return {
         image_url => $image_url, image_fullpath => $image_fullpath, index_image_id => $index_image_id, index_image_url => $index_image_url, index_image_fullpath => $index_image_fullpath
     };
@@ -10915,6 +10929,7 @@ sub _perform_image_merge {
 
     # print STDERR Dumper $selected_merged_drone_run_band_id;
     # print STDERR Dumper \@merged_drone_run_band_ids_same_ortho;
+    sleep(1);
     unlink($archive_temp_image);
 
     print STDERR "Performing image merge end\n";

@@ -662,6 +662,7 @@ sub download_grm {
     else {
         my %grm_hash;
         my $all_accession_stock_ids;
+        my $row_num = 0;
         if ($is_grm_protocol) {
             print STDERR "DOWNLOAD GRM protocol is GRM\n";
             my $grm_relatedness = $geno_protocol->grm_stock_relatedness();
@@ -701,6 +702,7 @@ sub download_grm {
                 my @seen_accession_ids = sort {$a <=> $b} keys %seen_accession_ids;
                 $all_accession_stock_ids = \@seen_accession_ids;
             }
+            $row_num = 1;
         }
         else {
             print STDERR "DOWNLOAD GRM\n";
@@ -708,7 +710,6 @@ sub download_grm {
             $all_accession_stock_ids = $all_accession_stock_ids_g;
 
             open(my $fh, "<", $grm_tempfile_out) or die "Can't open < $grm_tempfile_out: $!";
-            my $row_num = 0;
             while (my $row = <$fh>) {
                 chomp($row);
                 my @vals = split "\t", $row;
@@ -762,7 +763,7 @@ sub download_grm {
             my @matrix_uniquenames_row = ($s2);
             foreach my $c (@$all_accession_stock_ids) {
                 my $val;
-                if (defined($grm_hash{$s}->{$c})) {
+                if ($row_num > 0 && defined($grm_hash{$s}->{$c})) {
                     $val = $grm_hash{$s}->{$c};
                 }
                 elsif ($s == $c) {
@@ -796,7 +797,7 @@ sub download_grm {
             foreach my $c (@$all_accession_stock_ids) {
                 if (!exists($three_column_result_hash{$s}->{$c}) && !exists($three_column_result_hash{$c}->{$s})) {
                     my $val;
-                    if (defined($grm_hash{$s}->{$c})) {
+                    if ($row_num > 0 && defined($grm_hash{$s}->{$c})) {
                         $val = $grm_hash{$s}->{$c};
                     }
                     elsif ($s == $c) {
@@ -834,7 +835,7 @@ sub download_grm {
         foreach my $s (@$all_accession_stock_ids) {
             foreach my $c (@$all_accession_stock_ids) {
                 my $val;
-                if (defined($grm_hash{$s}->{$c})) {
+                if ($row_num > 0 && defined($grm_hash{$s}->{$c})) {
                     $val = $grm_hash{$s}->{$c};
                 }
                 elsif ($s == $c) {

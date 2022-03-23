@@ -367,7 +367,7 @@ sub list {
     }
     my $where_clause = scalar(@where_clause) > 0 ? " WHERE " . (join (" AND " , @where_clause)) : '';
 
-    my $q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.description, nd_protocol.create_date, nd_protocolprop.value, project.project_id, project.name, count(nd_protocol.nd_protocol_id) OVER() AS full_count, nd_protocolprop.value->>'marker_type'
+    my $q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.description, nd_protocol.create_date, nd_protocolprop.value, project.project_id, project.name, count(nd_protocol.nd_protocol_id) OVER() AS full_count, nd_protocolprop.value->>'marker_type', nd_protocolprop.value->>'is_grm'
         FROM stock
         JOIN cvterm AS stock_cvterm ON(stock.type_id = stock_cvterm.cvterm_id)
         JOIN nd_experiment_stock USING(stock_id)
@@ -388,10 +388,15 @@ sub list {
     $h->execute($vcf_map_details_cvterm_id, $pcr_marker_details_cvterm_id);
 
     my @results;
-    while (my ($protocol_id, $protocol_name, $protocol_description, $create_date, $protocolprop_json, $project_id, $project_name, $sample_count, $marker_type) = $h->fetchrow_array()) {
+    while (my ($protocol_id, $protocol_name, $protocol_description, $create_date, $protocolprop_json, $project_id, $project_name, $sample_count, $marker_type, $is_grm) = $h->fetchrow_array()) {
         my $protocol = $protocolprop_json ? decode_json $protocolprop_json : {};
         my $marker_names = $protocol->{marker_names} || [];
         my $header_information_lines = $protocol->{header_information_lines} || [];
+
+        if ($is_grm) {
+            $header_information_lines = ["##Genotyping protocol is of genomic relationships between accessions (GRM)"];
+        }
+
         my $species_name = $protocol->{species_name} || 'Not set. Please reload these genotypes using new genotype format!';
         my $sample_observation_unit_type_name = $protocol->{sample_observation_unit_type_name} || 'Not set. Please reload these genotypes using new genotype format!';
         my $reference_genome_name = $protocol->{reference_genome_name};
@@ -416,7 +421,8 @@ sub list {
             create_date => $create_date,
             observation_unit_count => $sample_count,
             marker_count => scalar(@$marker_names),
-            marker_type => $marker_type
+            marker_type => $marker_type,
+            is_grm_protocol => $is_grm
         };
     }
     print STDERR "PROTOCOL LIST =".Dumper(\@results);
@@ -436,7 +442,7 @@ sub list_simple {
     my $pcr_marker_protocol_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'pcr_marker_protocol', 'protocol_type')->cvterm_id();
     my $pcr_marker_details_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'pcr_marker_details', 'protocol_property')->cvterm_id();
 
-    my $q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.description, nd_protocol.create_date, nd_protocolprop.value->>'header_information_lines', nd_protocolprop.value->>'reference_genome_name', nd_protocolprop.value->>'species_name', nd_protocolprop.value->>'sample_observation_unit_type_name', jsonb_array_length(nd_protocolprop.value->'marker_names'), nd_protocolprop.value->>'marker_type'
+    my $q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.description, nd_protocol.create_date, nd_protocolprop.value->>'header_information_lines', nd_protocolprop.value->>'reference_genome_name', nd_protocolprop.value->>'species_name', nd_protocolprop.value->>'sample_observation_unit_type_name', jsonb_array_length(nd_protocolprop.value->'marker_names'), nd_protocolprop.value->>'marker_type', nd_protocolprop.value->>'is_grm'
         FROM nd_protocol
         LEFT JOIN nd_protocolprop ON(nd_protocolprop.nd_protocol_id = nd_protocol.nd_protocol_id AND nd_protocolprop.type_id IN (?,?))
         WHERE nd_protocol.type_id IN (?,?)
@@ -446,8 +452,13 @@ sub list_simple {
     $h->execute($vcf_map_details_cvterm_id, $pcr_marker_details_type_id, $nd_protocol_type_id, $pcr_marker_protocol_type_id);
 
     my @results;
-    while (my ($protocol_id, $protocol_name, $protocol_description, $create_date, $header_information_lines, $reference_genome_name, $species_name, $sample_type_name, $marker_count, $marker_type) = $h->fetchrow_array()) {
+    while (my ($protocol_id, $protocol_name, $protocol_description, $create_date, $header_information_lines, $reference_genome_name, $species_name, $sample_type_name, $marker_count, $marker_type, $is_grm) = $h->fetchrow_array()) {
         my $header_information_lines = $header_information_lines ? decode_json $header_information_lines : [];
+
+        if ($is_grm) {
+            $header_information_lines = ["##Genotyping protocol is of genomic relationships between accessions (GRM)"];
+        }
+
         my $species_name = $species_name || 'Not set. Please reload these genotypes using new genotype format!';
         my $sample_observation_unit_type_name = $sample_type_name || 'Not set. Please reload these genotypes using new genotype format!';
         my $protocol_description = $protocol_description || 'Not set. Please reload these genotypes using new genotype format!';
@@ -466,7 +477,8 @@ sub list_simple {
             species_name => $species_name,
             sample_observation_unit_type_name => $sample_observation_unit_type_name,
             create_date => $create_date,
-            marker_type => $marker_type
+            marker_type => $marker_type,
+            is_grm_protocol => $is_grm
         };
     }
     #print STDERR "SIMPLE LIST =".Dumper \@results."\n";
