@@ -643,11 +643,15 @@ sub download_grm {
     my $key = $self->grm_cache_key($target_key);
     $self->cache( Cache::File->new( cache_root => $self->cache_root() ));
 
-    my $geno_protocol = CXGN::Genotype::Protocol->new({
-        bcs_schema => $schema,
-        nd_protocol_id => $protocol_id
-    });
-    my $is_grm_protocol = $geno_protocol->is_grm_protocol();
+    my $geno_protocol;
+    my $is_grm_protocol;
+    if ($protocol_id) {
+        $geno_protocol = CXGN::Genotype::Protocol->new({
+            bcs_schema => $schema,
+            nd_protocol_id => $protocol_id
+        });
+        $is_grm_protocol = $geno_protocol->is_grm_protocol();
+    }
 
     my $return;
     if ($self->cache()->exists($key)) {

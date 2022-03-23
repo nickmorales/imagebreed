@@ -98,7 +98,7 @@ sub new {
         my $name = $trial_row->type()->name();
         my $val = $trial_row->value();
         # print STDERR Dumper [$name, $val];
-        if ($val eq "genotyping_plate") {
+        if ($val && $val eq "genotyping_plate") {
             return CXGN::GenotypingTrial->new($args);
         }
         elsif ($name eq "crossing_trial") {
@@ -107,19 +107,19 @@ sub new {
         elsif ($name eq "analysis") {
             return CXGN::Analysis->new($args);
         }
-        elsif ($val eq "treatment") {
+        elsif ($val && $val eq "treatment") {
             return CXGN::ManagementFactor->new($args);
         }
-        elsif ($val eq "sampling_trial") {
+        elsif ($val && $val eq "sampling_trial") {
             return CXGN::SamplingTrial->new($args);
         }
-        elsif (($val eq "genotype_data_project") || ($val eq "pcr_genotype_data_project")) {
+        elsif ($val && ($val eq "genotype_data_project" || $val eq "pcr_genotype_data_project")) {
             return CXGN::GenotypeDataProject->new($args);
         }
-        elsif ($val eq "drone_run") {
+        elsif ($val && $val eq "drone_run") {
             return CXGN::AerialImagingEventProject->new($args);
         }
-        elsif ($val eq "drone_run_band") {
+        elsif ($val && $val eq "drone_run_band") {
             return CXGN::AerialImagingEventBandProject->new($args);
         }
         else {

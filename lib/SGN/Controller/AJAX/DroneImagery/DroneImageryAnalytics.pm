@@ -8531,7 +8531,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 cache_root=>$c->config->{cache_file_path},
                                 accession_id_list=>\@accession_ids,
                                 protocol_id=>$protocol_id,
-                                get_grm_for_parental_accessions=>$compute_from_parents,
+                                get_grm_for_parental_accessions=>$compute_from_parents
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
