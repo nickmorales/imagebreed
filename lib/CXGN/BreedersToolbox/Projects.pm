@@ -8,11 +8,12 @@ use CXGN::People::Roles;
 use JSON;
 use Encode;
 use CXGN::PrivateCompany;
+use CXGN::Genotype::Protocol;
 
 has 'schema' => (
-		 is       => 'rw',
-		 isa      => 'DBIx::Class::Schema',
-		);
+    is       => 'rw',
+    isa      => 'DBIx::Class::Schema',
+);
 
 
 sub trial_exists {
@@ -694,15 +695,23 @@ sub get_project_year_cvterm_id {
 
 sub get_gt_protocols {
     my $self = shift;
-    my $genotyping_protocol_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->schema, 'genotyping_experiment', 'experiment_type')->cvterm_id();
-    my $rs = $self->schema->resultset("NaturalDiversity::NdProtocol")->search( { type_id => $genotyping_protocol_cvterm_id} );
+    my $schema = $self->schema;
+
+    my $genotyping_protocol_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'genotyping_experiment', 'experiment_type')->cvterm_id();
+    my $rs = $schema->resultset("NaturalDiversity::NdProtocol")->search( { type_id => $genotyping_protocol_cvterm_id} );
     #print STDERR "NdProtocol resultset rows:\n";
     my @protocols;
     while (my $row = $rs->next()) {
-	#print STDERR "Name: " . $row->name() . "\n";
-	#print STDERR "Name: " . $row->nd_protocol_id() . "\n";
-	#print STDERR $row;
-	push @protocols, [ $row->nd_protocol_id(), $row->name()];
+        my $protocol_id = $row->nd_protocol_id();
+
+        my $geno_protocol = CXGN::Genotype::Protocol->new({
+            bcs_schema => $schema,
+            nd_protocol_id => $protocol_id
+        });
+        my $is_grm_protocol = $geno_protocol->is_grm_protocol();
+
+        my $name = $is_grm_protocol ? $row->name()." (GRM Protocol)" : $row->name();
+        push @protocols, [ $protocol_id, $name];
     }
     return \@protocols;
 }

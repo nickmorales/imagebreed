@@ -28,11 +28,9 @@
                     </center>
                 </&>
                 <&| /util/workflow.mas:step, title=> "Analytics Reporting" &>
-                    <& /page/page_title.mas, title=>"View Analytics Protocols and Create a New One Below" &>
+                    <& /page/page_title.mas, title=>"Create a New Analytics Protocol" &>
 
-                    <div id="drone_imagery_analytics_analytics_protocols_select_div">Loading...</div>
-
-                    <& /page/page_title.mas, title=>"Define the Analysis to Run" &>
+                    <!--div id="drone_imagery_analytics_analytics_protocols_select_div">Loading...</div-->
 
                     <div class="well well-sm">
                         <div class="form-horizontal">
@@ -116,7 +114,7 @@
                         </div>
                     </div>
 
-                    <& /page/page_title.mas, title=>"Select the Aerial Image Phenotype(s) You Are Interested in. Only Select Time Points For a Single Variable!" &>
+                    <& /page/page_title.mas, title=>"Select the Aerial Image Phenotype(s). Only Select Time Points for a Single Variable!" &>
 
                     <div class="well well-sm">
                         <div class="form-horizontal">
@@ -525,7 +523,7 @@ jQuery(document).ready(function() {
 
             get_select_box('traits', 'drone_imagery_analytics_fixed_effect_trait_select_div', { 'name' : 'drone_imagery_analytics_fixed_effect_trait_select', 'id' : 'drone_imagery_analytics_fixed_effect_trait_select', 'empty':0, 'multiple':0, 'trial_ids':manage_drone_imagery_analytics_field_trial_id_string, 'stock_type':'plot' });
 
-            get_select_box('analytics_protocols', 'drone_imagery_analytics_analytics_protocols_select_div', { 'checkbox_name' : 'drone_imagery_analytics_analytics_protocols_select_id', 'analytics_protocol_type' : 'drone_imagery_analytics_env_simulation_protocol', 'limit':1, 'disabled':1 });
+            //get_select_box('analytics_protocols', 'drone_imagery_analytics_analytics_protocols_select_div', { 'checkbox_name' : 'drone_imagery_analytics_analytics_protocols_select_id', 'analytics_protocol_type' : 'drone_imagery_analytics_env_simulation_protocol', 'limit':1, 'disabled':1 });
 
             get_select_box('genotyping_protocol', 'drone_imagery_analytics_genotyping_protocol_select_div', { 'name' : 'drone_image_analytics_genotyping_protocol_select', 'id' : 'drone_image_analytics_genotyping_protocol_select', 'empty':1 });
 

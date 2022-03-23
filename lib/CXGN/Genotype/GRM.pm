@@ -25,7 +25,7 @@ $geno->download_grm();
 
 OR
 
-my $grm = $geno->get_grm();
+my $grm = $geno->_get_grm();
 
 =head1 DESCRIPTION
 
@@ -189,7 +189,8 @@ has 'return_only_first_genotypeprop_for_stock' => (
     default => 1
 );
 
-sub get_grm {
+
+sub _get_grm {
     my $self = shift;
     my $shared_cluster_dir_config = shift;
     my $backend_config = shift;
@@ -622,6 +623,8 @@ sub download_grm {
     my $grm_tempfile = $self->grm_temp_file();
     my $schema = $self->bcs_schema();
     my $protocol_id = $self->protocol_id();
+    my $accession_list = $self->accession_id_list();
+    my $plot_list = $self->plot_id_list();
 
     print STDERR "$download_format\n";
     my $version_string = "download_grm_v04";
@@ -640,6 +643,12 @@ sub download_grm {
     my $key = $self->grm_cache_key($target_key);
     $self->cache( Cache::File->new( cache_root => $self->cache_root() ));
 
+    my $geno_protocol = CXGN::Genotype::Protocol->new({
+        bcs_schema => $schema,
+        nd_protocol_id => $protocol_id
+    });
+    my $is_grm_protocol = $geno_protocol->is_grm_protocol();
+
     my $return;
     if ($self->cache()->exists($key)) {
         print STDERR "DOWNLOAD GRM CACHED\n";
@@ -651,28 +660,73 @@ sub download_grm {
         }
     }
     else {
-        print STDERR "DOWNLOAD GRM\n";
-        my ($grm_tempfile_out, $stock_ids, $all_accession_stock_ids) = $self->get_grm($shared_cluster_dir_config, $backend_config, $cluster_host_config, $web_cluster_queue_config, $basepath_config);
-        # print STDERR Dumper $stock_ids;
-        # print STDERR Dumper $all_accession_stock_ids;
-
         my %grm_hash;
-        open(my $fh, "<", $grm_tempfile_out) or die "Can't open < $grm_tempfile_out: $!";
-        my $row_num = 0;
-        while (my $row = <$fh>) {
-            chomp($row);
-            my @vals = split "\t", $row;
+        my $all_accession_stock_ids;
+        if ($is_grm_protocol) {
+            print STDERR "DOWNLOAD GRM protocol is GRM\n";
+            my $grm_relatedness = $geno_protocol->grm_stock_relatedness();
+            %grm_hash = %{$grm_relatedness->{data}};
 
-            my $a_stock_id = $stock_ids->[$row_num];
-            my $col_num = 0;
-            foreach my $val (@vals) {
-                my $b_stock_id = $stock_ids->[$col_num];
-                $grm_hash{$a_stock_id}->{$b_stock_id} = $val;
-                $grm_hash{$b_stock_id}->{$a_stock_id} = $val;
-                $col_num++;
+            if ($accession_list && scalar(@$accession_list)>0){
+                $all_accession_stock_ids = $accession_list;
             }
-            $row_num++;
+            elsif ($plot_list && scalar(@$plot_list)) {
+                my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'accession', 'stock_type')->cvterm_id();
+                my $plot_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot', 'stock_type')->cvterm_id();
+                my $plot_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot_of', 'stock_relationship')->cvterm_id();
+
+                my $plot_list_string = join ',', @$plot_list;
+                my $q = "SELECT plot.stock_id, accession.stock_id
+                    FROM stock AS plot
+                    JOIN stock_relationship AS plot_acc_rel ON(plot_acc_rel.subject_id=plot.stock_id AND plot_acc_rel.type_id=$plot_of_cvterm_id)
+                    JOIN stock AS accession ON(plot_acc_rel.object_id=accession.stock_id AND accession.type_id=$accession_cvterm_id)
+                    WHERE plot.type_id=$plot_cvterm_id AND plot.stock_id IN ($plot_list_string);";
+                my $h = $schema->storage->dbh()->prepare($q);
+                $h->execute();
+                my %plot_accession_ids;
+                while (my ($plot_stock_id, $accession_stock_id) = $h->fetchrow_array()) {
+                    $plot_accession_ids{$accession_stock_id}++;
+                }
+                my @seen_accession_ids = sort {$a <=> $b} keys %plot_accession_ids;
+                $all_accession_stock_ids = \@seen_accession_ids;
+            }
+            else {
+                my %seen_accession_ids;
+                while (my($a_stock_id, $a) = each %grm_hash) {
+                    while (my($b_stock_id, $val) = each %$a) {
+                        $seen_accession_ids{$a_stock_id}++;
+                        $seen_accession_ids{$b_stock_id}++;
+                    }
+                }
+                my @seen_accession_ids = sort {$a <=> $b} keys %seen_accession_ids;
+                $all_accession_stock_ids = \@seen_accession_ids;
+            }
         }
+        else {
+            print STDERR "DOWNLOAD GRM\n";
+            my ($grm_tempfile_out, $stock_ids, $all_accession_stock_ids_g) = $self->_get_grm($shared_cluster_dir_config, $backend_config, $cluster_host_config, $web_cluster_queue_config, $basepath_config);
+            $all_accession_stock_ids = $all_accession_stock_ids_g;
+
+            open(my $fh, "<", $grm_tempfile_out) or die "Can't open < $grm_tempfile_out: $!";
+            my $row_num = 0;
+            while (my $row = <$fh>) {
+                chomp($row);
+                my @vals = split "\t", $row;
+
+                my $a_stock_id = $stock_ids->[$row_num];
+                my $col_num = 0;
+                foreach my $val (@vals) {
+                    my $b_stock_id = $stock_ids->[$col_num];
+                    $grm_hash{$a_stock_id}->{$b_stock_id} = $val;
+                    $grm_hash{$b_stock_id}->{$a_stock_id} = $val;
+                    $col_num++;
+                }
+                $row_num++;
+            }
+            close($fh);
+        }
+        # print STDERR Dumper \%grm_hash;
+        # print STDERR Dumper $all_accession_stock_ids;
 
         my %all_names;
         my $q = "SELECT stock.uniquename, stock.stock_id
@@ -708,7 +762,7 @@ sub download_grm {
             my @matrix_uniquenames_row = ($s2);
             foreach my $c (@$all_accession_stock_ids) {
                 my $val;
-                if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                if (defined($grm_hash{$s}->{$c})) {
                     $val = $grm_hash{$s}->{$c};
                 }
                 elsif ($s == $c) {
@@ -742,7 +796,7 @@ sub download_grm {
             foreach my $c (@$all_accession_stock_ids) {
                 if (!exists($three_column_result_hash{$s}->{$c}) && !exists($three_column_result_hash{$c}->{$s})) {
                     my $val;
-                    if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                    if (defined($grm_hash{$s}->{$c})) {
                         $val = $grm_hash{$s}->{$c};
                     }
                     elsif ($s == $c) {
@@ -780,7 +834,7 @@ sub download_grm {
         foreach my $s (@$all_accession_stock_ids) {
             foreach my $c (@$all_accession_stock_ids) {
                 my $val;
-                if ($row_num>1 && defined($grm_hash{$s}->{$c})) {
+                if (defined($grm_hash{$s}->{$c})) {
                     $val = $grm_hash{$s}->{$c};
                 }
                 elsif ($s == $c) {
