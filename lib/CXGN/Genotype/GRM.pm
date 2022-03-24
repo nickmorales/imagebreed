@@ -229,6 +229,7 @@ sub _get_grm {
 
     my $max_processes_limit = 10;
     my $max_processes = ceil($number_system_cores/4) <= $max_processes_limit ? ceil($number_system_cores/4) : $max_processes_limit;
+    print STDERR "NUMCORES USE $max_processes\n";
 
     my @individuals_stock_ids;
     my @all_individual_accessions_stock_ids;
