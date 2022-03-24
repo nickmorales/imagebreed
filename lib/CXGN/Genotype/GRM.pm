@@ -282,6 +282,7 @@ sub _get_grm {
                         my $genotype_string_scores = join "\t", @row;
                         $genotype_string .= $genotype_string_scores . "\n";
                         write_file($grm_tempfile, {append => 1}, $genotype_string);
+                        sleep(1);
                         undef $genotypes->[$p];
                     }
                     undef $genotypes;
@@ -361,6 +362,7 @@ sub _get_grm {
                     my $genotype_string_scores = join "\t", @$progeny_genotype;
                     $genotype_string .= $genotype_string_scores . "\n";
                     write_file($grm_tempfile, {append => 1}, $genotype_string);
+                    sleep(1);
                     undef $progeny_genotype;
                 }
 
@@ -434,6 +436,7 @@ sub _get_grm {
                     my $genotype_string_scores = join "\t", @$progeny_genotype;
                     $genotype_string .= $genotype_string_scores . "\n";
                     write_file($grm_tempfile, {append => 1}, $genotype_string);
+                    sleep(1);
                     undef $progeny_genotype;
                 }
 
