@@ -282,7 +282,6 @@ sub _get_grm {
                         my $genotype_string_scores = join "\t", @row;
                         $genotype_string .= $genotype_string_scores . "\n";
                         write_file($grm_tempfile, {append => 1}, $genotype_string);
-                        sleep(1);
                         undef $genotypes->[$p];
                     }
                     undef $genotypes;
@@ -362,7 +361,6 @@ sub _get_grm {
                     my $genotype_string_scores = join "\t", @$progeny_genotype;
                     $genotype_string .= $genotype_string_scores . "\n";
                     write_file($grm_tempfile, {append => 1}, $genotype_string);
-                    sleep(1);
                     undef $progeny_genotype;
                 }
 
@@ -436,7 +434,6 @@ sub _get_grm {
                     my $genotype_string_scores = join "\t", @$progeny_genotype;
                     $genotype_string .= $genotype_string_scores . "\n";
                     write_file($grm_tempfile, {append => 1}, $genotype_string);
-                    sleep(1);
                     undef $progeny_genotype;
                 }
 
@@ -891,9 +888,9 @@ sub download_grm {
         $self->cache()->set($heatmap_key, '');
         my $file_handle = $self->cache()->handle($heatmap_key);
         copy($out_copy, $file_handle);
+        sleep(10);
         close $out_copy;
         print STDERR "CACHED GRM HEATMAP\n";
-        sleep(5);
 
         if ($return_type eq 'filehandle') {
             $return = $self->cache()->handle($key);
