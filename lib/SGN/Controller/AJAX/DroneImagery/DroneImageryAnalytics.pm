@@ -1044,7 +1044,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
             include_pedgiree_info_if_compute_from_parents => $c->req->param('include_pedgiree_info_if_compute_from_parents') eq 'yes' ? 1 : 0,
             use_parental_grms_if_compute_from_parents => $c->req->param('use_parental_grms_if_compute_from_parents') eq 'yes' ? 1 : 0,
             use_area_under_curve => $c->req->param('use_area_under_curve') eq 'yes' ? 1 : 0,
-            genotyping_protocol_id => $c->req->param('protocol_id'),
+            genotyping_protocol_id => $c->req->param('relationship_matrix_type') ? $c->req->param('protocol_id') : undef,
             tolparinv => $c->req->param('tolparinv'),
             legendre_order_number => $c->req->param('legendre_order_number'),
             permanent_environment_structure => $c->req->param('permanent_environment_structure'),
