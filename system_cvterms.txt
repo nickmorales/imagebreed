@@ -12,6 +12,7 @@ experiment_type	cross_experiment				00052
 experiment_type	field_layout				00052
 experiment_type	treatment_experiment				00081
 experiment_type	genotyping_experiment				00052
+experiment_type	grm_genotyping_protocol_experiment	For saving GRM genotyping protocols to field trials	03/25/2022	nm529	00160
 experiment_type	genotyping_layout				00052
 experiment_type	phenotyping_experiment				00052
 experiment_type	seedlot_experiment				00077

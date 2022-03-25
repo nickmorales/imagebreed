@@ -433,19 +433,32 @@ sub list {
 sub list_simple {
     print STDERR "Protocol list simple search\n";
     my $schema = shift;
+    my $only_grm_protocols = shift;
+    my $field_trial_ids = shift;
     my @where_clause;
 
     my $vcf_map_details_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'vcf_map_details', 'protocol_property')->cvterm_id();
     my $vcf_map_details_markers_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'vcf_map_details_markers', 'protocol_property')->cvterm_id();
     my $vcf_map_details_markers_array_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'vcf_map_details_markers_array', 'protocol_property')->cvterm_id();
     my $nd_protocol_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'genotyping_experiment', 'experiment_type')->cvterm_id();
+    my $grm_protocol_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'grm_genotyping_protocol_experiment', 'experiment_type')->cvterm_id();
     my $pcr_marker_protocol_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'pcr_marker_protocol', 'protocol_type')->cvterm_id();
     my $pcr_marker_details_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'pcr_marker_details', 'protocol_property')->cvterm_id();
+
+    my $field_trial_join = '';
+    my $field_trial_where = '';
+    if ($field_trial_ids) {
+        $field_trial_join = ' JOIN nd_experiment_protocol ON(nd_protocol.nd_protocol_id=nd_experiment_protocol.nd_protocol_id)
+            JOIN nd_experiment ON(nd_experiment.nd_experiment_id=nd_experiment_protocol.nd_experiment_id AND nd_experiment.type_id='.$grm_protocol_experiment_type_id.')
+            JOIN nd_experiment_project ON(nd_experiment.nd_experiment_id=nd_experiment_project.nd_experiment_id) ';
+        $field_trial_where = ' AND project_id IN('.$field_trial_ids.') ';
+    }
 
     my $q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.description, nd_protocol.create_date, nd_protocolprop.value->>'header_information_lines', nd_protocolprop.value->>'reference_genome_name', nd_protocolprop.value->>'species_name', nd_protocolprop.value->>'sample_observation_unit_type_name', jsonb_array_length(nd_protocolprop.value->'marker_names'), nd_protocolprop.value->>'marker_type', nd_protocolprop.value->>'is_grm'
         FROM nd_protocol
         LEFT JOIN nd_protocolprop ON(nd_protocolprop.nd_protocol_id = nd_protocol.nd_protocol_id AND nd_protocolprop.type_id IN (?,?))
-        WHERE nd_protocol.type_id IN (?,?)
+        $field_trial_join
+        WHERE nd_protocol.type_id IN (?,?) $field_trial_where
         ORDER BY nd_protocol.nd_protocol_id ASC;";
 
     my $h = $schema->storage->dbh()->prepare($q);
@@ -467,19 +480,22 @@ sub list_simple {
             $marker_type = 'SNP';
             $reference_genome_name = $reference_genome_name || 'Not set. Please reload these genotypes using new genotype format!';
         }
-        push @results, {
-            protocol_id => $protocol_id,
-            protocol_name => $protocol_name,
-            protocol_description => $protocol_description,
-            marker_count => $marker_count,
-            header_information_lines => $header_information_lines,
-            reference_genome_name => $reference_genome_name,
-            species_name => $species_name,
-            sample_observation_unit_type_name => $sample_observation_unit_type_name,
-            create_date => $create_date,
-            marker_type => $marker_type,
-            is_grm_protocol => $is_grm
-        };
+
+        if (!$only_grm_protocols || ($only_grm_protocols && $is_grm)) {
+            push @results, {
+                protocol_id => $protocol_id,
+                protocol_name => $protocol_name,
+                protocol_description => $protocol_description,
+                marker_count => $marker_count,
+                header_information_lines => $header_information_lines,
+                reference_genome_name => $reference_genome_name,
+                species_name => $species_name,
+                sample_observation_unit_type_name => $sample_observation_unit_type_name,
+                create_date => $create_date,
+                marker_type => $marker_type,
+                is_grm_protocol => $is_grm
+            };
+        }
     }
     #print STDERR "SIMPLE LIST =".Dumper \@results."\n";
     return \@results;

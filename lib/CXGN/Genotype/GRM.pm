@@ -50,7 +50,7 @@ use CXGN::Genotype::Search;
 use CXGN::Genotype::ComputeHybridGenotype;
 use R::YapRI::Base;
 use R::YapRI::Data::Matrix;
-use CXGN::Dataset::Cache;
+use CXGN::Dataset;
 use Cache::File;
 use Digest::MD5 qw | md5_hex |;
 use File::Slurp qw | write_file |;
@@ -255,7 +255,7 @@ sub _get_grm {
             foreach (@$accession_list) {
                 $pm->start and next LINKS;
 
-                my $dataset = CXGN::Dataset::Cache->new({
+                my $dataset = CXGN::Dataset->new({
                     people_schema=>$people_schema,
                     schema=>$schema,
                     cache_root=>$cache_root_dir,
@@ -335,7 +335,7 @@ sub _get_grm {
                 my $male_stock_id = $plot_male_stock_ids_found[$i];
                 my $plot_stock_id = $plot_stock_ids_found[$i];
 
-                my $dataset = CXGN::Dataset::Cache->new({
+                my $dataset = CXGN::Dataset->new({
                     people_schema=>$people_schema,
                     schema=>$schema,
                     cache_root=>$cache_root_dir,
@@ -408,7 +408,7 @@ sub _get_grm {
                 my $male_stock_id = $male_stock_ids_found[$i];
                 my $accession_stock_id = $accession_stock_ids_found[$i];
 
-                my $dataset = CXGN::Dataset::Cache->new({
+                my $dataset = CXGN::Dataset->new({
                     people_schema=>$people_schema,
                     schema=>$schema,
                     cache_root=>$cache_root_dir,
@@ -889,7 +889,7 @@ sub download_grm {
         $self->cache()->set($heatmap_key, '');
         my $file_handle = $self->cache()->handle($heatmap_key);
         copy($out_copy, $file_handle);
-        sleep(10);
+        sleep(5);
         close $out_copy;
         print STDERR "CACHED GRM HEATMAP\n";
 

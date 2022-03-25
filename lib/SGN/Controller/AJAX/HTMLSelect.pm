@@ -1476,14 +1476,17 @@ sub get_genotyping_protocol_select : Path('/ajax/html/select/genotyping_protocol
     my $self = shift;
     my $c = shift;
     my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
 
     my $id = $c->req->param("id") || "gtp_select";
     my $name = $c->req->param("name") || "genotyping_protocol_select";
     my $empty = $c->req->param("empty") || "";
+    my $only_grm_protocols = $c->req->param("only_grm_protocols");
+    my $field_trial_ids_string = $c->req->param("field_trial_ids");
     my $default_gtp;
     my %gtps;
 
-    my $gt_protocols = CXGN::BreedersToolbox::Projects->new( { schema => $c->dbic_schema("Bio::Chado::Schema", "sgn_chado")} )->get_gt_protocols();
+    my $gt_protocols = CXGN::BreedersToolbox::Projects->new({schema => $schema})->get_gt_protocols($only_grm_protocols, $field_trial_ids_string);
 
     if (@$gt_protocols) {
         $default_gtp = $c->config->{default_genotyping_protocol};

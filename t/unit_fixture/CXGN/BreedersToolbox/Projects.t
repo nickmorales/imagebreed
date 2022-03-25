@@ -270,7 +270,7 @@ is_deeply($bp_projects, [
           ]
         ], 'get bps');
 
-my $gt_protocols = $p->get_gt_protocols();
+my $gt_protocols = $p->get_gt_protocols(undef, undef);
 #print STDERR Dumper $gt_protocols;
 is_deeply($gt_protocols, [
           [

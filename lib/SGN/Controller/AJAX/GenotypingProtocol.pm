@@ -49,6 +49,32 @@ sub genotyping_protocol_grm_genotype_relationships_GET : Args(1) {
    $c->stash->{rest} = {grm => $grm};
 }
 
+sub genotyping_protocol_grm_protocols_table : Path('/ajax/genotyping_protocol/grm_protocols_table') : ActionClass('REST') { }
+sub genotyping_protocol_grm_protocols_table_GET : Args(1) {
+   my $self = shift;
+   my $c = shift;
+   my $protocol_id = shift;
+   my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+   my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_protocol($c, 'user', 0, 0);
+   my $field_trial_ids = $c->req->param('field_trial_ids');
+
+   my $protocols = CXGN::Genotype::Protocol::list_simple($bcs_schema, 1, $field_trial_ids);
+   print STDERR Dumper $protocols;
+
+   my @result;
+   foreach (@$protocols) {
+       my $protocol_id = $_->{protocol_id};
+       my $protocol_name = $_->{protocol_name};
+       push @result, [
+            "<a href='/breeders_toolbox/protocol/$protocol_id'>$protocol_name</a>",
+            $_->{protocol_description},
+            $_->{create_date}
+        ];
+   }
+
+   $c->stash->{rest} = {data=>\@result};
+}
+
 sub genotyping_protocol_delete : Path('/ajax/genotyping_protocol/delete') : ActionClass('REST') { }
 sub genotyping_protocol_delete_GET : Args(1) {
     my $self = shift;

@@ -1,0 +1,141 @@
+<%args>
+$trial_id
+</%args>
+
+<table class="table table-bordered table-hover" id="trial_genomic_relationships_table" style="width:100%">
+    <thead>
+        <tr>
+            <th>Protocol Name</th>
+            <th>Description</th>
+            <th>Create Date</th>
+        </tr>
+    </thead>
+</table>
+
+<hr>
+
+<div class="well well-sm">
+    <div class="form-horizontal">
+        <div class="form-group form-group-sm">
+            <label class="col-sm-3 control-label">GRM Genotyping Protocol: </label>
+            <div class="col-sm-9" >
+                <div id="trial_genomic_relationships_grm_protocol_select"></div>
+            </div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-3 control-label">Minimum Hue (0-360): </label>
+            <div class="col-sm-9" >
+                <input class="form-control" type="number" id="trial_grm_relationships_min_color" value=0 />
+            </div>
+        </div>
+        <div class="form-group form-group-sm">
+            <label class="col-sm-3 control-label">Maximum Hue (0-360): </label>
+            <div class="col-sm-9" >
+                <input class="form-control" type="number" id="trial_grm_relationships_max_color" value=160 />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="trial_grm_relationships_div">
+</div>
+
+<script>
+
+jQuery(document).ready(function() {
+
+    jQuery(document).on('click', '#trial_detail_genomic_relationships_onswitch', function(){
+
+        get_select_box('genotyping_protocol', 'trial_genomic_relationships_grm_protocol_select', { 'name' : 'trial_genomic_relationships_grm_protocol_select_id', 'id' : 'trial_genomic_relationships_grm_protocol_select_id', 'only_grm_protocols':1, 'empty':1, 'field_trial_ids':<% $trial_id %> });
+
+        jQuery('#trial_genomic_relationships_table').DataTable({
+            'ajax': { 'url': '/ajax/genotyping_protocol/grm_protocols_table?field_trial_ids=<% $trial_id %>' }
+        });
+
+    });
+
+    var protocol_id;
+    jQuery(document).on('change', '#trial_genomic_relationships_grm_protocol_select_id', function(){
+        protocol_id = jQuery(this).val();
+        render_genotype_relationships();
+    });
+
+    jQuery('#trial_grm_relationships_min_color').change(function(){
+        render_genotype_relationships();
+    });
+
+    jQuery('#trial_grm_relationships_max_color').change(function(){
+        render_genotype_relationships();
+    });
+
+    function render_genotype_relationships() {
+        jQuery.ajax({
+            url : '/ajax/genotyping_protocol/grm_genotype_relationships/'+protocol_id,
+            beforeSend : function(){
+                jQuery('#working_modal').modal('show');
+            },
+            success: function(response){
+                console.log(response);
+                jQuery('#working_modal').modal('hide');
+                if (response.error) {
+                    alert(response.error);
+                }
+                else {
+                    var min_val = response.grm.min;
+                    var max_val = response.grm.max;
+                    var range = max_val - min_val;
+                    var min_hue = jQuery('#trial_grm_relationships_min_color').val();
+                    var max_hue = jQuery('#trial_grm_relationships_max_color').val();
+
+                    var html = '<table class="table table-bordered table-hover"><thead><tr><th>Accessions</th>';
+
+                    for (var a_stock_id in response.grm.a_stock_id_map) {
+                        if (response.grm.a_stock_id_map.hasOwnProperty(a_stock_id)) {
+                            var a_uniquename = response.grm.a_stock_id_map[a_stock_id];
+                            html = html + '<th>'+a_uniquename+'</th>';
+                        }
+                    }
+
+                    html = html + '</tr></thead><tbody>';
+
+                    for (var b_stock_id in response.grm.b_stock_id_map) {
+                        if (response.grm.b_stock_id_map.hasOwnProperty(b_stock_id)) {
+                            var b_uniquename = response.grm.b_stock_id_map[b_stock_id];
+
+                            html = html + '<tr><td>'+b_uniquename+'</td>'
+
+                            for (var a_stock_id in response.grm.a_stock_id_map) {
+                                if (response.grm.a_stock_id_map.hasOwnProperty(a_stock_id)) {
+                                    var a_uniquename = response.grm.a_stock_id_map[a_stock_id];
+
+                                    var value = response.grm.data[b_stock_id][a_stock_id] - min_val;
+                                    var val_frac = value/range;
+                                    var color = percentageToColor(val_frac, max_hue, min_hue);
+
+                                    html = html + '<td style="background-color:'+color+'">'+value+'</td>';
+                                }
+                            }
+
+                            html = html + '</tr>';
+                        }
+                    }
+                    html = html + '</tbody></table>';
+
+                    jQuery('#trial_grm_relationships_div').html(html);
+                }
+            },
+            error: function(response){
+                jQuery('#working_modal').modal('hide');
+                alert('Error getting genotype relationships for trial!');
+            }
+        });
+    }
+
+    function percentageToColor(percentage, maxHue = 160, minHue = 0) {
+        const hue = percentage * (maxHue - minHue) + minHue;
+        return `hsl(${hue}, 100%, 50%)`;
+    }
+
+});
+
+</script>

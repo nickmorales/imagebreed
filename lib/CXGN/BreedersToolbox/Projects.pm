@@ -695,23 +695,42 @@ sub get_project_year_cvterm_id {
 
 sub get_gt_protocols {
     my $self = shift;
+    my $only_grm_protocols = shift;
+    my $field_trial_ids_string = shift;
     my $schema = $self->schema;
 
-    my $genotyping_protocol_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'genotyping_experiment', 'experiment_type')->cvterm_id();
-    my $rs = $schema->resultset("NaturalDiversity::NdProtocol")->search( { type_id => $genotyping_protocol_cvterm_id} );
-    #print STDERR "NdProtocol resultset rows:\n";
+    my $vcf_map_details_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'vcf_map_details', 'protocol_property')->cvterm_id();
+    my $nd_protocol_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'genotyping_experiment', 'experiment_type')->cvterm_id();
+    my $grm_protocol_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'grm_genotyping_protocol_experiment', 'experiment_type')->cvterm_id();
+    my $pcr_marker_protocol_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'pcr_marker_protocol', 'protocol_type')->cvterm_id();
+    my $pcr_marker_details_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'pcr_marker_details', 'protocol_property')->cvterm_id();
+
+    my $field_trial_join = '';
+    my $field_trial_where = '';
+    if ($field_trial_ids_string) {
+        $field_trial_join = ' JOIN nd_experiment_protocol ON(nd_protocol.nd_protocol_id=nd_experiment_protocol.nd_protocol_id)
+            JOIN nd_experiment ON(nd_experiment.nd_experiment_id=nd_experiment_protocol.nd_experiment_id AND nd_experiment.type_id='.$grm_protocol_experiment_type_id.')
+            JOIN nd_experiment_project ON(nd_experiment.nd_experiment_id=nd_experiment_project.nd_experiment_id) ';
+        $field_trial_where = ' AND project_id IN('.$field_trial_ids_string.') ';
+    }
+
+    my $q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocolprop.value->>'is_grm'
+        FROM nd_protocol
+        LEFT JOIN nd_protocolprop ON(nd_protocolprop.nd_protocol_id = nd_protocol.nd_protocol_id AND nd_protocolprop.type_id IN (?,?))
+        $field_trial_join
+        WHERE nd_protocol.type_id IN (?,?) $field_trial_where
+        ORDER BY nd_protocol.nd_protocol_id ASC;";
+
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute($vcf_map_details_cvterm_id, $pcr_marker_details_type_id, $nd_protocol_type_id, $pcr_marker_protocol_type_id);
+
     my @protocols;
-    while (my $row = $rs->next()) {
-        my $protocol_id = $row->nd_protocol_id();
+    while (my ($protocol_id, $protocol_name, $is_grm_protocol) = $h->fetchrow_array()) {
+        my $name = $is_grm_protocol ? $protocol_name." (GRM Protocol)" : $protocol_name;
 
-        my $geno_protocol = CXGN::Genotype::Protocol->new({
-            bcs_schema => $schema,
-            nd_protocol_id => $protocol_id
-        });
-        my $is_grm_protocol = $geno_protocol->is_grm_protocol();
-
-        my $name = $is_grm_protocol ? $row->name()." (GRM Protocol)" : $row->name();
-        push @protocols, [ $protocol_id, $name];
+        if (!$only_grm_protocols || ($only_grm_protocols && $is_grm_protocol)) {
+            push @protocols, [ $protocol_id, $name];
+        }
     }
     return \@protocols;
 }
