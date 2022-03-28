@@ -298,7 +298,7 @@ sub next_genotype {
     my $self = shift;
     my %genotypeprop_observation_units;
     my $observation_unit_names = $self->observation_unit_names;
-    
+
     my $line;
     my $F = $self->_fh();
 
@@ -341,7 +341,9 @@ sub next_genotype {
                 my %value;
                 @value{@format} = @fvalues;
                 my $gt_dosage_val = 'NA';
+                my $gt_dosage_alt_val = 'NA';
                 my $gt_dosage = 0;
+                my $gt_dosage_alt = 0;
                 if (exists($value{'GT'})) {
                     my $gt = $value{'GT'};
                     my $separator = '/';
@@ -361,6 +363,9 @@ sub next_genotype {
                             if ($_ eq '0' || $_ == 0) {
                                 $gt_dosage++;
                             }
+                            if ($_ ne '0' && $_ != 0) {
+                                $gt_dosage_alt++;
+                            }
                             my $index = $_ + 0;
                             if ($index == 0) {
                                 push @nucleotide_genotype, $marker_info[3]; #Using Reference Allele
@@ -370,6 +375,7 @@ sub next_genotype {
                                 push @alt_calls, $separated_alts[$index-1];
                             }
                             $gt_dosage_val = $gt_dosage;
+                            $gt_dosage_alt_val = $gt_dosage_alt;
                         } else {
                             push @nucleotide_genotype, $_;
                         }
@@ -379,14 +385,15 @@ sub next_genotype {
                         @nucleotide_genotype = (@ref_calls, @alt_calls);
                     }
                     $value{'NT'} = join $separator, @nucleotide_genotype;
+                    $value{'DA'} = $gt_dosage_alt_val;
                 }
                 if (exists($value{'GT'}) && !looks_like_number($value{'DS'})) {
                     $value{'DS'} = $gt_dosage_val;
                 }
-                if (looks_like_number($value{'DS'})) {
-                    my $rounded_ds = round($value{'DS'});
-                    $value{'DS'} = "$rounded_ds";
-                }
+                # if (looks_like_number($value{'DS'})) {
+                    # my $rounded_ds = round($value{'DS'});
+                    # $value{'DS'} = "$rounded_ds";
+                # }
                 $genotypeprop_observation_units{$observation_unit_names->[$i]}->{$chrom}->{$marker_name} = \%value;
             }
         }

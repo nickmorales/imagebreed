@@ -42,10 +42,17 @@ has 'marker_objects' => (
     required => 1
 );
 
+has 'genotypeprop_hash_dosage_key' => (
+    isa => 'Str',
+    is => 'ro',
+    default => 'DS' #DS is REF dosage and DA is ALT dosage
+);
+
 sub get_hybrid_genotype {
     my $self = shift;
     my $parental_genotypes = $self->parental_genotypes();
     my $marker_objects = $self->marker_objects();
+    my $dosage_key = $self->genotypeprop_hash_dosage_key();
 
     # print STDERR Dumper $parental_genotypes;
 
@@ -64,7 +71,7 @@ sub get_hybrid_genotype {
                 my $marker_name = $m->{name};
                 my @avg_ds;
                 foreach my $g (@$genos) {
-                    my $ds = $g->{$marker_name}->{DS} ne 'NA' ? $g->{$marker_name}->{DS} : undef;
+                    my $ds = $g->{$marker_name}->{$dosage_key} ne 'NA' ? $g->{$marker_name}->{$dosage_key} : undef;
                     if (defined($ds)) {
                         push @avg_ds, $ds;
                     }
@@ -76,7 +83,7 @@ sub get_hybrid_genotype {
                 else {
                     $avg_ds_val = 'NA';
                 }
-                $averaged_parent_geno{$marker_name} = {DS => $avg_ds_val};
+                $averaged_parent_geno{$marker_name} = {$dosage_key => $avg_ds_val};
             }
             push @parental_genotypes_averaged, {
                 selected_genotype_hash => \%averaged_parent_geno
@@ -91,9 +98,9 @@ sub get_hybrid_genotype {
         my $parent1_genotype = $parental_genotypes->[0]->{selected_genotype_hash};
         my $parent2_genotype = $parental_genotypes->[1]->{selected_genotype_hash};
         foreach my $m (@$marker_objects) {
-            if ($parent1_genotype->{$m->{name}}->{DS} ne 'NA' || $parent2_genotype->{$m->{name}}->{DS} ne 'NA') {
-                my $p1 = $parent1_genotype->{$m->{name}}->{DS} ne 'NA' ? $parent1_genotype->{$m->{name}}->{DS} : 0;
-                my $p2 = $parent2_genotype->{$m->{name}}->{DS} ne 'NA' ? $parent2_genotype->{$m->{name}}->{DS} : 0;
+            if ($parent1_genotype->{$m->{name}}->{$dosage_key} ne 'NA' || $parent2_genotype->{$m->{name}}->{$dosage_key} ne 'NA') {
+                my $p1 = $parent1_genotype->{$m->{name}}->{$dosage_key} ne 'NA' ? $parent1_genotype->{$m->{name}}->{$dosage_key} : 0;
+                my $p2 = $parent2_genotype->{$m->{name}}->{$dosage_key} ne 'NA' ? $parent2_genotype->{$m->{name}}->{$dosage_key} : 0;
                 push @progeny_genotype, ($p1 + $p2) / 2;
             }
             else {
@@ -104,8 +111,8 @@ sub get_hybrid_genotype {
     elsif ($parental_genotypes->[0]) {
         my $parent1_genotype = $parental_genotypes->[0]->{selected_genotype_hash};
         foreach my $m (@$marker_objects) {
-            if ($parent1_genotype->{$m->{name}}->{DS} ne 'NA') {
-                my $val = $parent1_genotype->{$m->{name}}->{DS};
+            if ($parent1_genotype->{$m->{name}}->{$dosage_key} ne 'NA') {
+                my $val = $parent1_genotype->{$m->{name}}->{$dosage_key};
                 push @progeny_genotype, $val/2;
             }
             else {

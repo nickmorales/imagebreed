@@ -612,7 +612,7 @@ sub simple_checkbox_html {
   Desc:
   Args:	an ordered list of value names => values
   Ret :	html to produce an attractive table laying out these values
-  Used in:  clone_info.pl, clone_read_info.pl
+  Used in:  
   Example:
 
     my $info_html = info_table_html( 'Clone name' => $clone->name ,

@@ -137,8 +137,7 @@ EOHTML
 
     print info_section_html( title => 'Sequencer Tools', contents => <<EOHTML);
 <a href="attribute_bacs.pl">Attribute a BAC to your chromosome sequencing project</a><br />
-<a href="/maps/physical/clone_il_view.pl">View/update BAC IL mapping information (list view)</a><br />
-<div style="vertical-align: middle; font-weight: bold"><a href="/maps/physical/clone_reg.pl">View/update all BAC registry info (list view) <img style="border: none" src="/documents/img/new.gif" /></a></div>
+<div style="vertical-align: middle; font-weight: bold"></div>
 $tpf_agp_upload
 EOHTML
 }

@@ -5,7 +5,7 @@
 <a href="http://www.potatogenome.net">Potato Genome Sequence Released</a>
 </div>
 <div class="boxsubcontent">
-The Potato Genome Sequencing Consortium has released the first draft sequence of the potato genome, available at <a href="http://www.potatogenome.net">www.potatogenome.net</a>. [September 23, 2009] 
+The Potato Genome Sequencing Consortium has released the first draft sequence of the potato genome, available at <a href="http://www.potatogenome.net">www.potatogenome.net</a>. [September 23, 2009]
 </div>
 
 <div class="subheading">
@@ -28,7 +28,7 @@ The SOL newsletter for September 2009 is <a href="/solanaceae-project/index.pl#S
 <a href="ftp://ftp.sgn.cornell.edu/potato_genome">Potato Genome data on SGN</a>
 </div>
 <div class="boxsubcontent">
-BAC end and BAC sequence data from the <a href="http://www.potatogenome.net"  target="_blank">Potato Genome Sequencing Consortium</a> available on the SGN <a href="ftp://ftp.sgn.cornell.edu/potato_genome/" >FTP</a> and SGN <a href="/tools/blast/">BLAST</a> servers [Sep 15, 2009]. 
+BAC end and BAC sequence data from the <a href="http://www.potatogenome.net"  target="_blank">Potato Genome Sequencing Consortium</a> available on the SGN <a href="ftp://ftp.sgn.cornell.edu/potato_genome/" >FTP</a> and SGN <a href="/tools/blast/">BLAST</a> servers [Sep 15, 2009].
 </div>
 
 <div class="subheading">
@@ -277,7 +277,7 @@ Several <a href="/cview/">new tomato maps</a>, such as the <a href="/cview/map.p
 <a href="http://www.jspcmb.jp/english/pbcontents/pb24_1.html">Special JSOL issue published</a>
 </div>
 <div class="boxsubcontent">
-The Japanese SOL project (JSOL) contributed <a href="http://www.jspcmb.jp/english/pbcontents/pb24_1.html">a special issue</a> related to progress on tomato and Solanaceae genomics in the official <a href="http://www.jspcmb.jp/english/index.html">journal of the Japanese Society of Plant Cell and Molecular Biology</a>. [May 14, 2007] 
+The Japanese SOL project (JSOL) contributed <a href="http://www.jspcmb.jp/english/pbcontents/pb24_1.html">a special issue</a> related to progress on tomato and Solanaceae genomics in the official <a href="http://www.jspcmb.jp/english/index.html">journal of the Japanese Society of Plant Cell and Molecular Biology</a>. [May 14, 2007]
 </div>
 
 <div class="subheading">
@@ -481,9 +481,9 @@ The SOL Newsletter for November is now available [Nov 7, 2005]
 <a href="/forum/topics.pl">New SOL Forum</a>
 </div>
 <div class="boxsubcontent">
-We've created a forum for public discussions, job listings, etc. 
+We've created a forum for public discussions, job listings, etc.
 It's brand new and still under development, so feel free to try it out and let us know if you have any problems.
-<a href="/solpeople/login.pl">Log in</a> 
+<a href="/solpeople/login.pl">Log in</a>
 to contribute.
 </div>
 
@@ -498,14 +498,14 @@ to contribute.
 New Toolbar Menu
 </div>
 <div class="boxsubcontent">
-We have updated and simplified the design of our 
-site-wide menu bar that appears at the top of every 
-page.  Links to some pages have been moved to the 
-<b>Getting Started</b> area on the left side of the 
-SGN front page. 
+We have updated and simplified the design of our
+site-wide menu bar that appears at the top of every
+page.  Links to some pages have been moved to the
+<b>Getting Started</b> area on the left side of the
+SGN front page.
 <p style="margin-top: 0.5em">
 We would love to hear any comments
-you may have about the new design!  Just 
+you may have about the new design!  Just
 <a href="mailto:sgn-feedback@sgn.cornell.edu">email us</a>.
 </p>
 </div>
@@ -547,32 +547,12 @@ available. Markers can be searched by name, position,
 	available on SGN. The map was submitted by Prof Kim of the
 	Seoul National Univeristy in Korea.</p>
 
-	<p><strong><a href="/cview/index.pl">Updated
-	Physical Map</a></strong> Jun, 2004<br />
-	A total of <a href="/maps/physical/overgo_stats.pl">11
-	Overgo Plates</a> have now been loaded. Overall, <a href=
-	"/maps/physical/list_bacs_by_plate.pl">4,908 BAC's</a>
-	are now anchored to the F2.2000 genetic map. Additionally, we
-	have added an <a href=
-	"/maps/physical/list_overgo_plate_probes.pl">Overgo
-	Plate browser</a> and an <a href=
-	"/maps/physical/overgo_process_explained.pl">explanation
-	page</a> describing the Overgo Plating process.</p>
-
 	<p><strong><a href=
 	"http://rubisco.sgn.cornell.edu/mailman/listinfo/sol-forum">SOL
 	Forum mailing list</a></strong> Apr, 2004<br />
 	A new mailing list for the Solanaceae community where list
 	members can post messages. <a href=
 	"http://rubisco.sgn.cornell.edu/mailman/listinfo/sol-forum">Subscribe</a>.</p>
-
-	<p><strong><a href="/cview/index.pl">Updated
-	Physical Map</a></strong> Apr, 2004<br />
-	Four more <a href=
-	"/maps/physical/overgo_stats.pl">Overgo Plates</a> have
-	been added to our collection. There are now a total of <a href=
-	"/maps/physical/list_bacs_by_plate.pl">3,999 BAC's</a>
-	anchored to the F2.2000 genetic map.</p>
 
 	<p><strong><a href="/content/sgn_data.pl">New EST Data
 	Available</a></strong> Feb, 2004<br />

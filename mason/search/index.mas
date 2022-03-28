@@ -9,13 +9,13 @@
 
 Arguments:
 
-=over 5 
+=over 5
 
-=item * 
+=item *
 
 $search - the search form to display. One of: loci, phenotypes, cvterm_name, unigene, family, markers, bacs, est_library, images, directory,template_experiment_platform
 
-=item * 
+=item *
 
 $dbh - a database handle.
 
@@ -43,7 +43,6 @@ my %tabcomps = (
             unigene     => '/search/forms/unigene_tab.mas',
             family      => '/search/forms/family_tab.mas',
             markers     => '/search/forms/marker_tab.mas',
-            bacs        => '/search/forms/bac_tab.mas',
             est_library => '/search/forms/est_library_submenu.mas',
             images      => '/search/forms/images_tab.mas',
             directory   => '/search/forms/directory_tab.mas'
@@ -66,5 +65,3 @@ unless exists($tabcomps{$search}) {
 <%cleanup>
 
 </%cleanup>
-
-

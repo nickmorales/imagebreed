@@ -2,7 +2,7 @@
 
 <p>
 The <a href="/search/markers/markersearch.pl">marker search</a> is a
-tool for locating markers in SGN's database. 
+tool for locating markers in SGN's database.
 </p>
 
 <img src="/documents/help/screenshots/marker_search_form.png" alt="screenshot of marker search form" style="margin: auto; border: 1px solid black;" />
@@ -19,13 +19,12 @@ The search is not case-sensitive; "Tm2" and "TM2" are equivalent searches, thoug
 
 <h4>2. BAC associations</h4>
 <p>
-Some markers have been associated with BACS from the <a href="/about/tomato_sequencing.pl">tomato sequencing project</a>. Most of these associations come from the <a href="http://siren/maps/physical/overgo_process_explained.pl">overgo plating process</a> in which markers were hybridized to BAC DNA. Other associations are computational, meaning they were made by BLAST comparisons. Still others are "manual" associations, meaning they were associated in some other way and then entered into our database. 
 </p>
 
 
 <h4>3. Species</h4>
 <p>
-In this multiple-select box you will see a list of the common names of species (or groups of species, such as "tomato") that make up the mapping populations in our collection of maps. Selecting a species here limits your search results to markers that have been mapped in that species. 
+In this multiple-select box you will see a list of the common names of species (or groups of species, such as "tomato") that make up the mapping populations in our collection of maps. Selecting a species here limits your search results to markers that have been mapped in that species.
 </p>
 
 
@@ -56,7 +55,7 @@ Choose a chromosome from this box to limit results to markers mapped on that chr
 
 <h4>7. Position</h4>
 <p>
-If you are interested in a particular region of the chromosome, enter the bounds of that region here. 
+If you are interested in a particular region of the chromosome, enter the bounds of that region here.
 </p>
 
 
@@ -70,5 +69,3 @@ Some of our markers have a confidence assigned by the mapping program MapMaker. 
 <p>
 This multiple-select box shows a list of our available maps. For more information on these maps, see the <a href="/cview/">map overview page</a>.
 </p>
-
-

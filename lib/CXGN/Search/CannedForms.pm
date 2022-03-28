@@ -2,7 +2,6 @@ package CXGN::Search::CannedForms;
 use Modern::Perl;
 
 use CXGN::DB::Connection;
-use CXGN::Genomic::Search::Clone;
 use CXGN::Searches::People;
 use CXGN::Searches::Library;
 use CXGN::Searches::Images;
@@ -367,33 +366,6 @@ sub clone_search_form {
     my $page = shift;    #pointer to our page
     my $q    = shift;
 
-    $q ||= CXGN::Genomic::Search::Clone->new->new_query;
-
-    return <<EOH
-  <table class="search_form_title" summary=""><tr><td>
-    <span class="search_form_title">Genomic Clone Search</span>
-  </td><td align="right">
-    <a class="search_form_random" href="/maps/physical/clone_info.pl?random=yes">
-    Select a genomic clone at random
-    </a>
-  </td></tr></table>
-
-<form action="/maps/physical/clone_search.pl" method="get">
-  <div class="indentedcontent">
-EOH
-      . $q->to_html . <<EOH;
-    <h3>Related Links:</h3>
-    <ul>
-    <li><a href="/maps/physical/list_bacs_by_plate.pl">Browse BACs by Overgo Plate</a></li>
-    <li><a href="/cview/map.pl?map_id=1&amp;physical=1">About Physical Mapping</a></li>
-    <li><a href="/maps/physical/overgo_stats.pl">Overgo Project</a></li>
-    <li><a href="/maps/physical/overgo_process_explained.pl">Overgo plating process</a></li>
-    <li><a href="http://www.genome.arizona.edu/fpc/tomato/">Tomato FPC Map at AGI</a></li>
-    <li><a href="/supplement/plantcell-14-1441/bac_annotation.pl">Old (2000) chromosome 6 tomato BAC annotation</a></li>
-    </ul>
-  </div>
-</form>
-EOH
 }
 
 =head2 unigene_search_form
@@ -616,7 +588,6 @@ sub to_html {
   </div>
 
   <h3 style="margin-bottom: 0; padding-bottom: 0;margin-top: 30px;">Advanced Search Options</h3>
-  <div ><small>(Questions? See the <a href="/help/marker_search_help.pl">help page</a>)</small></div>
   <br/>
   <div class="row well">
     <div class="col-sm-6">
@@ -630,7 +601,7 @@ EOHTML
     Show only markers with BAC associations<br />
       <div style="margin-left: 20px;">
         $checkbox{overgo_assoc}
-        <span class="help" title="The overgo process associates BACs with certain markers from SGN tomato maps.">Overgo associations<small> <a href="/maps/physical/overgo_process_explained.pl">[About the overgo process]</a></small></span><br />
+        <span class="help" title="The overgo process associates BACs with certain markers from SGN tomato maps.">Overgo associations<small> </small></span><br />
 
         $checkbox{manual_assoc}
         <span class="help" title="Some markers have been manually associated with BACs.">Manual associations</span><br />

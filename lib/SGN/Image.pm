@@ -952,13 +952,8 @@ sub get_associated_object_links {
         if ($assoc->[0] eq "stock") {
             $s .= "<a href=\"/stock/$assoc->[1]/view\">Stock name: $assoc->[2].</a>";
         }
-
         if ($assoc->[0] eq "experiment") {
             $s .= "<a href=\"/insitu/detail/experiment.pl?experiment_id=$assoc->[1]&amp;action=view\">insitu experiment $assoc->[2]</a>";
-        }
-
-        if ($assoc->[0] eq "fished_clone") {
-            $s .= qq { <a href="/maps/physical/clone_info.pl?id=$assoc->[1]">FISHed clone id:$assoc->[1]</a> };
         }
         if ($assoc->[0] eq "locus" ) {
             $s .= qq { <a href="/phenome/locus_display.pl?locus_id=$assoc->[1]">Locus name:$assoc->[2]</a> };

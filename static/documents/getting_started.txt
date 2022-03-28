@@ -48,7 +48,6 @@ Tomato genome
 <div class="boxsubcontent">
 <a class="creativitylinks" href="/about/tomato_sequencing.pl">Sequencing progress</a><br />
 <a class="creativitylinks" href="/search/direct_search.pl?search=BACs">Search BACs</a><br />
-<a class="creativitylinks" href="/maps/physical/overgo_process_explained.pl">Overgo plating process</a><br />
 <a class="creativitylinks" href="/gbrowse/">Genome browser</a><br />
 </div>
 <div class="subheading">

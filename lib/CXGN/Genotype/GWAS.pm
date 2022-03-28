@@ -169,6 +169,12 @@ has 'genotypeprop_hash_select' => (
     default => sub {['DS']} #THESE ARE THE GENERIC AND EXPECTED VCF ATRRIBUTES. For dosage matrix we only need DS
 );
 
+has 'genotypeprop_hash_dosage_key' => (
+    isa => 'Str',
+    is => 'ro',
+    default => 'DS' #DS is REF dosage and DA is ALT dosage
+);
+
 has 'protocolprop_top_key_select' => (
     isa => 'ArrayRef[Str]',
     is => 'ro',
@@ -206,6 +212,7 @@ sub _get_gwas {
     my $pheno_tempfile = $self->pheno_temp_file();
     my $download_format = $self->download_format();
     my $traits_are_repeated_measurements = $self->traits_are_repeated_measurements();
+    my $dosage_key = $self->genotypeprop_hash_dosage_key;
 
     my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'accession', 'stock_type')->cvterm_id();
     my $plot_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot', 'stock_type')->cvterm_id();
@@ -294,7 +301,7 @@ sub _get_gwas {
                 cache_root=>$cache_root_dir,
                 accessions=>[$_]
             });
-            my $genotypes = $dataset->retrieve_genotypes($protocol_id, ['DS'], ['markers'], ['name','chrom','pos'], 1, [], undef, undef, []);
+            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name','chrom','pos'], 1, [], undef, undef, []);
 
             if (scalar(@$genotypes)>0) {
 
@@ -331,7 +338,7 @@ sub _get_gwas {
                     my $genotype_id = $geno->{stock_id};
                     my $genotype_data_string = "";
                     foreach my $m (@all_marker_objects) {
-                        $genotype_data_string .= $geno->{selected_genotype_hash}->{$m->{name}}->{'DS'}."\t";
+                        $genotype_data_string .= $geno->{selected_genotype_hash}->{$m->{name}}->{$dosage_key}."\t";
                     }
                     $genotype_string .= $genotype_id."\t".$genotype_data_string."\n";
 
@@ -383,7 +390,7 @@ sub _get_gwas {
                 cache_root=>$cache_root_dir,
                 accessions=>[$female_stock_id, $male_stock_id]
             });
-            my $genotypes = $dataset->retrieve_genotypes($protocol_id, ['DS'], ['markers'], ['name', 'chrom', 'pos'], 1, [], undef, undef, []);
+            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name', 'chrom', 'pos'], 1, [], undef, undef, []);
 
             if (scalar(@$genotypes) > 0) {
                 # For old genotyping protocols without nd_protocolprop info...
@@ -415,7 +422,8 @@ sub _get_gwas {
                 }
                 my $geno_hybrid = CXGN::Genotype::ComputeHybridGenotype->new({
                     parental_genotypes=>$genotypes,
-                    marker_objects=>\@all_marker_objects
+                    marker_objects=>\@all_marker_objects,
+                    genotypeprop_hash_dosage_key=>$dosage_key
                 });
                 my $progeny_genotype = $geno_hybrid->get_hybrid_genotype();
 

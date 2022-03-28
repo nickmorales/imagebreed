@@ -171,6 +171,12 @@ has 'genotypeprop_hash_select' => (
     default => sub {['DS']} #THESE ARE THE GENERIC AND EXPECTED VCF ATRRIBUTES. For dosage matrix we only need DS
 );
 
+has 'genotypeprop_hash_dosage_key' => (
+    isa => 'Str',
+    is => 'ro',
+    default => 'DS' #DS is REF dosage and DA is ALT dosage
+);
+
 has 'protocolprop_top_key_select' => (
     isa => 'ArrayRef[Str]',
     is => 'ro',
@@ -208,6 +214,7 @@ sub _get_grm {
     my $return_inverse = $self->return_inverse();
     my $ensure_positive_definite = $self->ensure_positive_definite();
     my $return_imputed_matrix = $self->return_imputed_matrix();
+    my $dosage_key = $self->genotypeprop_hash_dosage_key;
 
     my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'accession', 'stock_type')->cvterm_id();
     my $plot_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot', 'stock_type')->cvterm_id();
@@ -261,7 +268,7 @@ sub _get_grm {
                     cache_root=>$cache_root_dir,
                     accessions=>[$_]
                 });
-                my $genotypes = $dataset->retrieve_genotypes($protocol_id, ['DS'], ['markers'], ['name'], 1, [], undef, undef, []);
+                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, [], undef, undef, []);
 
                 if (scalar(@$genotypes)>0) {
                     my $p1_markers = $genotypes->[0]->{selected_protocol_hash}->{markers};
@@ -278,7 +285,7 @@ sub _get_grm {
                         my $genotype_string = "";
                         my @row = ($stock_id);
                         foreach my $m (@all_marker_objects) {
-                            push @row, $genotypes->[$p]->{selected_genotype_hash}->{$m->{name}}->{DS};
+                            push @row, $genotypes->[$p]->{selected_genotype_hash}->{$m->{name}}->{$dosage_key};
                         }
                         my $genotype_string_scores = join "\t", @row;
                         $genotype_string .= $genotype_string_scores . "\n";
@@ -341,7 +348,7 @@ sub _get_grm {
                     cache_root=>$cache_root_dir,
                     accessions=>[$female_stock_id, $male_stock_id]
                 });
-                my $genotypes = $dataset->retrieve_genotypes($protocol_id, ['DS'], ['markers'], ['name'], 1, [], undef, undef, []);
+                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, [], undef, undef, []);
 
                 if (scalar(@$genotypes) > 0) {
                     # For old genotyping protocols without nd_protocolprop info...
@@ -354,7 +361,8 @@ sub _get_grm {
                     my $genotype_string = "";
                     my $geno = CXGN::Genotype::ComputeHybridGenotype->new({
                         parental_genotypes=>$genotypes,
-                        marker_objects=>\@all_marker_objects
+                        marker_objects=>\@all_marker_objects,
+                        genotypeprop_hash_dosage_key=>$dosage_key
                     });
                     my $progeny_genotype = $geno->get_hybrid_genotype();
 
@@ -414,7 +422,7 @@ sub _get_grm {
                     cache_root=>$cache_root_dir,
                     accessions=>[$female_stock_id, $male_stock_id]
                 });
-                my $genotypes = $dataset->retrieve_genotypes($protocol_id, ['DS'], ['markers'], ['name'], 1, [], undef, undef, []);
+                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, [], undef, undef, []);
 
                 if (scalar(@$genotypes) > 0) {
                     # For old genotyping protocols without nd_protocolprop info...
@@ -427,7 +435,8 @@ sub _get_grm {
                     my $genotype_string = "";
                     my $geno = CXGN::Genotype::ComputeHybridGenotype->new({
                         parental_genotypes=>$genotypes,
-                        marker_objects=>\@all_marker_objects
+                        marker_objects=>\@all_marker_objects,
+                        genotypeprop_hash_dosage_key=>$dosage_key
                     });
                     my $progeny_genotype = $geno->get_hybrid_genotype();
 

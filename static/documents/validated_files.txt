@@ -174,7 +174,6 @@ cview.pl                                       1/5
 downloading.pl                                 1/6
 faq.pl                                         1/6
 index.pl                                       1/5
-marker_search_help.pl                          1/5
 planned_outages.pl                             1/6
 quick_search.pl                                1/5
 toolbar.pl                                     1/5
@@ -257,18 +256,7 @@ lg9.pl                                         1/6
 
 ./maps/physical:
 clone_annot_download.pl                             how to use?
-clone_info.pl                                  1/6  under 'more criteria', tried 'search in genome browser'; got that /gbrowse/gbrowse/tomato died; couldn't find something in @INC
-clone_read_info.pl                             1/6
-clone_restriction_gel_image.pl                      how to use?
-clone_search.pl                                1/8  get to from direct_search
-clone_sequence.pl                                   how to use?
 index.pl                                       1/6
-list_bacs_by_plate.pl                          1/6
-list_overgo_plate_probes.pl                    1/6
-overgo_process_explained.pl                    1/6
-overgo_stats.pl                                1/6
-vector_info.pl                                 1/6
-view_fish.pl                                        how to use?
 
 ./maps/tomato_arabidopsis:
 chr10_split.pl                             1/6

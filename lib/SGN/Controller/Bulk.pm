@@ -65,13 +65,6 @@ sub unigene_tab : Path('/tools/bulk/tabs/unigene_tab') Args(0) {
     $c->stash->{template} = '/tools/bulk/tabs/unigene_tab.mas';
 }
 
-sub bac_tab : Path('/tools/bulk/tabs/bac_tab') Args(0) {
-    my $self = shift;
-    my $c = shift;
-
-    $c->stash->{template} = '/tools/bulk/tabs/bac_tab.mas';
-}
-
 sub bac_end_tab: Path('/tools/bulk/tabs/bac_end_tab') Args(0) {
     my $self = shift;
     my $c = shift;

@@ -40,7 +40,6 @@ print <<END_HEREDOC;
             <div class="boxsubcontent">
               <a class="creativitylinks" href="/about/tomato_sequencing.pl">Sequencing progress</a><br />
               <a class="creativitylinks" href="/search/direct_search.pl?search=BACs">Search BACS</a><br />
-              <a class="creativitylinks" href="/maps/physical/overgo_process_explained.pl">Overgo plating process</a>
             </div>
 
             <div class="subheading">
