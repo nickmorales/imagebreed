@@ -4031,6 +4031,22 @@ sub trial_calculate_numerical_derivative : Chained('trial') PathPart('calculate_
     $c->stash->{rest} = {success => 1};
 }
 
+sub trial_genotyping_protocol_grm_link : Chained('trial') PathPart('genotyping_protocol_grm_link') Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
+
+    my $schema = $c->stash->{schema};
+    my $metadata_schema = $c->stash->{metadata_schema};
+    my $phenome_schema = $c->stash->{phenome_schema};
+    my $grm_genotyping_protocol_id = $c->req->param('grm_genotyping_protocol_id');
+
+    my $trial = $c->stash->{trial};
+    my $return = $trial->set_grm_genotyping_protocols($grm_genotyping_protocol_id);
+
+    $c->stash->{rest} = {success => 1, return => $return};
+}
+
 
 #
 # TRIAL ENTRY NUMBERS

@@ -1484,6 +1484,70 @@ sub get_precipitation_averaged_sum_cvterm_id {
     return SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'drone_run_averaged_precipitation_sum', 'project_property')->cvterm_id();
 }
 
+=head2 accessors get_grm_genotyping_protocols(), set_grm_genotyping_protocols()
+
+ Usage:
+ Desc:
+ Ret:
+ Args:
+ Side Effects:
+ Example:
+
+=cut
+
+sub get_grm_genotyping_protocols {
+    my $self = shift;
+    my $schema = $self->bcs_schema;
+
+    my $grm_geno_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'grm_genotyping_protocol_experiment', 'experiment_type')->cvterm_id();
+
+    my $q = "SELECT nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.description
+        FROM nd_protocol
+        JOIN nd_experiment_protocol ON(nd_protocol.nd_protocol_id=nd_experiment_protocol.nd_protocol_id)
+        JOIN nd_experiment ON(nd_experiment_protocol.nd_experiment_id=nd_experiment.nd_experiment_id AND nd_experiment.type_id=$grm_geno_cvterm_id)
+        JOIN nd_experiment_project ON(nd_experiment.nd_experiment_id=nd_experiment_project.nd_experiment_id)
+        WHERE project_id=?;";
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute($self->get_trial_id());
+    my @protocols;
+    while (my ($nd_protocol_id, $name, $description) = $h->fetchrow_array()) {
+        push @protocols, [$nd_protocol_id, $name, $description];
+    }
+    print STDERR Dumper \@protocols;
+    return \@protocols;
+}
+
+sub set_grm_genotyping_protocols {
+    my $self = shift;
+    my $grm_genotyping_protocol_id = shift;
+
+    my $schema = $self->bcs_schema;
+    my $trial_id = $self->get_trial_id();
+    my $location = $self->get_location;
+    my $location_id = $location->[0];
+
+    my $grm_geno_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'grm_genotyping_protocol_experiment', 'experiment_type')->cvterm_id();
+
+    my $grm_geno = $self->get_grm_genotyping_protocols();
+    my %grm_geno_ids;
+    foreach (@$grm_geno) {
+        $grm_geno_ids{$_->[0]}++;
+    }
+
+    my $nd_experiment_id;
+    if (!exists($grm_geno_ids{$grm_genotyping_protocol_id})) {
+        my $experiment = $schema->resultset('NaturalDiversity::NdExperiment')->create({
+            nd_geolocation_id => $location_id,
+            type_id => $grm_geno_cvterm_id,
+            nd_experiment_protocols => [{nd_protocol_id => $grm_genotyping_protocol_id}],
+            nd_experiment_projects => [{project_id => $trial_id}]
+        });
+        $nd_experiment_id = $experiment->nd_experiment_id();
+    }
+    return $nd_experiment_id;
+}
+
+
 =head2 accessors get_related_time_cvterms_json(), set_related_time_cvterms_json()
 
  Usage:

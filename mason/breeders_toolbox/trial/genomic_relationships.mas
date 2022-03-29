@@ -101,6 +101,36 @@ jQuery(document).ready(function() {
 
     });
 
+    jQuery('#trial_genomic_relationships_select_protocol_link_step').click(function(){
+
+        var grm_genotyping_protocol_id = jQuery('#trial_genomic_relationships_add_genotyping_protocol_select_id').val();
+        if (grm_genotyping_protocol_id == '') {
+            alert('Please select a GRM genotyping protocol first!');
+            return false;
+        }
+
+        jQuery.ajax({
+            url : '/ajax/breeders/trial/<% $trial_id %>/genotyping_protocol_grm_link?grm_genotyping_protocol_id='+grm_genotyping_protocol_id,
+            beforeSend : function(){
+                jQuery('#working_modal').modal('show');
+            },
+            success: function(response){
+                console.log(response);
+                jQuery('#working_modal').modal('hide');
+                if (response.error) {
+                    alert(response.error);
+                }
+                else {
+                    location.reload();
+                }
+            },
+            error: function(response){
+                jQuery('#working_modal').modal('hide');
+                alert('Error linking genotype relationship for trial!');
+            }
+        });
+    });
+
     jQuery('#trial_genomic_relationships_link_button').click(function(){
         jQuery('#trial_genomic_relationships_link_dialog').modal('show');
     });
