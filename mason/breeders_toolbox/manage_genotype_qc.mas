@@ -7,7 +7,7 @@ $facilities
 
 <& /page/page_title.mas, title=>"<b>Quality Control Genotyping using the Intertek QC KASP marker sets of 20 or 40</b>" &>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.GenotypingTrial03152022' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.GenotypingTrial03282022' ] &>
 
 <div>
 <p>
@@ -45,7 +45,7 @@ $facilities
     </center>
 
 
-<& /breeders_toolbox/genotyping_trials/upload_genotyping_data_dialogs.mas, facilities => $facilities &>
+<& /breeders_toolbox/genotyping_trials/upload_genotyping_data_dialogs.mas &>
 <& /breeders_toolbox/genotyping_trials/upload_genotyping_data_qc_dialogs.mas, facilities => $facilities &>
 
 <script>

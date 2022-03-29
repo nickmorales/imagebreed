@@ -191,8 +191,10 @@ sub BUILD {
 
     my $species_name = $map_details->{species_name} || 'Not set. Please reload these genotypes using new genotype format!';
     my $sample_observation_unit_type_name = $map_details->{sample_observation_unit_type_name} || 'Not set. Please reload these genotypes using new genotype format!';
+
     if ($is_grm_protocol) {
-        $sample_observation_unit_type_name = 'accessions';
+        $header_information_lines = ["##Genotyping protocol is of genomic relationships between accessions (GRM)"];
+        $sample_observation_unit_type_name = 'accession';
     }
 
     $self->marker_names($marker_names);
@@ -333,6 +335,7 @@ sub list {
     my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'accession', 'stock_type')->cvterm_id();
     my $tissue_sample_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'tissue_sample', 'stock_type')->cvterm_id();
     my $nd_protocol_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'genotyping_experiment', 'experiment_type')->cvterm_id();
+    my $grm_protocol_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'grm_genotyping_protocol_experiment', 'experiment_type')->cvterm_id();
     my $pcr_marker_details_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'pcr_marker_details', 'protocol_property')->cvterm_id();
     my $pcr_marker_protocol_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'pcr_marker_protocol', 'protocol_type')->cvterm_id();
 
@@ -383,7 +386,7 @@ sub list {
         $limit_clause
         $offset_clause;";
 
-    #print STDERR Dumper $q;
+    # print STDERR Dumper $q;
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($vcf_map_details_cvterm_id, $pcr_marker_details_cvterm_id);
 
@@ -392,13 +395,14 @@ sub list {
         my $protocol = $protocolprop_json ? decode_json $protocolprop_json : {};
         my $marker_names = $protocol->{marker_names} || [];
         my $header_information_lines = $protocol->{header_information_lines} || [];
+        my $species_name = $protocol->{species_name} || 'Not set. Please reload these genotypes using new genotype format!';
+        my $sample_observation_unit_type_name = $protocol->{sample_observation_unit_type_name} || 'Not set. Please reload these genotypes using new genotype format!';
 
         if ($is_grm) {
             $header_information_lines = ["##Genotyping protocol is of genomic relationships between accessions (GRM)"];
+            $sample_observation_unit_type_name = 'accession';
         }
 
-        my $species_name = $protocol->{species_name} || 'Not set. Please reload these genotypes using new genotype format!';
-        my $sample_observation_unit_type_name = $protocol->{sample_observation_unit_type_name} || 'Not set. Please reload these genotypes using new genotype format!';
         my $reference_genome_name = $protocol->{reference_genome_name};
         $create_date = $create_date || 'Not set. Please reload these genotypes using new genotype format!';
         if (!$marker_type) {
@@ -425,7 +429,7 @@ sub list {
             is_grm_protocol => $is_grm
         };
     }
-    print STDERR "PROTOCOL LIST =".Dumper(\@results);
+    # print STDERR "PROTOCOL LIST =".Dumper(\@results);
     return \@results;
 }
 
@@ -435,6 +439,7 @@ sub list_simple {
     my $schema = shift;
     my $only_grm_protocols = shift;
     my $field_trial_ids = shift;
+    my $only_geno_protocols = shift;
     my @where_clause;
 
     my $vcf_map_details_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'vcf_map_details', 'protocol_property')->cvterm_id();
@@ -449,7 +454,7 @@ sub list_simple {
     my $field_trial_where = '';
     if ($field_trial_ids) {
         $field_trial_join = ' JOIN nd_experiment_protocol ON(nd_protocol.nd_protocol_id=nd_experiment_protocol.nd_protocol_id)
-            JOIN nd_experiment ON(nd_experiment.nd_experiment_id=nd_experiment_protocol.nd_experiment_id AND nd_experiment.type_id='.$grm_protocol_experiment_type_id.')
+            JOIN nd_experiment ON(nd_experiment.nd_experiment_id=nd_experiment_protocol.nd_experiment_id AND nd_experiment.type_id IN('.$grm_protocol_experiment_type_id.','.$nd_protocol_type_id.') )
             JOIN nd_experiment_project ON(nd_experiment.nd_experiment_id=nd_experiment_project.nd_experiment_id) ';
         $field_trial_where = ' AND project_id IN('.$field_trial_ids.') ';
     }
@@ -459,19 +464,16 @@ sub list_simple {
         LEFT JOIN nd_protocolprop ON(nd_protocolprop.nd_protocol_id = nd_protocol.nd_protocol_id AND nd_protocolprop.type_id IN (?,?))
         $field_trial_join
         WHERE nd_protocol.type_id IN (?,?) $field_trial_where
+        GROUP BY (nd_protocol.nd_protocol_id, nd_protocol.name, nd_protocol.description, nd_protocol.create_date, nd_protocolprop.value)
         ORDER BY nd_protocol.nd_protocol_id ASC;";
 
+    # print STDERR Dumper $q;
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($vcf_map_details_cvterm_id, $pcr_marker_details_type_id, $nd_protocol_type_id, $pcr_marker_protocol_type_id);
 
     my @results;
     while (my ($protocol_id, $protocol_name, $protocol_description, $create_date, $header_information_lines, $reference_genome_name, $species_name, $sample_type_name, $marker_count, $marker_type, $is_grm) = $h->fetchrow_array()) {
         my $header_information_lines = $header_information_lines ? decode_json $header_information_lines : [];
-
-        if ($is_grm) {
-            $header_information_lines = ["##Genotyping protocol is of genomic relationships between accessions (GRM)"];
-        }
-
         my $species_name = $species_name || 'Not set. Please reload these genotypes using new genotype format!';
         my $sample_observation_unit_type_name = $sample_type_name || 'Not set. Please reload these genotypes using new genotype format!';
         my $protocol_description = $protocol_description || 'Not set. Please reload these genotypes using new genotype format!';
@@ -481,7 +483,12 @@ sub list_simple {
             $reference_genome_name = $reference_genome_name || 'Not set. Please reload these genotypes using new genotype format!';
         }
 
-        if (!$only_grm_protocols || ($only_grm_protocols && $is_grm)) {
+        if ($is_grm) {
+            $header_information_lines = ["##Genotyping protocol is of genomic relationships between accessions (GRM)"];
+            $sample_observation_unit_type_name = 'accession';
+        }
+
+        if ( (!$only_grm_protocols && !$only_geno_protocols) || ($only_grm_protocols && $is_grm) || ($only_geno_protocols && !$is_grm) ) {
             push @results, {
                 protocol_id => $protocol_id,
                 protocol_name => $protocol_name,

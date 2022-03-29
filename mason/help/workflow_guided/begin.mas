@@ -11,7 +11,7 @@ $design_types => ()
 </%args>
 
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.GuidedHelp', 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.AddTrial03152022', 'CXGN.BreedersToolbox.UploadTrial03152022', 'CXGN.BreedersToolbox.Trial03152022', 'CXGN.Trial03152022', 'CXGN.BreedersToolbox.GenotypingTrial03152022', 'CXGN.BreedersToolbox.Accessions03152022', 'CXGN.BreedersToolbox.UploadPedigrees03152022', 'CXGN.BreedersToolbox.Crosses03152022', 'CXGN.BreedersToolbox.FieldBook03152022', 'CXGN.BreedersToolbox.UploadPhenotype03152022', 'CXGN.TrialTreeFolders03152022' ] &>
+<& /util/import_javascript.mas, classes => [ 'CXGN.GuidedHelp', 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.AddTrial03152022', 'CXGN.BreedersToolbox.UploadTrial03152022', 'CXGN.BreedersToolbox.Trial03152022', 'CXGN.Trial03152022', 'CXGN.BreedersToolbox.GenotypingTrial03282022', 'CXGN.BreedersToolbox.Accessions03152022', 'CXGN.BreedersToolbox.UploadPedigrees03152022', 'CXGN.BreedersToolbox.Crosses03152022', 'CXGN.BreedersToolbox.FieldBook03152022', 'CXGN.BreedersToolbox.UploadPhenotype03152022', 'CXGN.TrialTreeFolders03152022' ] &>
 
 <div class="panel panel-default">
     <div class="panel-body">
@@ -211,7 +211,7 @@ $design_types => ()
 <& /breeders_toolbox/trial/trial_upload_dialogs.mas, breeding_programs=>$breeding_programs, locations=>$locations, design_types => $design_types &>
 <& /breeders_toolbox/trial/trial_create_dialogs.mas, locations => $locations, breeding_programs => $breeding_programs, management_factor_types => $management_factor_types, design_types => $design_types &>
 
-<& /breeders_toolbox/genotyping_trials/upload_genotyping_data_dialogs.mas, facilities=>$facilities &>
+<& /breeders_toolbox/genotyping_trials/upload_genotyping_data_dialogs.mas &>
 <& /breeders_toolbox/genotyping_trials/create_genotyping_trial_dialogs.mas, facilities=>$facilities &>
 
 <& /breeders_toolbox/upload_seedlots_inventory_dialogs.mas &>

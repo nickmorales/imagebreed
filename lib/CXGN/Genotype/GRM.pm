@@ -148,8 +148,18 @@ has 'ensure_positive_definite' => (
     default => 1
 );
 
+has 'trial_id_list' => (
+    isa => 'ArrayRef[Int]|Undef',
+    is => 'rw'
+);
+
 has 'accession_id_list' => (
     isa => 'ArrayRef[Int]|Undef',
+    is => 'rw'
+);
+
+has 'accession_name_list' => (
+    isa => 'ArrayRef[Str]|Undef',
     is => 'rw'
 );
 
@@ -195,6 +205,32 @@ has 'return_only_first_genotypeprop_for_stock' => (
     default => 1
 );
 
+sub BUILD {
+    my $self = shift;
+    my $schema = $self->bcs_schema();
+    my $trial_list = $self->trial_id_list() || [];
+    my $accession_list = $self->accession_id_list() || [];
+
+    if (scalar(@$trial_list)>0 && scalar(@$accession_list)==0) {
+        my %unique_accession_ids;
+        my %unique_accession_names;
+        foreach my $trial_id (@$trial_list) {
+            my $trial = CXGN::Trial->new({
+                bcs_schema => $schema,
+                trial_id => $trial_id
+            });
+            my $accessions = $trial->get_accessions();
+            foreach my $a (@$accessions) {
+                $unique_accession_ids{$a->{stock_id}}++;
+                $unique_accession_names{$a->{accession_name}}++;
+            }
+        }
+        my @accession_ids = sort keys %unique_accession_ids;
+        my @accession_names = sort keys %unique_accession_names;
+        $self->accession_id_list(\@accession_ids);
+        $self->accession_name_list(\@accession_names);
+    }
+}
 
 sub _get_grm {
     my $self = shift;

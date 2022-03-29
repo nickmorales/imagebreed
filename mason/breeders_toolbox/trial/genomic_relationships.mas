@@ -41,12 +41,12 @@ $trial_id
 </div>
 
 
-<div class="modal fade" id="trial_genomic_relationships_add_dialog" name="trial_genomic_relationships_add_dialog" tabindex="-1" role="dialog" aria-labelledby="trialGenomicRelationshipsAddDialog" data-backdrop="static">
+<div class="modal fade" id="trial_genomic_relationships_link_dialog" name="trial_genomic_relationships_link_dialog" tabindex="-1" role="dialog" aria-labelledby="trialGenomicRelationshipsLinkDialog" data-backdrop="static">
   <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="trialGenomicRelationshipsAddDialog">Add or link a genomic relationship matrix (GRM) to this trial</h4>
+        <h4 class="modal-title" id="trialGenomicRelationshipsLinkDialog">Link a genomic relationship matrix (GRM) to this trial</h4>
       </div>
       <div class="modal-body">
         <div class="container-fluid">
@@ -67,33 +67,7 @@ $trial_id
                     <hr>
 
                     <center>
-                    <button class="btn btn-sm btn-primary" id="trial_genomic_relationships_new_protocol_button">Or the GRM Genotyping Protocol Does Not Exist, so Create a New One From Genotyping Data</button>
-                    </center>
-
-                    <div id="trial_genomic_relationships_new_protocol_div" style="display:none">
-                        <br/><br/>
-                        <div class="well well-sm">
-                            <div class="form-horizontal">
-                                <div class="form-group form-group-sm">
-                                    <label class="col-sm-3 control-label">GRM Genotyping Protocol Name: </label>
-                                    <div class="col-sm-9" >
-                                        <input class="form-control" type="text" id="trial_genomic_relationships_new_protocol_name" name="trial_genomic_relationships_new_protocol_name" />
-                                    </div>
-                                </div>
-                                <div class="form-group form-group-sm">
-                                    <label class="col-sm-3 control-label">Description: </label>
-                                    <div class="col-sm-9" >
-                                        <input class="form-control" type="text" id="trial_genomic_relationships_new_protocol_desc" name="trial_genomic_relationships_new_protocol_desc" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <center>
-                    <button class="btn btn-primary" id="trial_genomic_relationships_select_protocol_step">Go to Next Step</button>
+                    <button class="btn btn-primary" id="trial_genomic_relationships_select_protocol_link_step">Go to Next Step</button>
                     </center>
                 </&>
             </&>
@@ -107,6 +81,9 @@ $trial_id
     </div>
   </div>
 </div>
+
+<& /breeders_toolbox/genotyping_trials/upload_genotyping_data_dialogs.mas, genotyping_data_type => 'grm', is_from_grm => 1, trial_id => $trial_id &>
+
 
 <script>
 
@@ -124,8 +101,8 @@ jQuery(document).ready(function() {
 
     });
 
-    jQuery('#trial_genomic_relationships_set_button').click(function(){
-        jQuery('#trial_genomic_relationships_add_dialog').modal('show');
+    jQuery('#trial_genomic_relationships_link_button').click(function(){
+        jQuery('#trial_genomic_relationships_link_dialog').modal('show');
     });
 
     jQuery('#trial_genomic_relationships_new_protocol_button').click(function(){

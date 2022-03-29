@@ -1472,6 +1472,36 @@ sub get_crosses_select : Path('/ajax/html/select/crosses') Args(0) {
     $c->stash->{rest} = { select => $html };
 }
 
+sub get_genotyping_facilities_select : Path('/ajax/html/select/genotyping_facilities') Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+
+    my $id = $c->req->param("id") || "genotyping_facility_select";
+    my $name = $c->req->param("name") || "genotyping_facility_select";
+    my $empty = $c->req->param("empty") || "";
+
+    my @gt_facilities;
+    my $gt_facility_string = $c->config->{genotyping_facilities};
+    my @gts = split ',', $gt_facility_string;
+
+    foreach (@gts) {
+        push @gt_facilities, [$_, $_];
+    }
+
+    if ($empty){
+        unshift @gt_facilities, ['', "Select a genotyping facility"]
+    }
+
+    my $html = simple_selectbox_html(
+        name => $name,
+        id => $id,
+        choices => \@gt_facilities,
+    );
+    $c->stash->{rest} = { select => $html };
+}
+
 sub get_genotyping_protocol_select : Path('/ajax/html/select/genotyping_protocol') Args(0) {
     my $self = shift;
     my $c = shift;

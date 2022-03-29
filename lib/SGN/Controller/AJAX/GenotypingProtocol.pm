@@ -58,8 +58,8 @@ sub genotyping_protocol_grm_protocols_table_GET : Args(1) {
    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_protocol($c, 'user', 0, 0);
    my $field_trial_ids = $c->req->param('field_trial_ids');
 
-   my $protocols = CXGN::Genotype::Protocol::list_simple($bcs_schema, 1, $field_trial_ids);
-   print STDERR Dumper $protocols;
+   my $protocols = CXGN::Genotype::Protocol::list_simple($bcs_schema, 1, $field_trial_ids, undef);
+   # print STDERR Dumper $protocols;
 
    my @result;
    foreach (@$protocols) {

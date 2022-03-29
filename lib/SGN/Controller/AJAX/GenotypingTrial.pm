@@ -433,9 +433,12 @@ sub get_genotyping_data_protocols : Path('/ajax/genotyping_data/protocols') : Ac
 sub get_genotyping_data_protocols_GET : Args(0) {
     my $self = shift;
     my $c = shift;
+    print STDERR Dumper $c->req->params();
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $checkbox_select_name = $c->req->param('select_checkbox_name');
     my $trim_header_info_lines = $c->req->param('trim_header_info_lines') || 10000;
+    my $only_grm_protocols = $c->req->param('only_grm_protocols') && $c->req->param('only_grm_protocols') eq '1' ? 1 : 0;
+    my $only_geno_protocols = $c->req->param('only_geno_protocols') && $c->req->param('only_geno_protocols') eq '1' ? 1 : 0;
     # my @protocol_list = $c->req->param('protocol_ids') ? split ',', $c->req->param('protocol_ids') : ();
     # my @accession_list = $c->req->param('accession_ids') ? split ',', $c->req->param('accession_ids') : ();
     # my @tissue_sample_list = $c->req->param('tissue_sample_ids') ? split ',', $c->req->param('tissue_sample_ids') : ();
@@ -444,7 +447,7 @@ sub get_genotyping_data_protocols_GET : Args(0) {
     my $offset;
     my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 0, 0, 0);
 
-    my $data = CXGN::Genotype::Protocol::list_simple($bcs_schema);
+    my $data = CXGN::Genotype::Protocol::list_simple($bcs_schema, $only_grm_protocols, undef, $only_geno_protocols);
     my @result;
     foreach (@$data){
         my @res;

@@ -1,8 +1,10 @@
 <%args>
-$facilities
+$trial_id => undef
+$genotyping_data_type => undef
+$is_from_grm => undef
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.BreedersToolbox.GenotypingTrial03152022' ] &>
+<& /util/import_javascript.mas, classes => [ 'CXGN.BreedersToolbox.GenotypingTrial03282022' ] &>
 
 <div class="modal fade" id="upload_genotypes_dialog" name="upload_genotypes_dialog" tabindex="-1" role="dialog" aria-labelledby="uploadGenotypesDialog">
     <div class="modal-dialog modal-xl" role="document">
@@ -37,6 +39,11 @@ $facilities
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label">Type of genotyping data: </label>
                                     <div class="col-sm-9">
+%  if ($genotyping_data_type) {
+                                        <select class="form-control" id="genotype_data_type_select" name="genotype_data_type_select">
+                                            <option value="<% $genotyping_data_type %>"><% uc($genotyping_data_type) %></option>
+                                        </select>
+%  } else {
                                         <select class="form-control" id="genotype_data_type_select" name="genotype_data_type_select">
                                             <option value="">Select data type</option>
                                             <option value="vcf">VCF</option>
@@ -45,6 +52,7 @@ $facilities
                                             <option value="grm">Genomic Relationship Matrix (GRM)</option>
                                             <option value="ssr">SSR</option>
                                         </select>
+%  }
                                     </div>
                                 </div>
 
@@ -138,11 +146,7 @@ $facilities
                                         <div class="form-group">
                                             <label class="col-sm-5 control-label">Genotyping Facility: </label>
                                             <div class="col-sm-7">
-                                                <select class="form-control" id="upload_genotype_vcf_facility_select" name="upload_genotype_vcf_facility_select">
-%  foreach my $facility (@$facilities) {
-                                                    <option value="<% $facility %>"><% $facility %></option>
-%  }
-                                                </select>
+                                                <div id="upload_genotype_vcf_facility_select_div"></div>
                                             </div>
                                         </div>
                                         <div class="form-group">
@@ -191,6 +195,8 @@ $facilities
                                         </tr>
                                     </thead>
                                 </table>
+
+%  if (!$is_from_grm) {
 
                                 <center>
                                 <button class="btn btn-primary" id="upload_genotyping_data_protocol_missing_button">My protocol is not here. Create a new one.</button>
@@ -259,6 +265,8 @@ $facilities
                                     </div>
                                 </div>
 
+%  }
+
                                 <br/>
                                 <center>
                                 <button class="btn btn-primary" id="upload_genotyping_data_protocol_check_button">Go to Next Step</button>
@@ -268,6 +276,8 @@ $facilities
                                 <& /page/page_title.mas, title=>"Provide genotype information" &>
 
                                 <input class="form-control" id="upload_genotype_data_type" name="upload_genotype_data_type" type="hidden" value = "" />
+
+%  if (!$is_from_grm) {
 
                                 <div class="well well-sm" id="upload_genotype_data_format_vcf">
                                     <div class="panel panel-default">
@@ -353,6 +363,50 @@ $facilities
                                         </select>
                                     </div>
                                 </div>
+
+%  } else {
+
+                                <input class="form-control" id="upload_genotype_data_is_from_grm" name="upload_genotype_data_is_from_grm" type="hidden" value="<% $is_from_grm %>" />
+                                <input class="form-control" id="upload_genotype_data_is_from_grm_trial_id" name="upload_genotype_data_is_from_grm_trial_id" type="hidden" value="<% $trial_id %>" />
+                                <input class="form-control" id="upload_genotype_data_is_from_grm_observation_type" name="upload_genotype_data_is_from_grm_observation_type" type="hidden" value="accession" />
+
+                                <div class="form-group">
+                                    <label class="col-sm-5 control-label">GRM Format: </label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control">
+                                            <option value="">Computed From Genotyping Data</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-5 control-label">Compute From Parents: </label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control" id="upload_genotype_data_is_from_grm_compute_from_parents" name="upload_genotype_data_is_from_grm_compute_from_parents">
+                                            <option value="no">No</option>
+                                            <option value="yes">Yes</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-5 control-label">Genotyping Protocol Name:</label>
+                                    <div class="col-sm-7">
+                                        <input class="form-control" id="upload_genotype_is_from_grm_protocol_name" name="upload_genotype_is_from_grm_protocol_name" type="text" placeholder=" e.g. FieldTrial2022 GRM GBS ApeKI Cassava genome v6"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-5 control-label">Description:</label>
+                                    <div class="col-sm-7">
+                                        <input class="form-control" id="upload_genotype_is_from_grm_protocol_desc" name="upload_genotype_is_from_grm_protocol_desc" type="text" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-5 control-label">Location of Data Generation: </label>
+                                    <div class="col-sm-7">
+                                        <span id="upload_genotype_is_from_grm_location_select_div"></span>
+                                    </div>
+                                </div>
+
+%  }
 
                                 <center>
                                 <button class="btn btn-primary" onclick="Workflow.complete(this); return false;">Go to Next Step</button>
@@ -902,8 +956,9 @@ $facilities
 <script>
 jQuery(document).ready(function(){
 
+    var data_type = '<% $genotyping_data_type %>';
     jQuery('#genotype_data_type_select_submit').click(function(){
-        var data_type = jQuery('#genotype_data_type_select').val();
+        data_type = jQuery('#genotype_data_type_select').val();
         if (data_type == '') {
             alert('Please select a data type first!');
             return false;
@@ -916,7 +971,7 @@ jQuery(document).ready(function(){
     });
 
     jQuery('#genotype_data_type_select').change(function() {
-        var data_type = jQuery('#genotype_data_type_select').val();
+        data_type = jQuery('#genotype_data_type_select').val();
 
         document.getElementById('upload_genotype_data_type').value = data_type;
 
@@ -981,11 +1036,12 @@ jQuery(document).ready(function(){
             jQuery('#upload_genotype_data_format_ssr').hide();
             jQuery('#upload_genotype_data_format_grm').show();
         }
+    });
 
     jQuery('#upload_genotyping_data_protocol_missing_button').click(function(){
         if (data_type == 'ssr') {
             selected = [];
-            jQuery('input[name="upload_genotyping_data_protocol_select"]:checked').each(function() {
+            jQuery('input[name="upload_genotype_protocol_id"]:checked').each(function() {
                 selected.push(jQuery(this).val());
             });
             if (selected.length == 0){
@@ -999,8 +1055,6 @@ jQuery(document).ready(function(){
         return false;
     });
 
-    });
-
     var upload_genotyping_data_trial_table = jQuery('#upload_genotyping_data_project_search_results').DataTable( {
         'ajax': {
             'url':'/ajax/genotyping_data/projects?select_checkbox_name=upload_genotyping_data_project_select',
@@ -1009,7 +1063,7 @@ jQuery(document).ready(function(){
 
     var upload_genotyping_data_protocol_table = jQuery('#upload_genotyping_data_protocol_search_results').DataTable( {
         'ajax': {
-            'url':'/ajax/genotyping_data/protocols?select_checkbox_name=upload_genotyping_data_protocol_select&trim_header_info_lines=10',
+            'url':'/ajax/genotyping_data/protocols?select_checkbox_name=upload_genotype_protocol_id&trim_header_info_lines=10&only_geno_protocols=<% $is_from_grm %>',
         },
     });
 
@@ -1050,10 +1104,10 @@ jQuery(document).ready(function(){
     });
 
     var ssr_protocol_id;
-
+    var is_from_grm = '<% $is_from_grm %>';
     jQuery('#upload_genotyping_data_protocol_check_button').click(function(){
         selected = [];
-        jQuery('input[name="upload_genotyping_data_protocol_select"]:checked').each(function() {
+        jQuery('input[name="upload_genotype_protocol_id"]:checked').each(function() {
             selected.push(jQuery(this).val());
         });
         if (selected.length > 1){
@@ -1061,9 +1115,11 @@ jQuery(document).ready(function(){
         } else {
             if (selected.length == 0 && jQuery('#upload_genotype_vcf_protocol_name').val() == '' && jQuery('#upload_genotype_protocol_id').val() == ''){
                 alert('Select a genotyping protocol or create a new one!');
-            } else if (selected.length == 1 && jQuery('#upload_genotype_vcf_protocol_name').val() != ''){
+            } else if (is_from_grm != 1 && selected.length == 1 && jQuery('#upload_genotype_vcf_protocol_name').val() != ''){
                 alert('If you selected a protocol, do not try to make a new one at the same time!');
-            } else if (selected.length == 1 && jQuery('#upload_genotype_vcf_protocol_name').val() == ''){
+            } else if (is_from_grm == 1 && selected.length == 0) {
+                alert('Please select a genotyping protocol first!');
+            } else if (selected.length == 1 && (jQuery('#upload_genotype_vcf_protocol_name').val() == '' || jQuery('#upload_genotype_vcf_protocol_name').val() == undefined) ) {
                 jQuery('#upload_genotype_protocol_id').val(selected[0]);
                 Workflow.complete('#upload_genotyping_data_protocol_check_button');
                 Workflow.focus('#upload_genotypes_workflow', 4);

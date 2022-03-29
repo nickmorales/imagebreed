@@ -36,15 +36,16 @@ sub genotyping_protocol_search_GET : Args(0) {
     my @protocol_list = $c->req->param('protocol_ids') ? split ',', $c->req->param('protocol_ids') : ();
     my @accession_list = $c->req->param('accession_ids') ? split ',', $c->req->param('accession_ids') : ();
     my @tissue_sample_list = $c->req->param('tissue_sample_ids') ? split ',', $c->req->param('tissue_sample_ids') : ();
-    my @genotyping_data_project_list = $c->req->param('genotyping_data_project_ids') ? split ',', $c->req->param('genotyping_data_project_ids') : ();
+    my $genotyping_data_project_ids_string = $c->req->param('genotyping_data_project_ids');
+    my @genotyping_data_project_list = $genotyping_data_project_ids_string ? split ',', $genotyping_data_project_ids_string : ();
     my $limit;
     my $offset;
 
     my $protocol_search_result;
-    if (scalar(@protocol_list)>0 || scalar(@accession_list)>0 || scalar(@tissue_sample_list)>0 || scalar(@genotyping_data_project_list)>0) {
+    if (scalar(@protocol_list)>0 || scalar(@accession_list)>0 || scalar(@tissue_sample_list)>0 ) {
         $protocol_search_result = CXGN::Genotype::Protocol::list($bcs_schema, \@protocol_list, \@accession_list, \@tissue_sample_list, $limit, $offset, \@genotyping_data_project_list);
     } else {
-        $protocol_search_result = CXGN::Genotype::Protocol::list_simple($bcs_schema);
+        $protocol_search_result = CXGN::Genotype::Protocol::list_simple($bcs_schema, undef, $genotyping_data_project_ids_string, undef);
     }
 
     my @result;

@@ -29,7 +29,9 @@ use CXGN::Genotype::StoreVCFGenotypes;
 use CXGN::Login;
 use CXGN::People::Person;
 use CXGN::Genotype::Protocol;
+use CXGN::Genotype::GRM;
 use File::Basename qw | basename dirname|;
+use File::Temp 'tempfile';
 use JSON;
 
 BEGIN { extends 'Catalyst::Controller::REST' }
@@ -123,6 +125,33 @@ sub upload_genotype_verify_POST : Args(0) {
     my $upload_ssr_data = $c->req->upload('upload_genotype_ssr_file_input');
     my $upload_grm_data = $c->req->upload('upload_genotype_grm_file_input');
 
+    my $is_from_grm = $c->req->param('upload_genotype_data_is_from_grm') eq '1' ? 1 : 0;
+    my $is_from_grm_trial_id = $c->req->param('upload_genotype_data_is_from_grm_trial_id');
+    my $is_from_grm_protocol_name = $c->req->param('upload_genotype_is_from_grm_protocol_name');
+    my $is_from_grm_protocol_desc = $c->req->param('upload_genotype_is_from_grm_protocol_desc');
+    my $is_from_grm_location_id = $c->req->param('upload_genotype_is_from_grm_location_select');
+    my $is_from_grm_compute_from_parents = $c->req->param('upload_genotype_data_is_from_grm_compute_from_parents') && $c->req->param('upload_genotype_data_is_from_grm_compute_from_parents') eq 'yes' ? 1 : 0;
+
+    if ($is_from_grm && !$is_from_grm_trial_id) {
+        $c->stash->{rest} = { error => 'If computing GRM please give a field trial id!' };
+        $c->detach();
+    }
+    if ($is_from_grm && !$is_from_grm_protocol_name) {
+        $c->stash->{rest} = { error => 'If computing GRM please give a GRM protocol name!' };
+        $c->detach();
+    }
+    if ($is_from_grm && !$is_from_grm_protocol_desc) {
+        $c->stash->{rest} = { error => 'If computing GRM please give a GRM protocol description!' };
+        $c->detach();
+    }
+    if ($is_from_grm && !$is_from_grm_location_id) {
+        $c->stash->{rest} = { error => 'If computing GRM please give a GRM protocol location!' };
+        $c->detach();
+    }
+    if ($is_from_grm) {
+        $accept_warnings = 1;
+    }
+
     if (defined($upload_vcf) && defined($upload_intertek_genotypes)) {
         $c->stash->{rest} = { error => 'Do not try to upload both VCF and Intertek at the same time!' };
         $c->detach();
@@ -150,7 +179,7 @@ sub upload_genotype_verify_POST : Args(0) {
     my $upload_original_name;
     my $upload_tempfile;
     my $subdirectory;
-    my $parser_plugin;
+    my $parser_plugin = '';
     if ($upload_vcf) {
         $upload_original_name = $upload_vcf->filename();
         $upload_tempfile = $upload_vcf->tempname;
@@ -315,26 +344,8 @@ sub upload_genotype_verify_POST : Args(0) {
         $parser_plugin = 'GRMTSV';
     }
 
-    my $uploader = CXGN::UploadFile->new({
-        tempfile => $upload_tempfile,
-        subdirectory => $subdirectory,
-        archive_path => $c->config->{archive_path},
-        archive_filename => $upload_original_name,
-        timestamp => $timestamp,
-        user_id => $user_id,
-        user_role => $user_role
-    });
-    my $archived_filename_with_path = $uploader->archive();
-    my $md5 = $uploader->get_md5($archived_filename_with_path);
-    if (!$archived_filename_with_path) {
-        push @error_status, "Could not save file $upload_original_name in archive.";
-        return (\@success_status, \@error_status);
-    } else {
-        push @success_status, "File $upload_original_name saved in archive.";
-    }
-    unlink $upload_tempfile;
-
     #if protocol_id provided, a new one will not be created
+    my $protocol_is_grm;
     if ($protocol_id){
         my $protocol = CXGN::Genotype::Protocol->new({
             bcs_schema => $schema,
@@ -342,6 +353,8 @@ sub upload_genotype_verify_POST : Args(0) {
         });
         $organism_species = $protocol->species_name;
         $obs_type = $protocol->sample_observation_unit_type_name;
+        $reference_genome_name = $protocol->reference_genome_name;
+        $protocol_is_grm = $protocol->is_grm_protocol;
     }
 
     my $organism_q = "SELECT organism_id FROM organism WHERE species = ?";
@@ -361,17 +374,38 @@ sub upload_genotype_verify_POST : Args(0) {
     }
     my $organism_id = $found_organisms[0];
 
-    my $parser = CXGN::Genotype::ParseUpload->new({
-        chado_schema => $schema,
-        filename => $archived_filename_with_path,
-        filename_intertek_marker_info => $archived_intertek_marker_info_file,
-        observation_unit_type_name => $obs_type,
-        organism_id => $organism_id,
-        create_missing_observation_units_as_accessions => $add_accessions,
-        igd_numbers_included => $include_igd_numbers,
-        # lab_numbers_included => $include_lab_numbers
-    });
-    $parser->load_plugin($parser_plugin);
+    my $archived_filename_with_path;
+    my $parser;
+    if (!$is_from_grm) {
+        my $uploader = CXGN::UploadFile->new({
+            tempfile => $upload_tempfile,
+            subdirectory => $subdirectory,
+            archive_path => $c->config->{archive_path},
+            archive_filename => $upload_original_name,
+            timestamp => $timestamp,
+            user_id => $user_id,
+            user_role => $user_role
+        });
+        $archived_filename_with_path = $uploader->archive();
+        my $md5 = $uploader->get_md5($archived_filename_with_path);
+        if (!$archived_filename_with_path) {
+            $c->stash->{rest} = { error => 'Could not save file $upload_original_name in archive.' };
+            $c->detach();
+        }
+        unlink $upload_tempfile;
+
+        $parser = CXGN::Genotype::ParseUpload->new({
+            chado_schema => $schema,
+            filename => $archived_filename_with_path,
+            filename_intertek_marker_info => $archived_intertek_marker_info_file,
+            observation_unit_type_name => $obs_type,
+            organism_id => $organism_id,
+            create_missing_observation_units_as_accessions => $add_accessions,
+            igd_numbers_included => $include_igd_numbers,
+            # lab_numbers_included => $include_lab_numbers
+        });
+        $parser->load_plugin($parser_plugin);
+    }
 
     my $dir = $c->tempfiles_subdir('/genotype_data_upload_SQL_COPY');
     my $temp_file_sql_copy = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'genotype_data_upload_SQL_COPY/fileXXXX');
@@ -707,6 +741,126 @@ sub upload_genotype_verify_POST : Args(0) {
                 is_grm => 1
             },
             genotype_info=>$grm_info
+        };
+
+        my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new($store_args);
+        my $verified_errors = $store_genotypes->validate();
+        # print STDERR Dumper $verified_errors;
+        if (scalar(@{$verified_errors->{error_messages}}) > 0){
+            my $error_string = join ', ', @{$verified_errors->{error_messages}};
+            $c->stash->{rest} = { error => "There exist errors in your file. $error_string", missing_stocks => $verified_errors->{missing_stocks} };
+            $c->detach();
+        }
+        if (scalar(@{$verified_errors->{warning_messages}}) > 0){
+            #print STDERR Dumper $verified_errors->{warning_messages};
+            my $warning_string = join ', ', @{$verified_errors->{warning_messages}};
+            if (!$accept_warnings){
+                $c->stash->{rest} = { warning => $warning_string, previous_genotypes_exist => $verified_errors->{previous_genotypes_exist} };
+                $c->detach();
+            }
+        }
+
+        $store_genotypes->store_metadata();
+        $return = $store_genotypes->store_identifiers();
+
+    } elsif ($is_from_grm) {
+        #For creating a GRM and saving it as a GRM genotyping protocol. Similar to GRMTSV but creating GRM here.
+
+        if ($protocol_is_grm) {
+            $c->stash->{rest} = { error => 'You cannot select a GRM genotyping protocol here! Select a genotyping protocol with genotyping marker data!' };
+            $c->detach();
+        }
+
+        my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
+        my $tmp_grm_dir = $shared_cluster_dir_config."/tmp_genotype_download_grm";
+        mkdir $tmp_grm_dir if ! -d $tmp_grm_dir;
+        my ($grm_tempfile_fh, $grm_tempfile) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
+        my ($grm_out_tempfile_fh, $grm_out_tempfile) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
+
+        my $geno = CXGN::Genotype::GRM->new({
+            bcs_schema=>$schema,
+            grm_temp_file=>$grm_tempfile,
+            people_schema=>$people_schema,
+            cache_root=>$c->config->{cache_file_path},
+            trial_id_list=>[$is_from_grm_trial_id],
+            protocol_id=>$protocol_id,
+            get_grm_for_parental_accessions=>$is_from_grm_compute_from_parents,
+            download_format=>'three_column_reciprocal_uniquenames'
+            # minor_allele_frequency=>$minor_allele_frequency,
+            # marker_filter=>$marker_filter,
+            # individuals_filter=>$individuals_filter
+        });
+        my $grm_data = $geno->download_grm(
+            'data',
+            $shared_cluster_dir_config,
+            $c->config->{backend},
+            $c->config->{cluster_host},
+            $c->config->{'web_cluster_queue'},
+            $c->config->{basepath}
+        );
+        my $observation_unit_names_all = $geno->accession_name_list();
+
+        open(my $F2, ">", $grm_out_tempfile) || die "Can't open file ".$grm_out_tempfile;
+            print $F2 $grm_data;
+        close($F2);
+
+        my @grm_lines = split "\n", $grm_data;
+        my %grm_info;
+        foreach (@grm_lines) {
+            my @line = split "\t", $_;
+            $grm_info{$line[0]}->{$line[1]} = $line[2];
+        }
+        # print STDERR Dumper \%grm_info;
+
+        my $uploader = CXGN::UploadFile->new({
+            tempfile => $grm_out_tempfile,
+            subdirectory => "grm_data_trial_created",
+            archive_path => $c->config->{archive_path},
+            archive_filename => basename($grm_out_tempfile),
+            timestamp => $timestamp,
+            user_id => $user_id,
+            user_role => $user_role
+        });
+        $archived_filename_with_path = $uploader->archive();
+        my $md5 = $uploader->get_md5($archived_filename_with_path);
+        if (!$archived_filename_with_path) {
+            $c->stash->{rest} = { error => 'Could not save file $upload_original_name in archive.' };
+            $c->detach();
+        }
+        unlink $grm_out_tempfile;
+
+        my $store_args = {
+            bcs_schema=>$schema,
+            metadata_schema=>$metadata_schema,
+            phenome_schema=>$phenome_schema,
+            observation_unit_type_name=>$obs_type,
+            is_from_grm_trial_id=>$is_from_grm_trial_id,
+            project_id=>$project_id,
+            #protocol_id=>$protocol_id,
+            genotyping_facility=>$genotyping_facility, #projectprop
+            breeding_program_id=>$breeding_program_id, #project_rel
+            project_year=>$year, #projectprop
+            project_location_id=>$is_from_grm_location_id, #ndexperiment and projectprop
+            project_name=>$project_name, #project_attr
+            project_description=>$is_from_grm_protocol_desc, #project_attr
+            protocol_name=>$is_from_grm_protocol_name,
+            protocol_description=>$is_from_grm_protocol_desc,
+            organism_id=>$organism_id,
+            #igd_numbers_included=>$include_igd_numbers,
+            #lab_numbers_included=>$include_lab_numbers,
+            user_id=>$user_id,
+            archived_filename=>$archived_filename_with_path,
+            archived_file_type=>'genotype_vcf', #can be 'genotype_vcf' or 'genotype_dosage' to disntiguish genotyprop between old dosage only format and more info vcf format
+            temp_file_sql_copy=>$temp_file_sql_copy,
+            genotyping_data_type=>'GRM',
+            observation_unit_uniquenames=>$observation_unit_names_all,
+            protocol_info=>{
+                reference_genome_name => $reference_genome_name,
+                species_name => $organism_species,
+                is_grm => 1,
+                is_grm_trial_created => 1
+            },
+            genotype_info=>\%grm_info
         };
 
         my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new($store_args);

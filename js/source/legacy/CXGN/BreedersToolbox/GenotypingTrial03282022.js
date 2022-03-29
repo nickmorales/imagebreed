@@ -25,6 +25,8 @@ jQuery(document).ready(function ($) {
     });
 
     get_select_box("locations", "upload_genotype_location_select_div", {'id': 'upload_genotype_location_select', 'name': 'upload_genotype_location_select'});
+    get_select_box("locations", "upload_genotype_is_from_grm_location_select_div", {'id': 'upload_genotype_is_from_grm_location_select', 'name': 'upload_genotype_is_from_grm_location_select'});
+    get_select_box("genotyping_facilities", "upload_genotype_vcf_facility_select_div", {'id': 'upload_genotype_vcf_facility_select', 'name': 'upload_genotype_vcf_facility_select', 'empty':1});
     get_select_box("breeding_programs", "upload_genotype_breeding_program_select_div", {'id': 'upload_genotype_breeding_program_select', 'name': 'upload_genotype_breeding_program_select'});
     get_select_box("years", "upload_genotype_year_select_div", {'auto_generate': 1, 'id': 'upload_genotype_year_select', 'name': 'upload_genotype_year_select'});
 
