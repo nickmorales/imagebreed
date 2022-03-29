@@ -23,6 +23,7 @@ my $trial_search = CXGN::Trial::Search->new({
     accession_name_list=>\@accession_name_list,
     trial_design_list=>\@trial_design_list,
     trait_list=>\@trait_list,
+    nd_protocol_grm_ids_list=>\@nd_protocol_grm_ids_list
 });
 my ($result, $total_count) = $trial_search->search();
 
@@ -91,6 +92,11 @@ has 'trial_id_list' => (
 
 has 'trial_name_list' => (
     isa => 'ArrayRef[Str]|Undef',
+    is => 'rw',
+);
+
+has 'nd_protocol_grm_ids_list' => (
+    isa => 'ArrayRef[Int]|Undef',
     is => 'rw',
 );
 
@@ -185,6 +191,7 @@ sub search {
     my $trial_type_list = $self->trial_type_list;
     my $trial_id_list = $self->trial_id_list;
     my $trial_name_list = $self->trial_name_list;
+    my $nd_protocol_grm_ids_list = $self->nd_protocol_grm_ids_list;
     my $folder_id_list = $self->folder_id_list;
     my $folder_name_list = $self->folder_name_list;
     my $trial_design_list = $self->trial_design_list;
@@ -340,6 +347,15 @@ sub search {
             JOIN phenotype USING(phenotype_id) ";
     }
 
+    my $nd_protocol_join = '';
+    if ($nd_protocol_grm_ids_list && scalar(@$nd_protocol_grm_ids_list)>0) {
+        my $sql = join ("," , @$nd_protocol_grm_ids_list);
+        push @where_clause, "nd_experiment_protocol.nd_protocol_id in ($sql)";
+        $nd_protocol_join = " JOIN nd_experiment_project ON(study.project_id=nd_experiment_project.project_id)
+            JOIN nd_experiment AS trial_experiment ON(trial_experiment.nd_experiment_id=nd_experiment_project.nd_experiment_id)
+            JOIN nd_experiment_protocol ON(trial_experiment.nd_experiment_id=nd_experiment_protocol.nd_experiment_id) ";
+    }
+
     if (scalar(@$private_company_ids_list)==0 && $sp_person_id) {
         my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
         my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($sp_person_id, 0);
@@ -382,11 +398,12 @@ sub search {
         LEFT JOIN projectprop AS project_additional_info ON(study.project_id=project_additional_info.project_id AND project_additional_info.type_id=$additional_info_cvterm_id)
         $accession_join
         $trait_join
+        $nd_protocol_join
         $where_clause
         GROUP BY(study.name, study.project_id, study.description, folder.name, folder.project_id, folder.description, trial_type_name.cvterm_id, trial_type_name.name, projectprop.value, year.value, location.value, breeding_program.name, breeding_program.project_id, breeding_program.description, harvest_date.value, planting_date.value, design.value, genotyping_facility.value, genotyping_facility_submitted.value, genotyping_facility_status.value, genotyping_plate_format.value, genotyping_plate_sample_type.value, genotyping_facility_plate_id.value, sampling_facility.value, sampling_facility_sample_type.value, project_additional_info.value, company.private_company_id, company.name, company.description)
         ORDER BY study.name;";
 
-    print STDERR Dumper $q;
+    # print STDERR Dumper $q;
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute();
 

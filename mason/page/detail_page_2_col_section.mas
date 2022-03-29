@@ -340,6 +340,9 @@ $company_members => []
 % if ($info_section_id eq 'genotyping_protocol_grm_relationships'){
                                 <& /breeders_toolbox/genotyping_protocol/genotype_relationships.mas, protocol_id => $protocol_id &>
 % } #End genotyping_protocol_grm_relationships
+% if ($info_section_id eq 'genotyping_protocol_grm_field_trial'){
+                                <& /breeders_toolbox/genotyping_protocol/field_trial_linkage.mas, protocol_id => $protocol_id &>
+% } #End genotyping_protocol_grm_field_trial
 
 
 % if ($info_section_id eq 'crossingtrial_details'){

@@ -33,6 +33,12 @@ sub search : Path('/ajax/search/trials') Args(0) {
     my $field_trials_only = $c->req->param('field_trials_only') || 1;
     my $trial_design_list = $c->req->param('trial_design') ? [$c->req->param('trial_design')] : [];
     my $private_company_ids_array = $c->req->param('private_company_ids') ? $c->req->param('private_company_ids') : [];
+    my $nd_protocol_grm_id = $c->req->param('nd_protocol_grm_id');
+
+    my @nd_protocol_grm_ids;
+    if ($nd_protocol_grm_id) {
+        push @nd_protocol_grm_ids, $nd_protocol_grm_id;
+    }
 
     if (scalar(@$private_company_ids_array)==0) {
         my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
@@ -45,6 +51,7 @@ sub search : Path('/ajax/search/trials') Args(0) {
         location_id_list=>\@location_ids,
         field_trials_only=>$field_trials_only,
         trial_design_list=>$trial_design_list,
+        nd_protocol_grm_ids_list=>\@nd_protocol_grm_ids,
         private_company_ids_list=>$private_company_ids_array,
         sp_person_id=>$user_id,
         subscription_model=>$c->config->{subscription_model}
