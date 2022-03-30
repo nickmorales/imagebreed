@@ -3628,6 +3628,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $max_col = -100000000000000;
     my $min_row = 100000000000000;
     my $max_row = -100000000000000;
+    my $min_rep = 100000000000000;
+    my $max_rep = -100000000000000;
     foreach my $obs_unit (@$data){
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
@@ -3756,6 +3758,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my %dap_to_gdd_hash;
     my %seen_days_after_plantings_htp;
     my %plot_row_col_hash;
+    my %seen_reps_hash;
     foreach my $obs_unit (@$data_htp){
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
@@ -3788,6 +3791,14 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             obsunit_stock_id => $obsunit_stock_id,
             obsunit_name => $obsunit_stock_uniquename
         };
+
+        if ($replicate_number < $min_rep) {
+            $min_rep = $replicate_number;
+        }
+        if ($replicate_number > $max_rep) {
+            $max_rep = $replicate_number;
+        }
+        $seen_reps_hash{$replicate_number}++;
 
         if ($row_number < $min_row) {
             $min_row = $row_number;
@@ -7692,6 +7703,12 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my @f_anova_grm_fixed_effects_f3_cont;
         my @f_anova_grm_prm_secondary_traits_havg;
         my @f_anova_grm_prm_secondary_traits_favg;
+        my $reps_acc_havg;
+        my $reps_acc_f3_cont;
+        my $reps_acc_grm_prm;
+        my $reps_test_acc_havg;
+        my $reps_test_acc_f3_cont;
+        my $reps_test_acc_grm_prm;
 
         foreach my $t (@sorted_trait_names) {
             push @germplasm_data_header, ($t."mean", $t."sd", $t."spatialcorrected2Dsplgenoeffect");
@@ -9742,6 +9759,84 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 close($F_gcorr_f);
             };
 
+            my $grm_no_prm_fixed_effects_havg_reps_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
+            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+            geno_mat[is.na(geno_mat)] <- 0;
+            mat\$fixed_effect_all_cont <- mat_fixed\$fixed_effect_all_cont;
+            h2s <- c(); h2ses <- c(); r2s <- c(); sses <- c(); ';
+            foreach my $r (sort keys %seen_reps_hash) {
+                $grm_no_prm_fixed_effects_havg_reps_gcorr_cmd .= '
+                mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \''.$r.'\', ]);
+                if (!is.null(mix\$U)) {
+                h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) ); ff <- fitted(mix);
+                r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+                SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+                h2s <- append(h2s, h2\$Estimate); h2ses <- append(h2ses, h2\$SE); r2s <- append(r2s, r2); sses <- append(sses, SSE);
+                } ';
+            }
+            $grm_no_prm_fixed_effects_havg_reps_gcorr_cmd .= '
+            write.table(data.frame(h2s_vals=c(paste(h2s,collapse=\',\')), h2s_mean=c(mean(h2s,na.rm=TRUE)), h2ses_vals=c(paste(h2ses,collapse=\',\')), h2ses_mean=c(mean(h2ses,na.rm=TRUE)), r2s_vals=c(paste(r2s,collapse=\',\')), r2s_mean=c(mean(r2s,na.rm=TRUE)), sses_vals=c(paste(sses,collapse=\',\')), sses_mean = c(mean(sses,na.rm=TRUE)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            "';
+            print STDERR Dumper $grm_no_prm_fixed_effects_havg_reps_gcorr_cmd;
+            my $grm_no_prm_fixed_effects_havg_reps_gcorr_cmd_status = system($grm_no_prm_fixed_effects_havg_reps_gcorr_cmd);
+
+            open(my $F_avg_rep_acc_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                print STDERR "Opened $stats_out_tempfile_gcor\n";
+                $header_fits = <$F_avg_rep_acc_f>;
+                while (my $row = <$F_avg_rep_acc_f>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    $reps_acc_havg = \@columns;
+                }
+            close($F_avg_rep_acc_f);
+
+            my $grm_no_prm_fixed_effects_havg_reps_test_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
+            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+            geno_mat[is.na(geno_mat)] <- 0;
+            mat\$fixed_effect_all_cont <- mat_fixed\$fixed_effect_all_cont;
+            h2s <- c(); h2ses <- c(); r2s <- c(); sses <- c(); ';
+            my @grm_no_prm_fixed_effects_havg_reps_tests;
+            foreach my $r (sort keys %seen_reps_hash) {
+                push @grm_no_prm_fixed_effects_havg_reps_tests, 'mat\$replicate != \''.$r.'\'';
+                my $grm_no_prm_fixed_effects_havg_reps_test = join ' && ', @grm_no_prm_fixed_effects_havg_reps_tests;
+
+                $grm_no_prm_fixed_effects_havg_reps_test_gcorr_cmd .= '
+                mat_f <- mat['.$grm_no_prm_fixed_effects_havg_reps_test.', ];
+                if (nrow(mat_f)>0) {
+                mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_all_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_f);
+                if (!is.null(mix\$U)) {
+                h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) ); ff <- fitted(mix);
+                r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+                SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+                h2s <- append(h2s, h2\$Estimate); h2ses <- append(h2ses, h2\$SE); r2s <- append(r2s, r2); sses <- append(sses, SSE);
+                }} ';
+            }
+            $grm_no_prm_fixed_effects_havg_reps_test_gcorr_cmd .= '
+            write.table(data.frame(h2s_vals=c(paste(h2s,collapse=\',\')), h2s_mean=c(mean(h2s,na.rm=TRUE)), h2ses_vals=c(paste(h2ses,collapse=\',\')), h2ses_mean=c(mean(h2ses,na.rm=TRUE)), r2s_vals=c(paste(r2s,collapse=\',\')), r2s_mean=c(mean(r2s,na.rm=TRUE)), sses_vals=c(paste(sses,collapse=\',\')), sses_mean = c(mean(sses,na.rm=TRUE)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            "';
+            print STDERR Dumper $grm_no_prm_fixed_effects_havg_reps_test_gcorr_cmd;
+            my $grm_no_prm_fixed_effects_havg_reps_test_gcorr_cmd_status = system($grm_no_prm_fixed_effects_havg_reps_test_gcorr_cmd);
+
+            open($F_avg_rep_acc_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                print STDERR "Opened $stats_out_tempfile_gcor\n";
+                $header_fits = <$F_avg_rep_acc_f>;
+                while (my $row = <$F_avg_rep_acc_f>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    $reps_test_acc_havg = \@columns;
+                }
+            close($F_avg_rep_acc_f);
+
             my $grm_no_prm_fixed_effects_max_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
@@ -10457,6 +10552,88 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                 close($F_gcorr_f);
             };
 
+            my $grm_no_prm_fixed_effects_f3_cont_reps_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
+            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+            geno_mat[is.na(geno_mat)] <- 0;
+            mat\$fixed_effect_1_cont <- mat_fixed\$fixed_effect_1_cont;
+            mat\$fixed_effect_2_cont <- mat_fixed\$fixed_effect_2_cont;
+            mat\$fixed_effect_3_cont <- mat_fixed\$fixed_effect_3_cont;
+            h2s <- c(); h2ses <- c(); r2s <- c(); sses <- c(); ';
+            foreach my $r (sort keys %seen_reps_hash) {
+                $grm_no_prm_fixed_effects_f3_cont_reps_gcorr_cmd .= '
+                mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1_cont + fixed_effect_2_cont + fixed_effect_3_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat[mat\$replicate == \''.$r.'\', ]);
+                if (!is.null(mix\$U)) {
+                h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) ); ff <- fitted(mix);
+                r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+                SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+                h2s <- append(h2s, h2\$Estimate); h2ses <- append(h2ses, h2\$SE); r2s <- append(r2s, r2); sses <- append(sses, SSE);
+                } ';
+            }
+            $grm_no_prm_fixed_effects_f3_cont_reps_gcorr_cmd .= '
+            write.table(data.frame(h2s_vals=c(paste(h2s,collapse=\',\')), h2s_mean=c(mean(h2s,na.rm=TRUE)), h2ses_vals=c(paste(h2ses,collapse=\',\')), h2ses_mean=c(mean(h2ses,na.rm=TRUE)), r2s_vals=c(paste(r2s,collapse=\',\')), r2s_mean=c(mean(r2s,na.rm=TRUE)), sses_vals=c(paste(sses,collapse=\',\')), sses_mean = c(mean(sses,na.rm=TRUE)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            "';
+            print STDERR Dumper $grm_no_prm_fixed_effects_f3_cont_reps_gcorr_cmd;
+            my $grm_no_prm_fixed_effects_f3_cont_reps_gcorr_cmd_status = system($grm_no_prm_fixed_effects_f3_cont_reps_gcorr_cmd);
+
+            open($F_avg_rep_acc_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                print STDERR "Opened $stats_out_tempfile_gcor\n";
+                $header_fits = <$F_avg_rep_acc_f>;
+                while (my $row = <$F_avg_rep_acc_f>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    $reps_acc_f3_cont = \@columns;
+                }
+            close($F_avg_rep_acc_f);
+
+            my $grm_no_prm_fixed_effects_f3_cont_reps_test_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
+            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+            geno_mat[is.na(geno_mat)] <- 0;
+            mat\$fixed_effect_1_cont <- mat_fixed\$fixed_effect_1_cont;
+            mat\$fixed_effect_2_cont <- mat_fixed\$fixed_effect_2_cont;
+            mat\$fixed_effect_3_cont <- mat_fixed\$fixed_effect_3_cont;
+            h2s <- c(); h2ses <- c(); r2s <- c(); sses <- c(); ';
+            my @grm_no_prm_fixed_effects_f3_cont_reps_tests;
+            foreach my $r (sort keys %seen_reps_hash) {
+                push @grm_no_prm_fixed_effects_f3_cont_reps_tests, 'mat\$replicate != \''.$r.'\'';
+                my $grm_no_prm_fixed_effects_f3_cont_reps_test = join ' && ', @grm_no_prm_fixed_effects_f3_cont_reps_tests;
+
+                $grm_no_prm_fixed_effects_f3_cont_reps_test_gcorr_cmd .= '
+                mat_f <- mat['.$grm_no_prm_fixed_effects_f3_cont_reps_test.', ];
+                if (nrow(mat_f)>0) {
+                mix <- mmer('.$trait_name_encoded_string.'~1 + replicate + fixed_effect_1_cont + fixed_effect_2_cont + fixed_effect_3_cont, random=~vs(id, Gu=geno_mat), rcov=~vs(units), data=mat_f);
+                if (!is.null(mix\$U)) {
+                h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) ); ff <- fitted(mix);
+                r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+                SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+                h2s <- append(h2s, h2\$Estimate); h2ses <- append(h2ses, h2\$SE); r2s <- append(r2s, r2); sses <- append(sses, SSE);
+                }} ';
+            }
+            $grm_no_prm_fixed_effects_f3_cont_reps_test_gcorr_cmd .= '
+            write.table(data.frame(h2s_vals=c(paste(h2s,collapse=\',\')), h2s_mean=c(mean(h2s,na.rm=TRUE)), h2ses_vals=c(paste(h2ses,collapse=\',\')), h2ses_mean=c(mean(h2ses,na.rm=TRUE)), r2s_vals=c(paste(r2s,collapse=\',\')), r2s_mean=c(mean(r2s,na.rm=TRUE)), sses_vals=c(paste(sses,collapse=\',\')), sses_mean = c(mean(sses,na.rm=TRUE)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            "';
+            print STDERR Dumper $grm_no_prm_fixed_effects_f3_cont_reps_test_gcorr_cmd;
+            my $grm_no_prm_fixed_effects_f3_cont_reps_test_gcorr_cmd_status = system($grm_no_prm_fixed_effects_f3_cont_reps_test_gcorr_cmd);
+
+            open($F_avg_rep_acc_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                print STDERR "Opened $stats_out_tempfile_gcor\n";
+                $header_fits = <$F_avg_rep_acc_f>;
+                while (my $row = <$F_avg_rep_acc_f>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    $reps_test_acc_f3_cont = \@columns;
+                }
+            close($F_avg_rep_acc_f);
+
             my $grm_no_prm_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
             geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
@@ -10898,6 +11075,94 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     }
                 close($F_gcorr_f);
             };
+
+            my $grm_no_prm_fixed_effects_prm_reps_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+            prm_mat_cols <- data.frame(fread(\''.$analytics_protocol_data_tempfile27.'\', header=FALSE, sep=\',\'));
+            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+            geno_mat[is.na(geno_mat)] <- 0;
+            prm_mat <- cor(t(prm_mat_cols));
+            #prm_mat <- as.matrix(prm_mat_cols) %*% t(as.matrix(prm_mat_cols));
+            prm_mat[is.na(prm_mat)] <- 0;
+            prm_mat <- prm_mat/ncol(prm_mat_cols);
+            colnames(prm_mat) <- mat\$plot_id_s;
+            rownames(prm_mat) <- mat\$plot_id_s;
+            h2s <- c(); h2ses <- c(); r2s <- c(); sses <- c(); ';
+            foreach my $r (sort keys %seen_reps_hash) {
+                $grm_no_prm_fixed_effects_prm_reps_gcorr_cmd .= '
+                mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat[mat\$replicate == \''.$r.'\', ]);
+                if (!is.null(mix\$U)) {
+                h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) ); ff <- fitted(mix);
+                r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+                SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+                h2s <- append(h2s, h2\$Estimate); h2ses <- append(h2ses, h2\$SE); r2s <- append(r2s, r2); sses <- append(sses, SSE);
+                } ';
+            }
+            $grm_no_prm_fixed_effects_prm_reps_gcorr_cmd .= '
+            write.table(data.frame(h2s_vals=c(paste(h2s,collapse=\',\')), h2s_mean=c(mean(h2s,na.rm=TRUE)), h2ses_vals=c(paste(h2ses,collapse=\',\')), h2ses_mean=c(mean(h2ses,na.rm=TRUE)), r2s_vals=c(paste(r2s,collapse=\',\')), r2s_mean=c(mean(r2s,na.rm=TRUE)), sses_vals=c(paste(sses,collapse=\',\')), sses_mean = c(mean(sses,na.rm=TRUE)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            "';
+            print STDERR Dumper $grm_no_prm_fixed_effects_prm_reps_gcorr_cmd;
+            my $grm_no_prm_fixed_effects_prm_reps_gcorr_cmd_status = system($grm_no_prm_fixed_effects_prm_reps_gcorr_cmd);
+
+            open($F_avg_rep_acc_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                print STDERR "Opened $stats_out_tempfile_gcor\n";
+                $header_fits = <$F_avg_rep_acc_f>;
+                while (my $row = <$F_avg_rep_acc_f>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    $reps_acc_grm_prm = \@columns;
+                }
+            close($F_avg_rep_acc_f);
+
+            my $grm_no_prm_fixed_effects_prm_reps_test_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            geno_mat_3col <- data.frame(fread(\''.$grm_file.'\', header=FALSE, sep=\'\t\'));
+            prm_mat_cols <- data.frame(fread(\''.$analytics_protocol_data_tempfile27.'\', header=FALSE, sep=\',\'));
+            geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+            geno_mat[is.na(geno_mat)] <- 0;
+            prm_mat <- cor(t(prm_mat_cols));
+            #prm_mat <- as.matrix(prm_mat_cols) %*% t(as.matrix(prm_mat_cols));
+            prm_mat[is.na(prm_mat)] <- 0;
+            prm_mat <- prm_mat/ncol(prm_mat_cols);
+            colnames(prm_mat) <- mat\$plot_id_s;
+            rownames(prm_mat) <- mat\$plot_id_s;
+            h2s <- c(); h2ses <- c(); r2s <- c(); sses <- c(); ';
+            my @grm_no_prm_fixed_effects_f3_cont_reps_tests;
+            foreach my $r (sort keys %seen_reps_hash) {
+                push @grm_no_prm_fixed_effects_f3_cont_reps_tests, 'mat\$replicate != \''.$r.'\'';
+                my $grm_no_prm_fixed_effects_f3_cont_reps_test = join ' && ', @grm_no_prm_fixed_effects_f3_cont_reps_tests;
+
+                $grm_no_prm_fixed_effects_prm_reps_test_gcorr_cmd .= '
+                mat_f <- mat['.$grm_no_prm_fixed_effects_f3_cont_reps_test.', ];
+                if (nrow(mat_f)>0) {
+                mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat_f);
+                if (!is.null(mix\$U)) {
+                h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) ); ff <- fitted(mix);
+                r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
+                SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
+                h2s <- append(h2s, h2\$Estimate); h2ses <- append(h2ses, h2\$SE); r2s <- append(r2s, r2); sses <- append(sses, SSE);
+                }} ';
+            }
+            $grm_no_prm_fixed_effects_prm_reps_test_gcorr_cmd .= '
+            write.table(data.frame(h2s_vals=c(paste(h2s,collapse=\',\')), h2s_mean=c(mean(h2s,na.rm=TRUE)), h2ses_vals=c(paste(h2ses,collapse=\',\')), h2ses_mean=c(mean(h2ses,na.rm=TRUE)), r2s_vals=c(paste(r2s,collapse=\',\')), r2s_mean=c(mean(r2s,na.rm=TRUE)), sses_vals=c(paste(sses,collapse=\',\')), sses_mean = c(mean(sses,na.rm=TRUE)) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            "';
+            print STDERR Dumper $grm_no_prm_fixed_effects_prm_reps_test_gcorr_cmd;
+            my $grm_no_prm_fixed_effects_prm_reps_test_gcorr_cmd_status = system($grm_no_prm_fixed_effects_prm_reps_test_gcorr_cmd);
+
+            open($F_avg_rep_acc_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                print STDERR "Opened $stats_out_tempfile_gcor\n";
+                $header_fits = <$F_avg_rep_acc_f>;
+                while (my $row = <$F_avg_rep_acc_f>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    $reps_test_acc_grm_prm = \@columns;
+                }
+            close($F_avg_rep_acc_f);
 
             my $grm_prm_secondary_traits_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -12711,7 +12976,13 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             gcorr_qarr_grm_id_prm => \@gcorr_qarr_grm_id_prm,
             gcorr_qarr_grm_id_prm_id => \@gcorr_qarr_grm_id_prm_id,
             gcorr_qarr_grm_prm_secondary_traits_havg => \@gcorr_qarr_grm_prm_secondary_traits_havg,
-            gcorr_qarr_grm_prm_secondary_traits_favg => \@gcorr_qarr_grm_prm_secondary_traits_favg
+            gcorr_qarr_grm_prm_secondary_traits_favg => \@gcorr_qarr_grm_prm_secondary_traits_favg,
+            reps_acc_havg => $reps_acc_havg,
+            reps_acc_f3_cont => $reps_acc_f3_cont,
+            reps_acc_grm_prm => $reps_acc_grm_prm,
+            reps_test_acc_havg => $reps_test_acc_havg,
+            reps_test_acc_f3_cont => $reps_test_acc_f3_cont,
+            reps_test_acc_grm_prm => $reps_test_acc_grm_prm,
         }
     }
 
