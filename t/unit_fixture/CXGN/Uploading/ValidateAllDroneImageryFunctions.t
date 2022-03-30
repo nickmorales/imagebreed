@@ -755,65 +755,50 @@ my $message_coord_upload_hash = decode_json $message_coord_upload;
 print STDERR Dumper $message_coord_upload_hash;
 ok($message_coord_upload_hash->{success});
 
-sleep(10);
+sleep(7);
 
-$ua = LWP::UserAgent->new;
-$ua->timeout(3600);
-my $response_raster = $ua->post(
-        'http://localhost:3010/api/drone_imagery/calculate_analytics',
-        Content_Type => 'form-data',
-        Content => [
-            "sgn_session_id" => $sgn_session_id,
-            "observation_variable_id_list" => encode_json([$trait_id1]),
-            "field_trial_id_list" => encode_json([$field_trial_id]),
-            "statistics_select" => "sommer_grm_univariate_spatial_pure_2dspl_genetic_blups",
-            "analytics_protocol_name" => "test_2dspluni_1NDVI_analytics1",
-            "analytics_protocol_desc" => "test desc",
-            "analytics_select" => "minimize_local_env_effect",
-            "number_iterations" => "2",
-            "relationship_matrix_type" => "", #identity
-            "tolparinv" => "0.1",
-            "legendre_order_number" => "3",
-            "use_area_under_curve" => "no",
-            "permanent_environment_structure" => "identity",
-            "sim_env_change_over_time" => "",
-            "env_variance_percent" => "0.2",
-            "simulated_environment_real_data_trait_id" => "$trait_id2",
-            "sim_env_change_over_time_correlation" => "0.9",
-            "fixed_effect_type" => "replicate",
-            "fixed_effect_trait_id" => undef,
-            "fixed_effect_quantiles" => "4",
-            "simulations_to_run" => "none" #or 6sims
-        ]
-    );
-
-ok($response_raster->is_success);
-my $message_raster = $response_raster->decoded_content;
-my $message_hash = decode_json $message_raster;
+$mech->post_ok('http://localhost:3010/api/drone_imagery/calculate_analytics', [
+        "sgn_session_id" => $sgn_session_id,
+        "observation_variable_id_list" => encode_json([$trait_id1]),
+        "field_trial_id_list" => encode_json([$field_trial_id]),
+        "statistics_select" => "sommer_grm_univariate_spatial_pure_2dspl_genetic_blups",
+        "analytics_protocol_name" => "test_2dspluni_1NDVI_analytics1",
+        "analytics_protocol_desc" => "test desc",
+        "analytics_select" => "minimize_local_env_effect",
+        "number_iterations" => "2",
+        "relationship_matrix_type" => "", #identity
+        "tolparinv" => "0.1",
+        "legendre_order_number" => "3",
+        "use_area_under_curve" => "no",
+        "permanent_environment_structure" => "identity",
+        "sim_env_change_over_time" => "",
+        "env_variance_percent" => "0.2",
+        "simulated_environment_real_data_trait_id" => "$trait_id2",
+        "sim_env_change_over_time_correlation" => "0.9",
+        "fixed_effect_type" => "replicate",
+        "fixed_effect_trait_id" => undef,
+        "fixed_effect_quantiles" => "4",
+        "simulations_to_run" => "none" #or 6sims
+    ]
+);
+my $message_hash = decode_json $mech->content;
 print STDERR Dumper $message_hash;
 ok($message_hash->{analytics_protocol_id});
 my $analytics_protocol_id = $message_hash->{analytics_protocol_id};
 
-$ua = LWP::UserAgent->new;
-$ua->timeout(3600);
-my $response_raster = $ua->post(
-        'http://localhost:3010/ajax/analytics_protocols_compare_to_trait',
-        Content_Type => 'form-data',
-        Content => [
-            "sgn_session_id" => $sgn_session_id,
-            "protocol_id" => $analytics_protocol_id,
-            "trial_id" => $field_trial_id,
-            "trait_id" => $trait_id1,
-            "analysis" => "2dspl",
-            "traits_secondary" => $trait_id2,
-            "default_tol" => "pre_both",
-            "cor_label_size" => "5",
-            "cor_label_digits" => "2",
-        ]
-    );
-ok($response_raster->is_success);
-my $message_raster = $response_raster->decoded_content;
-my $message_hash = decode_json $message_raster;
+$mech->post_ok('http://localhost:3010/ajax/analytics_protocols_compare_to_trait', [
+        "sgn_session_id" => $sgn_session_id,
+        "protocol_id" => $analytics_protocol_id,
+        "trial_id" => $field_trial_id,
+        "trait_id" => $trait_id1,
+        "analysis" => "2dspl",
+        "traits_secondary" => $trait_id2,
+        "default_tol" => "pre_both",
+        "cor_label_size" => "5",
+        "cor_label_digits" => "2",
+    ]
+);
+my $message_hash = decode_json $mech->content;
 print STDERR Dumper $message_hash;
 ok($message_hash->{charts});
 ok($message_hash->{result_blups_all});
