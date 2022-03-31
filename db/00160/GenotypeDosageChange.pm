@@ -77,11 +77,14 @@ sub patch {
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute();
 
-    my $q1_1 = "SELECT nd_experiment_stock.stock_id
-	FROM nd_protocol
-	JOIN nd_experiment_protocol ON(nd_protocol.nd_protocol_id=nd_experiment_protocol.nd_protocol_id)
-	JOIN nd_experiment ON(nd_experiment.nd_experiment_id=nd_experiment_protocol.nd_experiment_id AND nd_experiment.type_id=$geno_cvterm_id)
-	JOIN nd_experiment_stock ON(nd_experiment.nd_experiment_id=nd_experiment_stock.nd_experiment_id)
+    my $q1_1 = "SELECT nd_experiment_stock.stock_id, genotypeprop.genotypeprop_id, genotype.genotype_id
+    FROM nd_protocol
+    JOIN nd_experiment_protocol ON(nd_protocol.nd_protocol_id=nd_experiment_protocol.nd_protocol_id)
+    JOIN nd_experiment ON(nd_experiment.nd_experiment_id=nd_experiment_protocol.nd_experiment_id AND nd_experiment.type_id=$geno_cvterm_id)
+    JOIN nd_experiment_stock ON(nd_experiment.nd_experiment_id=nd_experiment_stock.nd_experiment_id)
+    JOIN nd_experiment_genotype ON(nd_experiment.nd_experiment_id=nd_experiment_genotype.nd_experiment_id)
+    JOIN genotype ON(nd_experiment_genotype.genotype_id=genotype.genotype_id)
+    JOIN genotypeprop ON(genotype.genotype_id=genotypeprop.genotype_id)
 	WHERE nd_protocol.nd_protocol_id=?
 	;";
     my $h1_1 = $schema->storage->dbh()->prepare($q1_1);
@@ -102,7 +105,7 @@ sub patch {
     while (my($nd_protocol_id, $marker_check) = each %protocol_geno_check) {
         $h1_1->execute($nd_protocol_id);
 
-        while (my ($stock_id) = $h1_1->fetchrow_array()) {
+        while (my ($stock_id, $genotypeprop_id, $genotype_id) = $h1_1->fetchrow_array()) {
             if ($stock_id) {
                 $protocols_hash{$nd_protocol_id} = {
                     marker_check => $marker_check,
@@ -265,71 +268,75 @@ sub patch {
     # 'A/C' # Lots of allele combos... like "CTAATTATAAAACTAT/CTAATTATAAAACTAT"
 
     my %protocol_to_change;
-    while (my($nd_protocol_id, $o) = each %protocols_hash) {
-        my $stock_id = $o->{stock_id};
+    foreach my $nd_protocol_id (sort keys %protocols_hash) {
+        my $o = $protocols_hash{$nd_protocol_id};
         my $check_marker_obj = $o->{marker_check};
 
-        $h2->execute($stock_id, $nd_protocol_id);
-        my %check_geno_all_chrom;
-        while (my ($genotypeprop_id, $genotype_id, $check_geno_all_json) = $h2->fetchrow_array()) {
-            my $check_geno_all = decode_json $check_geno_all_json;
-            # print STDERR Dumper $check_geno_all;
-            while (my($k,$v) = each %$check_geno_all) {
-                $check_geno_all_chrom{$k} = $v;
+        CHECK: foreach my $stock_id (sort keys %{$protocols_all_stock_ids{$nd_protocol_id}}) {
+            print STDERR "$nd_protocol_id.$stock_id ";
+
+            $h2->execute($stock_id, $nd_protocol_id);
+            my %check_geno_all_chrom;
+            while (my ($genotypeprop_id, $genotype_id, $check_geno_all_json) = $h2->fetchrow_array()) {
+                my $check_geno_all = decode_json $check_geno_all_json;
+                # print STDERR Dumper $check_geno_all;
+                while (my($k,$v) = each %$check_geno_all) {
+                    $check_geno_all_chrom{$k} = $v;
+                }
             }
-        }
 
-        while (my($check_marker_name, $p) = each %$check_marker_obj) {
-            # print STDERR Dumper $check_marker_name;
-            my $check_geno = $check_geno_all_chrom{$check_marker_name};
-            # print STDERR Dumper $check_geno;
+            while (my($check_marker_name, $p) = each %$check_marker_obj) {
+                # print STDERR Dumper $check_marker_name;
+                my $check_geno = $check_geno_all_chrom{$check_marker_name};
+                # print STDERR Dumper $check_geno;
 
-            if ($check_geno) {
-                my $check_ds = $check_geno->{DS};
-                my $check_gt = $check_geno->{GT};
+                if ($check_geno) {
+                    my $check_ds = $check_geno->{DS};
+                    my $check_gt = $check_geno->{GT};
 
-                # Check genotype call with DS set and not equal to 1 (e.g. 0 or 2) and has GT defined and not equal to NA
-                if (defined($check_gt) && defined($check_ds) && looks_like_number($check_ds) && $check_ds ne '1' && $check_ds ne '' && $check_gt ne '' && $check_gt ne 'NA') {
-                    chomp($check_gt);
-                    chomp($check_ds);
+                    # Check genotype call with DS set and not equal to 1 (e.g. 0 or 2) and has GT defined and not equal to NA
+                    if (defined($check_gt) && defined($check_ds) && looks_like_number($check_ds) && $check_ds ne '1' && $check_ds ne '' && $check_gt ne '' && $check_gt ne 'NA') {
+                        chomp($check_gt);
+                        chomp($check_ds);
 
-                    my @gts = split '/', $check_gt;
-                    if (scalar(@gts) <= 1) {
-                        @gts = split '|', $check_gt;
-                    }
-                    # print STDERR Dumper \@gts;
-
-                    if (scalar(@gts) > 0) {
-                        my $old_ds = 0;
-                        my $new_ds = 0;
-                        my $has_calls = 0;
-                        foreach my $gt (@gts) {
-                            # Check that call is defined and is not 'NA', '.', or '-'
-                            if (looks_like_number($gt)) {
-                                if ($gt eq '0') {
-                                    $old_ds++;
-                                }
-                                else {
-                                    $new_ds++;
-                                }
-                                $has_calls = 1;
-                            }
+                        my @gts = split '/', $check_gt;
+                        if (scalar(@gts) <= 1) {
+                            @gts = split '|', $check_gt;
                         }
+                        # print STDERR Dumper \@gts;
 
-                        if ($has_calls) {
-                            print STDERR Dumper [$old_ds, $new_ds, $check_ds];
-                            if ($check_ds == $old_ds) {
-                                print STDERR Dumper $check_geno;
-                                $protocol_to_change{$nd_protocol_id}++;
+                        if (scalar(@gts) > 0) {
+                            my $old_ds = 0;
+                            my $new_ds = 0;
+                            my $has_calls = 0;
+                            foreach my $gt (@gts) {
+                                # Check that call is defined and is not 'NA', '.', or '-'
+                                if (looks_like_number($gt)) {
+                                    if ($gt eq '0') {
+                                        $old_ds++;
+                                    }
+                                    else {
+                                        $new_ds++;
+                                    }
+                                    $has_calls = 1;
+                                }
                             }
 
-                            last;
+                            if ($has_calls) {
+                                print STDERR Dumper [$old_ds, $new_ds, $check_ds];
+                                if ($check_ds == $old_ds) {
+                                    print STDERR Dumper $check_geno;
+                                    $protocol_to_change{$nd_protocol_id}++;
+                                }
+
+                                last CHECK;
+                            }
                         }
                     }
                 }
             }
         }
-
+        print STDERR "End Protocol Check $nd_protocol_id.....\n";
     }
 
     print STDERR "GENOTYPING PROTOCOLS TO CHANGE DS IN:\n";
