@@ -980,7 +980,8 @@ sub download_grm_action : Path('/breeders/download_grm_action') {
         marker_filter=>$marker_filter,
         individuals_filter=>$individuals_filter,
         return_imputed_matrix=>$return_imputed_matrix,
-        ensure_positive_definite=>$ensure_positive_definite
+        ensure_positive_definite=>$ensure_positive_definite,
+        genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
     });
     my $file_handle = $geno->download_grm(
         'filehandle',
@@ -1071,7 +1072,8 @@ sub download_gwas_action : Path('/breeders/download_gwas_action') {
         get_grm_for_parental_accessions=>$compute_from_parents,
         minor_allele_frequency=>$minor_allele_frequency,
         marker_filter=>$marker_filter,
-        individuals_filter=>$individuals_filter
+        individuals_filter=>$individuals_filter,
+        genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
     });
     my $file_handle = $geno->download_gwas(
         $shared_cluster_dir_config,
@@ -1154,7 +1156,8 @@ sub gbs_qc_action : Path('/breeders/gbs_qc_action') Args(0) {
         people_schema=>$people_schema,
         accession_list=>$accession_id_data->{transform},
         trial_list=>$trial_id_data->{transform},
-        protocol_id_list=>[$protocol_id]
+        protocol_id_list=>[$protocol_id],
+        genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
     });
     my ($total_count, $genotypes) = $genotypes_search->get_genotype_info();
     my $data = $genotypes;

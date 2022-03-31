@@ -87,7 +87,7 @@ override('retrieve_genotypes',
     sub {
         my $self = shift;
         my $protocol_id = shift;
-        my $genotypeprop_hash_select = shift;
+        my $genotypeprop_hash_select = shift || ['DS'];
         my $protocolprop_top_key_select = shift;
         my $protocolprop_marker_hash_select = shift;
         my $return_only_first_genotypeprop_for_stock = shift;
@@ -95,9 +95,10 @@ override('retrieve_genotypes',
         my $start_position = shift;
         my $end_position = shift;
         my $marker_name_list = shift || [];
+        my $genotypeprop_hash_dosage_key = shift || 'DS';
         # print STDERR "CXGN::Dataset::Cache retrieve_genotypes\n";
 
-        my $key = $self->genotype_key("retrieve_genotypes", $protocol_id, undef, undef, undef, $genotypeprop_hash_select, $protocolprop_top_key_select, $protocolprop_marker_hash_select, $return_only_first_genotypeprop_for_stock, $chromosome_list, $start_position, $end_position, $marker_name_list);
+        my $key = $self->genotype_key("retrieve_genotypes", $protocol_id, undef, undef, undef, $genotypeprop_hash_select, $protocolprop_top_key_select, $protocolprop_marker_hash_select, $return_only_first_genotypeprop_for_stock, $chromosome_list, $start_position, $end_position, $marker_name_list, $genotypeprop_hash_dosage_key);
 
         if ($self->cache()->exists($key)) {
             my $genotype_json = $self->cache()->get($key);
@@ -106,7 +107,7 @@ override('retrieve_genotypes',
             return $genotypes;
         }
         else {
-            my $genotypes = $self->SUPER::retrieve_genotypes($protocol_id, $genotypeprop_hash_select, $protocolprop_top_key_select, $protocolprop_marker_hash_select, $return_only_first_genotypeprop_for_stock, $chromosome_list, $start_position, $end_position, $marker_name_list);
+            my $genotypes = $self->SUPER::retrieve_genotypes($protocol_id, $genotypeprop_hash_select, $protocolprop_top_key_select, $protocolprop_marker_hash_select, $return_only_first_genotypeprop_for_stock, $chromosome_list, $start_position, $end_position, $marker_name_list, $genotypeprop_hash_dosage_key);
             my $genotype_json = JSON::Any->encode($genotypes);
             $self->cache()->set($key, $genotype_json, $self->cache_expiry());
             sleep(3);

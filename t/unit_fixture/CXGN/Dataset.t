@@ -110,9 +110,11 @@ foreach my $ds (@datasets) {
 
     my $phenotypes = $ds->retrieve_phenotypes();
 
+    my $dosage_key = $t->config->{genotyping_protocol_dosage_key};
+
     if ($ds->isa("CXGN::Dataset::File")) {
         my$geno_filename = $ds->file_name()."_genotype.txt";
-        my $genotypes = $ds->retrieve_genotypes(1,$geno_filename,$cache_root_dir,$cluster_shared_tempdir_config,$backend_config,$cluster_host_config,$web_cluster_queue_config,$basepath_config,$forbid_cache);
+        my $genotypes = $ds->retrieve_genotypes(1,$geno_filename,$cache_root_dir,$cluster_shared_tempdir_config,$backend_config,$cluster_host_config,$web_cluster_queue_config,$basepath_config,$forbid_cache,[$dosage_key],undef,undef,1,$dosage_key);
     } else {
         my $genotypes = $ds->retrieve_genotypes(1);
     }

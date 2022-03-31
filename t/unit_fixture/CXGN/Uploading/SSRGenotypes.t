@@ -153,6 +153,7 @@ my $genotypes_search = CXGN::Genotype::Search->new({
 	bcs_schema=>$schema,
 	people_schema=>$people_schema,
 	protocol_id_list=>\@protocol_id_list,
+    genotypeprop_hash_dosage_key=>$f->config->{genotyping_protocol_dosage_key}
 });
 my $result = $genotypes_search->get_pcr_genotype_info();
 my $protocol_marker_names = $result->{'marker_names'};

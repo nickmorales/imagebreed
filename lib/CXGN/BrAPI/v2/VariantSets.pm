@@ -27,6 +27,7 @@ sub search {
     my $study_names = $inputs->{studyName} || ($inputs->{studyNames} || ());
     my $variant_id = $inputs->{variantDbId} || ($inputs->{variantDbIds} || ());
     my $callset_id = $inputs->{callSetDbId} || ($inputs->{callSetDbIds} || ());
+    my $dosage_key = $c->config->{genotyping_protocol_dosage_key};
 
     my @trial_ids;
     my @protocol_ids;
@@ -64,11 +65,12 @@ sub search {
             people_schema => $self->people_schema(),
             cache_root=>$c->config->{cache_file_path},
             trial_list=>\@trial_ids,
-            genotypeprop_hash_select=>['DS'],
+            genotypeprop_hash_select=>[$dosage_key],
             protocolprop_top_key_select=>[],
             protocolprop_marker_hash_select=>[],
             accession_list=>$callset_id,
             protocol_id_list=>\@protocol_ids,
+            genotypeprop_hash_dosage_key=>$dosage_key
     });
 
     my %variant_sets;
@@ -149,6 +151,7 @@ sub detail {
     my $page = $self->page;
     my $status = $self->status;
     my $variantset_id = $inputs->{variantSetDbId};
+    my $dosage_key = $c->config->{genotyping_protocol_dosage_key};
 
     my @trial_ids;
     my @protocol_ids;
@@ -164,9 +167,10 @@ sub detail {
         cache_root=>$c->config->{cache_file_path},
         trial_list=>\@trial_ids,
         protocol_id_list=>\@protocol_ids,
-        genotypeprop_hash_select=>['DS'],
+        genotypeprop_hash_select=>[$dosage_key],
         protocolprop_top_key_select=>[],
         protocolprop_marker_hash_select=>[],
+        genotypeprop_hash_dosage_key=>$dosage_key
     });
     my $file_handle = $genotype_search->get_cached_file_search_json($c->config->{cluster_shared_tempdir}, 1); #Metadata only returned
 
@@ -238,6 +242,7 @@ sub callsets {
     my $variantset_id = $inputs->{variantSetDbId};
     my @callset_id = $inputs->{callSetDbId} ? @{$inputs->{callSetDbId}} : ();
     my @callset_name = $inputs->{callSetName} ? @{$inputs->{callSetName}} : ();
+    my $dosage_key = $c->config->{genotyping_protocol_dosage_key};
 
     my @trial_ids;
     my @protocol_ids;
@@ -253,10 +258,11 @@ sub callsets {
         cache_root=>$c->config->{cache_file_path},
         trial_list=>\@trial_ids,
         protocol_id_list=>\@protocol_ids,
-        genotypeprop_hash_select=>['DS'],
+        genotypeprop_hash_select=>[$dosage_key],
         protocolprop_top_key_select=>[],
         protocolprop_marker_hash_select=>[],
         accession_list=>\@callset_id,
+        genotypeprop_hash_dosage_key=>$dosage_key
         # offset=>$page_size*$page,
         # limit=>$page_size
     });
@@ -310,6 +316,7 @@ sub calls {
     my $expand_homozygotes = $inputs->{expand_homozygotes};
     my $file_path = $inputs->{file_path};
     my $uri = $inputs->{file_uri};
+    my $dosage_key = $c->config->{genotyping_protocol_dosage_key};
 
     if ($sep_phased || $sep_unphased || $expand_homozygotes || $unknown_string){
         push @$status, { 'error' => 'The following parameters are not implemented: expandHomozygotes, unknownString, sepPhased, sepUnphased' };
@@ -332,9 +339,10 @@ sub calls {
         cache_root=>$c->config->{cache_file_path},
         trial_list=>\@trial_ids,
         protocol_id_list=>\@protocol_ids,
-        genotypeprop_hash_select=>['DS', 'GT', 'NT'],
+        genotypeprop_hash_select=>[$dosage_key, 'GT', 'NT'],
         protocolprop_top_key_select=>[],
         protocolprop_marker_hash_select=>[],
+        genotypeprop_hash_dosage_key=>$dosage_key
     });
     my $file_handle = $genotypes_search->get_cached_file_search_json($c->config->{cluster_shared_tempdir}, 0);
 
@@ -363,8 +371,8 @@ sub calls {
                 elsif (exists($genotype->{$m}->{'GT'}) && defined($genotype->{$m}->{'GT'})){
                     $geno = $genotype->{$m}->{'GT'};
                 }
-                elsif (exists($genotype->{$m}->{'DS'}) && defined($genotype->{$m}->{'DS'})){
-                    $geno = $genotype->{$m}->{'DS'};
+                elsif (exists($genotype->{$m}->{$dosage_key}) && defined($genotype->{$m}->{$dosage_key})){
+                    $geno = $genotype->{$m}->{$dosage_key};
                 }
                 push @data, {
                     additionalInfo=>{},
@@ -482,6 +490,7 @@ sub extract {
     my $study_names = $inputs->{studyName} || ($inputs->{studyNames} || ());
     my $variant_id = $inputs->{variantDbId} || ($inputs->{variantDbIds} || ());
     my $callset_id = $inputs->{callSetDbId} || ($inputs->{callSetDbIds} || ());
+    my $dosage_key = $c->config->{genotyping_protocol_dosage_key};
 
     my @trial_ids;
     my @protocol_ids;
@@ -516,15 +525,16 @@ sub extract {
     }
 
     my $genotype_search = CXGN::Genotype::Search->new({
-            bcs_schema=>$self->bcs_schema,
-            people_schema => $self->people_schema(),
-            cache_root=>$c->config->{cache_file_path},
-            trial_list=>\@trial_ids,
-            genotypeprop_hash_select=>['DS'],
-            protocolprop_top_key_select=>[],
-            protocolprop_marker_hash_select=>[],
-            accession_list=>$callset_id,
-            protocol_id_list=>\@protocol_ids,
+        bcs_schema=>$self->bcs_schema,
+        people_schema => $self->people_schema(),
+        cache_root=>$c->config->{cache_file_path},
+        trial_list=>\@trial_ids,
+        genotypeprop_hash_select=>[$dosage_key],
+        protocolprop_top_key_select=>[],
+        protocolprop_marker_hash_select=>[],
+        accession_list=>$callset_id,
+        protocol_id_list=>\@protocol_ids,
+        genotypeprop_hash_dosage_key=>$dosage_key
     });
 
     my %variant_sets;

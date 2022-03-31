@@ -2,7 +2,7 @@ package CXGN::Pedigree::ARM;
 
 =head1 NAME
 
-CXGN::Genotype::GRM - an object to handle fetching an additive relationship matrix (ARM) from pedigrees for stocks
+CXGN::Genotype::ARM - an object to handle fetching an additive relationship matrix (ARM) from pedigrees for stocks
 
 =head1 USAGE
 
@@ -42,7 +42,6 @@ use JSON;
 use CXGN::Stock::Accession;
 use CXGN::Genotype::Protocol;
 use CXGN::Genotype::Search;
-use CXGN::Genotype::ComputeHybridGenotype;
 use R::YapRI::Base;
 use R::YapRI::Data::Matrix;
 use CXGN::Dataset::Cache;

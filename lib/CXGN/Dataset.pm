@@ -574,6 +574,7 @@ sub retrieve_genotypes {
     my $start_position = shift;
     my $end_position = shift;
     my $marker_name_list = shift || [];
+    my $genotypeprop_hash_dosage_key = shift || 'DS';
     # print STDERR "CXGN::Dataset retrieve_genotypes\n";
 
     my $accessions = $self->retrieve_accessions();
@@ -611,7 +612,8 @@ sub retrieve_genotypes {
         genotypeprop_hash_select=>$genotypeprop_hash_select, #THESE ARE THE KEYS IN THE GENOTYPEPROP OBJECT
         protocolprop_top_key_select=>$protocolprop_top_key_select, #THESE ARE THE KEYS AT THE TOP LEVEL OF THE PROTOCOLPROP OBJECT
         protocolprop_marker_hash_select=>$protocolprop_marker_hash_select, #THESE ARE THE KEYS IN THE MARKERS OBJECT IN THE PROTOCOLPROP OBJECT
-        return_only_first_genotypeprop_for_stock=>$return_only_first_genotypeprop_for_stock #FOR MEMORY REASONS TO LIMIT DATA
+        return_only_first_genotypeprop_for_stock=>$return_only_first_genotypeprop_for_stock, #FOR MEMORY REASONS TO LIMIT DATA
+        genotypeprop_hash_dosage_key=>$genotypeprop_hash_dosage_key
     });
     my ($total_count, $dataref) = $genotypes_search->get_genotype_info();
     return $dataref;

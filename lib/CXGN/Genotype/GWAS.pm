@@ -172,7 +172,7 @@ has 'genotypeprop_hash_select' => (
 has 'genotypeprop_hash_dosage_key' => (
     isa => 'Str',
     is => 'ro',
-    default => 'DS' #DS is REF dosage and DA is ALT dosage
+    default => 'DS' #DS is ALT dosage and DR is REF dosage
 );
 
 has 'protocolprop_top_key_select' => (
@@ -301,7 +301,7 @@ sub _get_gwas {
                 cache_root=>$cache_root_dir,
                 accessions=>[$_]
             });
-            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name','chrom','pos'], 1, [], undef, undef, []);
+            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name','chrom','pos'], 1, [], undef, undef, [], $dosage_key);
 
             if (scalar(@$genotypes)>0) {
 
@@ -390,7 +390,7 @@ sub _get_gwas {
                 cache_root=>$cache_root_dir,
                 accessions=>[$female_stock_id, $male_stock_id]
             });
-            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name', 'chrom', 'pos'], 1, [], undef, undef, []);
+            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name', 'chrom', 'pos'], 1, [], undef, undef, [], $dosage_key);
 
             if (scalar(@$genotypes) > 0) {
                 # For old genotyping protocols without nd_protocolprop info...

@@ -125,6 +125,12 @@ has 'genotypeprop_hash_select' => (
     default => sub {['DS']} #THESE ARE THE GENERIC AND EXPECTED VCF ATRRIBUTES. For dosage matrix we only need DS
 );
 
+has 'genotypeprop_hash_dosage_key' => (
+    isa => 'Str',
+    is => 'ro',
+    default => 'DS' #DS is ALT dosage and DR is REF dosage
+);
+
 has 'protocolprop_top_key_select' => (
     isa => 'ArrayRef[Str]',
     is => 'ro',
@@ -200,6 +206,7 @@ sub download {
     my $compute_from_parents = $self->compute_from_parents;
     my $forbid_cache = $self->forbid_cache;
     my $prevent_transpose = $self->prevent_transpose;
+    my $genotypeprop_hash_dosage_key = $self->genotypeprop_hash_dosage_key;
 
     my $genotypes_search = CXGN::Genotype::Search->new({
         bcs_schema=>$schema,
@@ -222,7 +229,8 @@ sub download {
         limit=>$limit,
         offset=>$offset,
         forbid_cache=>$forbid_cache,
-        prevent_transpose=>$prevent_transpose
+        prevent_transpose=>$prevent_transpose,
+        genotypeprop_hash_dosage_key=>$genotypeprop_hash_dosage_key
     });
     my @required_config = (
         $cluster_shared_tempdir_config,

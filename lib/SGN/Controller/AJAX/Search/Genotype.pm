@@ -47,6 +47,7 @@ sub genotyping_data_search_GET : Args(0) {
 
     my $limit = $c->req->param('length');
     my $offset = $c->req->param('start');
+    my $dosage_key = $c->config->{genotyping_protocol_dosage_key};
 
     my $genotypes_search = CXGN::Genotype::Search->new({
         bcs_schema=>$bcs_schema,
@@ -59,10 +60,11 @@ sub genotyping_data_search_GET : Args(0) {
         #marker_name_list=>['S80_265728', 'S80_265723']
         #marker_search_hash_list=>[{'S80_265728' => {'pos' => '265728', 'chrom' => '1'}}],
         #marker_score_search_hash_list=>[{'S80_265728' => {'GT' => '0/0', 'GQ' => '99'}}],
-        genotypeprop_hash_select=>['DS'],
+        genotypeprop_hash_select=>[$dosage_key],
         protocolprop_marker_hash_select=>[],
         protocolprop_top_key_select=>[],
-        forbid_cache=>$clean_inputs->{forbid_cache}->[0]
+        forbid_cache=>$clean_inputs->{forbid_cache}->[0],
+        genotypeprop_hash_dosage_key=>$dosage_key
     });
     my $file_handle = $genotypes_search->get_cached_file_search_json($c->config->{cluster_shared_tempdir}, 1); #only gets metadata and not all genotype data!
     my @result;
@@ -143,6 +145,7 @@ sub pcr_genotyping_data_search_GET : Args(0) {
         bcs_schema=>$bcs_schema,
         people_schema=>$people_schema,
         protocol_id_list=>$protocol_id,
+        genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
     });
     my $result = $genotypes_search->get_pcr_genotype_info();
 #    print STDERR "PCR RESULTS =".Dumper($result)."\n";
@@ -208,6 +211,7 @@ sub pcr_genotyping_data_summary_search_GET : Args(0) {
         bcs_schema=>$bcs_schema,
         people_schema=>$people_schema,
         protocol_id_list=>$protocol_id,
+        genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
     });
     my $result = $genotypes_search->get_pcr_genotype_info();
 #    print STDERR "PCR RESULTS =".Dumper($result)."\n";

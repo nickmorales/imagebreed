@@ -123,7 +123,13 @@ has 'marker_name_list' => (
 has 'genotypeprop_hash_select' => (
     isa => 'ArrayRef[Str]',
     is => 'ro',
-    default => sub {['GT', 'AD', 'DP', 'GQ', 'DS', 'DA', 'PL', 'NT']} #THESE ARE THE GENERIC AND EXPECTED VCF ATRRIBUTES. DS is REF dosage, DA is ALT dosage
+    default => sub {['GT', 'AD', 'DP', 'GQ', 'DS', 'DR', 'PL', 'NT']} #THESE ARE THE GENERIC AND EXPECTED VCF ATRRIBUTES. DS is REF dosage, DA is ALT dosage
+);
+
+has 'genotypeprop_hash_dosage_key' => (
+    isa => 'Str',
+    is => 'ro',
+    default => 'DS' #DS is ALT dosage and DR is REF dosage
 );
 
 has 'protocolprop_top_key_select' => (
@@ -194,6 +200,7 @@ sub download {
     my $end_position = $self->end_position;
     my $forbid_cache = $self->forbid_cache;
     my $compute_from_parents = $self->compute_from_parents;
+    my $genotypeprop_hash_dosage_key = $self->genotypeprop_hash_dosage_key;
 
     my $genotypes_search = CXGN::Genotype::Search->new({
         bcs_schema=>$schema,
@@ -215,7 +222,8 @@ sub download {
         end_position=>$end_position,
         limit=>$limit,
         offset=>$offset,
-        forbid_cache=>$forbid_cache
+        forbid_cache=>$forbid_cache,
+        genotypeprop_hash_dosage_key=>$genotypeprop_hash_dosage_key
     });
     my @required_config = (
         $cluster_shared_tempdir_config,

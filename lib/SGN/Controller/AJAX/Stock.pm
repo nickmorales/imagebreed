@@ -1339,7 +1339,8 @@ sub get_stock_datatables_genotype_data_GET  {
         cache_root=>$c->config->{cache_file_path},
         genotypeprop_hash_select=>[],
         protocolprop_top_key_select=>[],
-        protocolprop_marker_hash_select=>[]
+        protocolprop_marker_hash_select=>[],
+        genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
     );
     if ($stock_type eq 'accession') {
         $genotype_search_params{accession_list} = [$stock_id];

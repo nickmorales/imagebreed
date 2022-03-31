@@ -1466,7 +1466,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$female_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -1495,7 +1496,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$male_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -1722,7 +1724,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$female_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -1751,7 +1754,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$male_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -1951,6 +1955,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>\@accession_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>$compute_from_parents,
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -5747,7 +5752,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$female_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -5776,7 +5782,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$male_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -5983,7 +5990,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$female_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -6012,7 +6020,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$male_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -6192,6 +6201,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>\@accession_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>$compute_from_parents,
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -8114,7 +8124,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$female_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -8143,7 +8154,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$male_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -8350,7 +8362,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$female_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -8379,7 +8392,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$male_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -8558,7 +8572,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 cache_root=>$c->config->{cache_file_path},
                                 accession_id_list=>\@accession_ids,
                                 protocol_id=>$protocol_id,
-                                get_grm_for_parental_accessions=>$compute_from_parents
+                                get_grm_for_parental_accessions=>$compute_from_parents,
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -10564,7 +10579,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$female_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -10593,7 +10609,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$male_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -10805,7 +10822,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$female_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -10834,7 +10852,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$male_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -11020,7 +11039,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>$compute_from_parents,
                                 return_inverse=>$return_inverse_matrix,
-                                ensure_positive_definite=>$ensure_positive_definite
+                                ensure_positive_definite=>$ensure_positive_definite,
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -13031,7 +13051,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$female_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -13060,7 +13081,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$male_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -13272,7 +13294,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$female_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -13301,7 +13324,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 accession_id_list=>$male_stock_ids,
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>0,
-                                download_format=>'three_column_reciprocal'
+                                download_format=>'three_column_reciprocal',
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter
@@ -13487,7 +13511,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 protocol_id=>$protocol_id,
                                 get_grm_for_parental_accessions=>$compute_from_parents,
                                 return_inverse=>$return_inverse_matrix,
-                                ensure_positive_definite=>$ensure_positive_definite
+                                ensure_positive_definite=>$ensure_positive_definite,
+                                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                                 # minor_allele_frequency=>$minor_allele_frequency,
                                 # marker_filter=>$marker_filter,
                                 # individuals_filter=>$individuals_filter

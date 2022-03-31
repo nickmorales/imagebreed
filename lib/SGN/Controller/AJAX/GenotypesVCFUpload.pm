@@ -663,6 +663,7 @@ sub upload_genotype_verify_POST : Args(0) {
                 bcs_schema=>$schema,
                 people_schema=>$people_schema,
                 protocol_id_list=>[$protocol_id],
+                genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
             });
             my $result = $genotypes_search->get_pcr_genotype_info();
             my $protocol_marker_names = $result->{'marker_names'};
@@ -785,7 +786,8 @@ sub upload_genotype_verify_POST : Args(0) {
             trial_id_list=>[$is_from_grm_trial_id],
             protocol_id=>$protocol_id,
             get_grm_for_parental_accessions=>$is_from_grm_compute_from_parents,
-            download_format=>'three_column_reciprocal_uniquenames'
+            download_format=>'three_column_reciprocal_uniquenames',
+            genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
             # minor_allele_frequency=>$minor_allele_frequency,
             # marker_filter=>$marker_filter,
             # individuals_filter=>$individuals_filter

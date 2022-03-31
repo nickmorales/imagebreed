@@ -39,11 +39,19 @@ has 'stock_list' => (
     is => 'ro',
 );
 
+has 'genotypeprop_hash_dosage_key' => (
+    isa => 'Str',
+    is => 'ro',
+    default => 'DS' #DS is ALT dosage and DR is REF dosage
+);
+
 sub get_selected_stocks {
     my $self = shift;
     my $schema = $self->bcs_schema;
     my $stock_list = $self->stock_list;
     my $filtering_parameters = $self->filtering_parameters;
+    my $dosage_key = $self->genotypeprop_hash_dosage_key;
+
     my @stocks = @{$stock_list};
     my @parameters = @{$filtering_parameters};
     my $genotyping_experiment_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'genotyping_experiment', 'experiment_type')->cvterm_id();
@@ -86,7 +94,7 @@ sub get_selected_stocks {
             my ($chrom) = $h->fetchrow_array();
 
             if ($chrom){
-                $chrom_hash{$chrom}{$marker_name}{'DS'} = $allele_dosage;
+                $chrom_hash{$chrom}{$marker_name}{$dosage_key} = $allele_dosage;
             } else {
                 push @incorrect_marker_names, "Marker name: $marker_name is not in genotyping protocol: $protocol_name. \n";
             }

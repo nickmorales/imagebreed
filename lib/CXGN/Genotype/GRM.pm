@@ -184,7 +184,7 @@ has 'genotypeprop_hash_select' => (
 has 'genotypeprop_hash_dosage_key' => (
     isa => 'Str',
     is => 'ro',
-    default => 'DS' #DS is REF dosage and DA is ALT dosage
+    default => 'DS' #DS is ALT dosage and DR is REF dosage
 );
 
 has 'protocolprop_top_key_select' => (
@@ -304,7 +304,7 @@ sub _get_grm {
                     cache_root=>$cache_root_dir,
                     accessions=>[$_]
                 });
-                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, [], undef, undef, []);
+                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, [], undef, undef, [], $dosage_key);
 
                 if (scalar(@$genotypes)>0) {
                     my $p1_markers = $genotypes->[0]->{selected_protocol_hash}->{markers};
@@ -384,7 +384,7 @@ sub _get_grm {
                     cache_root=>$cache_root_dir,
                     accessions=>[$female_stock_id, $male_stock_id]
                 });
-                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, [], undef, undef, []);
+                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, [], undef, undef, [], $dosage_key);
 
                 if (scalar(@$genotypes) > 0) {
                     # For old genotyping protocols without nd_protocolprop info...
@@ -458,7 +458,7 @@ sub _get_grm {
                     cache_root=>$cache_root_dir,
                     accessions=>[$female_stock_id, $male_stock_id]
                 });
-                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, [], undef, undef, []);
+                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, [], undef, undef, [], $dosage_key);
 
                 if (scalar(@$genotypes) > 0) {
                     # For old genotyping protocols without nd_protocolprop info...
@@ -646,7 +646,7 @@ sub grm_cache_key {
     my $return_imputed_matrix = $self->return_imputed_matrix();
     my $return_imputed_matrix_key = $return_imputed_matrix ? '_returnimputed' : '';
 
-    my $q_params = $accessions.$plots.$protocol.$genotypeprophash.$protocolprophash.$protocolpropmarkerhash.$self->get_grm_for_parental_accessions().$self->return_only_first_genotypeprop_for_stock()."_MAF$maf"."_mfilter$marker_filter"."_ifilter$individuals_filter"."_$datatype";
+    my $q_params = $accessions.$plots.$protocol.$genotypeprophash.$protocolprophash.$protocolpropmarkerhash.$self->get_grm_for_parental_accessions().$self->return_only_first_genotypeprop_for_stock()."_MAF$maf"."_mfilter$marker_filter"."_ifilter$individuals_filter".$self->genotypeprop_hash_dosage_key()."_$datatype";
     if ($self->return_inverse()) {
         $q_params .= $self->return_inverse();
     }

@@ -2,7 +2,7 @@ package CXGN::Genotype::ComputeHybridGenotype;
 
 =head1 NAME
 
-CXGN::Genotype::GRM - an object to handle fetching a GRM for stocks
+CXGN::Genotype::ComputeHybridGenotype - an object to handle fetching a GRM for stocks
 
 =head1 USAGE
 
@@ -45,7 +45,7 @@ has 'marker_objects' => (
 has 'genotypeprop_hash_dosage_key' => (
     isa => 'Str',
     is => 'ro',
-    default => 'DS' #DS is REF dosage and DA is ALT dosage
+    default => 'DS' #DS is ALT dosage and DR is REF dosage
 );
 
 sub get_hybrid_genotype {

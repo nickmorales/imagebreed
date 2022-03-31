@@ -154,7 +154,8 @@ sub upload_genotype_qc_verify_POST : Args(0) {
         genotypeprop_hash_select=>['GT'],
         protocolprop_top_key_select=>[],
         protocolprop_marker_hash_select=>[],
-        return_only_first_genotypeprop_for_stock=>0
+        return_only_first_genotypeprop_for_stock=>0,
+        genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
     });
     my $count = $stored_genotypes->init_genotype_iterator();
 
@@ -166,7 +167,7 @@ sub upload_genotype_qc_verify_POST : Args(0) {
             markerscores=>$genotype_val,
             markers=>$protocol_info->{marker_names}
         });
-        
+
         foreach (my $stored_gt = $stored_genotypes->get_next_genotype_info()) {
             my $stock_name = $stored_gt->{stock_name};
             $seen_stored_genotype_names{$stock_name}++;
@@ -175,7 +176,7 @@ sub upload_genotype_qc_verify_POST : Args(0) {
                 markerscores=>$_->{selected_genotype_hash},
                 markers=>$protocol_info->{marker_names}
             });
-            
+
             my $distance = $gt->calculate_distance($c_gt);
             $distance_matrix{$sample_name}->{$stock_name} = $distance;
         }

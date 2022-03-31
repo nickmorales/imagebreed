@@ -133,13 +133,13 @@ has 'marker_name_list' => (
 has 'genotypeprop_hash_select' => (
     isa => 'ArrayRef[Str]',
     is => 'ro',
-    default => sub {['GT', 'AD', 'DP', 'GQ', 'DS', 'DA', 'PL', 'NT']} #THESE ARE THE GENERIC AND EXPECTED VCF ATRRIBUTES
+    default => sub {['GT', 'AD', 'DP', 'GQ', 'DS', 'DR', 'PL', 'NT']} #THESE ARE THE GENERIC AND EXPECTED VCF ATRRIBUTES
 );
 
 has 'genotypeprop_hash_dosage_key' => (
     isa => 'Str',
     is => 'ro',
-    default => 'DS' #DS is REF dosage and DA is ALT dosage
+    default => 'DS' #DS is ALT dosage and DR is REF dosage
 );
 
 has 'protocolprop_top_key_select' => (
@@ -1172,7 +1172,7 @@ sub key {
     my $start = $self->start_position() || '' ;
     my $end = $self->end_position() || '';
     my $prevent_transpose = $self->prevent_transpose() || '';
-    my $key = md5_hex($accessions.$tissues.$trials.$protocols.$markerprofiles.$genotypedataprojects.$markernames.$genotypeprophash.$protocolprophash.$protocolpropmarkerhash.$chromosomes.$start.$end.$self->return_only_first_genotypeprop_for_stock().$prevent_transpose.$self->limit().$self->offset()."_$datatype");
+    my $key = md5_hex($accessions.$tissues.$trials.$protocols.$markerprofiles.$genotypedataprojects.$markernames.$genotypeprophash.$protocolprophash.$protocolpropmarkerhash.$chromosomes.$start.$end.$self->return_only_first_genotypeprop_for_stock().$prevent_transpose.$self->limit().$self->offset().$self->genotypeprop_hash_dosage_key()."_$datatype");
     return $key;
 }
 
@@ -1514,7 +1514,7 @@ sub get_cached_file_dosage_matrix_compute_from_parents {
                 cache_root=>$cache_root_dir,
                 accessions=>[$female_stock_id, $male_stock_id]
             });
-            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, $self->chromosome_list, $self->start_position, $self->end_position, $self->marker_name_list);
+            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, $self->chromosome_list, $self->start_position, $self->end_position, $self->marker_name_list, $dosage_key);
 
             # For old protocols with no protocolprop info...
             if (scalar(@all_marker_objects) == 0) {
@@ -1601,6 +1601,7 @@ sub get_cached_file_VCF {
     my $cluster_host_config = shift;
     my $web_cluster_queue_config = shift;
     my $basepath_config = shift;
+    my $dosage_key = $self->genotypeprop_hash_dosage_key;
 
     my $key = $self->key("get_cached_file_VCF_v05");
     $self->cache( Cache::File->new( cache_root => $self->cache_root() ));
@@ -1742,8 +1743,8 @@ sub get_cached_file_VCF {
                         if (!exists($format_check{'NT'})) {
                             push @format_array, 'NT';
                         }
-                        if (!exists($format_check{'DS'})) {
-                            push @format_array, 'DS';
+                        if (!exists($format_check{$dosage_key})) {
+                            push @format_array, $dosage_key;
                         }
                     }
                     $format = join ':', @format_array;
@@ -1980,7 +1981,7 @@ sub get_cached_file_VCF_compute_from_parents {
                 cache_root=>$cache_root_dir,
                 accessions=>[$female_stock_id, $male_stock_id]
             });
-            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name', 'chrom', 'pos', 'alt', 'ref'], 1, $self->chromosome_list, $self->start_position, $self->end_position, $self->marker_name_list);
+            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name', 'chrom', 'pos', 'alt', 'ref'], 1, $self->chromosome_list, $self->start_position, $self->end_position, $self->marker_name_list, $dosage_key);
 
             # For old protocols with no protocolprop info...
             if (scalar(@all_marker_objects) == 0) {

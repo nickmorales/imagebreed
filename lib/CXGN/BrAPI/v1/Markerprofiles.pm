@@ -17,6 +17,7 @@ sub markerprofiles_search {
     my $page_size = $self->page_size;
     my $page = $self->page;
     my $status = $self->status;
+    my $context = $self->context;
     my $cache_file_path = $inputs->{cache_file_path};
     my $shared_cluster_dir = $inputs->{shared_cluster_dir};
     my @germplasm_ids = $inputs->{stock_ids} ? @{$inputs->{stock_ids}} : ();
@@ -24,6 +25,7 @@ sub markerprofiles_search {
     my @extract_ids = $inputs->{extract_ids} ? @{$inputs->{extract_ids}} : ();
     my @sample_ids = $inputs->{sample_ids} ? @{$inputs->{sample_ids}} : ();
     my @methods = $inputs->{protocol_ids} ? @{$inputs->{protocol_ids}} : ();
+    my $dosage_key = $context->config->{genotyping_protocol_dosage_key};
 
     if (scalar(@extract_ids)>0){
         push @$status, { 'error' => 'Search parameter extractDbId not supported' };
@@ -39,9 +41,10 @@ sub markerprofiles_search {
         accession_list=>\@germplasm_ids,
         trial_list=>\@study_ids,
         protocol_id_list=>\@methods,
-        genotypeprop_hash_select=>['DS'],
+        genotypeprop_hash_select=>[$dosage_key],
         protocolprop_top_key_select=>[],
         protocolprop_marker_hash_select=>[],
+        genotypeprop_hash_dosage_key=>$dosage_key
         # offset=>$page_size*$page,
         # limit=>$page_size
     });
@@ -84,6 +87,7 @@ sub markerprofiles_detail {
     my $page_size = $self->page_size;
     my $page = $self->page;
     my $status = $self->status;
+    my $context = $self->context;
     my $cache_file_path = $inputs->{cache_file_path};
     my $shared_cluster_dir = $inputs->{shared_cluster_dir};
     my $genotypeprop_id = $inputs->{markerprofile_id};
@@ -91,6 +95,7 @@ sub markerprofiles_detail {
     my $sep_unphased = $inputs->{sep_unphased};
     my $unknown_string = $inputs->{unknown_string};
     my $expand_homozygotes = $inputs->{expand_homozygotes};
+    my $dosage_key = $context->config->{genotyping_protocol_dosage_key};
 
     if ($sep_phased || $sep_unphased || $expand_homozygotes || $unknown_string){
         push @$status, {'error' => 'The following parameters are not implemented: expandHomozygotes, unknownString, sepPhased, sepUnphased'};
@@ -101,9 +106,10 @@ sub markerprofiles_detail {
         people_schema=>$self->people_schema,
         cache_root=>$cache_file_path,
         markerprofile_id_list=>[$genotypeprop_id],
-        genotypeprop_hash_select=>['DS', 'GT', 'NT'],
+        genotypeprop_hash_select=>[$dosage_key, 'GT', 'NT'],
         protocolprop_top_key_select=>[],
         protocolprop_marker_hash_select=>[],
+        genotypeprop_hash_dosage_key=>$dosage_key
     });
     my $file_handle = $genotypes_search->get_cached_file_search_json($shared_cluster_dir, 0);
 
@@ -131,8 +137,8 @@ sub markerprofiles_detail {
                 elsif (exists($genotype->{$m}->{'GT'}) && defined($genotype->{$m}->{'GT'})){
                     $geno = $genotype->{$m}->{'GT'};
                 }
-                elsif (exists($genotype->{$m}->{'DS'}) && defined($genotype->{$m}->{'DS'})){
-                    $geno = $genotype->{$m}->{'DS'};
+                elsif (exists($genotype->{$m}->{$dosage_key}) && defined($genotype->{$m}->{$dosage_key})){
+                    $geno = $genotype->{$m}->{$dosage_key};
                 }
                 push @data, {$m => $geno};
             }
@@ -183,6 +189,7 @@ sub markerprofiles_allelematrix {
     my $page_size = $self->page_size;
     my $page = $self->page;
     my $status = $self->status;
+    my $context = $self->context;
     my $cache_file_path = $inputs->{cache_file_path};
     my $shared_cluster_dir = $inputs->{shared_cluster_dir};
     my @markerprofile_ids = $inputs->{markerprofile_ids} ? @{$inputs->{markerprofile_ids}} : ();
@@ -194,6 +201,7 @@ sub markerprofiles_allelematrix {
     my $data_format = $inputs->{format};
     my $file_path = $inputs->{file_path};
     my $uri = $inputs->{file_uri};
+    my $dosage_key = $context->config->{genotyping_protocol_dosage_key};
 
     if ($sep_phased || $sep_unphased || $expand_homozygotes || $unknown_string){
         push @$status, { 'error' => 'The following parameters are not implemented: expandHomozygotes, unknownString, sepPhased, sepUnphased' };
@@ -211,9 +219,10 @@ sub markerprofiles_allelematrix {
         people_schema=>$self->people_schema,
         cache_root=>$cache_file_path,
         markerprofile_id_list=>\@markerprofile_ids,
-        genotypeprop_hash_select=>['DS', 'GT', 'NT'],
+        genotypeprop_hash_select=>[$dosage_key, 'GT', 'NT'],
         protocolprop_top_key_select=>[],
         protocolprop_marker_hash_select=>[],
+        genotypeprop_hash_dosage_key=>$dosage_key
     });
     my $file_handle = $genotypes_search->get_cached_file_search_json($shared_cluster_dir, 0);
 
@@ -243,8 +252,8 @@ sub markerprofiles_allelematrix {
                     elsif (exists($genotype->{$m}->{'GT'}) && defined($genotype->{$m}->{'GT'})){
                         $geno = $genotype->{$m}->{'GT'};
                     }
-                    elsif (exists($genotype->{$m}->{'DS'}) && defined($genotype->{$m}->{'DS'})){
-                        $geno = $genotype->{$m}->{'DS'};
+                    elsif (exists($genotype->{$m}->{$dosage_key}) && defined($genotype->{$m}->{$dosage_key})){
+                        $geno = $genotype->{$m}->{$dosage_key};
                     }
                     push @scores, [
                         qq|$m|,

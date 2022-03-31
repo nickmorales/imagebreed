@@ -38,6 +38,8 @@ if (defined($row)) {
 }
 print STDERR Dumper $protocol_id;
 
+my $dosage_key = $t->config->{genotyping_protocol_dosage_key};
+
 # Extract and test genotype search for subset of markers
 my $genotypes_search_marker_subset = CXGN::Genotype::Search->new({
     bcs_schema=>$schema,
@@ -46,8 +48,8 @@ my $genotypes_search_marker_subset = CXGN::Genotype::Search->new({
 #    marker_name_list => ['S7520_730357'],
 #    marker_name_list => ['S7520_730357', 'S7107_65000', 'S3049_609125'],
     protocol_id_list=>[$protocol_id],
-    genotypeprop_hash_select=>['DS']
-
+    genotypeprop_hash_select=>[$dosage_key],
+    genotypeprop_hash_dosage_key=>$dosage_key
 });
 my ($total_count_ms, $data_ms) = $genotypes_search_marker_subset->get_genotype_info();
 print STDERR Dumper $total_count_ms;
@@ -62,8 +64,9 @@ my $genotypes_search = CXGN::Genotype::Search->new({
     people_schema=>$people_schema,
     accession_list => $ds->accessions(),
     protocol_id_list=>[$protocol_id],
-    genotypeprop_hash_select=>['DS'],
-    return_only_first_genotypeprop_for_stock=>1
+    genotypeprop_hash_select=>[$dosage_key],
+    return_only_first_genotypeprop_for_stock=>1,
+    genotypeprop_hash_dosage_key=>$dosage_key
 });
 my ($total_count, $data) = $genotypes_search->get_genotype_info();
 #print STDERR Dumper $total_count;

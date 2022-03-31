@@ -28,6 +28,7 @@ sub search {
     my $callset_names = $inputs->{callSetName} || ($inputs->{callSetNames} || ());
     my $germplasm_ids = $inputs->{germplasmDbId} || ($inputs->{germplasmDbIds} || ());
     my $germplasm_names = $inputs->{germplasmName} || ($inputs->{germplasmNames} || ());
+    my $dosage_key = $c->config->{genotyping_protocol_dosage_key};
 
     my @trial_ids;
     my @protocol_ids;
@@ -76,9 +77,10 @@ sub search {
         bcs_schema=>$self->bcs_schema,
         people_schema => $self->people_schema(),
         cache_root=>$c->config->{cache_file_path},
-        genotypeprop_hash_select=>['DS', 'GT', 'NT'],
+        genotypeprop_hash_select=>[$dosage_key, 'GT', 'NT'],
         accession_list=>\@accession_ids,
         protocol_id_list=>\@protocol_ids,
+        genotypeprop_hash_dosage_key=>$dosage_key
     });
 
     my $file_handle = $genotypes_search->get_cached_file_search_json($c->config->{cluster_shared_tempdir}, 1); #Metadata only returned
@@ -158,6 +160,7 @@ sub detail {
     my $sep_unphased = $inputs->{sep_unphased};
     my $unknown_string = $inputs->{unknown_string};
     my $expand_homozygotes = $inputs->{expand_homozygotes};
+    my $dosage_key = $c->config->{genotyping_protocol_dosage_key};
 
     if ($sep_phased || $sep_unphased || $expand_homozygotes || $unknown_string){
         push @$status, {'error' => 'The following parameters are not implemented: expandHomozygotes, unknownString, sepPhased, sepUnphased'};
@@ -168,9 +171,10 @@ sub detail {
         people_schema => $self->people_schema(),
         cache_root=>$c->config->{cache_file_path},
         accession_list=>[$callset_id],
-        genotypeprop_hash_select=>['DS', 'GT', 'NT'],
+        genotypeprop_hash_select=>[$dosage_key, 'GT', 'NT'],
         protocolprop_top_key_select=>[],
-        protocolprop_marker_hash_select=>[]
+        protocolprop_marker_hash_select=>[],
+        genotypeprop_hash_dosage_key=>$dosage_key
     });
     my $file_handle = $genotypes_search->get_cached_file_search_json($c->config->{cluster_shared_tempdir}, 1);
 
@@ -238,6 +242,7 @@ sub calls {
     my $data_format = 'json'; # $inputs->{format};
     my $file_path = $inputs->{file_path};
     my $uri = $inputs->{file_uri};
+    my $dosage_key = $c->config->{genotyping_protocol_dosage_key};
 
     if ($sep_phased || $sep_unphased || $expand_homozygotes || $unknown_string){
         push @$status, { 'error' => 'The following parameters are not implemented: expandHomozygotes, unknownString, sepPhased, sepUnphased' };
@@ -255,9 +260,10 @@ sub calls {
         people_schema => $self->people_schema(),
         cache_root=>$c->config->{cache_file_path},
         accession_list=>[@callset_id],
-        genotypeprop_hash_select=>['DS', 'GT', 'NT'],
+        genotypeprop_hash_select=>[$dosage_key, 'GT', 'NT'],
         protocolprop_top_key_select=>[],
         protocolprop_marker_hash_select=>[],
+        genotypeprop_hash_dosage_key=>$dosage_key
     });
     my $file_handle = $genotypes_search->get_cached_file_search_json($c->config->{cluster_shared_tempdir}, 0);
 
@@ -286,8 +292,8 @@ sub calls {
                 elsif (exists($genotype->{$m}->{'GT'}) && defined($genotype->{$m}->{'GT'})){
                     $geno = $genotype->{$m}->{'GT'};
                 }
-                elsif (exists($genotype->{$m}->{'DS'}) && defined($genotype->{$m}->{'DS'})){
-                    $geno = $genotype->{$m}->{'DS'};
+                elsif (exists($genotype->{$m}->{$dosage_key}) && defined($genotype->{$m}->{$dosage_key})){
+                    $geno = $genotype->{$m}->{$dosage_key};
                 }
                 push @scores, {
                     additionalInfo=>undef,

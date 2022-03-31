@@ -608,7 +608,8 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     accession_id_list=>$female_stock_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
+                    download_format=>'three_column_reciprocal',
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -637,7 +638,8 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     accession_id_list=>$male_stock_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
+                    download_format=>'three_column_reciprocal',
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -824,7 +826,8 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     accession_id_list=>$female_stock_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
+                    download_format=>'three_column_reciprocal',
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -853,7 +856,8 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     accession_id_list=>$male_stock_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
+                    download_format=>'three_column_reciprocal',
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -1011,6 +1015,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     accession_id_list=>\@accession_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>$compute_from_parents,
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -2449,7 +2454,8 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     accession_id_list=>$female_stock_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
+                    download_format=>'three_column_reciprocal',
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -2478,7 +2484,8 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     accession_id_list=>$male_stock_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
+                    download_format=>'three_column_reciprocal',
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -2669,7 +2676,8 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     accession_id_list=>$female_stock_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
+                    download_format=>'three_column_reciprocal',
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -2698,7 +2706,8 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     accession_id_list=>$male_stock_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
+                    download_format=>'three_column_reciprocal',
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -2860,6 +2869,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     accession_id_list=>\@accession_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>$compute_from_parents,
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -3901,7 +3911,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     accession_id_list=>$female_stock_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
+                    download_format=>'three_column_reciprocal',
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -3930,7 +3941,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     accession_id_list=>$male_stock_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
+                    download_format=>'three_column_reciprocal',
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -4121,7 +4133,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     accession_id_list=>$female_stock_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
+                    download_format=>'three_column_reciprocal',
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -4150,7 +4163,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     accession_id_list=>$male_stock_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>0,
-                    download_format=>'three_column_reciprocal'
+                    download_format=>'three_column_reciprocal',
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -4312,6 +4326,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     accession_id_list=>\@accession_ids,
                     protocol_id=>$genotyping_protocol_id,
                     get_grm_for_parental_accessions=>$compute_from_parents,
+                    genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                     # minor_allele_frequency=>$minor_allele_frequency,
                     # marker_filter=>$marker_filter,
                     # individuals_filter=>$individuals_filter
@@ -5353,7 +5368,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         accession_id_list=>$female_stock_ids,
                         protocol_id=>$genotyping_protocol_id,
                         get_grm_for_parental_accessions=>0,
-                        download_format=>'three_column_reciprocal'
+                        download_format=>'three_column_reciprocal',
+                        genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                         # minor_allele_frequency=>$minor_allele_frequency,
                         # marker_filter=>$marker_filter,
                         # individuals_filter=>$individuals_filter
@@ -5382,7 +5398,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         accession_id_list=>$male_stock_ids,
                         protocol_id=>$genotyping_protocol_id,
                         get_grm_for_parental_accessions=>0,
-                        download_format=>'three_column_reciprocal'
+                        download_format=>'three_column_reciprocal',
+                        genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                         # minor_allele_frequency=>$minor_allele_frequency,
                         # marker_filter=>$marker_filter,
                         # individuals_filter=>$individuals_filter
@@ -5569,7 +5586,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         accession_id_list=>$female_stock_ids,
                         protocol_id=>$genotyping_protocol_id,
                         get_grm_for_parental_accessions=>0,
-                        download_format=>'three_column_reciprocal'
+                        download_format=>'three_column_reciprocal',
+                        genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                         # minor_allele_frequency=>$minor_allele_frequency,
                         # marker_filter=>$marker_filter,
                         # individuals_filter=>$individuals_filter
@@ -5598,7 +5616,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         accession_id_list=>$male_stock_ids,
                         protocol_id=>$genotyping_protocol_id,
                         get_grm_for_parental_accessions=>0,
-                        download_format=>'three_column_reciprocal'
+                        download_format=>'three_column_reciprocal',
+                        genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                         # minor_allele_frequency=>$minor_allele_frequency,
                         # marker_filter=>$marker_filter,
                         # individuals_filter=>$individuals_filter
@@ -5756,6 +5775,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         accession_id_list=>\@accession_ids,
                         protocol_id=>$genotyping_protocol_id,
                         get_grm_for_parental_accessions=>$compute_from_parents,
+                        genotypeprop_hash_dosage_key=>$c->config->{genotyping_protocol_dosage_key}
                         # minor_allele_frequency=>$minor_allele_frequency,
                         # marker_filter=>$marker_filter,
                         # individuals_filter=>$individuals_filter
@@ -11130,13 +11150,13 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             colnames(prm_mat) <- mat\$plot_id_s;
             rownames(prm_mat) <- mat\$plot_id_s;
             h2s <- c(); h2ses <- c(); r2s <- c(); sses <- c(); ';
-            my @grm_no_prm_fixed_effects_f3_cont_reps_tests;
+            my @grm_no_prm_fixed_effects_prm_reps_tests;
             foreach my $r (sort keys %seen_reps_hash) {
-                push @grm_no_prm_fixed_effects_f3_cont_reps_tests, 'mat\$replicate != \''.$r.'\'';
-                my $grm_no_prm_fixed_effects_f3_cont_reps_test = join ' && ', @grm_no_prm_fixed_effects_f3_cont_reps_tests;
+                push @grm_no_prm_fixed_effects_prm_reps_tests, 'mat\$replicate != \''.$r.'\'';
+                my $grm_no_prm_fixed_effects_prm_reps_test = join ' && ', @grm_no_prm_fixed_effects_prm_reps_tests;
 
                 $grm_no_prm_fixed_effects_prm_reps_test_gcorr_cmd .= '
-                mat_f <- mat['.$grm_no_prm_fixed_effects_f3_cont_reps_test.', ];
+                mat_f <- mat['.$grm_no_prm_fixed_effects_prm_reps_test.', ];
                 if (nrow(mat_f)>0) {
                 mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + vs(plot_id_s, Gu=prm_mat), rcov=~vs(units), data=mat_f);
                 if (!is.null(mix\$U)) {

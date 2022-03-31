@@ -33,6 +33,7 @@ override('retrieve_genotypes',
         my $protocolprop_top_key_select = shift || [];
         my $protocolprop_marker_hash_select = shift || [];
         my $return_only_first_genotypeprop_for_stock = shift || 1;
+        my $genotypeprop_hash_dosage_key = shift || 'DS';
 
         my $accessions_list_ref = $self->retrieve_accessions();
         my @accession_ids;
@@ -62,7 +63,8 @@ override('retrieve_genotypes',
             protocolprop_top_key_select=>$protocolprop_top_key_select, #THESE ARE THE KEYS AT THE TOP LEVEL OF THE PROTOCOLPROP OBJECT
             protocolprop_marker_hash_select=>$protocolprop_marker_hash_select, #THESE ARE THE KEYS IN THE MARKERS OBJECT IN THE PROTOCOLPROP OBJECT
             return_only_first_genotypeprop_for_stock=>$return_only_first_genotypeprop_for_stock, #FOR MEMORY REASONS TO LIMIT DATA
-            forbid_cache=>$forbid_cache
+            forbid_cache=>$forbid_cache,
+            genotypeprop_hash_dosage_key=>$genotypeprop_hash_dosage_key
         });
         my @required_config = (
             $cluster_shared_tempdir_config,

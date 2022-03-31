@@ -61,6 +61,11 @@ has 'filename' => (
     required => 1,
 );
 
+has 'genotypeprop_hash_dosage_key' => (
+    isa => 'Str',
+    is => 'ro',
+    default => 'DS' #DS is ALT dosage and DR is REF dosage
+);
 
 sub download {
     my $self = shift;
@@ -69,10 +74,13 @@ sub download {
     my $protocol_id_list = $self->protocol_id_list;
     my $markerprofile_id_list = $self->markerprofile_id_list;
     my $accession_list = $self->accession_list;
+    my $genotypeprop_hash_dosage_key = $self->genotypeprop_hash_dosage_key;
+
     my $genotypes_search = CXGN::Genotype::Search->new({
         bcs_schema=>$schema,
         people_schema=>$people_schema,
         protocol_id_list=>$protocol_id_list,
+        genotypeprop_hash_dosage_key=>$genotypeprop_hash_dosage_key
     });
     my $result = $genotypes_search->get_pcr_genotype_info();
 #    print STDERR "PCR DOWNLOAD RESULTS =".Dumper($result)."\n";

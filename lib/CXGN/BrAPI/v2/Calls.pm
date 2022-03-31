@@ -28,6 +28,7 @@ sub search {
     my $callset_id = $inputs->{callSetDbId} || ($inputs->{callSetDbIds} || ());
     my $variantset_id = $inputs->{variantSetDbId} || ($inputs->{variantSetDbIds} || ());
     my @variantset_id;
+    my $dosage_key = $c->config->{genotyping_protocol_dosage_key};
 
     if ($sep_phased || $sep_unphased || $expand_homozygotes || $unknown_string){
         push @$status, { 'error' => 'The following parameters are not implemented: expandHomozygotes, unknownString, sepPhased, sepUnphased' };
@@ -66,11 +67,12 @@ sub search {
         people_schema => $self->people_schema(),
         cache_root=>$c->config->{cache_file_path},
         trial_list=>\@trial_ids,
-        genotypeprop_hash_select=>['DS', 'GT', 'NT'],
+        genotypeprop_hash_select=>[$dosage_key, 'GT', 'NT'],
         accession_list=>$callset_id,
         protocolprop_top_key_select=>[],
         protocolprop_marker_hash_select=>[],
         protocol_id_list=>\@protocol_ids,
+        genotypeprop_hash_dosage_key=>$dosage_key
     });
     my $file_handle = $genotypes_search->get_cached_file_search_json($c->config->{cluster_shared_tempdir}, 0);
 
@@ -100,8 +102,8 @@ sub search {
                     elsif (exists($genotype->{$m}->{'GT'}) && defined($genotype->{$m}->{'GT'})){
                         $geno = $genotype->{$m}->{'GT'};
                     }
-                    elsif (exists($genotype->{$m}->{'DS'}) && defined($genotype->{$m}->{'DS'})){
-                        $geno = $genotype->{$m}->{'DS'};
+                    elsif (exists($genotype->{$m}->{$dosage_key}) && defined($genotype->{$m}->{$dosage_key})){
+                        $geno = $genotype->{$m}->{$dosage_key};
                     }
                     push @data, {
                         additionalInfo=>undef,
