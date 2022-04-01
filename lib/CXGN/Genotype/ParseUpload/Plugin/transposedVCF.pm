@@ -433,6 +433,7 @@ sub next_genotype {
                 }
                 $value{'NT'} = join $separator, @nucleotide_genotype;
                 $value{'DR'} = $gt_dosage_ref_val;
+                $value{'GT'} = $gt;
             }
             # If DS is provided in uploaded file and is a number, then this will be skipped
             if (exists($value{'GT'}) && !looks_like_number($value{'DS'})) {
