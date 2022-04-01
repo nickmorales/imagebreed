@@ -150,15 +150,16 @@ sub validate_design {
 
     my %found_data;
     foreach my $a (@accession_names) {
-	my $rs = $chado_schema->resultset('Stock::Stock')->search({
-	    'is_obsolete' => { '!=' => 't' },
-	    'type_id' => { -in => \@source_stock_types },
-	    'uniquename' => { ilike => $a } });
+        my $rs = $chado_schema->resultset('Stock::Stock')->search({
+            'is_obsolete' => { '!=' => 't' },
+            'type_id' => { -in => \@source_stock_types },
+            'uniquename' => { ilike => $a }
+        });
 
-	while (my $s = $rs->next()) {
-	    print STDERR "FOUND ".$s->uniquename()."\n";
-	    $found_data{$s->uniquename} = 1;
-	}
+        while (my $s = $rs->next()) {
+            # print STDERR "FOUND ".$s->uniquename()."\n";
+            $found_data{$s->uniquename} = 1;
+        }
     }
     foreach (@accession_names){
         if (!$found_data{$_}){

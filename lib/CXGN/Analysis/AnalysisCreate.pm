@@ -357,6 +357,7 @@ sub store {
 
     print STDERR Dumper $analysis_model_type;
     my $model_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, $analysis_model_type, 'protocol_type')->cvterm_id();
+    my $project_table_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'analysis_project_table_type', 'project_table_type')->cvterm_id();
 
     if ($analysis_to_save_boolean eq 'yes' && !$analysis_name) {
         return { error => "No analysis name given, but trying to save an analysis." };
@@ -463,6 +464,7 @@ sub store {
             metadata_schema => $metadata_schema,
             phenome_schema => $phenome_schema,
             name => $analysis_name,
+            project_table_type_id => $project_table_type_id
         });
         $saved_analysis_id = $a->get_trial_id();
 

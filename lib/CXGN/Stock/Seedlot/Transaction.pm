@@ -96,7 +96,7 @@ sub get_transactions_by_seedlot_id {
         }
     );
 
-    print STDERR "Found ".$rs->count()." transactions...\n";
+    # print STDERR "Found ".$rs->count()." transactions...\n";
     my @transactions;
     while (my $row = $rs->next()) {
         my $t_obj = CXGN::Stock::Seedlot::Transaction->new( schema => $schema );

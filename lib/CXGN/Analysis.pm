@@ -301,11 +301,23 @@ sub retrieve_analyses_by_user {
         my $info = decode_json $analysis_info;
         if ($analyses_type) {
             if ($info->{analysis_model_type} eq $analyses_type) {
-                push @analyses, CXGN::Analysis->new( { bcs_schema => $bcs_schema, people_schema => $people_schema, metadata_schema => $metadata_schema, phenome_schema => $phenome_schema, trial_id=> $project_id });
+                push @analyses, CXGN::Analysis->new({
+                    bcs_schema => $bcs_schema,
+                    people_schema => $people_schema,
+                    metadata_schema => $metadata_schema,
+                    phenome_schema => $phenome_schema,
+                    trial_id=> $project_id
+                });
             }
         }
         else {
-            push @analyses, CXGN::Analysis->new( { bcs_schema => $bcs_schema, people_schema => $people_schema, metadata_schema => $metadata_schema, phenome_schema => $phenome_schema, trial_id=> $project_id });
+            push @analyses, CXGN::Analysis->new({
+                bcs_schema => $bcs_schema,
+                people_schema => $people_schema,
+                metadata_schema => $metadata_schema,
+                phenome_schema => $phenome_schema,
+                trial_id=> $project_id
+            });
         }
     }
 

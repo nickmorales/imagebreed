@@ -5080,13 +5080,16 @@ sub drone_imagery_calculate_statistics_store_analysis_POST : Args(0) {
     my $phenotype_data_hash = $c->req->param('phenotype_data_hash');
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', 0, 0);
 
+    my $project_table_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'analysis_project_table_type', 'project_table_type')->cvterm_id();
+
     my $a = CXGN::Analysis->new({
         bcs_schema => $bcs_schema,
         people_schema => $people_schema,
         metadata_schema => $metadata_schema,
         phenome_schema => $phenome_schema,
         name => $analysis_name,
-        private_company_id => $private_company_id
+        private_company_id => $private_company_id,
+        project_table_type_id => $project_table_type_id
     });
 
     $a->description($analysis_description);

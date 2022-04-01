@@ -138,11 +138,11 @@ use CXGN::Trial::TrialDesignStore;
 use Data::Dumper;
 
 has 'chado_schema' => (
-		 is       => 'rw',
-		 isa      => 'DBIx::Class::Schema',
-		 predicate => 'has_chado_schema',
-		 required => 1,
-		);
+    is       => 'rw',
+    isa      => 'DBIx::Class::Schema',
+    predicate => 'has_chado_schema',
+    required => 1,
+);
 
 has 'dbh' => (is  => 'rw',predicate => 'has_dbh', required => 1,);
 has 'trial_id' => (isa => 'Maybe[Int]', is => 'rw', predicate => 'has_trial_id');
@@ -212,23 +212,23 @@ sub trial_name_already_exists {
     my $trial_name = $self->get_trial_name();
     my $schema = $self->get_chado_schema();
     if($schema->resultset('Project::Project')->find({name => $trial_name})){
-	return 1;
+        return 1;
     }
     else {
-	return;
+        return;
     }
 }
 
 sub get_breeding_program_id {
-  my $self = shift;
-  my $breeding_program_ref = $self->get_chado_schema->resultset('Project::Project')->find({name=>$self->get_program});
-  if (!$breeding_program_ref ) {
-      print STDERR "UNDEF breeding program " . $self->get_program . "\n\n";
-      return ;
-  }
-  my $breeding_program_id = $breeding_program_ref->project_id();
-  #print STDERR "get_breeding_program _id returning $breeding_program_id";
-  return $breeding_program_id;
+    my $self = shift;
+    my $breeding_program_ref = $self->get_chado_schema->resultset('Project::Project')->find({name=>$self->get_program});
+    if (!$breeding_program_ref ) {
+        print STDERR "UNDEF breeding program " . $self->get_program . "\n\n";
+        return;
+    }
+    my $breeding_program_id = $breeding_program_ref->project_id();
+    #print STDERR "get_breeding_program _id returning $breeding_program_id";
+    return $breeding_program_id;
 }
 
 
@@ -268,14 +268,14 @@ sub save_trial {
     my $company_type_cvterm_name = $private_company->private_company_type_name();
     my $private_company_project_is_private = $company_type_cvterm_name eq 'private_access' ? 1 : 0;
 
-	my $geolocation;
-	my $geolocation_lookup = CXGN::Location::LocationLookup->new(schema => $chado_schema);
-	$geolocation_lookup->set_location_name($self->get_trial_location());
-	$geolocation = $geolocation_lookup->get_geolocation();
-	if (!$geolocation) {
-		print STDERR "Can't create trial: Location not found: ".$self->get_trial_location()."\n";
-		return { error => "Trial not saved: location not found" };
-	}
+    my $geolocation;
+    my $geolocation_lookup = CXGN::Location::LocationLookup->new(schema => $chado_schema);
+    $geolocation_lookup->set_location_name($self->get_trial_location());
+    $geolocation = $geolocation_lookup->get_geolocation();
+    if (!$geolocation) {
+        print STDERR "Can't create trial: Location not found: ".$self->get_trial_location()."\n";
+        return { error => "Trial not saved: location not found" };
+    }
 
     my $accession_cvterm = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'accession', 'stock_type');
     my $project_year_cvterm = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'project year', 'project_property');
@@ -297,29 +297,12 @@ sub save_trial {
     my $sampling_facility_cvterm = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'sampling_facility', 'project_property');
     my $sampling_trial_sample_type_cvterm = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'sampling_trial_sample_type', 'project_property');
 
-    my $project;
-    if ($self->has_trial_id()) {
-        $project = $chado_schema->resultset('Project::Project')->find( { project_id => $self->get_trial_id() });
-        if (! $project) {  die "The specified project id ".$self->get_trial_id()." does not exit in the database\n"; }
-    }
-    else {
-        my $q = "INSERT INTO project (name, description, private_company_id, is_private) VALUES (?,?,?,?);";
-        my $h = $chado_schema->storage->dbh()->prepare($q);
-        $h->execute($trial_name, $self->get_trial_description(), $private_company_id, $private_company_project_is_private);
-        $project = $chado_schema->resultset('Project::Project')->find( { name => $trial_name });
-    }
-
-    my $t = CXGN::Trial->new({
-        bcs_schema => $chado_schema,
-        trial_id => $project->project_id()
-    });
-
-    $t->set_trial_owner($self->get_owner_id);
-    #print STDERR "TRIAL TYPE = ".ref($t)."!!!!\n";
     my $nd_experiment_type_id;
+    my $project_table_type_id;
     if ($self->get_is_genotyping()) {
         print STDERR "Generating a genotyping trial...\n";
         $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'genotyping_layout', 'experiment_type')->cvterm_id();
+        $project_table_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'genotyping_plate_project_table_type', 'project_table_type')->cvterm_id();
 
         my $blank_stock_check = $chado_schema->resultset("Stock::Stock")->find({uniquename=>"BLANK"});
         if (!$blank_stock_check) {
@@ -329,21 +312,43 @@ sub save_trial {
     elsif ($self->get_is_analysis()) {
         print STDERR "Generating an analysis trial...\n";
         $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, , 'analysis_experiment', 'experiment_type')->cvterm_id();
+        $project_table_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'analysis_project_table_type', 'project_table_type')->cvterm_id();
     }
     elsif ($self->get_is_sampling_trial()) {
         print STDERR "Generating a sampling trial...\n";
         $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, , 'sampling_layout', 'experiment_type')->cvterm_id();
+        $project_table_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'sampling_trial_project_table_type', 'project_table_type')->cvterm_id();
     }
     else {
         print STDERR "Generating a phenotyping trial...\n";
         $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, , 'field_layout', 'experiment_type')->cvterm_id();
+        $project_table_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'field_trial_project_table_type', 'project_table_type')->cvterm_id();
     }
-    my $nd_experiment = $chado_schema->resultset('NaturalDiversity::NdExperiment')
-    ->create({
+
+    my $project;
+    if ($self->has_trial_id()) {
+        $project = $chado_schema->resultset('Project::Project')->find( { project_id => $self->get_trial_id() });
+        if (! $project) {  die "The specified project id ".$self->get_trial_id()." does not exit in the database\n"; }
+    }
+    else {
+        my $q = "INSERT INTO project (name, description, private_company_id, is_private, type_id) VALUES (?,?,?,?,?);";
+        my $h = $chado_schema->storage->dbh()->prepare($q);
+        $h->execute($trial_name, $self->get_trial_description(), $private_company_id, $private_company_project_is_private, $project_table_type_id);
+        $project = $chado_schema->resultset('Project::Project')->find( { name => $trial_name });
+    }
+    my $project_id = $project->project_id();
+
+    my $t = CXGN::Trial->new({
+        bcs_schema => $chado_schema,
+        trial_id => $project_id
+    });
+
+    $t->set_trial_owner($self->get_owner_id);
+
+    my $nd_experiment = $chado_schema->resultset('NaturalDiversity::NdExperiment')->create({
         nd_geolocation_id => $geolocation->nd_geolocation_id(),
         type_id => $nd_experiment_type_id,
     });
-
 
     if ($self->get_is_genotyping()) {
         #print STDERR "Storing user_id and project_name provided by the IGD spreadksheet for later recovery in the spreadsheet download... ".(join ",", ($self->get_genotyping_user_id(), $self->get_genotyping_project_name()))."\n";
@@ -394,7 +399,7 @@ sub save_trial {
     }
 
     #link to the project
-    $nd_experiment->find_or_create_related('nd_experiment_projects',{project_id => $project->project_id()});
+    $nd_experiment->find_or_create_related('nd_experiment_projects',{project_id => $project_id});
 
     $project->create_projectprops({
         $project_year_cvterm->name() => $self->get_trial_year(),
@@ -453,7 +458,7 @@ sub save_trial {
     print STDERR "NOW CALLING TRIAl DESIGN STORE...\n";
     my $trial_design_store = CXGN::Trial::TrialDesignStore->new({
         bcs_schema => $chado_schema,
-        trial_id => $project->project_id(),
+        trial_id => $project_id,
         trial_name => $trial_name,
         nd_geolocation_id => $geolocation->nd_geolocation_id(),
         nd_experiment_id => $nd_experiment->nd_experiment_id(),
@@ -473,17 +478,17 @@ sub save_trial {
         print STDERR "ERROR: $validate_design_error\n";
         return { error => "Error validating trial design: $validate_design_error." };
     } else {
-	try {
-	    $error = $trial_design_store->store();
-	} catch {
-	    print STDERR "ERROR store: $_\n";
-	    $error = $_;
-	};
+        try {
+            $error = $trial_design_store->store();
+        } catch {
+            print STDERR "ERROR store: $_\n";
+            $error = $_;
+        };
     }
     if ($error) {
-	return { error => $error };
+        return { error => $error };
     }
-    return { trial_id => $project->project_id };
+    return { trial_id => $project_id };
 }
 
 

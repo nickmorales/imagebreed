@@ -113,7 +113,7 @@ has 'additional_info' => (
 );
 
 sub BUILD {
-	my $self = shift;
+    my $self = shift;
 
     my $q = "SELECT project_id, name, description, type_id, private_company_id, is_private
         FROM project WHERE project_id=?;";
@@ -121,142 +121,145 @@ sub BUILD {
     $h->execute($self->folder_id());
     my ($folder_id, $name, $description, $project_type_id, $private_company_id, $private_company_project_is_private) = $h->fetchrow_array();
 
-	if (!$name) {
-		die "The specified folder with id ".$self->folder_id()." does not exist!";
-	}
+    if (!$name) {
+        die "The specified folder with id ".$self->folder_id()." does not exist!";
+    }
 
-	$self->name($name);
+    $self->name($name);
     $self->description($description);
     $self->private_company_id($private_company_id);
 
-	my $breeding_program_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'breeding_program', 'project_property')->cvterm_id();
-	my $folder_for_trials_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'folder_for_trials', 'project_property')->cvterm_id();
-	my $folder_for_crosses_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'folder_for_crosses', 'project_property')->cvterm_id();
-	my $folder_for_genotyping_trials_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'folder_for_genotyping_trials', 'project_property')->cvterm_id();
-	my $folder_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'trial_folder', 'project_property')->cvterm_id();
-	my $analyses_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'analysis_metadata_json', 'project_property')->cvterm_id();
-	my $breeding_program_trial_relationship_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'breeding_program_trial_relationship', 'project_relationship')->cvterm_id();
-	my $additional_info_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'project_additional_info', 'project_property')->cvterm_id();
+    my $breeding_program_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'breeding_program', 'project_property')->cvterm_id();
+    my $folder_for_trials_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'folder_for_trials', 'project_property')->cvterm_id();
+    my $folder_for_crosses_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'folder_for_crosses', 'project_property')->cvterm_id();
+    my $folder_for_genotyping_trials_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'folder_for_genotyping_trials', 'project_property')->cvterm_id();
+    my $folder_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'trial_folder', 'project_property')->cvterm_id();
+    my $analyses_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'analysis_metadata_json', 'project_property')->cvterm_id();
+    my $breeding_program_trial_relationship_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'breeding_program_trial_relationship', 'project_relationship')->cvterm_id();
+    my $additional_info_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'project_additional_info', 'project_property')->cvterm_id();
 
-	$self->breeding_program_cvterm_id($breeding_program_type_id);
-	$self->folder_cvterm_id($folder_cvterm_id);
-	$self->breeding_program_trial_relationship_id($breeding_program_trial_relationship_id);
+    $self->breeding_program_cvterm_id($breeding_program_type_id);
+    $self->folder_cvterm_id($folder_cvterm_id);
+    $self->breeding_program_trial_relationship_id($breeding_program_trial_relationship_id);
 
-	my $folder_type = $self->bcs_schema()->resultset('Project::Projectprop')-> search( { project_id => $self->folder_id() });
-	while (my $folder_type_row = $folder_type->next) {
-		if ($folder_type_row->type_id() == $self->folder_cvterm_id() ) {
-			$self->folder_type("folder");
-			$self->is_folder(1);
-		} elsif ($folder_type_row->type_id() == $self->breeding_program_cvterm_id()) {
-			$self->folder_type("breeding_program");
-		} elsif ($folder_type_row->type_id() == $folder_for_trials_cvterm_id) {
-			$self->folder_for_trials(1);
-		} elsif ($folder_type_row->type_id() == $folder_for_crosses_cvterm_id) {
-			$self->folder_for_crosses(1);
-		} elsif ($folder_type_row->type_id() == $folder_for_genotyping_trials_cvterm_id) {
-			$self->folder_for_genotyping_trials(1);
-		} elsif ($folder_type_row->type_id() == $additional_info_cvterm_id) {
-			my $additional_info = decode_json($folder_type_row->value);
-			$self->additional_info($additional_info);
-		}
-	}
+    my $folder_type = $self->bcs_schema()->resultset('Project::Projectprop')-> search( { project_id => $self->folder_id() });
+    while (my $folder_type_row = $folder_type->next) {
+        if ($folder_type_row->type_id() == $self->folder_cvterm_id() ) {
+            $self->folder_type("folder");
+            $self->is_folder(1);
+        } elsif ($folder_type_row->type_id() == $self->breeding_program_cvterm_id()) {
+            $self->folder_type("breeding_program");
+        } elsif ($folder_type_row->type_id() == $folder_for_trials_cvterm_id) {
+            $self->folder_for_trials(1);
+        } elsif ($folder_type_row->type_id() == $folder_for_crosses_cvterm_id) {
+            $self->folder_for_crosses(1);
+        } elsif ($folder_type_row->type_id() == $folder_for_genotyping_trials_cvterm_id) {
+            $self->folder_for_genotyping_trials(1);
+        } elsif ($folder_type_row->type_id() == $additional_info_cvterm_id) {
+            my $additional_info = decode_json($folder_type_row->value);
+            $self->additional_info($additional_info);
+        }
+    }
 
-	if (!$self->folder_type) {
-		my $location_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'project location',  'project_property')->cvterm_id;
+    if (!$self->folder_type) {
+        my $location_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'project location',  'project_property')->cvterm_id;
 
-		my $trial_type_rs = $self->bcs_schema->resultset("Project::Project")->search({ 'me.project_id' => $self->folder_id })->search_related('projectprops');
-		while (my $tt = $trial_type_rs->next()) {
-			if ($tt->value eq 'crossing_trial') {
-				$self->folder_type("cross");
-			} elsif ($tt->value eq 'genotyping_plate') {
-				$self->folder_type("genotyping_trial");
+        my $trial_type_rs = $self->bcs_schema->resultset("Project::Project")->search({ 'me.project_id' => $self->folder_id })->search_related('projectprops');
+        while (my $tt = $trial_type_rs->next()) {
+            if ($tt->value eq 'crossing_trial') {
+                $self->folder_type("cross");
+            } elsif ($tt->value eq 'genotyping_plate') {
+                $self->folder_type("genotyping_trial");
             } elsif ($tt->value eq 'sampling_trial') {
-				$self->folder_type("sampling_trial");
+                $self->folder_type("sampling_trial");
             } elsif ($tt->type_id == $analyses_cvterm_id) {
-				$self->folder_type("analyses");
-			} elsif ($tt->type_id == $location_cvterm_id) {
-				$self->location_id($tt->value + 0);
+                $self->folder_type("analyses");
+            } elsif ($tt->type_id == $location_cvterm_id) {
+                $self->location_id($tt->value + 0);
                 my $location = CXGN::Location->new( { bcs_schema => $self->bcs_schema, nd_geolocation_id => $self->location_id } );
                 $self->location_name($location->name());
-			}
-		}
+            }
+        }
 
-		if (!$self->folder_type) {
-			$self->folder_type("trial");
-		}
-	}
+        if (!$self->folder_type) {
+            $self->folder_type("trial");
+        }
+    }
 
-	my $breeding_program_rel_row = $self->bcs_schema()->resultset('Project::ProjectRelationship')->find( { subject_project_id => $self->folder_id(), type_id =>  $self->breeding_program_trial_relationship_id() });
-	if ($breeding_program_rel_row) {
-		my $parent_row = $self->bcs_schema()->resultset('Project::Project')->find( { project_id=> $breeding_program_rel_row->object_project_id() });
-		$self->project_parent($parent_row);
-		$self->breeding_program($parent_row);
-	}
+    my $breeding_program_rel_row = $self->bcs_schema()->resultset('Project::ProjectRelationship')->find( { subject_project_id => $self->folder_id(), type_id =>  $self->breeding_program_trial_relationship_id() });
+    if ($breeding_program_rel_row) {
+        my $parent_row = $self->bcs_schema()->resultset('Project::Project')->find( { project_id=> $breeding_program_rel_row->object_project_id() });
+        $self->project_parent($parent_row);
+        $self->breeding_program($parent_row);
+    }
 
-	my $folder_rel_row = $self->bcs_schema()->resultset('Project::ProjectRelationship')->find( { subject_project_id => $self->folder_id(), type_id =>  $self->folder_cvterm_id() });
-	if ($folder_rel_row) {
-		my $parent_row = $self->bcs_schema()->resultset('Project::Project')->find( { project_id=> $folder_rel_row->object_project_id() });
-		$self->project_parent($parent_row);
-	}
+    my $folder_rel_row = $self->bcs_schema()->resultset('Project::ProjectRelationship')->find( { subject_project_id => $self->folder_id(), type_id =>  $self->folder_cvterm_id() });
+    if ($folder_rel_row) {
+        my $parent_row = $self->bcs_schema()->resultset('Project::Project')->find( { project_id=> $folder_rel_row->object_project_id() });
+        $self->project_parent($parent_row);
+    }
 
 }
 
 # class methods
 
 sub create {
-	my $class = shift;
-	my $args = shift;
-	my $schema = $args->{bcs_schema};
-	my $folder_name = $args->{name};
-	my $description = $args->{description} || "";
-	my $breeding_program_id = $args->{breeding_program_id};
-	my $private_company_id = $args->{private_company_id};
-	my $parent_folder_id = $args->{parent_folder_id};
-	my $folder_for_trials = $args->{folder_for_trials};
-	my $folder_for_crosses = $args->{folder_for_crosses};
-	my $folder_for_genotyping_trials = $args->{folder_for_genotyping_trials};
-	my $additional_info = $args->{additional_info} || undef;
+    my $class = shift;
+    my $args = shift;
+    my $schema = $args->{bcs_schema};
+    my $folder_name = $args->{name};
+    my $description = $args->{description} || "";
+    my $breeding_program_id = $args->{breeding_program_id};
+    my $private_company_id = $args->{private_company_id};
+    my $parent_folder_id = $args->{parent_folder_id};
+    my $folder_for_trials = $args->{folder_for_trials};
+    my $folder_for_crosses = $args->{folder_for_crosses};
+    my $folder_for_genotyping_trials = $args->{folder_for_genotyping_trials};
+    my $additional_info = $args->{additional_info} || undef;
 
-	# check if name is already taken
-	my $check_rs = $schema->resultset('Project::Project')->search( { name => $folder_name } );
-	if ($check_rs->count() > 0) {
-		die "The name $folder_name cannot be used for a new folder because it already exists.";
-	}
+    # check if name is already taken
+    my $check_rs = $schema->resultset('Project::Project')->search( { name => $folder_name } );
+    if ($check_rs->count() > 0) {
+        die "The name $folder_name cannot be used for a new folder because it already exists.";
+    }
 
-	my $folder_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'trial_folder', 'project_property');
+    my $folder_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'trial_folder', 'project_property');
+    my $folder_project_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'folder_project_table_type', 'project_table_type')->cvterm_id();
 
-	my $project = $schema->resultset('Project::Project')->create({
-		name => $folder_name,
-		description => $description,
-	});
-	$project->create_projectprops({ $folder_cvterm->name() => '1' });
+    my $q = "INSERT INTO project (name, description, type_id) VALUES (?,?,?);";
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute($folder_name, $description, $folder_project_table_type_id);
 
-	if ($folder_for_trials) {
-		my $folder_type_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'folder_for_trials', 'project_property');
-		$project->create_projectprops({ $folder_type_cvterm->name() => '1' });
-	}
-	if ($folder_for_crosses) {
-		my $folder_type_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'folder_for_crosses', 'project_property');
-		$project->create_projectprops({ $folder_type_cvterm->name() => '1' });
-	}
+    my $project = $schema->resultset('Project::Project')->find({ name => $folder_name });
+
+    $project->create_projectprops({ $folder_cvterm->name() => '1' });
+
+    if ($folder_for_trials) {
+        my $folder_type_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'folder_for_trials', 'project_property');
+        $project->create_projectprops({ $folder_type_cvterm->name() => '1' });
+    }
+    if ($folder_for_crosses) {
+        my $folder_type_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'folder_for_crosses', 'project_property');
+        $project->create_projectprops({ $folder_type_cvterm->name() => '1' });
+    }
     if ($folder_for_genotyping_trials) {
         my $folder_type_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'folder_for_genotyping_trials', 'project_property');
         $project->create_projectprops({ $folder_type_cvterm->name() => '1' });
     }
-	if ($additional_info){
-		my $additional_info_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'project_additional_info', 'project_property');
-		$project->create_projectprops({ $additional_info_cvterm->name() => encode_json($additional_info) });
-	}
+    if ($additional_info){
+        my $additional_info_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'project_additional_info', 'project_property');
+        $project->create_projectprops({ $additional_info_cvterm->name() => encode_json($additional_info) });
+    }
 
-	my $folder = CXGN::Trial::Folder->new({
-		bcs_schema => $schema,
-		folder_id => $project->project_id()
-	});
-	$folder->associate_parent($parent_folder_id);
-	$folder->associate_breeding_program($breeding_program_id);
-	$folder->associate_private_company($private_company_id);
+    my $folder = CXGN::Trial::Folder->new({
+        bcs_schema => $schema,
+        folder_id => $project->project_id()
+    });
+    $folder->associate_parent($parent_folder_id);
+    $folder->associate_breeding_program($breeding_program_id);
+    $folder->associate_private_company($private_company_id);
 
-	return $folder;
+    return $folder;
 }
 
 #CLASS function

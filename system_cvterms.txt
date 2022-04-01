@@ -191,6 +191,17 @@ project_relationship	crossing_trial_from_field_trial	For linking crossing trials
 project_relationship	drone_run_on_field_trial	For linking drone image runs to field trials 	9/18/18	nm529	00103
 project_relationship	drone_run_band_on_drone_run	For linking drone image runs bands to drone runs 	10/5/18	nm529	00103
 project_relationship	sampling_trial_from_field_trial	For linking sampling trial to field trials 	11/25/20	nm529	00132
+project_table_type	field_trial_project_table_type	Saving a field trial in project table 	04/01/22	nm529	00160
+project_table_type	folder_project_table_type	Saving a folder in project table 	04/01/22	nm529	00160
+project_table_type	genotyping_plate_project_table_type	Saving a genotyping plate trial in project table 	04/01/22	nm529	00160
+project_table_type	genotyping_data_project_project_table_type	Saving a genotyping project in project table 	04/01/22	nm529	00160
+project_table_type	genotyping_data_pcr_project_project_table_type	Saving a genotyping project in project table 	04/01/22	nm529	00160
+project_table_type	crossing_trial_project_table_type	Saving a crossing trial in project table 	04/01/22	nm529	00160
+project_table_type	sampling_trial_project_table_type	Saving a crossing trial in project table 	04/01/22	nm529	00160
+project_table_type	analysis_project_table_type	Saving a crossing trial in project table 	04/01/22	nm529	00160
+project_table_type	treatment_project_table_type	Saving a crossing trial in project table 	04/01/22	nm529	00160
+project_table_type	drone_run_project_table_type	Saving a crossing trial in project table 	04/01/22	nm529	00160
+project_table_type	drone_run_band_project_table_type	Saving a crossing trial in project table 	04/01/22	nm529	00160
 project_type	Advanced Yield Trial
 project_type	Clonal Evaluation
 project_type	Preliminary Yield Trial

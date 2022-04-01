@@ -180,16 +180,16 @@ sub all_sequenced_stocks {
     my $class = shift;
     my $schema = shift;
 
-    print STDERR "all_sequenced_stocks with ".ref($schema)." as parameter...\n";
+    # print STDERR "all_sequenced_stocks with ".ref($schema)." as parameter...\n";
     my $type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'sequencing_project_info', 'stock_property')->cvterm_id();
-    print STDERR "type_id = $type_id\n";
+    # print STDERR "type_id = $type_id\n";
 
     my $sp_rs = $schema->resultset("Stock::Stockprop")->search({ type_id => $type_id });
 
     my @sequenced_stocks = ();
     while (my $row = $sp_rs->next()) {
-	print STDERR "found stock with stock_id ".$row->stock_id()."\n";
-	push @sequenced_stocks, $row->stock_id();
+        # print STDERR "found stock with stock_id ".$row->stock_id()."\n";
+        push @sequenced_stocks, $row->stock_id();
     }
 
     return @sequenced_stocks;

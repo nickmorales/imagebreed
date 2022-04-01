@@ -94,6 +94,14 @@ has 'year' => (
     lazy => 1,
 );
 
+has 'project_table_type_id' => (
+    isa => 'Maybe[Int]',
+    is => 'rw',
+    trigger => \&set_project_table_type_id,
+    builder => 'get_project_table_type_id',
+    lazy => 1,
+);
+
 has 'private_company_id' => (
     isa => 'Maybe[Int]',
     is => 'rw',
@@ -144,7 +152,11 @@ sub BUILD {
         });
         my $project_id = $new_row->project_id();
         $self->set_trial_id($project_id);
+        $self->project_id($project_id);
 
+        if ($self->project_table_type_id()) {
+            $self->set_project_table_type_id($self->project_table_type_id());
+        }
         if ($self->private_company_id()) {
             $self->set_private_company($self->private_company_id());
         }
@@ -338,25 +350,51 @@ sub get_description {
 
     # print STDERR "Get description for trial id ".$self->get_trial_id()."\n";
     my $rs = $self->bcs_schema->resultset('Project::Project')->search( { project_id => $self->get_trial_id() });
-
     return $rs->first()->description();
-
 }
-
 
 sub set_description {
     my $self = shift;
     my $description = shift;
 
     my $row = $self->bcs_schema->resultset('Project::Project')->find( { project_id => $self->get_trial_id() });
-
-    #print STDERR "Setting new description $description for trial ".$self->get_trial_id()."\n";
-
     $row->description($description);
-
     $row->update();
-
 }
+
+
+=head2 accessors get_project_table_type_id(), set_project_table_type_id()
+
+getter/setter for the project_table_type_id
+
+=cut
+
+sub get_project_table_type_id {
+    my $self = shift;
+
+    my $q = "SELECT type_id FROM project WHERE project_id = ?;";
+    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($self->get_trial_id());
+    my ($type_id) = $h->fetchrow_array();
+
+    return $type_id;
+}
+
+sub set_project_table_type_id {
+    my $self = shift;
+    my $project_table_type_id = shift;
+
+    my $q = "UPDATE project SET type_id = ? WHERE project_id = ?;";
+    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($project_table_type_id, $self->get_trial_id());
+}
+
+
+=head2 accessors set_private_company()
+
+setter for the private company
+
+=cut
 
 sub set_private_company {
     my $self = shift;

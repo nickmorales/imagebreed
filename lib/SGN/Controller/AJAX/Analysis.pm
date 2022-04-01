@@ -604,14 +604,24 @@ sub retrieve_analysis_data :Chained("ajax_analysis") PathPart('retrieve') :Args(
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
     my ($user_id, $user_name, $user_role) = _check_user_login_analysis($c, 0, 0, 0);
 
-    my $a = CXGN::Analysis->new( { bcs_schema => $bcs_schema, people_schema => $people_schema, metadata_schema => $metadata_schema, phenome_schema => $phenome_schema, trial_id => $c->stash->{analysis_id} } );
+    my $a = CXGN::Analysis->new({
+        bcs_schema => $bcs_schema,
+        people_schema => $people_schema,
+        metadata_schema => $metadata_schema,
+        phenome_schema => $phenome_schema,
+        trial_id => $c->stash->{analysis_id}
+    });
 
     my $dataset_id = "";
     my $dataset_name = "";
     my $dataset_description = "";
 
     if ($a->metadata()->dataset_id()) {
-        my $ds = CXGN::Dataset->new({ schema => $bcs_schema, people_schema => $people_schema, sp_dataset_id => $a->metadata()->dataset_id() });
+        my $ds = CXGN::Dataset->new({
+            schema => $bcs_schema,
+            people_schema => $people_schema,
+            sp_dataset_id => $a->metadata()->dataset_id()
+        });
         $dataset_id = $ds->sp_dataset_id();
         $dataset_name = $ds->name();
         $dataset_description = $ds->description();
