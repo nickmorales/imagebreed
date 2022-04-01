@@ -920,11 +920,12 @@ sub download_grm {
         close($heatmap_fh);
 
         my $grm_tempfile_heatmap_out = $grm_tempfile . "_plot_out";
-        my $heatmap_cmd = 'R -e "library(ggplot2); library(data.table); library(viridis); library(GGally); library(gridExtra);
+        my $heatmap_cmd = 'R -e "library(reshape2); library(ggplot2); library(data.table); library(viridis); library(GGally); library(gridExtra); library(psych);
         mat <- fread(\''.$grm_tempfile_heatmap_data.'\', header=FALSE, sep=\'\t\', stringsAsFactors=FALSE);
-        gg <- ggplot(mat, aes(V1, V2, fill=V3)) +
-            geom_tile() +
-            scale_fill_viridis(discrete=FALSE);
+        grm_mat_wide <- dcast(mat, V1~V2, value.var=\'V3\');
+        grm_mat <- grm_mat_wide[,-1];
+        rownames(grm_mat) <- grm_mat_wide\$V1;
+        gg <- ggcorr(data=NULL, cor_matrix = mat.sort(grm_mat, fa(grm_mat)), hjust = 1, size = 2, color = \'grey50\', layout.exp = 1, label = FALSE);
         ggsave(\''.$grm_tempfile_heatmap_out.'\', gg, device=\'pdf\', width=8.5, height=11, units=\'in\');
         "';
         print STDERR Dumper $heatmap_cmd;
