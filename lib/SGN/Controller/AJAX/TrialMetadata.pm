@@ -2086,9 +2086,9 @@ sub trial_completion_phenotype_section : Chained('trial') PathPart('trial_comple
     my $plot_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot', 'stock_type')->cvterm_id();
     my $plant_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plant', 'stock_type')->cvterm_id();
 
-    my $q = "SELECT phenotype_id
+    my $q = "SELECT phenotype.phenotype_id
         FROM phenotype
-        JOIN nd_experiment_phenotype_bridge ON(phenotype_id)
+        JOIN nd_experiment_phenotype_bridge ON(phenotype.phenotype_id=nd_experiment_phenotype_bridge.phenotype_id)
         JOIN stock USING(stock_id)
         WHERE phenotype.value != '' AND stock.type_id IN ($plot_type_id, $plant_type_id) AND project_id = ?
         LIMIT 1;";
@@ -4233,7 +4233,7 @@ sub update_trial_status_POST : Args(0) {
     my $user_name = $c->req->param("user_name");
     my $time = DateTime->now();
     my $timestamp = $time->ymd();
-    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
+    my ($user_id, $user_name_l, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
 
     my $trial_status_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'trial_status_json', 'project_property')->cvterm_id();
     my $prop = $schema->resultset("Project::Projectprop")->find({project_id => $trial_id, type_id => $trial_status_type_id});
