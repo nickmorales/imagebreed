@@ -3299,7 +3299,7 @@ ok(!$stored_phenotype_error_msg, "check that store phenotype spreadsheet simple 
 
 my $bs = CXGN::BreederSearch->new( { dbh=>$f->bcs_schema->storage->dbh, dbname=>$f->config->{dbname} } );
 my $refresh = $bs->refresh_matviews($f->config->{dbhost}, $f->config->{dbname}, $f->config->{dbuser}, $f->config->{dbpass}, 'fullview', 'nonconcurrent', $f->config->{basepath});
-sleep(10);
+sleep(5);
 
 my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
 	search_type=>'MaterializedViewTable',
@@ -3379,7 +3379,7 @@ ok(!$stored_phenotype_error_msg, "check that store phenotype spreadsheet associa
 
 my $bs = CXGN::BreederSearch->new( { dbh=>$f->bcs_schema->storage->dbh, dbname=>$f->config->{dbname} } );
 my $refresh = $bs->refresh_matviews($f->config->{dbhost}, $f->config->{dbname}, $f->config->{dbuser}, $f->config->{dbpass}, 'fullview', 'nonconcurrent', $f->config->{basepath});
-sleep(10);
+sleep(5);
 
 $mech->get_ok('http://localhost:3010/ajax/search/images?sgn_session_id='.$sgn_session_id);
 $response = decode_json $mech->content;

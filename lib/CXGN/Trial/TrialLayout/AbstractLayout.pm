@@ -832,14 +832,14 @@ sub _get_plots {
 
     $field_layout_experiment = $self->_get_field_layout_experiment_from_project();
     if (!$field_layout_experiment) {
-	print STDERR "No field layout experiment found!\n";
-	return;
+        print STDERR "No field layout experiment found!\n";
+        return;
     }
 
     # get source stock types
     my $source_cvterm_ids = $self->get_source_stock_type_ids();
 
-     print STDERR "EXP TYPE =".$self->get_experiment_type()."\n";
+     # print STDERR "EXP TYPE =".$self->get_experiment_type()."\n";
 
      # if ($self->get_experiment_type eq 'field_layout'){
      # 	$unit_type_id = $plot_cvterm_id;
@@ -854,8 +854,8 @@ sub _get_plots {
     @plots = $field_layout_experiment->nd_experiment_stocks->search_related('stock', {'stock.type_id' => {-in => $self->get_target_stock_type_ids()  } });
 
     #debug...
-    print STDERR "PLOT LIST: \n";
-    print STDERR  join( "\n", map { $_->name() } @plots)."\n";
+    # print STDERR "PLOT LIST: \n";
+    # print STDERR  join( "\n", map { $_->name() } @plots)."\n";
 
     return \@plots;
 }

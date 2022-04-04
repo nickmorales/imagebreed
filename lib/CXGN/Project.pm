@@ -4933,7 +4933,10 @@ sub get_treatments {
     my @plants;
     my $treatment_rel_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "trial_treatment_relationship", "project_relationship")->cvterm_id();
 
-    my $treatment_rs = $self->bcs_schema->resultset("Project::ProjectRelationship")->search({'me.type_id'=>$treatment_rel_cvterm_id, object_project_id=>$self->get_trial_id()})->search_related('subject_project');
+    my $treatment_rs = $self->bcs_schema->resultset("Project::ProjectRelationship")->search(
+        {'me.type_id'=>$treatment_rel_cvterm_id, object_project_id=>$self->get_trial_id()},
+        {order_by => { -asc => 'subject_project.project_id' }}
+    )->search_related('subject_project');
 
     my @treatments;
     while(my $rs = $treatment_rs->next()) {
