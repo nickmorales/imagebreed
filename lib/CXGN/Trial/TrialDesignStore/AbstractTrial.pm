@@ -272,6 +272,8 @@ has 'treatment_nd_experiment_type_id' => (isa => 'Int', is => 'rw');
 
 has 'project_design_cvterm_id' => (isa => 'Int', is => 'rw');
 
+has 'management_factor_project_type_cvterm_id' => (isa => 'Int', is => 'rw');
+
 has 'management_factor_year_cvterm_id' => (isa => 'Int', is => 'rw');
 
 has 'management_factor_date_cvterm_id' => (isa => 'Int', is => 'rw');
@@ -355,6 +357,8 @@ sub BUILD {
     $self->set_treatment_nd_experiment_type_id(SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'treatment_experiment', 'experiment_type')->cvterm_id());
 
     $self->set_project_design_cvterm_id(SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'design', 'project_property')->cvterm_id());
+
+    $self->set_management_factor_project_type_cvterm_id(SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'treatment_project_table_type', 'project_table_type')->cvterm_id());
 
     $self->set_management_factor_year_cvterm_id(SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'project year', 'project_property')->cvterm_id());
 
@@ -745,7 +749,7 @@ sub store {
                     { nd_experiment_id => $nd_experiment_id, type_id => $self->get_nd_experiment_type_id }
                 );
 
-		#print STDERR "STOCK TYPE ID NOW: $stock_type_id\n";
+                #print STDERR "STOCK TYPE ID NOW: $stock_type_id\n";
                 my $plot = $stock_rs->create({
                     organism_id => $organism_id_checked,
                     name       => $plot_name,
@@ -975,14 +979,18 @@ sub store {
                     project_relationship_subject_projects => \@treatment_relationships,
                     nd_experiment_projects => \@treatment_nd_experiment_project
                 });
+                my $treatment_project_id = $treatment_project->project_id();
+
+                my $management_factor_t = CXGN::Trial->new({
+                    bcs_schema => $chado_schema,
+                    trial_id => $treatment_project_id
+                });
+                $management_factor_t->set_project_table_type_id($self->get_management_factor_project_type_cvterm_id());
 
                 if ($self->get_new_treatment_date()) {
-                    my $management_factor_t = CXGN::Trial->new({
-                        bcs_schema => $chado_schema,
-                        trial_id => $treatment_project->project_id()
-                    });
                     $management_factor_t->set_management_factor_date($self->get_new_treatment_date() );
                 }
+
             }
         }
 
