@@ -2352,9 +2352,18 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                         <&| /util/workflow.mas:step, title=> "Uploaded Raw Aerial Image Captures" &>
                             <& /page/page_title.mas, title=>"Already Uploaded Raw Aerial Image Captures" &>
 
-                            <center>
-                            <h4>Raw aerial image captures can be shared in a ZipFile.<br/>These ZipFiles are only for reference purposes and distribution of the raw image captures.</h4>
-                            </center>
+                            <div class="well well-sm">
+                                <center>
+                                <h4>Raw aerial image captures can be shared in a ZipFile.</h4>
+                                </center>
+
+                                <ul>
+                                    <li>These ZipFiles are only for reference purposes and for distribution of the raw image captures.</li>
+                                    <li>Raw image captures from any camera (e.g. MicaSense or color cameras) can be saved in a zipfile and shared here.</li>
+                                    <li>The raw image captures are not stitched orthophotomosaic images.</li>
+                                    <li>The ZipFile is not extracted or parsed by ImageBreed, it is only stored for distribution.</li>
+                                </ul>
+                            </div>
 
                             <div class="well well-sm">
                                 <div id="upload_drone_imagery_additional_raw_images_div"></div>
@@ -2367,24 +2376,39 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                         <&| /util/workflow.mas:step, title=> "Upload New Aerial Image Captures" &>
                             <& /page/page_title.mas, title=>"Upload New Raw Aerial Image Captures" &>
 
-                            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_additional_raw_images_form" name="upload_drone_imagery_additional_raw_images_form" action="/drone_imagery/upload_drone_imagery_additional_raw_images" >
-                                <div class="form-group">
-                                    <label class="col-sm-6 control-label">Aerial Image Captures ZipFile (.zip): </label>
-                                    <div class="col-sm-6" >
-                                        <input type="file" id="upload_drone_imagery_additional_raw_images_zipfile" name="upload_drone_imagery_additional_raw_images_zipfile" encoding="multipart/form-data" />
-                                    </div>
-                                </div>
-
-                                <input type="hidden" id="upload_drone_imagery_additional_raw_images_private_company_id" name="upload_drone_imagery_additional_raw_images_private_company_id" value="" />
-                                <input type="hidden" id="upload_drone_imagery_additional_raw_images_private_company_is_private" name="upload_drone_imagery_additional_raw_images_private_company_is_private" value="" />
-                                <input type="hidden" id="upload_drone_imagery_additional_raw_images_drone_run_id" name="upload_drone_imagery_additional_raw_images_drone_run_id" value="" />
-                                <input type="hidden" id="upload_drone_imagery_additional_raw_images_field_trial_id" name="upload_drone_imagery_additional_raw_images_field_trial_id" value="" />
-
+                            <div class="well well-sm">
                                 <center>
-                                    <button type="submit" class="btn btn-primary" name="upload_drone_imagery_additional_raw_images_submit" id="upload_drone_imagery_additional_raw_images_submit">Submit</button>
+                                <h4>Raw aerial image captures can be shared in a ZipFile.</h4>
                                 </center>
 
-                            </form><br/>
+                                <ul>
+                                    <li>These ZipFiles are only for reference purposes and for distribution of the raw image captures.</li>
+                                    <li>Raw image captures from any camera (e.g. MicaSense or color cameras) can be saved in a zipfile and shared here.</li>
+                                    <li>The raw image captures are not stitched orthophotomosaic images.</li>
+                                    <li>The ZipFile is not extracted or parsed by ImageBreed, it is only stored for distribution.</li>
+                                </ul>
+                            </div>
+
+                            <div class="well well-sm">
+                                <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_additional_raw_images_form" name="upload_drone_imagery_additional_raw_images_form" action="/drone_imagery/upload_drone_imagery_additional_raw_images" >
+                                    <div class="form-group">
+                                        <label class="col-sm-6 control-label">Aerial Image Captures ZipFile (.zip): </label>
+                                        <div class="col-sm-6" >
+                                            <input type="file" id="upload_drone_imagery_additional_raw_images_zipfile" name="upload_drone_imagery_additional_raw_images_zipfile" encoding="multipart/form-data" />
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" id="upload_drone_imagery_additional_raw_images_private_company_id" name="upload_drone_imagery_additional_raw_images_private_company_id" value="" />
+                                    <input type="hidden" id="upload_drone_imagery_additional_raw_images_private_company_is_private" name="upload_drone_imagery_additional_raw_images_private_company_is_private" value="" />
+                                    <input type="hidden" id="upload_drone_imagery_additional_raw_images_drone_run_id" name="upload_drone_imagery_additional_raw_images_drone_run_id" value="" />
+                                    <input type="hidden" id="upload_drone_imagery_additional_raw_images_field_trial_id" name="upload_drone_imagery_additional_raw_images_field_trial_id" value="" />
+
+                                    <center>
+                                        <button type="submit" class="btn btn-primary" name="upload_drone_imagery_additional_raw_images_submit" id="upload_drone_imagery_additional_raw_images_submit">Submit</button>
+                                    </center>
+
+                                </form>
+                            </div>
 
                         </&>
                     </&>

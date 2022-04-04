@@ -755,8 +755,26 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
             $c->stash->{template} = 'generic_message.mas';
             return;
         }
-        unlink $upload_tempfile;
         print STDERR "Archived Drone Image ODM Zip File: $archived_filename_with_path\n";
+
+        my $uploader_original_zip = CXGN::UploadFile->new({
+            tempfile => $upload_tempfile,
+            subdirectory => "trial_additional_file_upload",
+            archive_path => $c->config->{archive_path},
+            archive_filename => $upload_original_name,
+            timestamp => $timestamp,
+            user_id => $user_id,
+            user_role => $user_role
+        });
+        my $archived_filename_original_zip_with_path = $uploader_original_zip->archive();
+        my $original_zip_md5 = $uploader_original_zip->get_md5($archived_filename_original_zip_with_path);
+        if (!$archived_filename_original_zip_with_path) {
+            $c->stash->{message} = "Could not save file $upload_original_name in archive.";
+            $c->stash->{template} = 'generic_message.mas';
+        }
+        my $md5checksum_original_zip = $original_zip_md5->hexdigest();
+
+        unlink $upload_tempfile;
 
         my $image = SGN::Image->new( $c->dbc->dbh, undef, $c );
         my $zipfile_return = $image->upload_drone_imagery_zipfile($archived_filename_with_path, $user_id, $selected_drone_run_id);
@@ -1202,6 +1220,15 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         my $ret = $image->associate_project($selected_drone_run_band_id, $linking_table_type_id);
                     }
 
+                    # Storing uploaded zipfile of raw images
+                    my $trial = CXGN::Trial->new({
+                        bcs_schema => $schema,
+                        metadata_schema => $metadata_schema,
+                        phenome_schema => $phenome_schema,
+                        trial_id => $drone_run_id
+                    });
+                    my $result_save_original_zip = $trial->add_additional_uploaded_file($user_id, $archived_filename_original_zip_with_path, $md5checksum_original_zip);
+
                     push @return_drone_run_band_image_urls, $image->get_image_url('original');
                     push @return_drone_run_band_image_ids, $image->get_image_id();
                     push @return_drone_run_band_project_ids, $selected_drone_run_band_id;
@@ -1241,6 +1268,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                     file_id => $file_id,
                 });
             }
+
         };
         if ($@) {
             print STDERR $@;
