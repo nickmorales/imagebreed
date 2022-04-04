@@ -189,11 +189,12 @@ sub BUILD {
 
 =cut
 
-has 'trial_id' => (isa => 'Int',
-		   is => 'rw',
-		   reader => 'get_trial_id',
-		   writer => 'set_trial_id',
-    );
+has 'trial_id' => (
+    isa => 'Int',
+    is => 'rw',
+    reader => 'get_trial_id',
+    writer => 'set_trial_id',
+);
 
 =head2 accessors get_layout(), set_layout()
 
@@ -202,17 +203,18 @@ has 'trial_id' => (isa => 'Int',
 
 =cut
 
-has 'layout' => (isa => 'CXGN::Trial::TrialLayout::Phenotyping |
-                         CXGN::Trial::TrialLayout::Genotyping |
-                         CXGN::Trial::TrialLayout::Analysis |
-                         CXGN::Trial::TrialLayout::SamplingTrial',
-		 is => 'rw',
-		 reader => 'get_layout',
-		 writer => 'set_layout',
-		 predicate => 'has_layout',
-		 lazy => 1,
-		 default => sub { my $self = shift; $self->_get_layout(); }
-    );
+has 'layout' => (
+    isa => 'CXGN::Trial::TrialLayout::Phenotyping |
+            CXGN::Trial::TrialLayout::Genotyping |
+            CXGN::Trial::TrialLayout::Analysis |
+            CXGN::Trial::TrialLayout::SamplingTrial',
+    is => 'rw',
+    reader => 'get_layout',
+    writer => 'set_layout',
+    predicate => 'has_layout',
+    lazy => 1,
+    default => sub { my $self = shift; $self->_get_layout(); }
+);
 
 sub _get_layout {
     my $self = shift;
@@ -290,21 +292,17 @@ getter/setter for the year property. The setter modifies the database.
 sub get_year {
     my $self = shift;
 
-    print STDERR "get_year()...\n";
-
     if ($self->year()) { return $self->year(); }
 
     my $type_id = $self->get_year_type_id();
-
     my $rs = $self->bcs_schema->resultset('Project::Project')->search( { 'me.project_id' => $self->get_trial_id() })->search_related('projectprops', { 'projectprops.type_id' => $type_id } );
 
     if ($rs->count() == 0) {
-	return undef;
+        return undef;
     }
     else {
-	return $rs->first()->value();
+        return $rs->first()->value();
     }
-
 }
 
 sub set_year {
@@ -312,29 +310,27 @@ sub set_year {
     my $year = shift;
 
     if (!$year) {
-	print STDERR "set_year(): No year provided, not setting.\n";
-	return;
+        print STDERR "set_year(): No year provided, not setting.\n";
+        return;
     }
 
     print STDERR "set_year()... (with parameter $year)\n";
     my $type_id = $self->get_year_type_id();
-
     my $row = $self->bcs_schema->resultset('Project::Projectprop')->find( { project_id => $self->get_trial_id(), type_id => $type_id  });
 
     if ($row) {
-	print STDERR "Updating year to $year...\n";
-	$row->value($year);
-	$row->update();
+        print STDERR "Updating year to $year...\n";
+        $row->value($year);
+        $row->update();
     }
     else {
-	print STDERR "inserting new year ($year)...\n";
-	$row = $self->bcs_schema->resultset('Project::Projectprop')->create(
-	    {
-		type_id => $type_id,
-		value => $year,
-		project_id =>  $self->get_trial_id()
-	    } );
-	$year =  $row->value();
+        print STDERR "inserting new year ($year)...\n";
+        $row = $self->bcs_schema->resultset('Project::Projectprop')->create({
+            type_id => $type_id,
+            value => $year,
+            project_id =>  $self->get_trial_id()
+        });
+        $year = $row->value();
     }
     return $year;
 }
@@ -470,16 +466,15 @@ sub get_location {
     my $self = shift;
 
     if ($self->get_location_type_id()) {
-	my $row = $self->bcs_schema->resultset('Project::Projectprop')->find( { project_id => $self->get_trial_id() , 'me.type_id'=> $self->get_location_type_id() });
+        my $row = $self->bcs_schema->resultset('Project::Projectprop')->find( { project_id => $self->get_trial_id() , 'me.type_id'=> $self->get_location_type_id() });
 
-	if ($row) {
-	    my $loc = $self->bcs_schema->resultset('NaturalDiversity::NdGeolocation')->find( { nd_geolocation_id => $row->value() });
-
-	    return [ $row->value(), $loc->description() ];
-	}
-	else {
-	    return [];
-	}
+        if ($row) {
+            my $loc = $self->bcs_schema->resultset('NaturalDiversity::NdGeolocation')->find( { nd_geolocation_id => $row->value() });
+            return [ $row->value(), $loc->description() ];
+        }
+        else {
+            return [];
+        }
     }
 }
 
@@ -617,19 +612,17 @@ sub get_breeding_programs {
     my $self = shift;
 
     my $breeding_program_cvterm_id = $self->get_breeding_program_cvterm_id();
-
     my $trial_rs= $self->bcs_schema->resultset('Project::ProjectRelationship')->search( { 'subject_project_id' => $self->get_trial_id() } );
 
-    my $trial_row = $trial_rs -> first();
-    my $rs;
+    my $trial_row = $trial_rs->first();
     my @projects;
 
     if ($trial_row) {
-	$rs = $self->bcs_schema->resultset('Project::Project')->search( { 'me.project_id' => $trial_row->object_project_id(), 'projectprops.type_id'=>$breeding_program_cvterm_id }, { join => 'projectprops' }  );
+        my $rs = $self->bcs_schema->resultset('Project::Project')->search( { 'me.project_id' => $trial_row->object_project_id(), 'projectprops.type_id'=>$breeding_program_cvterm_id }, { join => 'projectprops' }  );
 
-	while (my $row = $rs->next()) {
-	    push @projects, [ $row->project_id, $row->name, $row->description ];
-	}
+        while (my $row = $rs->next()) {
+            push @projects, [ $row->project_id, $row->name, $row->description ];
+        }
     }
     return  \@projects;
 }
@@ -1080,14 +1073,13 @@ sub set_design_type {
 
     my $design_cv_type = $self->bcs_schema->resultset('Cv::Cvterm')->find( { name => 'design' });
     if (!$design_cv_type) {
-	print STDERR "Design CV term not found. Cannot set design type.\n";
-	return;
+        print STDERR "Design CV term not found. Cannot set design type.\n";
+        return;
     }
-    my $row = $self->bcs_schema->resultset('Project::Projectprop')->find_or_create(
-	{
-	    project_id => $self->get_trial_id(),
-	    type_id => $design_cv_type->cvterm_id(),
-	});
+    my $row = $self->bcs_schema->resultset('Project::Projectprop')->find_or_create({
+        project_id => $self->get_trial_id(),
+        type_id => $design_cv_type->cvterm_id(),
+    });
     $row->value($design_type);
     $row->update();
 }
@@ -1104,63 +1096,62 @@ sub set_design_type {
 =cut
 
 sub get_breeding_program {
-
     my $self = shift;
 
     my $rs = $self->bcs_schema()->resultset("Project::ProjectRelationship")->search({
-			subject_project_id => $self->get_trial_id(),
-	    type_id => $self->get_breeding_program_trial_relationship_cvterm_id(),
-		});
+        subject_project_id => $self->get_trial_id(),
+        type_id => $self->get_breeding_program_trial_relationship_cvterm_id(),
+    });
     if ($rs->count() == 0) {
-			return undef;
+        return undef;
     }
 
     my $bp_rs = $self->bcs_schema()->resultset("Project::Project")->search({
-			project_id => $rs->first()->object_project_id()
-		});
+        project_id => $rs->first()->object_project_id()
+    });
     if ($bp_rs->count > 0) {
-			return $bp_rs->first()->name();
+        return $bp_rs->first()->name();
     }
 
     return undef;
 }
 
 sub set_breeding_program {
-	my $self = shift;
-	my $breeding_program_id = shift;
+    my $self = shift;
+    my $breeding_program_id = shift;
 
     if (!looks_like_number($breeding_program_id)) {
         die "Breeding_program_id $breeding_program_id is not an integer!\n";
     }
 
-	my $trial_id = $self->get_trial_id();
-	my $type_id = $self->get_breeding_program_trial_relationship_cvterm_id();
+    my $trial_id = $self->get_trial_id();
+    my $type_id = $self->get_breeding_program_trial_relationship_cvterm_id();
 
-	eval {
-		my $row = $self->bcs_schema->resultset("Project::ProjectRelationship")->find ({
-			subject_project_id => $trial_id,
-			type_id => $type_id,
-		});
+    eval {
+        my $row = $self->bcs_schema->resultset("Project::ProjectRelationship")->find({
+            subject_project_id => $trial_id,
+            type_id => $type_id,
+        });
 
-		if ($row) {
-			$row->object_project_id($breeding_program_id);
-			$row->update();
-		}
-		else {
-			$row = $self->bcs_schema->resultset("Project::ProjectRelationship")->create ({
-				object_project_id => $breeding_program_id,
-				subject_project_id => $trial_id,
-				type_id => $type_id,
-			});
-			$row->insert();
-		}
-	};
+        if ($row) {
+            $row->object_project_id($breeding_program_id);
+            $row->update();
+        }
+        else {
+            $row = $self->bcs_schema->resultset("Project::ProjectRelationship")->create({
+                object_project_id => $breeding_program_id,
+                subject_project_id => $trial_id,
+                type_id => $type_id,
+            });
+            $row->insert();
+        }
+    };
 
-	if ($@) {
-		print STDERR "ERROR: $@\n";
-		return { error => "An error occurred while setting the trial's breeding program." };
-	}
-	return {};
+    if ($@) {
+        print STDERR "ERROR: $@\n";
+        return { error => "An error occurred while setting the trial's breeding program." };
+    }
+    return {};
 }
 
 
@@ -1180,7 +1171,7 @@ sub get_name {
     my $row = $self->bcs_schema->resultset('Project::Project')->find( { project_id => $self->get_trial_id() });
 
     if ($row) {
-	return $row->name();
+        return $row->name();
     }
 }
 
@@ -1189,8 +1180,8 @@ sub set_name {
     my $name = shift;
     my $row = $self->bcs_schema->resultset('Project::Project')->find( { project_id => $self->get_trial_id() });
     if ($row) {
-	$row->name($name);
-	$row->update();
+        $row->name($name);
+        $row->update();
     }
 }
 
@@ -1256,11 +1247,10 @@ sub get_harvest_date {
     my $self = shift;
 
     my $harvest_date_cvterm_id = $self->get_harvest_date_cvterm_id();
-    my $row = $self->bcs_schema->resultset('Project::Projectprop')->find(
-	{
-	    project_id => $self->get_trial_id(),
-	    type_id => $harvest_date_cvterm_id,
-	});
+    my $row = $self->bcs_schema->resultset('Project::Projectprop')->find({
+        project_id => $self->get_trial_id(),
+        type_id => $harvest_date_cvterm_id,
+    });
 
     my $calendar_funcs = CXGN::Calendar->new({});
 
@@ -1282,8 +1272,7 @@ sub set_harvest_date {
 
         my $harvest_date_cvterm_id = $self->get_harvest_date_cvterm_id();
 
-        my $row = $self->bcs_schema->resultset('Project::Projectprop')->find_or_create(
-        {
+        my $row = $self->bcs_schema->resultset('Project::Projectprop')->find_or_create({
             project_id => $self->get_trial_id(),
             type_id => $harvest_date_cvterm_id,
         });
@@ -1291,33 +1280,32 @@ sub set_harvest_date {
         $row->value($harvest_event);
         $row->update();
     } else {
-			print STDERR "date format did not pass check while preparing to set harvest date: $harvest_date  \n";
-		}
+        print STDERR "date format did not pass check while preparing to set harvest date: $harvest_date  \n";
+    }
 }
 
 sub remove_harvest_date {
     my $self = shift;
-		my $harvest_date = shift;
+    my $harvest_date = shift;
 
-		my $calendar_funcs = CXGN::Calendar->new({});
+    my $calendar_funcs = CXGN::Calendar->new({});
     if (my $harvest_event = $calendar_funcs->check_value_format($harvest_date) ) {
 
-			my $harvest_date_cvterm_id = $self->get_harvest_date_cvterm_id();
+        my $harvest_date_cvterm_id = $self->get_harvest_date_cvterm_id();
 
-			my $row = $self->bcs_schema->resultset('Project::Projectprop')->find_or_create(
-				{
-					project_id => $self->get_trial_id(),
-					type_id => $harvest_date_cvterm_id,
-					value => $harvest_event,
-				});
+        my $row = $self->bcs_schema->resultset('Project::Projectprop')->find_or_create({
+            project_id => $self->get_trial_id(),
+            type_id => $harvest_date_cvterm_id,
+            value => $harvest_event,
+        });
 
-    	if ($row) {
-				print STDERR "Removing harvest date $harvest_event from trial ".$self->get_trial_id()."\n";
-				$row->delete();
-    	}
-		} else {
-			print STDERR "date format did not pass check while preparing to delete harvest date: $harvest_date  \n";
-		}
+        if ($row) {
+            print STDERR "Removing harvest date $harvest_event from trial ".$self->get_trial_id()."\n";
+            $row->delete();
+        }
+    } else {
+        print STDERR "date format did not pass check while preparing to delete harvest date: $harvest_date  \n";
+    }
 }
 
 
@@ -1336,11 +1324,10 @@ sub get_planting_date {
     my $self = shift;
 
     my $planting_date_cvterm_id = $self->get_planting_date_cvterm_id();
-    my $row = $self->bcs_schema->resultset('Project::Projectprop')->find(
-	{
-	    project_id => $self->get_trial_id(),
-	    type_id => $planting_date_cvterm_id,
-	});
+    my $row = $self->bcs_schema->resultset('Project::Projectprop')->find({
+        project_id => $self->get_trial_id(),
+        type_id => $planting_date_cvterm_id,
+    });
 
     my $calendar_funcs = CXGN::Calendar->new({});
 
@@ -1360,44 +1347,42 @@ sub set_planting_date {
 
     if (my $planting_event = $calendar_funcs->check_value_format($planting_date) ) {
 
-	    my $planting_date_cvterm_id = $self->get_planting_date_cvterm_id();
+        my $planting_date_cvterm_id = $self->get_planting_date_cvterm_id();
 
-	    my $row = $self->bcs_schema->resultset('Project::Projectprop')->find_or_create(
-		{
-		    project_id => $self->get_trial_id(),
-		    type_id => $planting_date_cvterm_id,
-		});
+        my $row = $self->bcs_schema->resultset('Project::Projectprop')->find_or_create({
+            project_id => $self->get_trial_id(),
+            type_id => $planting_date_cvterm_id,
+        });
 
-	    $row->value($planting_event);
-	    $row->update();
+        $row->value($planting_event);
+        $row->update();
     } else {
-			print STDERR "date format did not pass check while preparing to set planting date: $planting_date \n";
-		}
+        print STDERR "date format did not pass check while preparing to set planting date: $planting_date \n";
+    }
 }
 
 sub remove_planting_date {
     my $self = shift;
-		my $planting_date = shift;
+    my $planting_date = shift;
 
-		my $calendar_funcs = CXGN::Calendar->new({});
+    my $calendar_funcs = CXGN::Calendar->new({});
     if (my $planting_event = $calendar_funcs->check_value_format($planting_date) ) {
 
-			my $planting_date_cvterm_id = $self->get_planting_date_cvterm_id();
+        my $planting_date_cvterm_id = $self->get_planting_date_cvterm_id();
 
-			my $row = $self->bcs_schema->resultset('Project::Projectprop')->find_or_create(
-				{
-					project_id => $self->get_trial_id(),
-					type_id => $planting_date_cvterm_id,
-					value => $planting_event,
-				});
+        my $row = $self->bcs_schema->resultset('Project::Projectprop')->find_or_create({
+            project_id => $self->get_trial_id(),
+            type_id => $planting_date_cvterm_id,
+            value => $planting_event,
+        });
 
-    	if ($row) {
-				print STDERR "Removing planting date $planting_event from trial ".$self->get_trial_id()."\n";
-				$row->delete();
-    	}
-		} else {
-			print STDERR "date format did not pass check while preparing to delete planting date: $planting_date  \n";
-		}
+        if ($row) {
+            print STDERR "Removing planting date $planting_event from trial ".$self->get_trial_id()."\n";
+            $row->delete();
+        }
+    } else {
+        print STDERR "date format did not pass check while preparing to delete planting date: $planting_date  \n";
+    }
 }
 
 
@@ -2122,12 +2107,12 @@ sub get_owner_link {
     my $q = "SELECT first_name, last_name FROM sgn_people.sp_person WHERE sp_person_id=?;";
     my $link;
     foreach my $sp_person_id (@sp_person_ids) {
-	my $h = $self->bcs_schema()->storage->dbh()->prepare($q);
-	$h->execute($sp_person_id);
-	my ( $first_name, $last_name )  = $h->fetchrow_array();
-	my $create_date = ${ $owners }{$sp_person_id};
+        my $h = $self->bcs_schema()->storage->dbh()->prepare($q);
+        $h->execute($sp_person_id);
+        my ( $first_name, $last_name )  = $h->fetchrow_array();
+        my $create_date = ${ $owners }{$sp_person_id};
 
-	$link .= '<a href="/solpeople/personal-info.pl?sp_person_id='.$sp_person_id. '">' . $first_name . " " . $last_name .  "</a> ". $create_date . "<br />";
+        $link .= '<a href="/solpeople/personal-info.pl?sp_person_id='.$sp_person_id. '">' . $first_name . " " . $last_name .  "</a> ". $create_date . "<br />";
     }
     return $link;
 }
@@ -2141,7 +2126,7 @@ sub _get_trial_owners {
 
     my %owners;
     while (my ($sp_person_id, $create_date) = $owner_h->fetchrow_array()) {
-	$owners{$sp_person_id} = $create_date;
+        $owners{$sp_person_id} = $create_date;
     }
     return \%owners;
 }
@@ -2308,16 +2293,16 @@ sub get_phenotype_metadata {
         AND NOT (metadata.md_files.filetype='generated from plot from plant phenotypes')
         AND NOT (metadata.md_files.filetype='direct phenotyping')
         ORDER BY file_id ASC";
-	my $h = $self->bcs_schema->storage()->dbh()->prepare($q);
-	$h->execute($trial_id);
+    my $h = $self->bcs_schema->storage()->dbh()->prepare($q);
+    $h->execute($trial_id);
 
-	while (my ($file_id, $create_date, $person_id, $username, $basename, $dirname, $filetype) = $h->fetchrow_array()) {
-		$file_info{$file_id} = [$file_id, $create_date, $person_id, $username, $basename, $dirname, $filetype];
-	}
-	foreach (keys %file_info){
-		push @file_array, $file_info{$_};
-	}
-	return \@file_array;
+    while (my ($file_id, $create_date, $person_id, $username, $basename, $dirname, $filetype) = $h->fetchrow_array()) {
+        $file_info{$file_id} = [$file_id, $create_date, $person_id, $username, $basename, $dirname, $filetype];
+    }
+    foreach (keys %file_info){
+        push @file_array, $file_info{$_};
+    }
+    return \@file_array;
 }
 
 =head2 function delete_phenotype_metadata()
@@ -2409,13 +2394,12 @@ sub delete_metadata {
     $h->execute($trial_id);
 
     while (my ($md_id) = $h->fetchrow_array()) {
-	#print STDERR "Associated metadata id: $md_id\n";
-	my $mdmd_row = $metadata_schema->resultset("MdMetadata")->find( { metadata_id => $md_id } );
-	if ($mdmd_row) {
-	    #print STDERR "Obsoleting $md_id...\n";
-
-	    $mdmd_row -> update( { obsolete => 1 });
-	}
+        #print STDERR "Associated metadata id: $md_id\n";
+        my $mdmd_row = $metadata_schema->resultset("MdMetadata")->find( { metadata_id => $md_id } );
+        if ($mdmd_row) {
+            #print STDERR "Obsoleting $md_id...\n";
+            $mdmd_row -> update( { obsolete => 1 });
+        }
     }
 
     #print STDERR "Deleting the entries in the linking table...\n";
@@ -2431,13 +2415,13 @@ sub delete_metadata {
     $h->execute($trial_id);
 
     while (my ($file_id) = $h->fetchrow_array()) {
-	print STDERR "trying to delete association for file with id $file_id...\n";
-	my $ndemdf_rs = $phenome_schema->resultset("NdExperimentMdFiles")->search( { file_id=>$file_id });
-	print STDERR "Deleting md_files linking table entries...\n";
-	foreach my $row ($ndemdf_rs->all()) {
-	    print STDERR "DELETING !!!!\n";
-	    $row->delete();
-	}
+        print STDERR "trying to delete association for file with id $file_id...\n";
+        my $ndemdf_rs = $phenome_schema->resultset("NdExperimentMdFiles")->search( { file_id=>$file_id });
+        print STDERR "Deleting md_files linking table entries...\n";
+        foreach my $row ($ndemdf_rs->all()) {
+            print STDERR "DELETING !!!!\n";
+            $row->delete();
+        }
     }
 }
 
@@ -2664,20 +2648,18 @@ sub add_additional_uploaded_file {
 
     my $md_row = $self->metadata_schema->resultset("MdMetadata")->create({create_person_id => $user_id});
     $md_row->insert();
-    my $file_row = $self->metadata_schema->resultset("MdFiles")
-        ->create({
-            basename => basename($archived_filename_with_path),
-            dirname => dirname($archived_filename_with_path),
-            filetype => 'trial_additional_file_upload',
-            md5checksum => $md5checksum,
-            metadata_id => $md_row->metadata_id(),
-        });
+    my $file_row = $self->metadata_schema->resultset("MdFiles")->create({
+        basename => basename($archived_filename_with_path),
+        dirname => dirname($archived_filename_with_path),
+        filetype => 'trial_additional_file_upload',
+        md5checksum => $md5checksum,
+        metadata_id => $md_row->metadata_id(),
+    });
     my $file_id = $file_row->file_id();
-    my $experiment_file = $self->phenome_schema->resultset("NdExperimentMdFiles")
-        ->create({
-            nd_experiment_id => $nd_experiment_id,
-            file_id => $file_id,
-        });
+    my $experiment_file = $self->phenome_schema->resultset("NdExperimentMdFiles")->create({
+        nd_experiment_id => $nd_experiment_id,
+        file_id => $file_id,
+    });
 
     return {success => 1, file_id=>$file_id};
 }
@@ -4500,38 +4482,38 @@ sub duplicate {
 =cut
 
 sub get_accessions {
-	my $self = shift;
-	my @accessions;
+    my $self = shift;
+    my @accessions;
 
-	my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'accession', 'stock_type' )->cvterm_id();
+    my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'accession', 'stock_type' )->cvterm_id();
     my $cross_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'cross', 'stock_type' )->cvterm_id();
     my $family_name_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'family_name', 'stock_type' )->cvterm_id();
-	my $field_trial_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "field_layout", "experiment_type")->cvterm_id();
-	my $plot_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "plot_of", "stock_relationship")->cvterm_id();
-	my $plant_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "plant_of", "stock_relationship")->cvterm_id();
-	my $subplot_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "subplot_of", "stock_relationship")->cvterm_id();
-	my $tissue_sample_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "tissue_sample_of", "stock_relationship")->cvterm_id();
+    my $field_trial_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "field_layout", "experiment_type")->cvterm_id();
+    my $plot_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "plot_of", "stock_relationship")->cvterm_id();
+    my $plant_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "plant_of", "stock_relationship")->cvterm_id();
+    my $subplot_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "subplot_of", "stock_relationship")->cvterm_id();
+    my $tissue_sample_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "tissue_sample_of", "stock_relationship")->cvterm_id();
 
-	my $q = "SELECT DISTINCT(accession.stock_id), accession.uniquename, cvterm.name
-		FROM stock as accession
+    my $q = "SELECT DISTINCT(accession.stock_id), accession.uniquename, cvterm.name
+        FROM stock as accession
         JOIN cvterm on (accession.type_id = cvterm.cvterm_id)
-		JOIN stock_relationship on (accession.stock_id = stock_relationship.object_id)
-		JOIN stock as plot on (plot.stock_id = stock_relationship.subject_id)
-		JOIN nd_experiment_stock on (plot.stock_id=nd_experiment_stock.stock_id)
-		JOIN nd_experiment using(nd_experiment_id)
-		JOIN nd_experiment_project using(nd_experiment_id)
-		JOIN project using(project_id)
-		WHERE accession.type_id IN (?, ?, ?)
-		AND stock_relationship.type_id IN (?, ?, ?, ?)
-		AND project.project_id = ?
-		ORDER BY accession.stock_id;";
+        JOIN stock_relationship on (accession.stock_id = stock_relationship.object_id)
+        JOIN stock as plot on (plot.stock_id = stock_relationship.subject_id)
+        JOIN nd_experiment_stock on (plot.stock_id=nd_experiment_stock.stock_id)
+        JOIN nd_experiment using(nd_experiment_id)
+        JOIN nd_experiment_project using(nd_experiment_id)
+        JOIN project using(project_id)
+        WHERE accession.type_id IN (?, ?, ?)
+        AND stock_relationship.type_id IN (?, ?, ?, ?)
+        AND project.project_id = ?
+        ORDER BY accession.stock_id;";
 
-	my $h = $self->bcs_schema->storage->dbh()->prepare($q);
-	$h->execute($accession_cvterm_id, $cross_cvterm_id, $family_name_cvterm_id,$plot_of_cvterm_id, $tissue_sample_of_cvterm_id, $plant_of_cvterm_id, $subplot_of_cvterm_id,$self->get_trial_id());
-	while (my ($stock_id, $uniquename, $stock_type) = $h->fetchrow_array()) {
-		push @accessions, {accession_name=>$uniquename, stock_id=>$stock_id, stock_type=>$stock_type};
-	}
-	return \@accessions;
+    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($accession_cvterm_id, $cross_cvterm_id, $family_name_cvterm_id,$plot_of_cvterm_id, $tissue_sample_of_cvterm_id, $plant_of_cvterm_id, $subplot_of_cvterm_id,$self->get_trial_id());
+    while (my ($stock_id, $uniquename, $stock_type) = $h->fetchrow_array()) {
+        push @accessions, {accession_name=>$uniquename, stock_id=>$stock_id, stock_type=>$stock_type};
+    }
+    return \@accessions;
 }
 
 =head2 get_tissue_sources
@@ -4654,35 +4636,35 @@ sub get_plants_per_accession {
 =cut
 
 sub get_seedlots {
-	my $self = shift;
-	my @seedlots;
+    my $self = shift;
+    my @seedlots;
 
-	my $seedlot_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'seedlot', 'stock_type' )->cvterm_id();
-	my $seed_transaction_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "seed transaction", "stock_relationship")->cvterm_id();
+    my $seedlot_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'seedlot', 'stock_type' )->cvterm_id();
+    my $seed_transaction_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "seed transaction", "stock_relationship")->cvterm_id();
 
-	my $q = "SELECT DISTINCT(accession.stock_id), accession.uniquename
-		FROM stock as accession
-		JOIN stock_relationship on (accession.stock_id = stock_relationship.object_id)
-		JOIN stock as plot on (plot.stock_id = stock_relationship.subject_id)
-		JOIN nd_experiment_stock on (plot.stock_id=nd_experiment_stock.stock_id)
-		JOIN nd_experiment using(nd_experiment_id)
-		JOIN nd_experiment_project using(nd_experiment_id)
-		JOIN project using(project_id)
-		WHERE accession.type_id = $seedlot_cvterm_id
-		AND stock_relationship.type_id IN ($seed_transaction_cvterm_id)
-		AND project.project_id = ?
-		GROUP BY accession.stock_id
-		ORDER BY accession.stock_id;";
+    my $q = "SELECT DISTINCT(accession.stock_id), accession.uniquename
+        FROM stock as accession
+        JOIN stock_relationship on (accession.stock_id = stock_relationship.object_id)
+        JOIN stock as plot on (plot.stock_id = stock_relationship.subject_id)
+        JOIN nd_experiment_stock on (plot.stock_id=nd_experiment_stock.stock_id)
+        JOIN nd_experiment using(nd_experiment_id)
+        JOIN nd_experiment_project using(nd_experiment_id)
+        JOIN project using(project_id)
+        WHERE accession.type_id = $seedlot_cvterm_id
+        AND stock_relationship.type_id IN ($seed_transaction_cvterm_id)
+        AND project.project_id = ?
+        GROUP BY accession.stock_id
+        ORDER BY accession.stock_id;";
 
-	#Removed nd_experiment.type_id IN ($field_trial_cvterm_id, $genotyping_trial_cvterm_id) AND
+    #Removed nd_experiment.type_id IN ($field_trial_cvterm_id, $genotyping_trial_cvterm_id) AND
 
-	my $h = $self->bcs_schema->storage->dbh()->prepare($q);
-	$h->execute($self->get_trial_id());
-	while (my ($stock_id, $uniquename) = $h->fetchrow_array()) {
-		push @seedlots, [$stock_id, $uniquename];
-	}
+    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($self->get_trial_id());
+    while (my ($stock_id, $uniquename) = $h->fetchrow_array()) {
+        push @seedlots, [$stock_id, $uniquename];
+    }
 
-	return \@seedlots;
+    return \@seedlots;
 }
 
 =head2 get_plots
@@ -4867,42 +4849,42 @@ sub get_tissue_samples {
 =cut
 
 sub get_controls {
-	my $self = shift;
-	my @controls;
+    my $self = shift;
+    my @controls;
 
-	my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'accession', 'stock_type' )->cvterm_id();
-	my $field_trial_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "field_layout", "experiment_type")->cvterm_id();
-	my $genotyping_trial_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "genotyping_layout", "experiment_type")->cvterm_id();
-	my $plot_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "plot_of", "stock_relationship")->cvterm_id();
-	my $plant_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "plant_of", "stock_relationship")->cvterm_id();
-	my $tissue_sample_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "tissue_sample_of", "stock_relationship")->cvterm_id();
-	my $control_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "is a control", 'stock_property')->cvterm_id();
+    my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'accession', 'stock_type' )->cvterm_id();
+    my $field_trial_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "field_layout", "experiment_type")->cvterm_id();
+    my $genotyping_trial_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "genotyping_layout", "experiment_type")->cvterm_id();
+    my $plot_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "plot_of", "stock_relationship")->cvterm_id();
+    my $plant_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "plant_of", "stock_relationship")->cvterm_id();
+    my $tissue_sample_of_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "tissue_sample_of", "stock_relationship")->cvterm_id();
+    my $control_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, "is a control", 'stock_property')->cvterm_id();
 
-	my $q = "SELECT DISTINCT(accession.stock_id), accession.uniquename
-		FROM stock as accession
-		JOIN stock_relationship on (accession.stock_id = stock_relationship.object_id)
-		JOIN stock as plot on (plot.stock_id = stock_relationship.subject_id)
-		JOIN stockprop as control on (plot.stock_id=control.stock_id)
-		JOIN nd_experiment_stock on (plot.stock_id=nd_experiment_stock.stock_id)
-		JOIN nd_experiment using(nd_experiment_id)
-		JOIN nd_experiment_project using(nd_experiment_id)
-		JOIN project using(project_id)
-		WHERE accession.type_id = $accession_cvterm_id
-		AND stock_relationship.type_id IN ($plot_of_cvterm_id, $tissue_sample_of_cvterm_id, $plant_of_cvterm_id)
-		AND project.project_id = ?
-		AND control.type_id = $control_type_id
-		GROUP BY accession.stock_id
-		ORDER BY accession.stock_id;";
+    my $q = "SELECT DISTINCT(accession.stock_id), accession.uniquename
+        FROM stock as accession
+        JOIN stock_relationship on (accession.stock_id = stock_relationship.object_id)
+        JOIN stock as plot on (plot.stock_id = stock_relationship.subject_id)
+        JOIN stockprop as control on (plot.stock_id=control.stock_id)
+        JOIN nd_experiment_stock on (plot.stock_id=nd_experiment_stock.stock_id)
+        JOIN nd_experiment using(nd_experiment_id)
+        JOIN nd_experiment_project using(nd_experiment_id)
+        JOIN project using(project_id)
+        WHERE accession.type_id = $accession_cvterm_id
+        AND stock_relationship.type_id IN ($plot_of_cvterm_id, $tissue_sample_of_cvterm_id, $plant_of_cvterm_id)
+        AND project.project_id = ?
+        AND control.type_id = $control_type_id
+        GROUP BY accession.stock_id
+        ORDER BY accession.stock_id;";
 
-	#removed nd_experiment.type_id IN ($field_trial_cvterm_id, $genotyping_trial_cvterm_id) AND
+    #removed nd_experiment.type_id IN ($field_trial_cvterm_id, $genotyping_trial_cvterm_id) AND
 
-	my $h = $self->bcs_schema->storage->dbh()->prepare($q);
-	$h->execute($self->get_trial_id());
-	while (my ($stock_id, $uniquename) = $h->fetchrow_array()) {
-		push @controls, {accession_name=> $uniquename, stock_id=>$stock_id } ;
-	}
+    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($self->get_trial_id());
+    while (my ($stock_id, $uniquename) = $h->fetchrow_array()) {
+        push @controls, {accession_name=> $uniquename, stock_id=>$stock_id } ;
+    }
 
-	return \@controls;
+    return \@controls;
 }
 
 =head2 get_controls_by_plot
@@ -4918,21 +4900,21 @@ sub get_controls {
 =cut
 
 sub get_controls_by_plot {
-	my $self = shift;
-	my $plot_ids = shift;
-	my @ids = @$plot_ids;
-	my @controls;
+    my $self = shift;
+    my $plot_ids = shift;
+    my @ids = @$plot_ids;
+    my @controls;
 
-	my $accession_rs = $self->bcs_schema->resultset('Stock::Stock')->search(
-		{ 'subject.stock_id' => { 'in' => \@ids} , 'type.name' => 'is a control' },
-		{ join => { stock_relationship_objects => { subject => { stockprops => 'type' }}}, group_by => 'me.stock_id',},
-  );
+    my $accession_rs = $self->bcs_schema->resultset('Stock::Stock')->search(
+        { 'subject.stock_id' => { 'in' => \@ids} , 'type.name' => 'is a control' },
+        { join => { stock_relationship_objects => { subject => { stockprops => 'type' }}}, group_by => 'me.stock_id',},
+    );
 
-	while(my $accession = $accession_rs->next()) {
-		push @controls, { accession_name => $accession->uniquename, stock_id => $accession->stock_id };
-	}
+    while(my $accession = $accession_rs->next()) {
+        push @controls, { accession_name => $accession->uniquename, stock_id => $accession->stock_id };
+    }
 
-	return \@controls;
+    return \@controls;
 }
 
 =head2 get_treatments
@@ -4973,34 +4955,34 @@ sub get_treatments {
 =cut
 
 sub get_trial_contacts {
-	my $self = shift;
-	my @contacts;
+    my $self = shift;
+    my @contacts;
 
-	my $sp_person_id_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'sp_person_id','local')->cvterm_id;
-	my $prop_rs = $self->bcs_schema->resultset('Project::Projectprop')->search(
-		{ 'project_id' => $self->get_trial_id, 'type_id'=>$sp_person_id_cvterm_id }
-	);
+    my $sp_person_id_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema,'sp_person_id','local')->cvterm_id;
+    my $prop_rs = $self->bcs_schema->resultset('Project::Projectprop')->search(
+        { 'project_id' => $self->get_trial_id, 'type_id'=>$sp_person_id_cvterm_id }
+    );
 
-	while(my $prop = $prop_rs->next()) {
-		my $q = "SELECT sp_person_id, username, salutation, first_name, last_name, contact_email, user_type, phone_number, organization FROM sgn_people.sp_person WHERE sp_person_id=?;";
-		my $h = $self->bcs_schema()->storage->dbh()->prepare($q);
-		$h->execute($prop->value);
-		while (my ($sp_person_id, $username, $salutation, $first_name, $last_name, $email, $user_type, $phone, $organization) = $h->fetchrow_array()){
-			push @contacts, {
-				sp_person_id => $sp_person_id,
-				salutation => $salutation,
-				first_name => $first_name,
-				last_name => $last_name,
-				username => $username,
-				email => $email,
-				type => $user_type,
-				phone_number => $phone,
+    while(my $prop = $prop_rs->next()) {
+        my $q = "SELECT sp_person_id, username, salutation, first_name, last_name, contact_email, user_type, phone_number, organization FROM sgn_people.sp_person WHERE sp_person_id=?;";
+        my $h = $self->bcs_schema()->storage->dbh()->prepare($q);
+        $h->execute($prop->value);
+        while (my ($sp_person_id, $username, $salutation, $first_name, $last_name, $email, $user_type, $phone, $organization) = $h->fetchrow_array()){
+            push @contacts, {
+                sp_person_id => $sp_person_id,
+                salutation => $salutation,
+                first_name => $first_name,
+                last_name => $last_name,
+                username => $username,
+                email => $email,
+                type => $user_type,
+                phone_number => $phone,
                 organization => $organization
-			};
-		}
-	}
+            };
+        }
+    }
 
-	return \@contacts;
+    return \@contacts;
 }
 
 
@@ -5030,7 +5012,6 @@ sub get_data_agreement {
     } else {
         return;
 	}
-
 }
 
 =head2 suppress_plot_phenotype
@@ -5050,37 +5031,36 @@ sub get_data_agreement {
 =cut
 
 sub suppress_plot_phenotype {
-	my $self = shift;
+    my $self = shift;
     my $trait_id = shift;
     my $plot_name = shift;
     my $phenotype_value = shift;
-	my $phenotype_id = shift;
-	my $username = shift;
-	my $timestamp = shift;
-	my $schema = $self->bcs_schema;
+    my $phenotype_id = shift;
+    my $username = shift;
+    my $timestamp = shift;
+    my $schema = $self->bcs_schema;
     my $trial_id = $self->get_trial_id();
-	my $plot_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot', 'stock_type')->cvterm_id();
-	my $phenotype_outlier_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'phenotype_outlier', 'phenotype_property')->cvterm_id();
-	my $error;
-	my $json_string = { value => 1, username=>$username, timestamp=>$timestamp };
+    my $plot_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot', 'stock_type')->cvterm_id();
+    my $phenotype_outlier_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'phenotype_outlier', 'phenotype_property')->cvterm_id();
+    my $error;
+    my $json_string = { value => 1, username=>$username, timestamp=>$timestamp };
 
-	my $prop_rs = $self->bcs_schema->resultset('Phenotype::Phenotypeprop')->search(
-		{ 'phenotype_id' => $phenotype_id, 'type_id'=>$phenotype_outlier_type_id }
-	);
+    my $prop_rs = $self->bcs_schema->resultset('Phenotype::Phenotypeprop')->search(
+        { 'phenotype_id' => $phenotype_id, 'type_id'=>$phenotype_outlier_type_id }
+    );
 
-	if ($prop_rs->count == 0) {
-		my $suppress_plot_pheno = $schema->resultset("Phenotype::Phenotypeprop")->create({
-			phenotype_id => $phenotype_id,
-			type_id       => $phenotype_outlier_type_id,
-			value => encode_json $json_string,
-		});
-	}
-	else {
-		$error = "This plot phenotype has already been suppressed.";
-	}
+    if ($prop_rs->count == 0) {
+        my $suppress_plot_pheno = $schema->resultset("Phenotype::Phenotypeprop")->create({
+            phenotype_id => $phenotype_id,
+            type_id       => $phenotype_outlier_type_id,
+            value => encode_json $json_string,
+        });
+    }
+    else {
+        $error = "This plot phenotype has already been suppressed.";
+    }
 
-	return $error;
-
+    return $error;
 }
 
 =head2 delete_assayed_trait
@@ -5160,17 +5140,17 @@ sub delete_empty_crossing_experiment {
     my $self = shift;
 
     if ($self->cross_count() > 0) {
-	return 'Cannot delete crossing experiment with associated crosses.';
+        return 'Cannot delete crossing experiment with associated crosses.';
     }
 
     eval {
-	my $row = $self->bcs_schema->resultset("Project::Project")->find( { project_id=> $self->get_trial_id() });
-	$row->delete();
-    print STDERR "deleted project ".$self->get_trial_id."\n";
+        my $row = $self->bcs_schema->resultset("Project::Project")->find( { project_id=> $self->get_trial_id() });
+        $row->delete();
+        print STDERR "deleted project ".$self->get_trial_id."\n";
     };
     if ($@) {
-	print STDERR "An error occurred during deletion: $@\n";
-	return $@;
+        print STDERR "An error occurred during deletion: $@\n";
+        return $@;
     }
 }
 
