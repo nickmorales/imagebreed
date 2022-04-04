@@ -437,17 +437,19 @@ sub get_nd_experiment_id {
     my $self = shift;
     my $nd_experiment_field_layout_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'field_layout', 'experiment_type')->cvterm_id();
     my $nd_experiment_genotyping_layout_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'genotyping_layout', 'experiment_type')->cvterm_id();
+    my $nd_experiment_drone_run_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'drone_run_experiment', 'experiment_type')->cvterm_id();
+
     my $nd_experiment_rs = $self->bcs_schema->resultset('NaturalDiversity::NdExperiment')->search(
-        { 'me.type_id' => [$nd_experiment_field_layout_type_id, $nd_experiment_genotyping_layout_type_id], 'project.project_id' => $self->get_trial_id },
+        { 'me.type_id' => [$nd_experiment_field_layout_type_id, $nd_experiment_genotyping_layout_type_id, $nd_experiment_drone_run_type_id], 'project.project_id' => $self->get_trial_id },
         { 'join' => {'nd_experiment_projects'=>'project'}}
     );
     if ($nd_experiment_rs->count > 1){
-        return {error => "A trial cannot have more than one nd_experiment entry of type field_layout. Please contact us."};
+        return {error => "A trial cannot have more than one nd_experiment entry of type field_layout/genotyping_layout/drone_run_experiment. Please contact us."};
     }
     if ($nd_experiment_rs == 1){
         return {success => 1, nd_experiment_id => $nd_experiment_rs->first->nd_experiment_id};
     } else {
-        return {error => "This trial does not have an nd_experiment entry of type field_layout. Please contact us."}
+        return {error => "This trial does not have an nd_experiment entry of type field_layout/genotyping_layout/drone_run_experiment. Please contact us."}
     }
 }
 

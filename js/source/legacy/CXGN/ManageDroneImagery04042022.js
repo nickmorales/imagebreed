@@ -1894,6 +1894,8 @@ jQuery(document).ready(function() {
     // Standard process on raw images
     //
 
+    var manage_drone_imagery_standard_process_raw_images_private_company_id;
+    var manage_drone_imagery_standard_process_raw_images_private_company_is_private;
     var manage_drone_imagery_standard_process_raw_images_field_trial_id;
     var manage_drone_imagery_standard_process_raw_images_drone_run_id;
     var manage_drone_imagery_standard_process_raw_images_drone_run_band_id;
@@ -1912,35 +1914,35 @@ jQuery(document).ready(function() {
     jQuery(document).on('click', 'button[name="project_drone_imagery_stadard_process_raw_images_add_images"]', function(){
         manage_drone_imagery_standard_process_raw_images_field_trial_id = jQuery(this).data('field_trial_id');
         manage_drone_imagery_standard_process_raw_images_drone_run_id = jQuery(this).data('drone_run_project_id');
+        manage_drone_imagery_standard_process_raw_images_private_company_id = jQuery(this).data('private_company_id');
+        manage_drone_imagery_standard_process_raw_images_private_company_is_private = jQuery(this).data('private_company_is_private');
+
+        jQuery('#upload_drone_imagery_additional_raw_images_private_company_id').val(manage_drone_imagery_standard_process_raw_images_private_company_id);
+        jQuery('#upload_drone_imagery_additional_raw_images_private_company_is_private').val(manage_drone_imagery_standard_process_raw_images_private_company_is_private);
         jQuery('#upload_drone_imagery_additional_raw_images_drone_run_id').val(manage_drone_imagery_standard_process_raw_images_drone_run_id);
         jQuery('#upload_drone_imagery_additional_raw_images_field_trial_id').val(manage_drone_imagery_standard_process_raw_images_field_trial_id);
+
+        jQuery.ajax ({
+            url : '/ajax/breeders/trial/'+manage_drone_imagery_standard_process_raw_images_drone_run_id+'/get_uploaded_additional_file',
+            beforeSend : function(){
+                jQuery('#upload_drone_imagery_additional_raw_images_div').html("[LOADING...]");
+            },
+            success: function(response){
+                //console.log(response);
+                var html = "<table class='table table-hover table-condensed table-bordered' id='upload_drone_imagery_additional_raw_images_table'><thead><tr><th>Filename</th><th>Date Uploaded</th><th>Uploaded By</th><th>Options</th></tr></thead><tbody>";
+                for (i=0; i<response.files.length; i++) {
+                    html = html + '<tr><td>'+response.files[i][4]+'</td><td>'+response.files[i][1]+'</td><td><a href="/solpeople/profile/'+response.files[i][2]+'">'+response.files[i][3]+'</a></td><td><a href="/breeders/phenotyping/download/'+response.files[i][0]+'">Download</a> | <a href="javascript:obsolete_additional_file_aerial_images('+manage_drone_imagery_standard_process_raw_images_drone_run_id+', '+response.files[i][0]+')">Remove</a></td></tr>';
+                }
+                html = html + "</tbody></table>";
+                jQuery('#upload_drone_imagery_additional_raw_images_div').html(html);
+                jQuery('#upload_drone_imagery_additional_raw_images_table').DataTable();
+            },
+            error: function(response){
+                alert("Error retrieving aerial imagery additional raw captures uploaded files.");
+            }
+       });
+
         jQuery('#upload_drone_imagery_standard_process_additional_raw_images_dialog').modal('show');
-    });
-
-    jQuery('#upload_drone_imagery_additional_raw_images_submit').click(function(){
-        standard_process_upload_additional_raw_images();
-    });
-
-    function standard_process_upload_additional_raw_images() {
-        jQuery('#upload_drone_imagery_additional_raw_images_form').attr("action", "/api/drone_imagery/upload_drone_imagery_additional_raw_images");
-        jQuery("#upload_drone_imagery_additional_raw_images_form").submit();
-    }
-
-    jQuery('#upload_drone_imagery_additional_raw_images_form').iframePostForm({
-        json: true,
-        post: function () {
-            jQuery('#working_modal').modal("show");
-        },
-        complete: function (response) {
-            console.log(response);
-            jQuery('#working_modal').modal("hide");
-            if (response.error) {
-                alert(response.error);
-            }
-            else {
-                location.reload;
-            }
-        }
     });
 
     jQuery(document).on('click', 'button[name="project_drone_imagery_standard_process_raw_images"]', function() {
@@ -7670,3 +7672,20 @@ jQuery(document).ready(function() {
     }
 
 });
+
+function obsolete_additional_file_aerial_images(trial_id, file_id) {
+    var yes = confirm('Are you sure you want to obsolete this file? This operation cannot be undone.');
+    if (yes) {
+        jQuery.ajax({
+            url: '/ajax/breeders/trial/'+trial_id+'/obsolete_uploaded_additional_file/'+file_id,
+            success: function(r) {
+                if (r.error) { alert(r.error); }
+                else {
+                    jQuery('#upload_drone_imagery_additional_raw_images_table').DataTable().clear().draw();
+                    alert("The file has been obsoleted.");
+                }
+            },
+            error: function(r) {  alert("An error occurred!") }
+        });
+    }
+}

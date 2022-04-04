@@ -3758,6 +3758,63 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
     return;
 }
 
+sub upload_drone_imagery_additional_raw_images : Path("/drone_imagery/upload_drone_imagery_additional_raw_images") :Args(0) {
+    my $self = shift;
+    my $c = shift;
+    $c->response->headers->header( "Access-Control-Allow-Origin" => '*' );
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+    my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
+    my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+    my $dbh = $c->dbc->dbh;
+    # print STDERR Dumper $c->req->params();
+
+    my $upload = $c->req->upload('upload_drone_imagery_additional_raw_images_zipfile');
+    my $private_company_id = $c->req->param('upload_drone_imagery_additional_raw_images_private_company_id');
+    my $private_company_is_private = $c->req->param('upload_drone_imagery_additional_raw_images_private_company_is_private');
+    my $drone_run_id = $c->req->param('upload_drone_imagery_additional_raw_images_drone_run_id');
+    my $field_trial_id = $c->req->param('upload_drone_imagery_additional_raw_images_field_trial_id');
+
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', $private_company_id, 'submitter_access');
+
+    my $trial = CXGN::Trial->new({
+        bcs_schema => $schema,
+        metadata_schema => $metadata_schema,
+        phenome_schema => $phenome_schema,
+        trial_id => $drone_run_id
+    });
+
+    my $subdirectory = "trial_additional_file_upload";
+    my $upload_original_name = $upload->filename();
+    my $upload_tempfile = $upload->tempname;
+    my $time = DateTime->now();
+    my $timestamp = $time->ymd()."_".$time->hms();
+
+    ## Store uploaded temporary file in archive
+    my $uploader = CXGN::UploadFile->new({
+        tempfile => $upload_tempfile,
+        subdirectory => $subdirectory,
+        archive_path => $c->config->{archive_path},
+        archive_filename => $upload_original_name,
+        timestamp => $timestamp,
+        user_id => $user_id,
+        user_role => $user_role
+    });
+    my $archived_filename_with_path = $uploader->archive();
+    my $md5 = $uploader->get_md5($archived_filename_with_path);
+    if (!$archived_filename_with_path) {
+        $c->stash->{rest} = {error => "Could not save file $upload_original_name in archive",};
+        $c->detach();
+    }
+    unlink $upload_tempfile;
+    my $md5checksum = $md5->hexdigest();
+
+    my $result = $trial->add_additional_uploaded_file($user_id, $archived_filename_with_path, $md5checksum);
+
+    $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";
+    $c->stash->{template} = 'generic_message.mas';
+    return;
+}
+
 sub _check_user_login_drone_imagery_upload {
     my $c = shift;
     my $check_priv = shift;

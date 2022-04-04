@@ -216,7 +216,8 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
 
             $drone_run_html .= '<div class="well well-sm">';
 
-            $drone_run_html .= '<div class="row"><div class="col-sm-6">';
+            $drone_run_html .= '<div class="row"><div class="col-sm-7">';
+
             $drone_run_html .= '<div class="row"><div class="col-sm-5"><b>Imaging Event Name</b>:</div><div class="col-sm-7"><a href="/breeders_toolbox/trial/'.$k.'" _target="blank">'.$v->{drone_run_project_name}.'</a></div></div>';
             $drone_run_html .= '<div class="row"><div class="col-sm-5"><b>Imaging Event Type</b>:</div><div class="col-sm-7">'.$v->{drone_run_type}.'</div></div>';
             $drone_run_html .= '<div class="row"><div class="col-sm-5"><b>Description</b>:</div><div class="col-sm-7">'.$v->{drone_run_project_description}.'</div></div>';
@@ -243,7 +244,9 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
             my $days_after_planting_string = $days_after_planting_strings[0];
             $drone_run_html .= '<div class="row"><div class="col-sm-5"><b>Growing Season Days</b>:</div><div class="col-sm-7">'.$days_after_planting_string.'</div></div>';
             $drone_run_html .= '<div class="row"><div class="col-sm-5"><b>Field Trial</b>:</div><div class="col-sm-7"><a href="/breeders_toolbox/trial/'.$v->{trial_id}.'" _target="blank">'.$v->{trial_name}.'</a></div></div>';
-            $drone_run_html .= '</div><div class="col-sm-3">';
+
+            $drone_run_html .= '</div><div class="col-sm-5">';
+
             if ($v->{drone_run_indicator}) {
                 $drone_run_html .= '<span class="label label-info" ><span class="glyphicon glyphicon-hourglass"></span>&nbsp;&nbsp;&nbsp;Processing Images in Progress</span><br/><br/>';
             }
@@ -254,7 +257,6 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
             }
             #$drone_run_html .= '<button class="btn btn-primary btn-sm" name="project_drone_imagery_phenotype_run" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Generate Phenotypes for <br/>'.$v->{drone_run_project_name}.'</button>';
 
-            $drone_run_html .= '</div><div class="col-sm-3">';
             if (!$v->{drone_run_indicator}) {
                 # if ($v->{drone_run_is_raw_images}) {
                 #     $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_stadard_process_raw_images_add_images" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Upload More Raw Images <br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
@@ -276,22 +278,29 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
 
                     # if ($v->{drone_run_processed} && !$v->{drone_run_ground_control_points}) {
                     if ($v->{drone_run_processed}) {
-                        $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_phenotype_run" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Calculate Phenotypes Again for <br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
 
-                        $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_apply_other_vi" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Apply Other Vegetation Indices For<br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
+                        $drone_run_html .= '<div class="panel-group" id="project_drone_imagery_buttons_sections_'.$k.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#project_drone_imagery_buttons_sections_'.$k.'" href="#project_drone_imagery_buttons_sections_accordian_'.$k.'" >Additional Options</a></h4></div><div id="project_drone_imagery_buttons_sections_accordian_'.$k.'" class="panel-collapse collapse"><div class="panel-body">';
 
-                        $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_ground_control_points" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Save Ground Control Points For<br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
+                            $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_stadard_process_raw_images_add_images" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Save/Download Captured Images</button><br/><br/>';
 
-                        if ($missing_geocoord_params) {
-                            $drone_run_html .= '<button class="btn btn-default btn-sm" name="drone_imagery_drone_run_band_add_geocoordinate_params" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Add GeoCoordinate Params</button><br/><br/>';
-                        }
+                            $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_phenotype_run" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Calculate Phenotypes Again</button><br/><br/>';
 
-                        $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_quality_control_check" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Quality Control Plot Images For<br/>'.$v->{drone_run_project_name}.'</button><br/><br/>';
+                            $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_apply_other_vi" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Apply Additional Vegetation Indices</button><br/><br/>';
+
+                            $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_ground_control_points" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Save Ground Control Points</button><br/><br/>';
+
+                            if ($missing_geocoord_params) {
+                                # $drone_run_html .= '<button class="btn btn-default btn-sm" name="drone_imagery_drone_run_band_add_geocoordinate_params" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Add GeoCoordinate Params</button><br/><br/>';
+                            }
+
+                            $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_quality_control_check" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Quality Control Plot Images</button><br/><br/>';
+
+                            $drone_run_html .= '<button class="btn btn-danger btn-sm" name="project_drone_imagery_delete_drone_run" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" >Delete Imaging Event</button>';
+
+                        $drone_run_html .= '</div></div></div></div>';
                     }
                 # }
             }
-
-            $drone_run_html .= '<button class="btn btn-danger btn-sm" name="project_drone_imagery_delete_drone_run" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" >Delete Imaging Event</button>';
 
             $drone_run_html .= '</div></div></div>';
 
