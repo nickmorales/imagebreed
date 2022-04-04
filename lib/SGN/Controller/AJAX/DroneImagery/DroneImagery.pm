@@ -7692,7 +7692,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
     my $field_trial_id = $c->req->param('field_trial_id');
     my $private_company_id = $c->req->param('company_id') || 1;
-    my $private_company_is_private = $c->req->param('company_is_private') || 1;
+    my $private_company_is_private = $c->req->param('company_is_private');
     my $drone_run_project_id_input = $c->req->param('drone_run_project_id');
     my $drone_run_band_project_id_input = $c->req->param('drone_run_band_project_id');
     my $gcp_drone_run_project_id_input = $c->req->param('gcp_drone_run_project_id');
@@ -8518,7 +8518,7 @@ sub standard_process_apply_previous_imaging_event_POST : Args(0) {
     my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
     my $field_trial_id = $c->req->param('field_trial_id');
     my $private_company_id = $c->req->param('company_id') || 1;
-    my $private_company_is_private = $c->req->param('company_is_private') || 1;
+    my $private_company_is_private = $c->req->param('company_is_private');
     my $drone_run_band_project_id_input = $c->req->param('drone_run_band_project_id');
     my $drone_run_project_id_input = $c->req->param('drone_run_project_id');
     my $gcp_drone_run_project_id_input = $c->req->param('previous_drone_run_project_id');
@@ -11339,12 +11339,14 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
 }
 
 sub drone_imagery_apply_other_selected_vi : Path('/api/drone_imagery/apply_other_selected_vi') : ActionClass('REST') { }
-sub drone_imagery_apply_other_selected_vi_GET : Args(0) {
+sub drone_imagery_apply_other_selected_vi_POST : Args(0) {
     my $self = shift;
     my $c = shift;
     my $bcs_schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
     my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+    my $private_company_id = $c->req->param('private_company_id');
+    my $private_company_id_is_private = $c->req->param('private_company_id_is_private');
     my $drone_run_project_id_input = $c->req->param('drone_run_project_id');
     my $selected_vi = decode_json $c->req->param('selected_vi');
     my $phenotype_methods = $c->req->param('phenotype_types') ? decode_json $c->req->param('phenotype_types') : ['zonal'];
@@ -11433,7 +11435,7 @@ sub drone_imagery_apply_other_selected_vi_GET : Args(0) {
     print STDERR Dumper \%selected_drone_run_band_types;
     print STDERR Dumper \%vegetative_indices_hash;
 
-    _perform_minimal_vi_standard_process($c, $bcs_schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, [], {}, \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_square');
+    _perform_minimal_vi_standard_process($c, $bcs_schema, $metadata_schema, \%vegetative_indices_hash, \%selected_drone_run_band_types, [], {}, \%drone_run_band_info, $user_id, $user_name, $user_role, 'rectangular_square', $private_company_id, $private_company_id_is_private);
 
     $drone_run_process_in_progress = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
         type_id=>$process_indicator_cvterm_id,
@@ -11455,7 +11457,7 @@ sub drone_imagery_apply_other_selected_vi_GET : Args(0) {
         key=>'projectprop_c1'
     });
 
-    my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
+    my $return = _perform_phenotype_automated($c, $bcs_schema, $metadata_schema, $phenome_schema, $drone_run_project_id_input, $time_cvterm_id, $phenotype_methods, $standard_process_type, 1, undef, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role, $private_company_id, $private_company_id_is_private);
 
     $c->stash->{rest} = {success => 1};
 }

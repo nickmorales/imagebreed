@@ -1788,6 +1788,8 @@ jQuery(document).ready(function() {
 
     var project_drone_imagery_apply_other_vi_drone_run_project_id;
     var project_drone_imagery_apply_other_vi_drone_run_project_name;
+    var project_drone_imagery_apply_other_vi_drone_run_company_id;
+    var project_drone_imagery_apply_other_vi_drone_run_company_is_private;
     var project_drone_imagery_apply_other_vi_field_trial_id;
     var project_drone_imagery_apply_other_vi_selected_indices;
 
@@ -1795,7 +1797,8 @@ jQuery(document).ready(function() {
         project_drone_imagery_apply_other_vi_drone_run_project_id = jQuery(this).data('drone_run_project_id');
         project_drone_imagery_apply_other_vi_drone_run_project_name = jQuery(this).data('drone_run_project_name');
         project_drone_imagery_apply_other_vi_field_trial_id = jQuery(this).data('field_trial_id');
-
+        project_drone_imagery_apply_other_vi_drone_run_company_id = jQuery(this).data('private_company_id');
+        project_drone_imagery_apply_other_vi_drone_run_company_is_private = jQuery(this).data('private_company_is_private');
 
         jQuery.ajax({
             url: '/api/drone_imagery/check_available_applicable_vi?drone_run_project_id='+project_drone_imagery_apply_other_vi_drone_run_project_id+'&field_trial_id='+project_drone_imagery_apply_other_vi_field_trial_id,
@@ -1857,7 +1860,14 @@ jQuery(document).ready(function() {
         }
         else {
             jQuery.ajax({
-                url: '/api/drone_imagery/apply_other_selected_vi?drone_run_project_id='+project_drone_imagery_apply_other_vi_drone_run_project_id+'&selected_vi='+JSON.stringify(project_drone_imagery_apply_other_vi_selected_indices),
+                type: 'POST',
+                url: '/api/drone_imagery/apply_other_selected_vi',
+                data: {
+                    'drone_run_project_id':project_drone_imagery_apply_other_vi_drone_run_project_id,
+                    'selected_vi':JSON.stringify(project_drone_imagery_apply_other_vi_selected_indices),
+                    'private_company_id':project_drone_imagery_apply_other_vi_drone_run_company_id,
+                    'private_company_id_is_private':project_drone_imagery_apply_other_vi_drone_run_company_is_private
+                },
                 beforeSend: function(){
                     jQuery('#working_modal').modal('show');
                 },
