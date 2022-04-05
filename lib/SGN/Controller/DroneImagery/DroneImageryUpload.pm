@@ -1220,15 +1220,6 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         my $ret = $image->associate_project($selected_drone_run_band_id, $linking_table_type_id);
                     }
 
-                    # Storing uploaded zipfile of raw images
-                    my $trial = CXGN::Trial->new({
-                        bcs_schema => $schema,
-                        metadata_schema => $metadata_schema,
-                        phenome_schema => $phenome_schema,
-                        trial_id => $drone_run_id
-                    });
-                    my $result_save_original_zip = $trial->add_additional_uploaded_file($user_id, $archived_filename_original_zip_with_path, $md5checksum_original_zip);
-
                     push @return_drone_run_band_image_urls, $image->get_image_url('original');
                     push @return_drone_run_band_image_ids, $image->get_image_id();
                     push @return_drone_run_band_project_ids, $selected_drone_run_band_id;
@@ -1267,6 +1258,17 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                     nd_experiment_id => $nd_experiment_id,
                     file_id => $file_id,
                 });
+            }
+
+            foreach my $drone_run_id (@selected_drone_run_ids) {
+                # Storing uploaded zipfile of raw images
+                my $trial = CXGN::Trial->new({
+                    bcs_schema => $schema,
+                    metadata_schema => $metadata_schema,
+                    phenome_schema => $phenome_schema,
+                    trial_id => $drone_run_id
+                });
+                my $result_save_original_zip = $trial->add_additional_uploaded_file($user_id, $archived_filename_original_zip_with_path, $md5checksum_original_zip);
             }
 
         };

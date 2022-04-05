@@ -11259,6 +11259,9 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
         if ($tgi_total_count >= $total_plots) {
             $vi_hash{'TGI'} = 1;
         }
+        elsif ($tgi_total_count > 0) {
+            $vi_hash{'TGI'} = 2;
+        }
         else {
             $vi_hash{'TGI'} = 0;
         }
@@ -11276,6 +11279,9 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
         if ($vari_total_count >= $total_plots) {
             $vi_hash{'VARI'} = 1;
         }
+        elsif ($vari_total_count > 0) {
+            $vi_hash{'VARI'} = 2;
+        }
         else {
             $vi_hash{'VARI'} = 0;
         }
@@ -11292,6 +11298,9 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
 
         if ($ccc_total_count >= $total_plots) {
             $vi_hash{'CCC'} = 1;
+        }
+        elsif ($ccc_total_count > 0) {
+            $vi_hash{'CCC'} = 2;
         }
         else {
             $vi_hash{'CCC'} = 0;
@@ -11311,6 +11320,9 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
         if ($ndvi_total_count >= $total_plots) {
             $vi_hash{'NDVI'} = 1;
         }
+        elsif ($ndvi_total_count > 0) {
+            $vi_hash{'NDVI'} = 2;
+        }
         else {
             $vi_hash{'NDVI'} = 0;
         }
@@ -11328,6 +11340,9 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
 
         if ($ndre_total_count >= $total_plots) {
             $vi_hash{'NDRE'} = 1;
+        }
+        elsif ($ndre_total_count > 0) {
+            $vi_hash{'NDRE'} = 2;
         }
         else {
             $vi_hash{'NDRE'} = 0;

@@ -1832,8 +1832,11 @@ jQuery(document).ready(function() {
                             if (val == 0) {
                                 html = html + '<input name="drone_imagery_apply_other_vi_indices_select" value="'+key+'" type="checkbox"> '+name_defs[key]+'<br/>'
                             }
+                            else if (val == 2) {
+                                html = html + '<input name="drone_imagery_apply_other_vi_indices_completed_select" value="'+key+'" type="checkbox" > '+name_defs[key]+' <span class="text-success">(Completed for some plots in field experiment)</span><br/>'
+                            }
                             else if (val == 1) {
-                                html = html + '<input name="drone_imagery_apply_other_vi_indices_completed_select" value="'+key+'" type="checkbox" checked disabled> '+name_defs[key]+' <span class="text-success">(Completed)</span><br/>'
+                                html = html + '<input name="drone_imagery_apply_other_vi_indices_completed_select" value="'+key+'" type="checkbox" checked disabled> '+name_defs[key]+' <span class="text-success">(Completed for all plots in field experiment)</span><br/>'
                             }
                         }
                     }

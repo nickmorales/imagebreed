@@ -364,7 +364,7 @@
                                 <div class="col-sm-6" >
                                     <input type="file" id="upload_drone_images_panel_zipfile_odm_micasense" name="upload_drone_images_panel_zipfile" encoding="multipart/form-data" />
                                 </div>
-                            </div>';
+                            </div>
 
                             <div class="form-group">
                                 <label class="col-sm-6 control-label">Perform Radiometric Calibration: </label>
