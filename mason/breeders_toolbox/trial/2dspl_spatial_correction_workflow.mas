@@ -1,0 +1,229 @@
+<%args>
+$trial_id => undef
+$is_analysis => undef
+</%args>
+
+<& /util/import_javascript.mas, classes => [ ] &>
+
+<div class="well well-sm">
+    <button class="btn btn-primary" id="trial_detail_page_analysis_2dspl_workflow">Perform 2D-Spline Spatial Correction</button>
+</div>
+
+<div class="modal fade" id="trial_analysis_2dspl_spatial_correction_workflow_dialog" name="trial_analysis_2dspl_spatial_correction_workflow_dialog" tabindex="-1" role="dialog" aria-labelledby="trialAnalysis2DSplWorkflowDialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="trialAnalysis2DSplWorkflowDialog">Find 2D-Spline Spatial Correction for Measurements</h4>
+            </div>
+            <div class="modal-body">
+
+                <&| /util/workflow.mas, id=> "trial_analysis_2dspl_workflow_dialog_workflow" &>
+                    <&| /util/workflow.mas:step, title=> "Input" &>
+                        <& /page/page_title.mas, title=>"Select the input measurements to spatially correct" &>
+
+                        <div class="container-fluid">
+                            <div class="form-horizontal">
+
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">Observation Unit Level: </label>
+                                    <div class="col-sm-9" >
+                                        <select class="form-control" id="trial_analysis_2dspl_workflow_observation_level">
+%  if ($is_analysis) {
+                                            <option value="analysis_instance">Analysis Instance</option>
+%  } else {
+                                            <option value="plot">Plot</option>
+%  }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">2D-Spline Method: </label>
+                                    <div class="col-sm-9" >
+                                        <select class="form-control" id="trial_analysis_2dspl_workflow_model_type">
+                                            <option value="">Select a model</option>
+                                            <option value="sommer_2dspl_uni">Sommer Univariate: y ~ f(rep) + r(G) + r(2DSpl(row,col)) + e</option>
+                                            <option value="sommer_2dspl_multi">Sommer Multivariate: (y1, .., yn) ~ f(rep) + r(G, unsm(n)) + r(2DSpl(row,col), diag(n)) + e</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="trial_analysis_2dspl_workflow_model_type_desc"></div>
+
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">Trait(s): </label>
+                                    <div class="col-sm-9" >
+                                        <div id="trial_analysis_2dspl_workflow_traits_div"></div>
+                                    </div>
+                                </div>
+
+                                <div class="well well-sm">
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">Genetic Relationships: </label>
+                                        <div class="col-sm-9" >
+                                            <select class="form-control" id="trial_analysis_2dspl_workflow_genetic_relationship_type">
+                                                <option value="identity">Identity Matrix (Equal relationships of all accessions)</option>
+                                                <option value="grm">Genomic Relationship Matrix (Relationships of accessions from genome-wide marker data)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div id="trial_analysis_2dspl_workflow_grm_select_div" style="display:none">
+                                        <div class="panel panel-default">
+                                            <div class="panel-body">
+                                                <div class="well well-sm">
+                                                    <div class="form-group">
+                                                        <label class="col-sm-3 control-label">Genomic Relationship Matrix (GRM) Protocols: </label>
+                                                        <div class="col-sm-9" >
+                                                            <div id="trial_analysis_2dspl_workflow_grm_div"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <p>Only GRM protocols linked to this field trial are shown. Please link and/or create a new GRM protocol for this field trial in the Genomic Relationship Matrices section of the trial detail page. GRM protocols can be created directly for the accessions in the field trial or from the parental genotypes, if pedigree information between parental accessions and progeny are available.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">Tolerance: </label>
+                                    <div class="col-sm-9" >
+                                        <select class="form-control" id="trial_analysis_2dspl_workflow_tolerance">
+                                            <option value="0.001">0.001</option>
+                                            <option value="0.01">0.01</option>
+                                            <option value="0.000001">0.000001</option>
+                                            <option value="0.00001">0.00001</option>
+                                            <option value="0.0001">0.0001</option>
+                                            <option value="0.0005">0.0005</option>
+                                            <option value="0.0008">0.0008</option>
+                                            <option value="0.05">0.05</option>
+                                            <option value="0.08">0.08</option>
+                                            <option value="0.1">0.1</option>
+                                            <option value="0.2">0.2</option>
+                                            <option value="0.5">0.5</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <hr>
+                            <center>
+                                <button type="button" class="btn btn-primary" name="trial_analysis_2dspl_workflow_submit" id="trial_analysis_2dspl_workflow_submit" title="Submit">Submit</button>
+                            </center>
+                        </div>
+                    </&>
+                    <&| /util/workflow.mas:step, title=> "Output" &>
+                        <& /page/page_title.mas, title=>"Results" &>
+
+                        <div id="trial_analysis_2dspl_workflow_results_div"></div>
+                    </&>
+                </&>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+jQuery(document).ready(function(){
+
+    jQuery('#trial_detail_page_analysis_2dspl_workflow').click( function(){
+        jQuery('#trial_analysis_2dspl_spatial_correction_workflow_dialog').modal('show');
+
+        get_select_box('traits', 'trial_analysis_2dspl_workflow_traits_div', { 'name' : 'trial_analysis_2dspl_workflow_trait_ids', 'id' : 'trial_analysis_2dspl_workflow_trait_ids', 'empty':1, 'trial_ids':<% $trial_id %>, 'stock_type':'plot', 'multiple':1 });
+
+        get_select_box('genotyping_protocol', 'trial_analysis_2dspl_workflow_grm_div', { 'name' : 'trial_analysis_2dspl_workflow_grm_id', 'id' : 'trial_analysis_2dspl_workflow_grm_id', 'only_grm_protocols':1, 'empty':1, 'field_trial_ids':<% $trial_id %> });
+    });
+
+    var trial_analysis_2dspl_workflow_model_type_val = '';
+    jQuery('#trial_analysis_2dspl_workflow_model_type').change(function(){
+        trial_analysis_2dspl_workflow_model_type_val = jQuery(this).val();
+
+        if (trial_analysis_2dspl_workflow_model_type_val == '') {
+            jQuery('#trial_analysis_2dspl_workflow_model_type_desc').html('');
+        }
+        if (trial_analysis_2dspl_workflow_model_type_val == 'sommer_2dspl_uni') {
+            jQuery('#trial_analysis_2dspl_workflow_model_type_desc').html('<div class="well well-sm"><p>The selected traits are run one at a time, univariately. A fixed effect for replicate. Random effects for the additive genetic effect and the 2D-Spline spatial effect across the rows and columns of the plots in the field. This model is run in R Sommer.</p></div>');
+        }
+        if (trial_analysis_2dspl_workflow_model_type_val == 'sommer_2dspl_multi') {
+            jQuery('#trial_analysis_2dspl_workflow_model_type_desc').html('<div class="well well-sm"><p>The selected traits are run in a single multi-trait model, multivariately. A fixed effect for replicate. Random effects for the additive genetic effect, with an un-structured matrix for the different traits enabling genetic covariances between traits to be estimated. Random effects for the 2D-Spline spatial effect across the rows and columns of the plots in the field, with a diagonal matrix enabling variance to be estimated for the different traits. This model is run in R Sommer.</p></div>');
+        }
+    });
+
+    var trial_analysis_2dspl_workflow_grm_type_val = '';
+    jQuery('#trial_analysis_2dspl_workflow_genetic_relationship_type').change(function(){
+        trial_analysis_2dspl_workflow_grm_type_val = jQuery(this).val();
+
+        if (trial_analysis_2dspl_workflow_grm_type_val == 'identity') {
+            jQuery('#trial_analysis_2dspl_workflow_grm_select_div').hide();
+        }
+        if (trial_analysis_2dspl_workflow_grm_type_val == 'grm') {
+            jQuery('#trial_analysis_2dspl_workflow_grm_select_div').show();
+        }
+    });
+
+    jQuery('#trial_analysis_2dspl_workflow_submit').click(function() {
+        var selected_trait_ids = jQuery('#trial_analysis_2dspl_workflow_trait_ids').val();
+        console.log(selected_trait_ids);
+
+        var trial_analysis_2dspl_workflow_grm_id = jQuery('#trial_analysis_2dspl_workflow_grm_id').val();
+
+        if (!selected_trait_ids || selected_trait_ids.length < 1) {
+            alert('Please select at least one trait!');
+            return false;
+        }
+        else if (trial_analysis_2dspl_workflow_model_type_val == '') {
+            alert('Please select an analysis!');
+            return false;
+        }
+        else if (trial_analysis_2dspl_workflow_grm_type_val == 'grm' && trial_analysis_2dspl_workflow_grm_id == '') {
+            alert('Please select a GRM protocol if Genomic Relationships are to be used! You can always use an identity matrix instead!');
+            return false;
+        }
+        else {
+            jQuery.ajax({
+                type : 'POST',
+                url : '/ajax/breeders/trial/<% $trial_id %>/spatial_2dspl_correct_traits',
+                data : {
+                    'trait_ids': JSON.stringify(selected_trait_ids),
+                    'observation_unit_level': jQuery('#trial_analysis_correlation_workflow_observation_level').val(),
+                    'model_type': trial_analysis_2dspl_workflow_model_type_val,
+                    'genomic_relationship_type': trial_analysis_2dspl_workflow_grm_type_val,
+                    'genomic_relationship_protocol_id': trial_analysis_2dspl_workflow_grm_id,
+                    'tolparinv': jQuery('#trial_analysis_2dspl_workflow_tolerance').val()
+                },
+                beforeSend: function() {
+                    jQuery("#working_modal").modal("show");
+                },
+                success: function(response) {
+                    console.log(response);
+                    jQuery("#working_modal").modal("hide");
+                    if (response.error) {
+                        alert(response.error);
+                    }
+                    else {
+                        var html = '<img src="'+response.heatmaps_plot+'" />';
+                        html = html + '<img src="'+response.gen_effects_line_plot+'" />';
+                        jQuery('#trial_analysis_2dspl_workflow_results_div').html(html);
+
+                        Workflow.complete("#trial_analysis_2dspl_workflow_submit");
+                        Workflow.focus('#trial_analysis_2dspl_workflow_dialog_workflow', 1);
+                    }
+                },
+                error: function(response){
+                    jQuery("#working_modal").modal("hide");
+                    alert('Error doing spatial correction! Try a larger tolerance!');
+                }
+            });
+        }
+
+    });
+
+});
+
+</script>

@@ -8,7 +8,6 @@ $is_analysis => undef
 <div class="well well-sm">
     <button class="btn btn-primary" id="trial_detail_page_analysis_correlation_workflow">Find Correlation Between Saved Measurements</button>
 </div>
-<hr>
 
 <div class="modal fade" id="trial_analysis_correlation_workflow_dialog" name="trial_analysis_correlation_workflow_dialog" tabindex="-1" role="dialog" aria-labelledby="trialAnalysisCorrelationWorkflowDialog">
     <div class="modal-dialog modal-xl" role="document">
@@ -22,7 +21,7 @@ $is_analysis => undef
                 <&| /util/workflow.mas, id=> "trial_analysis_correlation_workflow_dialog_workflow" &>
                     <&| /util/workflow.mas:step, title=> "Input" &>
                         <& /page/page_title.mas, title=>"Select the input measurements to correlate" &>
-                
+
                         <div class="container-fluid">
                             <div class="form-horizontal">
 
@@ -56,7 +55,7 @@ $is_analysis => undef
                                 </div>
 
                             </div>
-                            
+
                             <hr>
                             <center>
                                 <button type="button" class="btn btn-primary" name="trial_analysis_correlation_workflow_submit" id="trial_analysis_correlation_workflow_submit" title="Submit">Submit</button>
@@ -133,7 +132,7 @@ jQuery(document).ready(function(){
                 }
             });
         }
-        
+
     });
 
 });
