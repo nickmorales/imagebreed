@@ -24,13 +24,13 @@ jQuery(document).ready(function () {
                 jQuery("#working_modal").modal("hide");
                 var html1 = '';
 % if ($trial_type eq 'field_trial'){
-                html1 = '<table class="table table-hover table-bordered"><thead><tr><th>Genotyping Plates(s) From This Field Trial</th></tr></thead><tbody>';
+                html1 = '<table class="table table-hover table-bordered"><thead><tr><th>Genotyping Plates(s) From This Field Trial</th><th>Options</th></tr></thead><tbody>';
                 for (var i=0; i<response.genotyping_trials_from_field_trial.length; i++){
                     html1 = html1 + '<tr><td><a href="/breeders/trial/'+response.genotyping_trials_from_field_trial[i][0]+'">'+response.genotyping_trials_from_field_trial[i][1]+'</a></td><td><a href="javascript:remove_linkage('+response.genotyping_trials_from_field_trial[i][0]+','+<% $trial_id %>+')">Remove linkage</a></td></tr>';
                 }
 % }
 % if ($trial_type eq 'genotyping_trial'){
-                html1 = '<table class="table table-hover table-bordered"><thead><tr><th>Field Trial(s) That Are Source of This Genotyping Plate</th></tr></thead><tbody>';
+                html1 = '<table class="table table-hover table-bordered"><thead><tr><th>Field Trial(s) That Are Source of This Genotyping Plate</th><th>Options</th></tr></thead><tbody>';
                 for (var i=0; i<response.field_trials_source_of_genotyping_trial.length; i++){
                     html1 = html1 + '<tr><td><a href="/breeders/trial/'+response.field_trials_source_of_genotyping_trial[i][0]+'">'+response.field_trials_source_of_genotyping_trial[i][1]+'</a></td><td> <a href="javascript:remove_linkage('+<% $trial_id %>+', '+response.field_trials_source_of_genotyping_trial[i][0]+')">Remove linkage</a></td></tr>';
                 }
