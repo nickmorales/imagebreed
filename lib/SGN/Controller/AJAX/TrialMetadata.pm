@@ -2967,37 +2967,48 @@ sub phenotype_heatmap : Chained('trial') PathPart('heatmap') Args(0) {
         my $design = $d->{design};
         my $phenotype_id = $d->{phenotype_id};
         if (!$row_number && !$col_number){
-			if ($block_number && $design_type ne 'splitplot'){
-				$row_number = $block_number;
-			}elsif ($rep && !$block_number && $design_type ne 'splitplot'){
-				$row_number = $rep;
-			}elsif ($design_type eq 'splitplot'){
+            if ($block_number && $design_type ne 'splitplot'){
+                $row_number = $block_number;
+            } elsif ($rep && !$block_number && $design_type ne 'splitplot'){
+                $row_number = $rep;
+            } elsif ($design_type eq 'splitplot'){
                 $row_number = $rep;
             }
-		}
+        }
 
         my $plot_popUp = $plot_name."\nplot_No:".$plot_number."\nblock_No:".$block_number."\nrep_No:".$rep."\nstock:".$stock_name."\nvalue:".$value;
-        push @$result,  {plotname => $plot_name, stock => $stock_name, plotn => $plot_number, blkn=>$block_number, rep=>$rep, row=>$row_number, col=>$col_number, pheno=>$value, plot_msg=>$plot_popUp, pheno_id=>$phenotype_id} ;
-		if ($col_number){
+        push @$result, {
+            plotname => $plot_name,
+            stock => $stock_name,
+            plotn => $plot_number,
+            blkn=>$block_number,
+            rep=>$rep,
+            row=>$row_number,
+            col=>$col_number,
+            pheno=>$value,
+            plot_msg=>$plot_popUp,
+            pheno_id=>$phenotype_id
+        };
+        if ($col_number){
             push @col_No, $col_number;
         }
-		push @row_No, $row_number;
-		push @pheno_val, $value;
-		push @plot_Name, $plot_name;
-		push @stock_Name, $stock_name;
-		push @plot_No, $plot_number;
-		push @block_No, $block_number;
-		push @rep_No, $rep;
+        push @row_No, $row_number;
+        push @pheno_val, $value;
+        push @plot_Name, $plot_name;
+        push @stock_Name, $stock_name;
+        push @plot_No, $plot_number;
+        push @block_No, $block_number;
+        push @rep_No, $rep;
         push @phenoID, $phenotype_id;
     }
 
     my $false_coord;
-	if (!$col_No[0]){
+    if (!$col_No[0]){
         @col_No = ();
         $false_coord = 'false_coord';
-		my @row_instances = uniq @row_No;
-		my %unique_row_counts;
-		$unique_row_counts{$_}++ for @row_No;
+        my @row_instances = uniq @row_No;
+        my %unique_row_counts;
+        $unique_row_counts{$_}++ for @row_No;
         my @col_number2;
         for my $key (keys %unique_row_counts){
             push @col_number2, (1..$unique_row_counts{$key});
@@ -3009,68 +3020,69 @@ sub phenotype_heatmap : Chained('trial') PathPart('heatmap') Args(0) {
 	}
 
     my ($min_col, $max_col) = minmax @col_No;
-	my ($min_row, $max_row) = minmax @row_No;
-	my (@unique_col,@unique_row);
-	for my $x (1..$max_col){
-		push @unique_col, $x;
-	}
-	for my $y (1..$max_row){
-		push @unique_row, $y;
-	}
+    my ($min_row, $max_row) = minmax @row_No;
+    my (@unique_col,@unique_row);
+    for my $x (1..$max_col){
+        push @unique_col, $x;
+    }
+    for my $y (1..$max_row){
+        push @unique_row, $y;
+    }
 
     my $trial = CXGN::Trial->new({
-		bcs_schema => $schema,
-		trial_id => $trial_id
-	});
-	my $data_check = $trial->get_controls();
-	my @control_name;
-	foreach my $cntrl (@{$data_check}) {
-		push @control_name, $cntrl->{'accession_name'};
-	}
+        bcs_schema => $schema,
+        trial_id => $trial_id
+    });
+    my $data_check = $trial->get_controls();
+    my @control_name;
+    foreach my $cntrl (@{$data_check}) {
+        push @control_name, $cntrl->{'accession_name'};
+    }
     #print STDERR Dumper($result);
-    $c->stash->{rest} = { #phenotypes => $phenotype,
-                            col => \@col_No,
-                            row => \@row_No,
-                            pheno => \@pheno_val,
-                            plotName => \@plot_Name,
-                            stock => \@stock_Name,
-                            plot => \@plot_No,
-                            block => \@block_No,
-                            rep => \@rep_No,
-                            result => $result,
-                            plot_msg => \@msg,
-                            col_max => $max_col,
-                            row_max => $max_row,
-                            unique_col => \@unique_col,
-                            unique_row => \@unique_row,
-                            false_coord => $false_coord,
-                            phenoID => \@phenoID,
-                            controls => \@control_name
-                        };
+    $c->stash->{rest} = {
+        #phenotypes => $phenotype,
+        col => \@col_No,
+        row => \@row_No,
+        pheno => \@pheno_val,
+        plotName => \@plot_Name,
+        stock => \@stock_Name,
+        plot => \@plot_No,
+        block => \@block_No,
+        rep => \@rep_No,
+        result => $result,
+        plot_msg => \@msg,
+        col_max => $max_col,
+        row_max => $max_row,
+        unique_col => \@unique_col,
+        unique_row => \@unique_row,
+        false_coord => $false_coord,
+        phenoID => \@phenoID,
+        controls => \@control_name
+    };
 }
 
 sub get_suppress_plot_phenotype : Chained('trial') PathPart('suppress_phenotype') Args(0) {
-  my $self = shift;
-  my $c = shift;
-  my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
+    my $self = shift;
+    my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'curator', 'curator_access');
 
-  my $schema = $c->stash->{schema};
-  my $plot_name = $c->req->param('plot_name');
-  my $plot_pheno_value = $c->req->param('phenotype_value');
-  my $trait_id = $c->req->param('trait_id');
-  my $phenotype_id = $c->req->param('phenotype_id');
-  my $trial_id = $c->stash->{trial_id};
-  my $trial = $c->stash->{trial};
-  my $time = DateTime->now();
-  my $timestamp = $time->ymd()."_".$time->hms();
+    my $schema = $c->stash->{schema};
+    my $plot_name = $c->req->param('plot_name');
+    my $plot_pheno_value = $c->req->param('phenotype_value');
+    my $trait_id = $c->req->param('trait_id');
+    my $phenotype_id = $c->req->param('phenotype_id');
+    my $trial_id = $c->stash->{trial_id};
+    my $trial = $c->stash->{trial};
+    my $time = DateTime->now();
+    my $timestamp = $time->ymd()."_".$time->hms();
 
-  my $suppress_return_error = $trial->suppress_plot_phenotype($trait_id, $plot_name, $plot_pheno_value, $phenotype_id, $user_name, $timestamp);
-  if ($suppress_return_error) {
-    $c->stash->{rest} = { error => $suppress_return_error };
-    return;
-  }
+    my $suppress_return_error = $trial->suppress_plot_phenotype($trait_id, $plot_name, $plot_pheno_value, $phenotype_id, $user_name, $timestamp);
+    if ($suppress_return_error) {
+        $c->stash->{rest} = { error => $suppress_return_error };
+        return;
+    }
 
-  $c->stash->{rest} = { success => 1};
+    $c->stash->{rest} = { success => 1};
 }
 
 sub delete_single_assayed_trait : Chained('trial') PathPart('delete_single_trait') Args(0) {
@@ -3093,85 +3105,87 @@ sub delete_single_assayed_trait : Chained('trial') PathPart('delete_single_trait
 }
 
 sub retrieve_plot_image : Chained('trial') PathPart('retrieve_plot_images') Args(0) {
-  my $self = shift;
-  my $c = shift;
-  my $schema = $c->stash->{schema};
-  my $image_ids =  decode_json $c->req->param('image_ids');
-  my $plot_name = $c->req->param('plot_name');
-  my $plot_id = $c->req->param('plot_id');
+    my $self = shift;
+    my $c = shift;
+    my $schema = $c->stash->{schema};
+    my $image_ids =  decode_json $c->req->param('image_ids');
+    my $plot_name = $c->req->param('plot_name');
+    my $plot_id = $c->req->param('plot_id');
 
-  my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
-  my $trial_id = $c->stash->{trial_id};
-  my $stockref;
-  my $image_objects;
-  my $dbh = $c->dbc->dbh;
-  $stockref->{dbh} = $dbh;
-  $stockref->{image_ids} =  $image_ids || [] ;
-  my $images = $stockref->{image_ids};
-  $dbh = $stockref->{dbh};
+    my $trial_id = $c->stash->{trial_id};
+    my $stockref;
+    my $image_objects;
+    my $dbh = $c->dbc->dbh;
+    $stockref->{dbh} = $dbh;
+    $stockref->{image_ids} =  $image_ids || [] ;
+    my $images = $stockref->{image_ids};
+    $dbh = $stockref->{dbh};
 
-  #print STDERR Dumper($stockref);
-  print "$plot_name and $plot_id and $image_ids\n";
+    #print STDERR Dumper($stockref);
+    print "$plot_name and $plot_id and $image_ids\n";
 
-  my $image_html     = "";
-  my $m_image_html   = "";
-  my $count;
-  my @more_is;
+    my $image_html     = "";
+    my $m_image_html   = "";
+    my $count;
+    my @more_is;
 
-  if ($images && !$image_objects) {
-    my @image_object_list = map { SGN::Image->new( $dbh , $_ ) }  @$images ;
-    $image_objects = \@image_object_list;
-  }
+    if ($images && !$image_objects) {
+        my @image_object_list = map { SGN::Image->new( $dbh , $_ ) }  @$images ;
+        $image_objects = \@image_object_list;
+    }
 
-  if ($image_objects)  { # don't display anything for empty list of images
-    $image_html .= qq|<table cellpadding="5">|;
-    foreach my $image_ob (@$image_objects) {
-      $count++;
-      my $image_id = $image_ob->get_image_id;
-      my $image_name = $image_ob->get_name();
-      my $image_description = $image_ob->get_description();
-      my $image_img  = $image_ob->get_image_url("medium");
-      my $small_image = $image_ob->get_image_url("thumbnail");
-      my $image_page  = "/image/view/$image_id";
+    if ($image_objects)  { # don't display anything for empty list of images
+        $image_html .= qq|<table cellpadding="5">|;
+        foreach my $image_ob (@$image_objects) {
+            $count++;
+            my $image_id = $image_ob->get_image_id;
+            my $image_name = $image_ob->get_name();
+            my $image_description = $image_ob->get_description();
+            my $image_img  = $image_ob->get_image_url("medium");
+            my $small_image = $image_ob->get_image_url("thumbnail");
+            my $image_page  = "/image/view/$image_id";
 
-      my $colorbox =
-        qq|<a href="$image_img"  class="stock_image_group" rel="gallery-figures"><img src="$small_image" alt="$image_description" onclick="close_view_plot_image_dialog()"/></a> |;
-      my $fhtml =
-        qq|<tr><td width=120>|
-          . $colorbox
-            . $image_name
-              . "</td><td>"
-                . $image_description
-                  . "</td></tr>";
-      if ( $count < 3 ) { $image_html .= $fhtml; }
-      else {
-        push @more_is, $fhtml;
-      }    #more than 3 figures- show these in a hidden div
+            my $colorbox = qq|<a href="$image_img"  class="stock_image_group" rel="gallery-figures"><img src="$small_image" alt="$image_description" onclick="close_view_plot_image_dialog()"/></a> |;
+            my $fhtml = qq|<tr><td width=120>|
+              . $colorbox
+                . $image_name
+                  . "</td><td>"
+                    . $image_description
+                      . "</td></tr>";
+
+            if ( $count < 3 ) {
+                $image_html .= $fhtml;
+            }
+            else {
+                push @more_is, $fhtml;
+            }    #more than 3 figures- show these in a hidden div
         }
-    $image_html .= "</table>";  #close the table tag or the first 3 figures
+        $image_html .= "</table>";  #close the table tag or the first 3 figures
 
-    $image_html .= "<script> jQuery(document).ready(function() { jQuery('a.stock_image_group').colorbox(); }); </script>\n";
+        $image_html .= "<script> jQuery(document).ready(function() { jQuery('a.stock_image_group').colorbox(); }); </script>\n";
+    }
+    $m_image_html .= "<table cellpadding=5>";  #open table tag for the hidden figures #4 and on
 
-  }
-  $m_image_html .=
-    "<table cellpadding=5>";  #open table tag for the hidden figures #4 and on
-  my $more = scalar(@more_is);
-  foreach (@more_is) { $m_image_html .= $_; }
+    my $more = scalar(@more_is);
+    foreach (@more_is) {
+        $m_image_html .= $_;
+    }
 
-  $m_image_html .= "</table>";    #close tabletag for the hidden figures
+    $m_image_html .= "</table>";    #close tabletag for the hidden figures
 
-  if (@more_is) {    #html_optional_show if there are more than 3 figures
-    $image_html .= html_optional_show(
-  				    "Images",
-  				    "<b>See $more more images...</b>",
-  				    qq| $m_image_html |,
-  				    0, #< do not show by default
-  				    'abstract_optional_show', #< don't use the default button-like style
-  				   );
-  }
+    if (@more_is) {    #html_optional_show if there are more than 3 figures
+        $image_html .= html_optional_show(
+            "Images",
+            "<b>See $more more images...</b>",
+            qq| $m_image_html |,
+            0, #< do not show by default
+            'abstract_optional_show', #< don't use the default button-like style
+        );
+    }
 
-  $c->stash->{rest} = { image_html => $image_html};
+    $c->stash->{rest} = { image_html => $image_html};
 }
 
 sub field_trial_from_field_trial : Chained('trial') PathPart('field_trial_from_field_trial') Args(0) {
@@ -3482,6 +3496,15 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
         }
     }
     my @unique_plot_names = sort keys %seen_plot_names;
+
+    if (scalar(keys %seen_cols) < 2) {
+        $c->stash->{rest} = { error => "There are no columns in this field trial! Upload the row and column number information in the Field Layout Tools section!"};
+        return;
+    }
+    if (scalar(keys %seen_rows) < 2) {
+        $c->stash->{rest} = { error => "There are no rows in this field trial! Upload the row and column number information in the Field Layout Tools section!"};
+        return;
+    }
 
     my $trait_name_encoded = 1;
     my %trait_name_encoder;
