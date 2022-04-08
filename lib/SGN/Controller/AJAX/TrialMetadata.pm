@@ -4545,8 +4545,18 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
             }
 
             push @row, (
-                $replicate,
-                $t,
+                $replicate
+            );
+
+            if ($model_type eq 'airemlf90_legendre_rr') {
+                push @row, $t;
+            }
+            if ($model_type eq 'sommer_legendre_rr') {
+                my $time = ($t - $time_min)/($time_max - $time_min);
+                push @row, $time;
+            }
+
+            push @row, (
                 $plot_rep_time_factor_map{$obsunit_stock_id}->{$replicate}->{$t},
                 $stock_row_col{$obsunit_stock_id}->{plot_id_factor}
             );
@@ -5220,7 +5230,6 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
                 $residual_line_trait_count++;
             }
         close($fh_residual);
-        print STDERR Dumper \%result_residual_data_original;
 
         open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
             print STDERR "Opened $stats_out_tempfile_varcomp\n";
