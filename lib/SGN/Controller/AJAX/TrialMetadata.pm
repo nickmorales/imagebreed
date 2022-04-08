@@ -3582,6 +3582,9 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
     my ($grm_tempfile_fh, $grm_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($grm_out_tempfile_fh, $grm_out_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
 
+    my ($stats_out_tempfile_rds_fh, $stats_out_tempfile_rds) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    $stats_out_tempfile_rds .= '.rds';
+
     my @phenotype_header = ("replicate", "block", "id", "plot_id", "rowNumber", "colNumber", "rowNumberFactor", "colNumberFactor");
     foreach (@sorted_trait_names) {
         push @phenotype_header, $trait_name_encoder{$_};
@@ -3658,6 +3661,7 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
     h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
     e2 <- vpredict(mix, e2 ~ (V2) / ( V2+V3) );
     write.table(data.frame(h2=h2\$Estimate, hse=h2\$SE, e2=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_heritability.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+    saveRDS(mix, file=\''.$stats_out_tempfile_rds.'\');
     }
     "';
 
@@ -3678,6 +3682,7 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
     my $model_sum_square_residual_original = 0;
     my @varcomp_original;
     my @varcomp_herit;
+    my @model_rds_files;
 
     if ($model_type eq 'sommer_2dspl_multi') {
         my $statistics_cmd = $statistics_cmd_reading.$multivariate_cmd_model;
@@ -3691,6 +3696,8 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
             print STDERR Dumper $@;
             $run_stats_fault = 1;
         }
+
+        push @model_rds_files, $stats_out_tempfile_rds;
 
         my $current_gen_row_count = 0;
         my $current_env_row_count = 0;
@@ -3850,6 +3857,9 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
 
         foreach my $t (@encoded_traits) {
 
+            my ($stats_out_tempfile_rds_fh, $stats_out_tempfile_rds) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+            $stats_out_tempfile_rds .= '.rds';
+
             my $univariate_cmd_model = 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
@@ -3864,6 +3874,7 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
             h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
             e2 <- vpredict(mix, e2 ~ (V2) / ( V2+V3) );
             write.table(data.frame(h2=h2\$Estimate, hse=h2\$SE, e2=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_heritability.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+            saveRDS(mix, file=\''.$stats_out_tempfile_rds.'\');
             }
             "';
 
@@ -3878,6 +3889,8 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
                 print STDERR Dumper $@;
                 $run_stats_fault = 1;
             }
+
+            push @model_rds_files, $stats_out_tempfile_rds;
 
             my $current_gen_row_count = 0;
             my $current_env_row_count = 0;
@@ -4180,7 +4193,8 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
         varcomp_original => \@varcomp_original,
         varcomp_herit => \@varcomp_herit,
         heatmaps_plot => $stats_out_tempfile_spatial_heatmaps_plot_string,
-        gen_effects_line_plot => $genetic_effects_figure_tempfile_string
+        gen_effects_line_plot => $genetic_effects_figure_tempfile_string,
+        model_rds_files => \@model_rds_files
     };
 }
 
@@ -4371,6 +4385,9 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     my ($grm_rr_tempfile_fh, $grm_rr_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($grm_rr_out_tempfile_fh, $grm_rr_out_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($grm_rename_tempfile_fh, $grm_rename_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
+    my ($stats_out_tempfile_rds_fh, $stats_out_tempfile_rds) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    $stats_out_tempfile_rds .= '.rds';
 
     my %trait_name_encoder;
     my %trait_name_encoder_rev;
@@ -4716,6 +4733,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     my $model_sum_square_residual_original = 0;
     my @varcomp_original;
     my @varcomp_herit;
+    my @model_rds_files;
 
     my @rr_coeff_genetic_covariance_original;
     my @rr_coeff_env_covariance_original;
@@ -5077,6 +5095,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
         h2_l0 <- vpredict(mix, h2 ~ (V1) / ( V1+V21) ); h2_l1 <- vpredict(mix, h2 ~ (V3) / ( V3+V21) ); h2_l2 <- vpredict(mix, h2 ~ (V6) / ( V6+V21) ); h2_l3 <- vpredict(mix, h2 ~ (V10) / ( V10+V21) );
         e2_l0 <- vpredict(mix, e2 ~ (V11) / ( V11+V21) ); e2_l1 <- vpredict(mix, e2 ~ (V13) / ( V13+V21) ); e2_l2 <- vpredict(mix, e2 ~ (V16) / ( V16+V21) ); e2_l3 <- vpredict(mix, e2 ~ (V20) / ( V20+V21) );
         write.table(data.frame(h2_l0=h2_l0\$Estimate, hse_l0=h2_l0\$SE, h2_l1=h2_l1\$Estimate, hse_l1=h2_l1\$SE, h2_l2=h2_l2\$Estimate, hse_l2=h2_l2\$SE, h2_l3=h2_l3\$Estimate, hse_l3=h2_l3\$SE, e2_l0=e2_l0\$Estimate, ese_l0=e2_l0\$SE, e2_l1=e2_l1\$Estimate, ese_l1=e2_l1\$SE, e2_l2=e2_l2\$Estimate, ese_l2=e2_l2\$SE, e2_l3=e2_l3\$Estimate, ese_l3=e2_l3\$SE), file=\''.$stats_out_tempfile_heritability.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        saveRDS(mix, file=\''.$stats_out_tempfile_rds.'\');
         }
         "';
 
@@ -5089,6 +5108,8 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
             print STDERR Dumper $@;
             $run_stats_fault = 1;
         }
+
+        push @model_rds_files, $stats_out_tempfile_rds;
 
         my $current_gen_row_count = 0;
         my $current_env_row_count = 0;
@@ -5418,7 +5439,8 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
         varcomp_original => \@varcomp_original,
         varcomp_herit => \@varcomp_herit,
         heatmaps_plot => $stats_out_tempfile_spatial_heatmaps_plot_string,
-        gen_effects_line_plot => $genetic_effects_figure_tempfile_string
+        gen_effects_line_plot => $genetic_effects_figure_tempfile_string,
+        model_rds_files => \@model_rds_files
     };
 }
 
