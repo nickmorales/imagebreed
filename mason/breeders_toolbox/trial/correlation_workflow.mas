@@ -25,18 +25,12 @@ $is_analysis => undef
                         <div class="container-fluid">
                             <div class="form-horizontal">
 
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label">Observation Unit Level: </label>
-                                    <div class="col-sm-9" >
-                                        <select class="form-control" id="trial_analysis_correlation_workflow_observation_level">
 %  if ($is_analysis) {
-                                            <option value="analysis_instance">Analysis Instance</option>
+                                <input type="hidden" id="trial_analysis_correlation_workflow_observation_level" name="trial_analysis_correlation_workflow_observation_level" value="analysis_instance" />
 %  } else {
-                                            <option value="plot">Plot</option>
+                                <input type="hidden" id="trial_analysis_correlation_workflow_observation_level" name="trial_analysis_correlation_workflow_observation_level" value="plot" />
 %  }
-                                        </select>
-                                    </div>
-                                </div>
+
                                 <div class="form-group">
                                     <label class="col-sm-3 control-label">Correlation Method: </label>
                                     <div class="col-sm-9" >
