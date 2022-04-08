@@ -4240,6 +4240,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     my %stock_row_col_id;
     my %unique_accessions;
     my %stock_info;
+    my %plot_info;
     my %phenotype_data_original;
     my %seen_trait_names;
     my %seen_times;
@@ -4278,7 +4279,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
         };
         $seen_rows{$row_number}++;
         $seen_cols{$col_number}++;
-        $plot_id_map{$obsunit_stock_id} = $obsunit_stock_uniquename;
+        $plot_id_map{"S".$obsunit_stock_id} = $obsunit_stock_uniquename;
         $seen_plot_names{$obsunit_stock_uniquename}++;
         $seen_plots{$obsunit_stock_id} = $obsunit_stock_uniquename;
         $stock_row_col{$obsunit_stock_id} = {
@@ -4305,6 +4306,9 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
         $unique_accessions{$germplasm_name}++;
         $stock_info{"S".$germplasm_stock_id} = {
             uniquename => $germplasm_name
+        };
+        $plot_info{"S".$obsunit_stock_id} = {
+            uniquename => $obsunit_stock_uniquename
         };
         my $observations = $obs_unit->{observations};
         foreach (@$observations){
@@ -4336,6 +4340,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     @sorted_trait_names = sort {$a <=> $b} keys %seen_times;
     # print STDERR Dumper \@sorted_trait_names;
     my @unique_accession_names = sort keys %unique_accessions;
+    my $number_traits = scalar(@sorted_trait_names);
 
     my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
     my $tmp_stats_dir = $shared_cluster_dir_config."/tmp_trial_2dspl";
@@ -4350,9 +4355,10 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     my ($stats_out_param_tempfile_fh, $stats_out_param_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($parameter_tempfile_fh, $parameter_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_prep_factor_tempfile_fh, $stats_prep_factor_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_prep_leg_tempfile_fh, $stats_prep_leg_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_tempfile_residual_fh, $stats_out_tempfile_residual) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_tempfile_varcomp_fh, $stats_out_tempfile_varcomp) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
-    my ($stats_out_tempfile_2dspl_fh, $stats_out_tempfile_2dspl) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+    my ($stats_out_tempfile_pe_fh, $stats_out_tempfile_pe) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_tempfile_heritability_fh, $stats_out_tempfile_heritability) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_tempfile_pheno_heatmaps_fh, $stats_out_tempfile_pheno_heatmaps) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
     my ($stats_out_tempfile_spatial_heatmaps_fh, $stats_out_tempfile_spatial_heatmaps) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
@@ -4381,6 +4387,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     print STDERR Dumper \%trait_name_encoder_rev;
     print STDERR Dumper \%seen_days_after_plantings;
     print STDERR Dumper \%trait_to_time_map;
+    print STDERR Dumper \%seen_times;
 
     my $time_min = 10000000000000;
     my $time_max = -10000000000000;
@@ -4419,12 +4426,12 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
 
     my $cmd = 'R -e "library(sommer); library(orthopolynom);
     polynomials <- leg(c('.$sorted_trait_names_scaled_string.'), n='.$legendre_order_number.', intercept=TRUE);
-    write.table(polynomials, file=\''.$stats_out_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');"';
+    write.table(polynomials, file=\''.$stats_prep_leg_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');"';
     my $status = system($cmd);
 
     my %polynomial_map;
-    open(my $fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
-        print STDERR "Opened $stats_out_tempfile\n";
+    open(my $fh, '<', $stats_prep_leg_tempfile) or die "Could not open file '$stats_prep_leg_tempfile' $!";
+        print STDERR "Opened $stats_prep_leg_tempfile\n";
         my $header = <$fh>;
         my @header_cols;
         if ($csv->parse($header)) {
@@ -4494,7 +4501,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
             my $rep_time = $columns[6];
             my $ind_rep = $columns[7];
             $stock_row_col{$plot_id}->{plot_id_factor} = $plot_id_factor;
-            $stock_name_row_col{$plot_id_map{$plot_id}}->{plot_id_factor} = $plot_id_factor;
+            $stock_name_row_col{$plot_id_map{"S".$plot_id}}->{plot_id_factor} = $plot_id_factor;
             $plot_rep_time_factor_map{$plot_id}->{$rep}->{$time} = $rep_time;
             $seen_rep_times{$rep_time}++;
             $seen_ind_reps{$plot_id_factor}++;
@@ -4523,9 +4530,21 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
         my @data_matrix_phenotypes_row;
         my $current_trait_index = 0;
         foreach my $t (@sorted_trait_names) {
-            my @row = (
-                $accession_id_factor_map{$germplasm_stock_id},
-                $obsunit_stock_id,
+            my @row = ();
+            if ($model_type eq 'airemlf90_legendre_rr') {
+                push @row, (
+                    $accession_id_factor_map{$germplasm_stock_id},
+                    $obsunit_stock_id
+                );
+            }
+            if ($model_type eq 'sommer_legendre_rr') {
+                push @row, (
+                    "S".$germplasm_stock_id,
+                    "S".$obsunit_stock_id
+                );
+            }
+
+            push @row, (
                 $replicate,
                 $t,
                 $plot_rep_time_factor_map{$obsunit_stock_id}->{$replicate}->{$t},
@@ -4582,7 +4601,13 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
         push @legs_header, "legendre$_";
     }
     my @phenotype_header = ("id", "plot_id", "replicate", "time", "replicate_time", "ind_replicate", @legs_header, "phenotype");
+    my $phenotype_header_line = join ' ', @phenotype_header;
     open(my $F, ">", $stats_tempfile_2) || die "Can't open file ".$stats_tempfile_2;
+
+        if ($model_type eq 'sommer_legendre_rr') {
+            print $F "$phenotype_header_line\n";
+        }
+
         foreach (@data_matrix_original) {
             my $line = join ' ', @$_;
             print $F "$line\n";
@@ -4595,6 +4620,11 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
             print $F2 "$line\n";
         }
     close($F2);
+
+    my $effect_1_levels = scalar(@rep_time_factors);
+    my $effect_grm_levels = scalar(@unique_accession_names);
+    my $effect_pe_levels = scalar(@ind_rep_factors);
+
 
     if (!$genomic_relationship_protocol_id) {
         $genomic_relationship_protocol_id = undef;
@@ -4749,10 +4779,6 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
 
         my $stats_tempfile_2_basename = basename($stats_tempfile_2);
         my $grm_file_basename = basename($grm_rename_tempfile);
-
-        my $effect_1_levels = scalar(@rep_time_factors);
-        my $effect_grm_levels = scalar(@unique_accession_names);
-        my $effect_pe_levels = scalar(@ind_rep_factors);
 
         my @param_file_rows_data = ('DATAFILE', $stats_tempfile_2_basename);
         my @param_file_rows_1 = (
@@ -5018,6 +5044,223 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
                 $env_effect_sum_original += abs($value);
                 $env_effect_sum_square_original = $env_effect_sum_square_original + $value*$value;
             }
+        }
+    }
+    elsif ($model_type eq 'sommer_legendre_rr') {
+
+        # my @phenotype_header = ("id", "plot_id", "replicate", "time", "replicate_time", "ind_replicate", @legs_header, "phenotype");
+
+        my $statistics_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(orthopolynom);
+        mat <- data.frame(fread(\''.$stats_tempfile_2.'\', header=TRUE, sep=\' \'));
+        geno_mat_3col <- data.frame(fread(\''.$grm_out_tempfile.'\', header=FALSE, sep=\'\t\'));
+        geno_mat <- acast(geno_mat_3col, V1~V2, value.var=\'V3\');
+        geno_mat[is.na(geno_mat)] <- 0;
+        mix <- mmer(phenotype~1 + replicate, random=~vs(us(leg(time,'.$legendre_order_number.')), id, Gu=geno_mat) +vs(us(leg(time,'.$legendre_order_number.')), plot_id), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+        if (!is.null(mix\$U)) {
+        #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
+        gen_rr <- data.frame(g_l0 <- mix\$U\$\`leg0:id\`\$phenotype , g_l1 <- mix\$U\$\`leg1:id\`\$phenotype, g_l2 <- mix\$U\$\`leg2:id\`\$phenotype, g_l3 <- mix\$U\$\`leg3:id\`\$phenotype);
+        pe_rr <- data.frame(g_l0 <- mix\$U\$\`leg0:plot_id\`\$phenotype , g_l1 <- mix\$U\$\`leg1:plot_id\`\$phenotype, g_l2 <- mix\$U\$\`leg2:plot_id\`\$phenotype, g_l3 <- mix\$U\$\`leg3:plot_id\`\$phenotype);
+        write.table(gen_rr, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+        write.table(pe_rr, file=\''.$stats_out_tempfile_pe.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+        write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
+        h2_l0 <- vpredict(mix, h2 ~ (V1) / ( V1+V21) ); h2_l1 <- vpredict(mix, h2 ~ (V3) / ( V3+V21) ); h2_l2 <- vpredict(mix, h2 ~ (V6) / ( V6+V21) ); h2_l3 <- vpredict(mix, h2 ~ (V10) / ( V10+V21) );
+        e2_l0 <- vpredict(mix, e2 ~ (V11) / ( V11+V21) ); e2_l1 <- vpredict(mix, e2 ~ (V13) / ( V13+V21) ); e2_l2 <- vpredict(mix, e2 ~ (V16) / ( V16+V21) ); e2_l3 <- vpredict(mix, e2 ~ (V20) / ( V20+V21) );
+        write.table(data.frame(h2_l0=h2_l0\$Estimate, hse_l0=h2_l0\$SE, h2_l1=h2_l1\$Estimate, hse_l1=h2_l1\$SE, h2_l2=h2_l2\$Estimate, hse_l2=h2_l2\$SE, h2_l3=h2_l3\$Estimate, hse_l3=h2_l3\$SE, e2_l0=e2_l0\$Estimate, ese_l0=e2_l0\$SE, e2_l1=e2_l1\$Estimate, ese_l1=e2_l1\$SE, e2_l2=e2_l2\$Estimate, ese_l2=e2_l2\$SE, e2_l3=e2_l3\$Estimate, ese_l3=e2_l3\$SE), file=\''.$stats_out_tempfile_heritability.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
+        }
+        "';
+
+        eval {
+            my $status = system($statistics_cmd);
+        };
+        my $run_stats_fault = 0;
+        if ($@) {
+            print STDERR "R ERROR\n";
+            print STDERR Dumper $@;
+            $run_stats_fault = 1;
+        }
+
+        my $current_gen_row_count = 0;
+        my $current_env_row_count = 0;
+
+        open(my $fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            my $header = <$fh>;
+            my @header_cols;
+            if ($csv->parse($header)) {
+                @header_cols = $csv->fields();
+            }
+
+            while (my $row = <$fh>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+
+                my $stock_id = $columns[0];
+                my $b_coeff_0 = $columns[1];
+                my $b_coeff_1 = $columns[2];
+                my $b_coeff_2 = $columns[3];
+                my $b_coeff_3 = $columns[4];
+                my @coeffs = ($b_coeff_0, $b_coeff_1, $b_coeff_2, $b_coeff_3);
+
+                my $accession_name = $stock_info{$stock_id}->{uniquename};
+
+                foreach my $time_term (@sorted_trait_names) {
+                    my $time = ($time_term - $time_min)/($time_max - $time_min);
+                    my $value = 0;
+                    my $coeff_counter = 0;
+                    foreach my $b (@coeffs) {
+                        my $eval_string = $legendre_coeff_exec[$coeff_counter];
+                        # print STDERR Dumper [$eval_string, $b, $time];
+                        $value += eval $eval_string;
+                        $coeff_counter++;
+                    }
+
+                    $result_blup_data_original{$accession_name}->{$time_term} = [$value, $timestamp, $user_name, '', ''];
+
+                    if ($value < $genetic_effect_min_original) {
+                        $genetic_effect_min_original = $value;
+                    }
+                    elsif ($value >= $genetic_effect_max_original) {
+                        $genetic_effect_max_original = $value;
+                    }
+
+                    $genetic_effect_sum_original += abs($value);
+                    $genetic_effect_sum_square_original = $genetic_effect_sum_square_original + $value*$value;
+                }
+
+                $current_gen_row_count++;
+            }
+        close($fh);
+
+        open(my $fh_2dspl, '<', $stats_out_tempfile_pe) or die "Could not open file '$stats_out_tempfile_pe' $!";
+            print STDERR "Opened $stats_out_tempfile_pe\n";
+            my $header_2dspl = <$fh_2dspl>;
+            my @header_cols_2dspl;
+            if ($csv->parse($header_2dspl)) {
+                @header_cols_2dspl = $csv->fields();
+            }
+            shift @header_cols_2dspl;
+            while (my $row_2dspl = <$fh_2dspl>) {
+                my @columns;
+                if ($csv->parse($row_2dspl)) {
+                    @columns = $csv->fields();
+                }
+
+                my $stock_id = $columns[0];
+                my $b_coeff_0 = $columns[1];
+                my $b_coeff_1 = $columns[2];
+                my $b_coeff_2 = $columns[3];
+                my $b_coeff_3 = $columns[4];
+                my @coeffs = ($b_coeff_0, $b_coeff_1, $b_coeff_2, $b_coeff_3);
+                my $plot_name = $plot_id_map{$stock_id};
+
+                foreach my $time_term (@sorted_trait_names) {
+                    my $time = ($time_term - $time_min)/($time_max - $time_min);
+                    my $value = 0;
+                    my $coeff_counter = 0;
+                    foreach my $b (@coeffs) {
+                        my $eval_string = $legendre_coeff_exec[$coeff_counter];
+                        # print STDERR Dumper [$eval_string, $b, $time];
+                        $value += eval $eval_string;
+                        $coeff_counter++;
+                    }
+
+                    $result_blup_spatial_data_original{$plot_name}->{$time_term} = [$value, $timestamp, $user_name, '', ''];
+
+                    if ($value < $env_effect_min_original) {
+                        $env_effect_min_original = $value;
+                    }
+                    elsif ($value >= $env_effect_max_original) {
+                        $env_effect_max_original = $value;
+                    }
+
+                    $env_effect_sum_original += abs($value);
+                    $env_effect_sum_square_original = $env_effect_sum_square_original + $value*$value;
+                }
+
+                $current_env_row_count++;
+            }
+        close($fh_2dspl);
+
+        open(my $fh_residual, '<', $stats_out_tempfile_residual) or die "Could not open file '$stats_out_tempfile_residual' $!";
+            print STDERR "Opened $stats_out_tempfile_residual\n";
+            my $header_residual = <$fh_residual>;
+            my @header_cols_residual;
+            if ($csv->parse($header_residual)) {
+                @header_cols_residual = $csv->fields();
+            }
+            my $residual_line_trait_count = 0;
+            while (my $row = <$fh_residual>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+
+                if ($residual_line_trait_count >= $number_traits) {
+                    $residual_line_trait_count = 0;
+                }
+
+                my $trait_name = $seen_times{$sorted_trait_names[$residual_line_trait_count]};
+                my $stock_id = $columns[0];
+                my $residual = $columns[1];
+                my $fitted = $columns[2];
+                my $stock_name = $plot_id_map{$stock_id};
+                if (defined $residual && $residual ne '') {
+                    $result_residual_data_original{$stock_name}->{$trait_name} = [$residual, $timestamp, $user_name, '', ''];
+                    $residual_sum_original += abs($residual);
+                    $residual_sum_square_original = $residual_sum_square_original + $residual*$residual;
+                }
+                if (defined $fitted && $fitted ne '') {
+                    $result_fitted_data_original{$stock_name}->{$trait_name} = [$fitted, $timestamp, $user_name, '', ''];
+                }
+                $model_sum_square_residual_original = $model_sum_square_residual_original + $residual*$residual;
+
+                $residual_line_trait_count++;
+            }
+        close($fh_residual);
+        print STDERR Dumper \%result_residual_data_original;
+
+        open(my $fh_varcomp, '<', $stats_out_tempfile_varcomp) or die "Could not open file '$stats_out_tempfile_varcomp' $!";
+            print STDERR "Opened $stats_out_tempfile_varcomp\n";
+            my $header_varcomp = <$fh_varcomp>;
+            my @header_cols_varcomp;
+            if ($csv->parse($header_varcomp)) {
+                @header_cols_varcomp = $csv->fields();
+            }
+            while (my $row = <$fh_varcomp>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+                push @varcomp_original, \@columns;
+            }
+        close($fh_varcomp);
+
+        open(my $fh_herit, '<', $stats_out_tempfile_heritability) or die "Could not open file '$stats_out_tempfile_heritability' $!";
+            print STDERR "Opened $stats_out_tempfile_heritability\n";
+            my $header_herit = <$fh_herit>;
+            my @header_cols_herit;
+            if ($csv->parse($header_herit)) {
+                @header_cols_herit = $csv->fields();
+            }
+            while (my $row = <$fh_herit>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+                push @varcomp_herit, \@columns;
+            }
+        close($fh_herit);
+
+        if ($current_env_row_count == 0 || $current_gen_row_count == 0) {
+            $run_stats_fault = 1;
+        }
+
+        if ($run_stats_fault == 1) {
+            print STDERR "ERROR IN R CMD\n";
+            return {error=>'Error in R! Try a larger tolerance'};
         }
     }
 

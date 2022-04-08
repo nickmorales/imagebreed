@@ -37,6 +37,7 @@ $is_analysis => undef
                                         <select class="form-control" id="trial_analysis_rr_workflow_model_type">
                                             <option value="">Select a model</option>
                                             <option value="airemlf90_legendre_rr">AIREMLF90 Legendre Polynomial: (y1, .., yn) ~ f(rep) + r(G, leg(z)) + r(E, leg(z)) + e_het</option>
+                                            <option value="sommer_legendre_rr">Sommer Legendre Polynomial: (y1, .., yn) ~ f(rep) + r(G, leg(z)) + r(E, leg(z)) + e</option>
                                         </select>
                                     </div>
                                 </div>
@@ -150,6 +151,9 @@ jQuery(document).ready(function(){
         }
         if (trial_analysis_rr_workflow_model_type_val == 'airemlf90_legendre_rr') {
             jQuery('#trial_analysis_rr_workflow_model_type_desc').html('<div class="well well-sm"><p>The selected traits are run all in one model, multivariately. A fixed effect for replicate. Random effects for the additive genetic effect (G) following a Legendre polynomial. Random effects for the permanent environment effect (E) following a Legendre polynomial. Heterogenous residual error. This model is run in AIREMLF90.</p></div>');
+        }
+        if (trial_analysis_rr_workflow_model_type_val == 'sommer_legendre_rr') {
+            jQuery('#trial_analysis_rr_workflow_model_type_desc').html('<div class="well well-sm"><p>The selected traits are run all in one model, multivariately. A fixed effect for replicate. Random effects for the additive genetic effect (G) following a Legendre polynomial. Random effects for the permanent environment effect (E) following a Legendre polynomial. This model is run in R Sommer.</p></div>');
         }
     });
 
