@@ -192,6 +192,7 @@ has 'genotyping_plate_sample_type' => (isa => 'Str', is => 'rw');
 #
 has 'is_analysis' => (isa => 'Bool', is => 'rw', required => 0, default => 0, );
 has 'analysis_model_protocol_id' => (isa => 'Int|Undef', is => 'rw', required => 0 );
+has 'analysis_field_trial_id' => (isa => 'Int|Undef', is => 'rw', required => 0 );
 
 # Trial linkage when saving either a sampling trial
 #
@@ -311,17 +312,17 @@ sub save_trial {
     }
     elsif ($self->get_is_analysis()) {
         print STDERR "Generating an analysis trial...\n";
-        $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, , 'analysis_experiment', 'experiment_type')->cvterm_id();
+        $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'analysis_experiment', 'experiment_type')->cvterm_id();
         $project_table_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'analysis_project_table_type', 'project_table_type')->cvterm_id();
     }
     elsif ($self->get_is_sampling_trial()) {
         print STDERR "Generating a sampling trial...\n";
-        $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, , 'sampling_layout', 'experiment_type')->cvterm_id();
+        $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'sampling_layout', 'experiment_type')->cvterm_id();
         $project_table_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'sampling_trial_project_table_type', 'project_table_type')->cvterm_id();
     }
     else {
         print STDERR "Generating a phenotyping trial...\n";
-        $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, , 'field_layout', 'experiment_type')->cvterm_id();
+        $nd_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'field_layout', 'experiment_type')->cvterm_id();
         $project_table_type_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'field_trial_project_table_type', 'project_table_type')->cvterm_id();
     }
 
@@ -370,6 +371,10 @@ sub save_trial {
         if ($self->get_analysis_model_protocol_id) {
             #link to the saved analysis model
             $nd_experiment->find_or_create_related('nd_experiment_protocols', {nd_protocol_id => $self->get_analysis_model_protocol_id() });
+        }
+        if ($self->get_analysis_field_trial_id) {
+            #link to a field trial
+            $nd_experiment->find_or_create_related('nd_experiment_projects', {project_id => $self->get_analysis_field_trial_id() });
         }
     }
     elsif ($self->get_is_sampling_trial()) {

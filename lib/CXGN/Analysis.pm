@@ -169,6 +169,14 @@ nd_protocol_id of save model information
 
 has 'analysis_model_protocol_id' => (isa => 'Int|Undef', is => 'rw');
 
+=head2 analysis_field_trial_id()
+
+field trial to link analysis to
+
+=cut
+
+has 'analysis_field_trial_id' => (isa => 'Int|Undef', is => 'rw');
+
 =head2 metadata()
 
 CXGN::Analysis::AnalysisMetadata object.
@@ -435,6 +443,11 @@ sub create_and_store_analysis_design {
         $saved_model_protocol_id = $self->analysis_model_protocol_id();
     }
 
+    my $analysis_field_trial_id;
+    if ($self->analysis_field_trial_id) {
+        $analysis_field_trial_id = $self->analysis_field_trial_id();
+    }
+
     my $analysis_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'analysis_experiment', 'experiment_type')->cvterm_id();
     my $trial_create = CXGN::Trial::TrialCreate->new({
         trial_id => $self->get_trial_id(),
@@ -453,6 +466,7 @@ sub create_and_store_analysis_design {
         trial_type => $analysis_experiment_type_id,
         is_analysis => 1,
         analysis_model_protocol_id => $saved_model_protocol_id,
+        analysis_field_trial_id => $analysis_field_trial_id
     });
 
 #    my $validate_error = $trial_create->validate_design();
