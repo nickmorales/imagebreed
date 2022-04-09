@@ -3409,8 +3409,8 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
     my %seen_trait_names;
     my $phenotype_min_original = 1000000000000000;
     my $phenotype_max_original = -1000000000000000;
-    my %seen_days_after_plantings;
     my %trait_to_time_map;
+    my %trait_time_map;
     foreach my $obs_unit (@$data) {
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
@@ -3474,8 +3474,9 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
         foreach (@$observations){
             my $value = $_->{value};
             my $trait_name = $_->{trait_name};
+            my $trait_id = $_->{trait_id};
             $phenotype_data_original{$obsunit_stock_uniquename}->{$trait_name} = $value;
-            $seen_trait_names{$trait_name}++;
+            $seen_trait_names{$trait_name} = $trait_id;
 
             if ($value < $phenotype_min_original) {
                 $phenotype_min_original = $value;
@@ -3490,8 +3491,8 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
                 my $time_term_string = $time_days_cvterm;
                 my $time_days = (split '\|', $time_days_cvterm)[0];
                 my $time_value = (split ' ', $time_days)[1];
-                $seen_days_after_plantings{$time_value}++;
                 $trait_to_time_map{$trait_name} = $time_value;
+                $trait_time_map{$trait_name} = $time_days_cvterm;
             }
         }
     }
@@ -3519,7 +3520,6 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
     }
     print STDERR Dumper \%trait_name_encoder;
     print STDERR Dumper \%trait_name_encoder_rev;
-    print STDERR Dumper \%seen_days_after_plantings;
     print STDERR Dumper \%trait_to_time_map;
 
     my @data_matrix_original;
@@ -3543,24 +3543,6 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
             }
         }
         push @data_matrix_original, \@row;
-    }
-
-    my %unique_traits_ids;
-    foreach (keys %seen_trial_ids){
-        my $trial = CXGN::Trial->new({bcs_schema=>$schema, trial_id=>$_});
-        my $traits_assayed = $trial->get_traits_assayed('plot', undef, 'time_ontology');
-        foreach (@$traits_assayed) {
-            $unique_traits_ids{$_->[0]} = $_;
-        }
-    }
-    my %trait_composing_info;
-    foreach (values %unique_traits_ids) {
-        foreach my $component (@{$_->[2]}) {
-            if (exists($seen_trait_names{$_->[1]}) && $component->{cv_type} && $component->{cv_type} eq 'time_ontology') {
-                my $time_term_string = SGN::Model::Cvterm::get_trait_from_cvterm_id($schema, $component->{cvterm_id}, 'extended');
-                push @{$trait_composing_info{$_->[1]}}, $time_term_string;
-            }
-        }
     }
 
     my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
@@ -3683,8 +3665,11 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
     my @varcomp_original;
     my @varcomp_herit;
     my @model_rds_files;
+    my $statistics_cvterm_name = '';
 
     if ($model_type eq 'sommer_2dspl_multi') {
+        $statistics_cvterm_name = 'Multivariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000003';
+
         my $statistics_cmd = $statistics_cmd_reading.$multivariate_cmd_model;
 
         eval {
@@ -3854,6 +3839,7 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
         }
     }
     elsif ($model_type eq 'sommer_2dspl_uni') {
+        $statistics_cvterm_name = 'Univariate linear mixed model 2D spline spatial BLUPs using genetic relationship matrix and row and column spatial effects computed using Sommer R|SGNSTAT:0000039';
 
         foreach my $t (@encoded_traits) {
 
@@ -4164,7 +4150,7 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
     sp <- sp + guides(shape = guide_legend(override.aes = list(size = 0.5)));
     sp <- sp + guides(color = guide_legend(override.aes = list(size = 0.5)));
     sp <- sp + theme(legend.title = element_text(size = 3), legend.text = element_text(size = 3));
-    sp <- sp + labs(title = \'Original Genetic Effects\');';
+    sp <- sp + labs(title = \'Genetic Effects\');';
     if (scalar(@sorted_germplasm_names) > 100) {
         $cmd_gen_plot .= 'sp <- sp + theme(legend.position = \'none\');';
     }
@@ -4172,6 +4158,31 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
     "';
     # print STDERR Dumper $cmd_gen_plot;
     my $status_gen_plot = system($cmd_gen_plot);
+
+    my @response_trait_ids;
+    my %postcomposing_info;
+    my $statistics_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($schema, $statistics_cvterm_name)->cvterm_id();
+    foreach my $trait_name (@sorted_trait_names) {
+        my $trait_id = $seen_trait_names{$trait_name};
+        push @response_trait_ids, $trait_id;
+
+        my @comp;
+        push @comp, {
+            category_name => 'attribute',
+            cvterm_id => $statistics_cvterm_id
+        };
+
+        my $time_cvterm_name = $trait_time_map{$trait_name};
+        if ($time_cvterm_name) {
+            my $time_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($schema, $time_cvterm_name)->cvterm_id();
+            push @comp, {
+                category_name => 'toy',
+                cvterm_id => $time_cvterm_id
+            };
+        }
+
+        $postcomposing_info{$trait_id} = \@comp;
+    }
 
     $c->stash->{rest} = {
         success => 1,
@@ -4194,7 +4205,9 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
         varcomp_herit => \@varcomp_herit,
         heatmaps_plot => $stats_out_tempfile_spatial_heatmaps_plot_string,
         gen_effects_line_plot => $genetic_effects_figure_tempfile_string,
-        model_rds_files => \@model_rds_files
+        model_rds_files => \@model_rds_files,
+        postcomposing_info => \%postcomposing_info,
+        trait_ids => \@response_trait_ids
     };
 }
 
@@ -4262,6 +4275,8 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     my $phenotype_max_original = -1000000000000000;
     my %seen_days_after_plantings;
     my %trait_to_time_map;
+    my %trait_time_map;
+    my %trait_id_map;
     foreach my $obs_unit (@$data) {
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
@@ -4329,6 +4344,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
             if ($_->{associated_image_project_time_json}) {
                 my $value = $_->{value};
                 my $trait_name = $_->{trait_name};
+                my $trait_id = $_->{trait_id};
 
                 if ($value < $phenotype_min_original) {
                     $phenotype_min_original = $value;
@@ -4347,6 +4363,8 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
                 $seen_times{$time_value} = $trait_name;
                 $seen_trait_names{$trait_name} = $time_term_string;
                 $trait_to_time_map{$trait_name} = $time_value;
+                $trait_time_map{$trait_name} = $time_days_cvterm;
+                $trait_id_map{$trait_name} = $trait_id;
             }
         }
     }
@@ -4734,6 +4752,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     my @varcomp_original;
     my @varcomp_herit;
     my @model_rds_files;
+    my $statistics_cvterm_name = '';
 
     my @rr_coeff_genetic_covariance_original;
     my @rr_coeff_env_covariance_original;
@@ -4741,6 +4760,8 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     my @rr_coeff_env_correlation_original;
     my $rr_residual_variance_original;
     if ($model_type eq 'airemlf90_legendre_rr') {
+        $statistics_cvterm_name = 'Multivariate linear mixed model permanent environment BLUPs using genetic relationship matrix and temporal Legendre polynomial random regression on days after planting computed using AIREMLf90|SGNSTAT:0000019';
+
         my $pheno_var_pos = $legendre_order_number+1;
 
         my $statistics_cmd = 'R -e "
@@ -5034,7 +5055,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
                     $coeff_counter++;
                 }
 
-                $result_blup_data_original{$accession_name}->{$time_term} = [$value, $timestamp, $user_name, '', ''];
+                $result_blup_data_original{$accession_name}->{$seen_times{$time_term}} = [$value, $timestamp, $user_name, '', ''];
 
                 if ($value < $genetic_effect_min_original) {
                     $genetic_effect_min_original = $value;
@@ -5060,7 +5081,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
                     $coeff_counter++;
                 }
 
-                $result_blup_spatial_data_original{$plot_name}->{$time_term} = [$value, $timestamp, $user_name, '', ''];
+                $result_blup_spatial_data_original{$plot_name}->{$seen_times{$time_term}} = [$value, $timestamp, $user_name, '', ''];
 
                 if ($value < $env_effect_min_original) {
                     $env_effect_min_original = $value;
@@ -5075,6 +5096,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
         }
     }
     elsif ($model_type eq 'sommer_legendre_rr') {
+        $statistics_cvterm_name = "Multivariate linear mixed model permanent environment BLUPs using genetic relationship matrix and temporal Legendre polynomial random regression on days after planting computed using Sommer R|SGNSTAT:0000005";
 
         # my @phenotype_header = ("id", "plot_id", "replicate", "time", "replicate_time", "ind_replicate", @legs_header, "phenotype");
 
@@ -5148,7 +5170,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
                         $coeff_counter++;
                     }
 
-                    $result_blup_data_original{$accession_name}->{$time_term} = [$value, $timestamp, $user_name, '', ''];
+                    $result_blup_data_original{$accession_name}->{$seen_times{$time_term}} = [$value, $timestamp, $user_name, '', ''];
 
                     if ($value < $genetic_effect_min_original) {
                         $genetic_effect_min_original = $value;
@@ -5198,7 +5220,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
                         $coeff_counter++;
                     }
 
-                    $result_blup_spatial_data_original{$plot_name}->{$time_term} = [$value, $timestamp, $user_name, '', ''];
+                    $result_blup_spatial_data_original{$plot_name}->{$seen_times{$time_term}} = [$value, $timestamp, $user_name, '', ''];
 
                     if ($value < $env_effect_min_original) {
                         $env_effect_min_original = $value;
@@ -5310,9 +5332,10 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     open(my $F_eff, ">", $stats_out_tempfile_spatial_heatmaps) || die "Can't open file ".$stats_out_tempfile_spatial_heatmaps;
         print $F_eff "trait_type,row,col,value\n";
         foreach my $p (@unique_plot_names) {
-            foreach my $t (@sorted_trait_names) {
+            foreach my $time (@sorted_trait_names) {
+                my $t = $seen_times{$time};
                 my $val = defined($result_blup_spatial_data_original{$p}->{$t}->[0]) ? $result_blup_spatial_data_original{$p}->{$t}->[0] : 'NA';
-                my @row = ($trait_name_encoder{$t}." PE Effect", $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $val);
+                my @row = ($trait_name_encoder{$time}." PE Effect", $stock_name_row_col{$p}->{row_number}, $stock_name_row_col{$p}->{col_number}, $val);
                 my $line = join ',', @row;
                 print $F_eff "$line\n";
             }
@@ -5365,7 +5388,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     gg2 <- ggplot(mat_eff, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) + geom_tile() + scale_fill_viridis(discrete=FALSE) + coord_equal() + facet_wrap(~trait_type, ncol='.scalar(@sorted_trait_names).');
     gg3 <- ggplot(mat_fit, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) + geom_tile() + scale_fill_viridis(discrete=FALSE) + coord_equal() + facet_wrap(~trait_type, ncol='.scalar(@sorted_trait_names).');
     gg4 <- ggplot(mat_res, aes('.$output_plot_col.', '.$output_plot_row.', fill=value)) + geom_tile() + scale_fill_viridis(discrete=FALSE) + coord_equal() + facet_wrap(~trait_type, ncol='.scalar(@sorted_trait_names).');
-    gg <- grid.arrange(gg1, gg2, gg3, gg4, ncol=1, top=textGrob(\'Phenotypes, Spatial Effects, Fitted and Residual Values\'), bottom=textGrob(\'Time\') );
+    gg <- grid.arrange(gg1, gg2, gg3, gg4, ncol=1, top=textGrob(\'Phenotypes, Permanent Environment (PE) Effects, Fitted and Residual Values\'), bottom=textGrob(\'Time\') );
     ggsave(\''.$stats_out_tempfile_spatial_heatmaps_plot.'\', gg, device=\'png\', width=20, height=30, units=\'in\');
     "';
     # print STDERR Dumper $cmd_spatialfirst_plot_1;
@@ -5378,7 +5401,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
         print $F_gen "germplasmName,time,value\n";
         foreach my $p (@sorted_germplasm_names) {
             foreach my $t (@sorted_trait_names) {
-                my $val = $result_blup_data_original{$p}->{$t}->[0];
+                my $val = $result_blup_data_original{$p}->{$seen_times{$t}}->[0];
                 my @row = ($p, $t, $val);
                 my $line = join ',', @row;
                 print $F_gen "$line\n";
@@ -5410,7 +5433,7 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     sp <- sp + guides(shape = guide_legend(override.aes = list(size = 0.5)));
     sp <- sp + guides(color = guide_legend(override.aes = list(size = 0.5)));
     sp <- sp + theme(legend.title = element_text(size = 3), legend.text = element_text(size = 3));
-    sp <- sp + labs(title = \'Original Genetic Effects\');';
+    sp <- sp + labs(title = \'Genetic Effects\');';
     if (scalar(@sorted_germplasm_names) > 100) {
         $cmd_gen_plot .= 'sp <- sp + theme(legend.position = \'none\');';
     }
@@ -5418,6 +5441,32 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
     "';
     # print STDERR Dumper $cmd_gen_plot;
     my $status_gen_plot = system($cmd_gen_plot);
+
+    my @response_trait_ids;
+    my %postcomposing_info;
+    my $statistics_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($schema, $statistics_cvterm_name)->cvterm_id();
+    foreach my $time (@sorted_trait_names) {
+        my $trait_name = $seen_times{$time};
+        my $trait_id = $trait_id_map{$trait_name};
+        push @response_trait_ids, $trait_id;
+
+        my @comp;
+        push @comp, {
+            category_name => 'attribute',
+            cvterm_id => $statistics_cvterm_id
+        };
+
+        my $time_cvterm_name = $trait_time_map{$trait_name};
+        if ($time_cvterm_name) {
+            my $time_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($schema, $time_cvterm_name)->cvterm_id();
+            push @comp, {
+                category_name => 'toy',
+                cvterm_id => $time_cvterm_id
+            };
+        }
+
+        $postcomposing_info{$trait_id} = \@comp;
+    }
 
     $c->stash->{rest} = {
         success => 1,
@@ -5440,7 +5489,9 @@ sub trial_random_regression_correct_traits : Chained('trial') PathPart('random_r
         varcomp_herit => \@varcomp_herit,
         heatmaps_plot => $stats_out_tempfile_spatial_heatmaps_plot_string,
         gen_effects_line_plot => $genetic_effects_figure_tempfile_string,
-        model_rds_files => \@model_rds_files
+        model_rds_files => \@model_rds_files,
+        postcomposing_info => \%postcomposing_info,
+        trait_ids => \@response_trait_ids
     };
 }
 
@@ -6144,6 +6195,129 @@ sub trial_calculate_numerical_derivative : Chained('trial') PathPart('calculate_
         stock_list=>\@sorted_plot_names,
         trait_list=>\@composed_trait_names,
         values_hash=>\%derivative_results,
+        has_timestamps=>0,
+        overwrite_values=>1,
+        ignore_new_values=>0,
+        metadata_hash=>\%phenotype_metadata,
+    );
+    my ($verified_warning, $verified_error) = $store_phenotypes->verify();
+    my ($stored_phenotype_error, $stored_Phenotype_success) = $store_phenotypes->store();
+
+    my $bs = CXGN::BreederSearch->new( { dbh=>$c->dbc->dbh, dbname=>$c->config->{dbname}, } );
+    my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
+
+    $c->stash->{rest} = {success => 1};
+}
+
+sub trial_upload_phenotypes : Chained('trial') PathPart('upload_phenotypes') Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
+
+    my $schema = $c->stash->{schema};
+    my $metadata_schema = $c->stash->{metadata_schema};
+    my $phenome_schema = $c->stash->{phenome_schema};
+    my $trait_ids = decode_json $c->req->param('trait_ids');
+    my $postcomposing_info = $c->req->param('postcomposing_info') ? decode_json $c->req->param('postcomposing_info') : []; # { 453 => [ {category_name=>'toy', cvterm_id=>123}, {category_name=>'attribute', cvterm_id=>431} ] }
+    my $data = decode_json $c->req->param('pheno_data');
+    # print STDERR Dumper $c->req->params();
+
+    my @allowed_composed_cvs = split ',', $c->config->{composable_cvs};
+    my $composable_cvterm_delimiter = $c->config->{composable_cvterm_delimiter};
+    my $composable_cvterm_format = $c->config->{composable_cvterm_format};
+
+    my %trait_id_map;
+    my @sorted_trait_names;
+    foreach my $trait_cvterm_id (@$trait_ids) {
+        my $trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($schema, $trait_cvterm_id, 'extended');
+        $trait_id_map{$trait_name} = $trait_cvterm_id;
+        push @sorted_trait_names, $trait_name;
+    }
+    my @trait_ids = values %trait_id_map;
+    # print STDERR Dumper \%trait_id_map;
+
+    my $categories = {
+        object => [],
+        attribute => [],
+        method => [],
+        unit => [],
+        trait => \@trait_ids,
+        tod => [],
+        toy => [],
+        gen => [],
+    };
+
+    while (my($trait_id, $cats) = each %$postcomposing_info) {
+        foreach my $o (@$cats) {
+            my $category_name = $o->{category_name};
+            my $cvterm_id = $o->{cvterm_id};
+            push @{$categories->{$category_name}}, $cvterm_id;
+        }
+    }
+
+    my %time_term_map;
+
+    my $traits = SGN::Model::Cvterm->get_traits_from_component_categories($schema, \@allowed_composed_cvs, $composable_cvterm_delimiter, $composable_cvterm_format, $categories);
+    my $existing_traits = $traits->{existing_traits};
+    my $new_traits = $traits->{new_traits};
+    # print STDERR Dumper $new_traits;
+    # print STDERR Dumper $existing_traits;
+    my %new_trait_names;
+    foreach (@$new_traits) {
+        my $components = $_->[0];
+        $new_trait_names{$_->[1]} = join ',', @$components;
+    }
+
+    my $onto = CXGN::Onto->new( { schema => $schema } );
+    my $new_terms = $onto->store_composed_term(\%new_trait_names);
+
+    my %composed_trait_map;
+    while (my($trait_name, $trait_id) = each %trait_id_map) {
+        my @components = ($trait_id);
+        foreach my $o (@{$postcomposing_info->{$trait_id}}) {
+            my $category_name = $o->{category_name};
+            my $cvterm_id = $o->{cvterm_id};
+            push @components, $cvterm_id;
+        }
+        my $composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($schema, \@components);
+        my $composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($schema, $composed_cvterm_id, 'extended');
+        $composed_trait_map{$trait_name} = $composed_trait_name;
+    }
+    my @composed_trait_names = values %composed_trait_map;
+    # print STDERR Dumper \%composed_trait_map;
+
+    my %store_data;
+    my @stock_names;
+    while (my($stock_name, $val) = each %$data) {
+        while (my($trait_name, $pheno_val) = each %$val) {
+            $store_data{$stock_name}->{$composed_trait_map{$trait_name}} = $pheno_val;
+        }
+        push @stock_names, $stock_name;
+    }
+
+    my $time = DateTime->now();
+    my $timestamp = $time->ymd()."_".$time->hms();
+
+    my %phenotype_metadata = (
+        'archived_file' => 'none',
+        'archived_file_type' => 'trial_metadata_upload_phenotypes',
+        'operator' => $user_name,
+        'date' => $timestamp
+    );
+
+    my $store_phenotypes = CXGN::Phenotypes::StorePhenotypes->new(
+        basepath=>$c->config->{basepath},
+        dbhost=>$c->config->{dbhost},
+        dbname=>$c->config->{dbname},
+        dbuser=>$c->config->{dbuser},
+        dbpass=>$c->config->{dbpass},
+        bcs_schema=>$schema,
+        metadata_schema=>$metadata_schema,
+        phenome_schema=>$phenome_schema,
+        user_id=>$user_id,
+        stock_list=>\@stock_names,
+        trait_list=>\@composed_trait_names,
+        values_hash=>\%store_data,
         has_timestamps=>0,
         overwrite_values=>1,
         ignore_new_values=>0,

@@ -1,5 +1,6 @@
 <%args>
 $trial_id => undef
+$trial_name => undef
 $is_analysis => undef
 </%args>
 
@@ -14,7 +15,7 @@ $is_analysis => undef
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="trialAnalysis2DSplWorkflowDialog">Find 2D-Spline Spatial Correction for Measurements</h4>
+                <h4 class="modal-title" id="trialAnalysis2DSplWorkflowDialog">Find 2D-Spline Spatial Correction for Measurements in <% $trial_name %></h4>
             </div>
             <div class="modal-body">
 
@@ -161,6 +162,10 @@ jQuery(document).ready(function(){
         }
     });
 
+    var trial_analysis_2dspl_workflow_response_trait_ids = [];
+    var trial_analysis_2dspl_workflow_response_postcomposing_info = {};
+    var trial_analysis_2dspl_workflow_response_spatial_data = {};
+    var trial_analysis_2dspl_workflow_response_heatmap_graphs = {};
     jQuery('#trial_analysis_2dspl_workflow_submit').click(function() {
         var selected_trait_ids = jQuery('#trial_analysis_2dspl_workflow_trait_ids').val();
         console.log(selected_trait_ids);
@@ -201,8 +206,14 @@ jQuery(document).ready(function(){
                         alert(response.error);
                     }
                     else {
-                        var html = '<img src="'+response.heatmaps_plot+'" />';
-                        html = html + '<img src="'+response.gen_effects_line_plot+'" />';
+                        trial_analysis_2dspl_workflow_response_trait_ids = response.trait_ids;
+                        trial_analysis_2dspl_workflow_response_postcomposing_info = response.postcomposing_info;
+                        trial_analysis_2dspl_workflow_response_spatial_data = response.result_blup_spatial_data_original;
+                        trial_analysis_2dspl_workflow_response_heatmap_graphs = [response.heatmaps_plot];
+
+                        var html = '<div class="well well-sm"><button class="btn btn-primary" id="trial_analysis_2dspl_workflow_results_save_button" >Save Spatial Effect Results to <% $trial_name %></button></div><div class="well well-sm"><h4>Figures drawn below:</h4><button class="btn btn-default" id="trial_analysis_2dspl_workflow_results_save_graphs_button" >Export Graph to File</button><br/><br/>';
+                        html = html + '<img src="'+response.heatmaps_plot+'" />';
+                        html = html + '<img src="'+response.gen_effects_line_plot+'" /></div>';
                         jQuery('#trial_analysis_2dspl_workflow_results_div').html(html);
 
                         Workflow.complete("#trial_analysis_2dspl_workflow_submit");
@@ -216,6 +227,42 @@ jQuery(document).ready(function(){
             });
         }
 
+    });
+
+    jQuery(document).on('click', '#trial_analysis_2dspl_workflow_results_save_graphs_button', function() {
+        for (var i=0; i<trial_analysis_2dspl_workflow_response_heatmap_graphs.length; i++) {
+            window.open(trial_analysis_2dspl_workflow_response_heatmap_graphs[i], '_blank');
+        }
+    });
+
+    jQuery(document).on('click', '#trial_analysis_2dspl_workflow_results_save_button', function() {
+        jQuery.ajax({
+            type : 'POST',
+            url : '/ajax/breeders/trial/<% $trial_id %>/upload_phenotypes',
+            data : {
+                'trait_ids': JSON.stringify(trial_analysis_2dspl_workflow_response_trait_ids),
+                'postcomposing_info': JSON.stringify(trial_analysis_2dspl_workflow_response_postcomposing_info),
+                'pheno_data': JSON.stringify(trial_analysis_2dspl_workflow_response_spatial_data),
+            },
+            beforeSend: function() {
+                jQuery("#working_modal").modal("show");
+            },
+            success: function(response) {
+                console.log(response);
+                jQuery("#working_modal").modal("hide");
+                if (response.error) {
+                    alert(response.error);
+                }
+                else {
+                    alert('Saved spatial effects! You can view them in the Phenotypes Section within the trial detail page!');
+                    location.reload();
+                }
+            },
+            error: function(response){
+                jQuery("#working_modal").modal("hide");
+                alert('Error saving spatial correction results!');
+            }
+        });
     });
 
 });
