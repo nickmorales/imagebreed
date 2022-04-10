@@ -205,15 +205,96 @@ $company_members => []
                                 <& /breeders_toolbox/trial/files_section.mas, trial_id => $trial_id, trial_phenotype_files => $trial_phenotype_files, trial_stock_type => $trial_stock_type, for_analysis_page => $for_analysis_page &>
 % } #End trial_upload_files
 % if ($info_section_id eq 'trial_analysis_tools'){
-                                <& /breeders_toolbox/trial/correlation_workflow.mas, trial_id => $trial_id &>
 
-                                <& /breeders_toolbox/trial/time_series_accessions_workflow.mas, trial_id => $trial_id, data_level=>'plot' &>
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+
+                                        <div class="well well-sm">
+                                            <h4>Save Analysis Results as Additional Phenotypes in this Field Trial.</h4>
+                                            <ul>
+                                                <li>These new phenotypes can be used as additional covariates in downstream analysis.</li>
+                                            </ul>
+                                        </div>
+
+                                        <table class="table table-bordered table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Analysis Type</th>
+                                                    <th>Option</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><p>2D-Spline Spatial Effects (Univariate or Multivariate). Spatial Effects use the row and column positions of plots to uncover interdepence in measurements, arising from soil heterogeneity and the environment.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_2dspl_workflow">Calculate Spatial Effects</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><p>Random Regression Permanent Environment (PE) Effects. PE Effects use the repeated nature of a trait, usually a high-throughput phenotype (HTP), to uncover persistent environmental effects, arising from soil heterogeneity and the environment.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_rr_workflow">Calculate PE Effects</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><p>Two-dimensional Numerical Derivatives. Numerical derivatives of a phenotype use the row and column positions of plots to estimate curvature of a measurement.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_numerical_derivative_workflow">Calculate Numerical Derivatives</button></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
 
                                 <& /breeders_toolbox/trial/2dspl_spatial_correction_workflow.mas, trial_id => $trial_id, trial_name=>$trial_name, data_level=>'plot' &>
 
                                 <& /breeders_toolbox/trial/random_regression_workflow.mas, trial_id => $trial_id, trial_name=>$trial_name, data_level=>'plot' &>
 
                                 <& /breeders_toolbox/trial/numerical_derivatives_row_and_column_workflow.mas, trial_id => $trial_id, data_level=>'plot' &>
+
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+
+                                        <div class="well well-sm">
+                                            <h4>Plotting and Standalone Analysis Tools.</h4>
+                                            <ul>
+                                                <li>View statistics and create graphical plots.</li>
+                                            </ul>
+                                        </div>
+
+                                        <table class="table table-bordered table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Analysis Type</th>
+                                                    <th>Option</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><p>Correlations Between Phenotypes.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_correlation_workflow">Calculate Correlations</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><p>Time-Series Plots for Accessions. Create line graph of phenotypes over time, generally this is only for high-throughput phenotypes (HTP) from aerial imagery.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_time_series_accessions_workflow">Create Time-Series Plots</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><p>Rank Accessions on Phenotypes. Give weights to traits to rank accessions based on average phenotype.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_accession_rank_workflow">Rank Accessions</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><p>Genotypic Marker Composition. View distribution of genotypic markers and phenotypic measurements.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_genotype_comparison_workflow">Compute Genotypic Marker Composition</button></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <& /breeders_toolbox/trial/correlation_workflow.mas, trial_id => $trial_id &>
+
+                                <& /breeders_toolbox/trial/time_series_accessions_workflow.mas, trial_id => $trial_id, data_level=>'plot' &>
+
+                                <& /breeders_toolbox/trial/accession_rank_workflow.mas, trial_id => $trial_id, data_level=>'plot' &>
+
+                                <& /breeders_toolbox/trial/genotype_comparison_workflow.mas, trial_id => $trial_id, data_level=>'plot' &>
+
 % if ($hidap_enabled) {
                                 <& /hidap/hidap_trial_link.mas, main_production_site_url=>$main_production_site_url, program => $breeding_program_name, folder => $folder_name, trial => $trial_name &>
 % }
@@ -438,13 +519,91 @@ $company_members => []
                                 <& /analyses/analysis_details.mas, trial_id=>$trial_id, trial_name=>$trial_name, trial_description=>$trial_description, breeding_program_name=>$breeding_program_name, breeding_program_id=>$breeding_program_id, year=>$year, identifier_prefix=>$identifier_prefix, trial_stock_type => $trial_stock_type, analysis_metadata=>$analysis_metadata &>
 % } #End analysis_details
 % if ($info_section_id eq 'analysis_page_analysis_tools'){
-                                <& /breeders_toolbox/trial/correlation_workflow.mas, trial_id => $trial_id, is_analysis => 1 &>
 
-                                <& /breeders_toolbox/trial/time_series_accessions_workflow.mas, trial_id => $trial_id, data_level=>'analysis_instance' &>
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+
+                                        <div class="well well-sm">
+                                            <h4>Save Analysis Results as Additional Phenotypes in this Field Trial.</h4>
+                                            <ul>
+                                                <li>These new phenotypes can be used as additional covariates in downstream analysis.</li>
+                                            </ul>
+                                        </div>
+
+                                        <table class="table table-bordered table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Analysis Type</th>
+                                                    <th>Option</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><p>2D-Spline Spatial Effects (Univariate or Multivariate). Spatial Effects use the row and column positions of plots to uncover interdepence in measurements, arising from soil heterogeneity and the environment.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_2dspl_workflow">Calculate Spatial Effects</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><p>Random Regression Permanent Environment (PE) Effects. PE Effects use the repeated nature of a trait, usually a high-throughput phenotype (HTP), to uncover persistent environmental effects, arising from soil heterogeneity and the environment.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_rr_workflow">Calculate PE Effects</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><p>Two-dimensional Numerical Derivatives. Numerical derivatives of a phenotype use the row and column positions of plots to estimate curvature of a measurement.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_numerical_derivative_workflow">Calculate Numerical Derivatives</button></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
 
                                 <& /breeders_toolbox/trial/2dspl_spatial_correction_workflow.mas, trial_id => $trial_id, trial_name=>$trial_name, data_level=>'analysis_instance' &>
 
                                 <& /breeders_toolbox/trial/random_regression_workflow.mas, trial_id => $trial_id, trial_name=>$trial_name, data_level=>'analysis_instance' &>
+
+                                <& /breeders_toolbox/trial/numerical_derivatives_row_and_column_workflow.mas, trial_id => $trial_id, data_level=>'analysis_instance' &>
+
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+
+                                        <div class="well well-sm">
+                                            <h4>Plotting and Standalone Analysis Tools.</h4>
+                                            <ul>
+                                                <li>View statistics and create graphical plots.</li>
+                                            </ul>
+                                        </div>
+
+                                        <table class="table table-bordered table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Analysis Type</th>
+                                                    <th>Option</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><p>Correlations Between Phenotypes.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_correlation_workflow">Calculate Correlations</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><p>Time-Series Plots for Accessions. Create line graph of phenotypes over time, generally this is only for high-throughput phenotypes (HTP) from aerial imagery.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_time_series_accessions_workflow">Create Time-Series Plots</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><p>Rank Accessions on Phenotypes. Give weights to traits to rank accessions based on average phenotype.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_accession_rank_workflow">Rank Accessions</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><p>Genotypic Marker Composition. View distribution of genotypic markers and phenotypic measurements.</p></td>
+                                                    <td><button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_genotype_comparison_workflow">Compute Genotypic Marker Composition</button></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <& /breeders_toolbox/trial/correlation_workflow.mas, trial_id => $trial_id, is_analysis => 1 &>
+
+                                <& /breeders_toolbox/trial/time_series_accessions_workflow.mas, trial_id => $trial_id, data_level=>'analysis_instance' &>
 
                                 <& /breeders_toolbox/trial/accession_rank_workflow.mas, trial_id => $trial_id, data_level=>'analysis_instance' &>
 

@@ -6,9 +6,9 @@ $is_analysis => undef
 
 <& /util/import_javascript.mas, classes => [ ] &>
 
-<div class="well well-sm">
-    <button class="btn btn-primary" id="trial_detail_page_analysis_rr_workflow">Perform Random Regression Temporal Correction</button>
-</div>
+<!--div class="well well-sm">
+    <button class="btn btn-primary btn-sm" id="trial_detail_page_analysis_rr_workflow">Calculate Random Regression Permanent Environment (PE) Effects</button>
+</div-->
 
 <div class="modal fade" id="trial_analysis_2dspl_rr_workflow_dialog" name="trial_analysis_2dspl_rr_workflow_dialog" tabindex="-1" role="dialog" aria-labelledby="trialAnalysisRRWorkflowDialog">
     <div class="modal-dialog modal-xl" role="document">

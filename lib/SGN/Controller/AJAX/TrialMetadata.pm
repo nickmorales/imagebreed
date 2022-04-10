@@ -31,6 +31,7 @@ use POSIX qw | !qsort !bsearch |;
 use CXGN::Phenotypes::StorePhenotypes;
 use Statistics::Descriptive::Full;
 use CXGN::TrialStatus;
+use List::Util qw | sum |;
 
 BEGIN { extends 'Catalyst::Controller::REST' }
 
