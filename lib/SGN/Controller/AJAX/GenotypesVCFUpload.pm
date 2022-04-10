@@ -54,37 +54,9 @@ sub upload_genotype_verify_POST : Args(0) {
     my @error_status;
     my @success_status;
 
-    #print STDERR Dumper $c->req->params();
-    my $session_id = $c->req->param("sgn_session_id");
-    my $user_id;
-    my $user_role;
-    my $user_name;
-    if ($session_id){
-        my $dbh = $c->dbc->dbh;
-        my @user_info = CXGN::Login->new($dbh)->query_from_cookie($session_id);
-        if (!$user_info[0]){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this VCF genotype info!'};
-            $c->detach();
-        }
-        $user_id = $user_info[0];
-        $user_role = $user_info[1];
-        my $p = CXGN::People::Person->new($dbh, $user_id);
-        $user_name = $p->get_username;
-    } else{
-        if (!$c->user){
-            $c->stash->{rest} = {error=>'You must be logged in to upload this VCF genotype info!'};
-            $c->detach();
-        }
-        $user_id = $c->user()->get_object()->get_sp_person_id();
-        $user_name = $c->user()->get_object()->get_username();
-        $user_role = $c->user->get_object->get_user_type();
-    }
+    my ($user_id, $user_name, $user_role) = _check_user_login_genotypes_vcf_upload($c, 'submitter', 0, 0);
 
-    if ($user_role ne 'submitter' && $user_role ne 'curator') {
-        $c->stash->{rest} = { error => 'Must have correct permissions to upload VCF genotypes! Please contact us.' };
-        $c->detach();
-    }
-
+    print STDERR Dumper $c->req->params();
     my $project_id = $c->req->param('upload_genotype_project_id') || undef;
     my $protocol_id = $c->req->param('upload_genotype_protocol_id') || undef;
     my $organism_species = $c->req->param('upload_genotypes_species_name_input');
@@ -126,13 +98,14 @@ sub upload_genotype_verify_POST : Args(0) {
     my $upload_grm_data = $c->req->upload('upload_genotype_grm_file_input');
 
     my $is_from_grm = $c->req->param('upload_genotype_data_is_from_grm') eq '1' ? 1 : 0;
-    my $is_from_grm_trial_id = $c->req->param('upload_genotype_data_is_from_grm_trial_id');
+    my $is_from_grm_trial_ids = $c->req->param('upload_genotype_is_from_grm_field_trial_ids_json') ? decode_json $c->req->param('upload_genotype_is_from_grm_field_trial_ids_json') : [];
+    my $is_from_grm_accession_list_id = $c->req->param('upload_genotype_is_from_grm_accession_list_select_div_list_select');
     my $is_from_grm_protocol_name = $c->req->param('upload_genotype_is_from_grm_protocol_name');
     my $is_from_grm_protocol_desc = $c->req->param('upload_genotype_is_from_grm_protocol_desc');
     my $is_from_grm_location_id = $c->req->param('upload_genotype_is_from_grm_location_select');
     my $is_from_grm_compute_from_parents = $c->req->param('upload_genotype_data_is_from_grm_compute_from_parents') && $c->req->param('upload_genotype_data_is_from_grm_compute_from_parents') eq 'yes' ? 1 : 0;
 
-    if ($is_from_grm && !$is_from_grm_trial_id) {
+    if ($is_from_grm && !$is_from_grm_trial_ids && scalar(@$is_from_grm_trial_ids)==0) {
         $c->stash->{rest} = { error => 'If computing GRM please give a field trial id!' };
         $c->detach();
     }
@@ -778,12 +751,25 @@ sub upload_genotype_verify_POST : Args(0) {
         my ($grm_tempfile_fh, $grm_tempfile) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
         my ($grm_out_tempfile_fh, $grm_out_tempfile) = tempfile("drone_stats_download_grm_XXXXX", DIR=> $tmp_grm_dir);
 
+        my $is_from_grm_accession_ids = [];
+        my $is_from_grm_accession_names = [];
+        if ($is_from_grm_accession_list_id) {
+            my $list = CXGN::List->new({
+                dbh => $schema->storage->dbh,
+                list_id => $is_from_grm_accession_list_id
+            });
+            $is_from_grm_accession_names = $list->elements();
+            my $tf = CXGN::List::Transform->new();
+            $is_from_grm_accession_ids = $tf->transform($schema, 'stocks_2_stock_ids', $is_from_grm_accession_names)->{transform};
+        }
+
         my $geno = CXGN::Genotype::GRM->new({
             bcs_schema=>$schema,
             grm_temp_file=>$grm_tempfile,
             people_schema=>$people_schema,
             cache_root=>$c->config->{cache_file_path},
-            trial_id_list=>[$is_from_grm_trial_id],
+            trial_id_list=>$is_from_grm_trial_ids,
+            accession_id_list=>$is_from_grm_accession_ids,
             protocol_id=>$protocol_id,
             get_grm_for_parental_accessions=>$is_from_grm_compute_from_parents,
             download_format=>'three_column_reciprocal_uniquenames',
@@ -800,7 +786,9 @@ sub upload_genotype_verify_POST : Args(0) {
             $c->config->{'web_cluster_queue'},
             $c->config->{basepath}
         );
-        my $observation_unit_names_all = $geno->accession_name_list();
+        if (scalar(@$is_from_grm_accession_names) == 0) {
+            $is_from_grm_accession_names = $geno->accession_name_list();
+        }
 
         open(my $F2, ">", $grm_out_tempfile) || die "Can't open file ".$grm_out_tempfile;
             print $F2 $grm_data;
@@ -836,7 +824,7 @@ sub upload_genotype_verify_POST : Args(0) {
             metadata_schema=>$metadata_schema,
             phenome_schema=>$phenome_schema,
             observation_unit_type_name=>$obs_type,
-            is_from_grm_trial_id=>$is_from_grm_trial_id,
+            is_from_grm_trial_ids=>$is_from_grm_trial_ids,
             project_id=>$project_id,
             #protocol_id=>$protocol_id,
             genotyping_facility=>$genotyping_facility, #projectprop
@@ -855,7 +843,7 @@ sub upload_genotype_verify_POST : Args(0) {
             archived_file_type=>'genotype_vcf', #can be 'genotype_vcf' or 'genotype_dosage' to disntiguish genotyprop between old dosage only format and more info vcf format
             temp_file_sql_copy=>$temp_file_sql_copy,
             genotyping_data_type=>'GRM',
-            observation_unit_uniquenames=>$observation_unit_names_all,
+            observation_unit_uniquenames=>$is_from_grm_accession_names,
             protocol_info=>{
                 reference_genome_name => $reference_genome_name,
                 species_name => $organism_species,
@@ -904,6 +892,22 @@ sub upload_genotype_verify_POST : Args(0) {
     $async_refresh->run_async("perl $basepath/bin/refresh_materialized_markerview.pl -H $dbhost -D $dbname -U $dbuser -P $dbpass");
 
     $c->stash->{rest} = $return;
+}
+
+sub _check_user_login_genotypes_vcf_upload {
+    my $c = shift;
+    my $check_priv = shift;
+    my $original_private_company_id = shift;
+    my $user_access = shift;
+
+    my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
+    if ($login_check_return->{error}) {
+        $c->stash->{rest} = $login_check_return;
+        $c->detach();
+    }
+    my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
+
+    return ($user_id, $user_name, $user_role);
 }
 
 1;

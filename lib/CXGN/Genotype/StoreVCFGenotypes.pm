@@ -351,8 +351,8 @@ has 'project_location_id' => (
     required => 1,
 );
 
-has 'is_from_grm_trial_id' => (
-    isa => 'Int|Undef',
+has 'is_from_grm_trial_ids' => (
+    isa => 'ArrayRef[Int]|Undef',
     is => 'rw',
 );
 
@@ -840,7 +840,7 @@ sub store_metadata {
     my $observation_unit_uniquenames = $self->observation_unit_uniquenames;
     my $observation_unit_uniquenames_map = $self->observation_unit_uniquenames_map;
     my $genotyping_data_type = $self->genotyping_data_type;
-    my $is_from_grm_trial_id = $self->is_from_grm_trial_id;
+    my $is_from_grm_trial_ids = $self->is_from_grm_trial_ids;
 
     $dbh->do('SET search_path TO public,sgn');
 
@@ -956,14 +956,18 @@ sub store_metadata {
         my $h = $schema->storage->dbh()->prepare($q);
         $h->execute($map_protocol_description, $protocol_id);
 
-        if ($is_from_grm_trial_id) {
+        if ($is_from_grm_trial_ids && scalar(@$is_from_grm_trial_ids)>0) {
             my $grm_geno_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'grm_genotyping_protocol_experiment', 'experiment_type')->cvterm_id();
 
+            my @grm_nd_projects;
+            foreach my $is_from_grm_trial_id (@$is_from_grm_trial_ids) {
+                push @grm_nd_projects, {project_id => $is_from_grm_trial_id};
+            }
             my $experiment = $schema->resultset('NaturalDiversity::NdExperiment')->create({
                 nd_geolocation_id => $location_id,
                 type_id => $grm_geno_cvterm_id,
                 nd_experiment_protocols => [{nd_protocol_id => $protocol_id}],
-                nd_experiment_projects => [{project_id => $is_from_grm_trial_id}]
+                nd_experiment_projects => \@grm_nd_projects
             });
             my $nd_experiment_id = $experiment->nd_experiment_id();
         }

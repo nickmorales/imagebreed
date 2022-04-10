@@ -432,6 +432,7 @@ jQuery(document).ready(function ($) {
 
     function submit_genotype_data_upload() {
         jQuery('#working_modal').modal('show');
+        jQuery('#working_msg').html('<p>This can take a long time potentially, and process is running even if connection is lost, so please be patient.</p>');
         jQuery('#upload_genotypes_form').attr("action", "/ajax/genotype/upload");
         jQuery("#upload_genotypes_form").submit();
     }

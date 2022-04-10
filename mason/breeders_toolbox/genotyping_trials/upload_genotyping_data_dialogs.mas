@@ -4,7 +4,7 @@ $genotyping_data_type => undef
 $is_from_grm => undef
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.BreedersToolbox.GenotypingTrial03282022' ] &>
+<& /util/import_javascript.mas, classes => [ 'CXGN.BreedersToolbox.GenotypingTrial04102022' ] &>
 
 <div class="modal fade" id="upload_genotypes_dialog" name="upload_genotypes_dialog" tabindex="-1" role="dialog" aria-labelledby="uploadGenotypesDialog">
     <div class="modal-dialog modal-xl" role="document">
@@ -366,8 +366,8 @@ $is_from_grm => undef
 
 %  } else {
 
+                                <input class="form-control" id="upload_genotype_is_from_grm_field_trial_ids_json" name="upload_genotype_is_from_grm_field_trial_ids_json" type="hidden" value="<% $is_from_grm %>" />
                                 <input class="form-control" id="upload_genotype_data_is_from_grm" name="upload_genotype_data_is_from_grm" type="hidden" value="<% $is_from_grm %>" />
-                                <input class="form-control" id="upload_genotype_data_is_from_grm_trial_id" name="upload_genotype_data_is_from_grm_trial_id" type="hidden" value="<% $trial_id %>" />
                                 <input class="form-control" id="upload_genotype_data_is_from_grm_observation_type" name="upload_genotype_data_is_from_grm_observation_type" type="hidden" value="accession" />
 
                                 <div class="form-group">
@@ -406,10 +406,29 @@ $is_from_grm => undef
                                     </div>
                                 </div>
 
+                                <div class="well well-sm">
+                                    <center>
+                                        <h4>Accessions to Include in GRM</h4>
+                                    </center>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">Accessions in Field Trial(s): </label>
+                                        <div class="col-sm-7">
+                                            <span id="upload_genotype_is_from_grm_field_trial_select_div"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label">Accession List: </label>
+                                        <div class="col-sm-7">
+                                            <span id="upload_genotype_is_from_grm_accession_list_select_div"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
 %  }
 
                                 <center>
-                                <button class="btn btn-primary" onclick="Workflow.complete(this); return false;">Go to Next Step</button>
+                                <button class="btn btn-primary" id="upload_genotype_data_info_button" >Go to Next Step</button>
                                 </center>
                             </&>
                             <&| /util/workflow.mas:step, title=> "Confirm" &>
@@ -970,6 +989,13 @@ jQuery(document).ready(function(){
         }
     });
 
+%  if ($is_from_grm) {
+    var list = new CXGN.List();
+    jQuery("#upload_genotype_is_from_grm_accession_list_select_div").html(list.listSelect("upload_genotype_is_from_grm_accession_list_select_div", ["accessions"], 'Optionally select a list of accessions', undefined, undefined));
+
+    get_select_box('trials', 'upload_genotype_is_from_grm_field_trial_select_div', { 'name' : 'upload_genotype_is_from_grm_field_trial_ids', 'id' : 'upload_genotype_is_from_grm_field_trial_ids', 'empty':1, 'multiple':1 });
+%  }
+
     jQuery('#genotype_data_type_select').change(function() {
         data_type = jQuery('#genotype_data_type_select').val();
 
@@ -1139,6 +1165,37 @@ jQuery(document).ready(function(){
             }
         }
         return false;
+    });
+
+    jQuery('#upload_genotype_data_info_button').click(function(){
+
+%  if ($is_from_grm) {
+        var selected_field_trial_ids = jQuery('#upload_genotype_is_from_grm_field_trial_ids').val();
+        if (selected_field_trial_ids == null) {
+            alert('Please select field trial(s) to link the GRM to.');
+            return false;
+        }
+        if (selected_field_trial_ids.length < 1) {
+            alert('Please select field trial(s) to link the GRM to.');
+            return false;
+        }
+        jQuery('#upload_genotype_is_from_grm_field_trial_ids_json').val(JSON.stringify(selected_field_trial_ids));
+
+        if (jQuery('#upload_genotype_is_from_grm_protocol_name').val() == '') {
+            alert('Please give a GRM protocol name first!');
+            return false;
+        }
+        else if (jQuery('#upload_genotype_is_from_grm_protocol_desc').val() == '') {
+            alert('Please give a GRM protocol description first!');
+            return false;
+        }
+        else {
+            Workflow.complete('#upload_genotype_data_info_button');
+            Workflow.focus('#upload_genotypes_workflow', 5);
+            return false;
+        }
+%  }
+
     });
 
     jQuery('#upload_genotype_vcf_spreadsheet_info_format').click(function(){
