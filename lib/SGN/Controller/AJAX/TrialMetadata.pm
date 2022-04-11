@@ -3522,6 +3522,7 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
     print STDERR Dumper \%trait_name_encoder;
     print STDERR Dumper \%trait_name_encoder_rev;
     print STDERR Dumper \%trait_to_time_map;
+    print STDERR Dumper \%trait_time_map;
 
     my @data_matrix_original;
     foreach my $p (@unique_plot_names) {
