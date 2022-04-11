@@ -6291,7 +6291,14 @@ sub trial_upload_phenotypes : Chained('trial') PathPart('upload_phenotypes') Arg
     my @stock_names;
     while (my($stock_name, $val) = each %$data) {
         while (my($trait_name, $pheno_val) = each %$val) {
-            $store_data{$stock_name}->{$composed_trait_map{$trait_name}} = $pheno_val;
+            my $comp_trait_name = $composed_trait_map{$trait_name};
+            if ($comp_trait_name) {
+                $store_data{$stock_name}->{$comp_trait_name} = $pheno_val;
+            }
+            else {
+                print STDERR Dumper \%composed_trait_map;
+                die "ERROR: $trait_name not in composed trait map\n";
+            }
         }
         push @stock_names, $stock_name;
     }
