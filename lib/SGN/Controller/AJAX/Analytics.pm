@@ -4630,6 +4630,18 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
     }
 
+    my $trait_name_encoded_input_htp = 1;
+    my %trait_name_encoder_input_htp;
+    my %trait_name_encoder_rev_input_htp;
+    foreach my $trait_name (@sorted_trait_names_htp) {
+        if (!exists($trait_name_encoder_input_htp{$trait_name})) {
+            my $trait_name_e = 'it'.$trait_name_encoded_input_htp;
+            $trait_name_encoder_input_htp{$trait_name} = $trait_name_e;
+            $trait_name_encoder_rev_input_htp{$trait_name_e} = $trait_name;
+            $trait_name_encoded_input_htp++;
+        }
+    }
+
     # Prepare phenotype file for Trait Spatial Correction
     my $stats_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $stats_tempfile_q1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
@@ -7730,6 +7742,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $reps_test_acc_f3_cont;
         my $reps_test_acc_grm_prm;
         my @reps_acc_cross_val_havg;
+        my @reps_acc_cross_val_traits;
+        my @reps_acc_cross_val_havg_and_traits;
 
         foreach my $t (@sorted_trait_names) {
             push @germplasm_data_header, ($t."mean", $t."sd", $t."spatialcorrected2Dsplgenoeffect");
@@ -8370,6 +8384,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     push @fixed_factor_header, $time_enc;
                     push @fixed_effect_header_traits, $time_enc;
                 }
+                foreach my $trait_htp (@sorted_trait_names_htp) {
+                    my $trait_enc = $trait_name_encoder_input_htp{$trait_htp};
+                    push @fixed_factor_header, $trait_enc;
+                }
                 my $fixed_factor_header_string = join ',', @fixed_factor_header;
                 print $F29 "$fixed_factor_header_string\n";
                 print $F29_q1 "$fixed_factor_header_string\n";
@@ -8394,9 +8412,14 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
                     my @fixed_effect_row = ($p,$fixed_effect_cont,$fixed_effect_all,$fixed_effect_1,$fixed_effect_2,$fixed_effect_3_1,$fixed_effect_3_2,$fixed_effect_3_3,$fixed_effect_max,$fixed_effect_min,$fixed_effect_3_cont_1,$fixed_effect_3_cont_2,$fixed_effect_3_cont_3);
                     foreach my $time (@sorted_seen_times_p) {
-                        my $time_val = $plot_result_time_blups{$p}->{$time} || 0;
+                        my $time_val = $plot_result_time_blups{$p}->{$time} || 'NA';
                         push @fixed_effect_row, $time_val;
                     }
+                    foreach my $trait (@sorted_trait_names_htp) {
+                        my $trait_val = $plot_phenotypes_htp{$p}->{$trait} || 'NA';
+                        push @fixed_effect_row, $trait_val;
+                    }
+
                     my $fixed_effect_row_string = join ',', @fixed_effect_row;
                     print $F29 "$fixed_effect_row_string\n";
 
@@ -9853,6 +9876,91 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     push @reps_acc_cross_val_havg, \@columns;
                 }
             close($F_avg_rep_acc_f_cross_val);
+
+            foreach my $trait_name (@sorted_trait_names_htp) {
+                my $enc_trait = $trait_name_encoder_input_htp{$trait_name};
+                my $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd = 'R -e "library(caret); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+                mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+                mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
+                mat\$'.$enc_trait.' <- mat_fixed\$'.$enc_trait.';
+                res <- data.frame();
+                train.control <- trainControl(method = \'repeatedcv\', number = 5, repeats = 10);
+                mix <- train('.$trait_name_encoded_string.' ~ replicate + id + '.$enc_trait.', data = mat, method = \'lm\', trControl = train.control);
+                res <- rbind(res, mix\$results); ';
+                my @grm_no_prm_fixed_effects_havg_cross_val_reps_tests;
+                foreach my $r (sort keys %seen_reps_hash) {
+                    push @grm_no_prm_fixed_effects_havg_cross_val_reps_tests, $r;
+                    my $grm_no_prm_fixed_effects_havg_cross_val_reps_test = join '\',\'', @grm_no_prm_fixed_effects_havg_cross_val_reps_tests;
+
+                    $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd .= '
+                    mat_f <- mat[!mat\$replicate %in% c(\''.$grm_no_prm_fixed_effects_havg_cross_val_reps_test.'\'), ];
+                    if (nrow(mat_f)>0) {
+                    mix <- train('.$trait_name_encoded_string.' ~ replicate + id + '.$enc_trait.', data = mat_f, method = \'lm\', trControl = train.control);
+                    res <- rbind(res, mix\$results);
+                    } ';
+                }
+                $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd .= '
+                write.table(res, file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                "';
+                print STDERR Dumper $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd;
+                my $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd_status = system($grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd);
+
+                open(my $F_avg_rep_acc_f_cross_val, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_avg_rep_acc_f_cross_val>;
+                    while (my $row = <$F_avg_rep_acc_f_cross_val>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @columns, $trait_name;
+                        push @reps_acc_cross_val_traits, \@columns;
+                    }
+                close($F_avg_rep_acc_f_cross_val);
+            }
+
+            foreach my $trait_name (@sorted_trait_names_htp) {
+                my $enc_trait = $trait_name_encoder_input_htp{$trait_name};
+                my $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd = 'R -e "library(caret); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+                mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+                mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
+                mat\$fixed_effect_all_cont <- mat_fixed\$fixed_effect_all_cont;
+                mat\$'.$enc_trait.' <- mat_fixed\$'.$enc_trait.';
+                res <- data.frame();
+                train.control <- trainControl(method = \'repeatedcv\', number = 5, repeats = 10);
+                mix <- train('.$trait_name_encoded_string.' ~ replicate + id + '.$enc_trait.' + fixed_effect_all_cont, data = mat, method = \'lm\', trControl = train.control);
+                res <- rbind(res, mix\$results); ';
+                my @grm_no_prm_fixed_effects_havg_cross_val_reps_tests;
+                foreach my $r (sort keys %seen_reps_hash) {
+                    push @grm_no_prm_fixed_effects_havg_cross_val_reps_tests, $r;
+                    my $grm_no_prm_fixed_effects_havg_cross_val_reps_test = join '\',\'', @grm_no_prm_fixed_effects_havg_cross_val_reps_tests;
+
+                    $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd .= '
+                    mat_f <- mat[!mat\$replicate %in% c(\''.$grm_no_prm_fixed_effects_havg_cross_val_reps_test.'\'), ];
+                    if (nrow(mat_f)>0) {
+                    mix <- train('.$trait_name_encoded_string.' ~ replicate + id + '.$enc_trait.' + fixed_effect_all_cont, data = mat_f, method = \'lm\', trControl = train.control);
+                    res <- rbind(res, mix\$results);
+                    } ';
+                }
+                $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd .= '
+                write.table(res, file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+                "';
+                print STDERR Dumper $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd;
+                my $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd_status = system($grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd);
+
+                open(my $F_avg_rep_acc_f_cross_val, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                    print STDERR "Opened $stats_out_tempfile_gcor\n";
+                    $header_fits = <$F_avg_rep_acc_f_cross_val>;
+                    while (my $row = <$F_avg_rep_acc_f_cross_val>) {
+                        my @columns;
+                        if ($csv->parse($row)) {
+                            @columns = $csv->fields();
+                        }
+                        push @columns, $trait_name;
+                        push @reps_acc_cross_val_havg_and_traits, \@columns;
+                    }
+                close($F_avg_rep_acc_f_cross_val);
+            }
 
             my $grm_no_prm_fixed_effects_havg_reps_test_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -13066,7 +13174,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             reps_test_acc_havg => $reps_test_acc_havg,
             reps_test_acc_f3_cont => $reps_test_acc_f3_cont,
             reps_test_acc_grm_prm => $reps_test_acc_grm_prm,
-            reps_acc_cross_val_havg => \@reps_acc_cross_val_havg
+            reps_acc_cross_val_havg => \@reps_acc_cross_val_havg,
+            reps_acc_cross_val_traits => \@reps_acc_cross_val_traits,
+            reps_acc_cross_val_havg_and_traits => \@reps_acc_cross_val_havg_and_traits
         }
     }
 
