@@ -197,7 +197,7 @@ jQuery(document).ready(function() {
                                     var val_frac = value/range;
                                     var color = percentageToColor(val_frac, max_hue, min_hue);
 
-                                    html = html + '<td style="background-color:'+color+'">'+value+'</td>';
+                                    html = html + '<td style="background-color:'+color+'" title="'+a_uniquename+' : '+b_uniquename+'" >'+value+'</td>';
                                 }
                             }
 
