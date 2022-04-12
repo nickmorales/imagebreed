@@ -9821,7 +9821,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
             mat\$fixed_effect_all_cont <- mat_fixed\$fixed_effect_all_cont;
             res <- data.frame();
-            train.control <- trainControl(method = \'cv\', number = 5);
+            train.control <- trainControl(method = \'repeatedcv\', number = 5, repeats = 10);
             mix <- train('.$trait_name_encoded_string.' ~ replicate + id + fixed_effect_all_cont, data = mat, method = \'lm\', trControl = train.control);
             res <- rbind(res, mix\$results); ';
             my @grm_no_prm_fixed_effects_havg_cross_val_reps_tests;
