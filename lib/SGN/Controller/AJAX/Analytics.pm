@@ -7729,6 +7729,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $reps_test_acc_havg;
         my $reps_test_acc_f3_cont;
         my $reps_test_acc_grm_prm;
+        my @reps_acc_cross_val_havg;
 
         foreach my $t (@sorted_trait_names) {
             push @germplasm_data_header, ($t."mean", $t."sd", $t."spatialcorrected2Dsplgenoeffect");
@@ -9814,6 +9815,42 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     $reps_acc_havg = \@columns;
                 }
             close($F_avg_rep_acc_f);
+
+            my $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd = 'R -e "library(caret); library(data.table); library(reshape2); library(ggplot2); library(GGally);
+            mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
+            mat_fixed <- data.frame(fread(\''.$analytics_protocol_data_tempfile29.'\', header=TRUE, sep=\',\'));
+            mat\$fixed_effect_all_cont <- mat_fixed\$fixed_effect_all_cont;
+            train.control <- trainControl(method = \'cv\', number = 5);
+            res <- data.frame(); ';
+            my @grm_no_prm_fixed_effects_havg_cross_val_reps_tests;
+            foreach my $r (sort keys %seen_reps_hash) {
+                push @grm_no_prm_fixed_effects_havg_cross_val_reps_tests, 'mat\$replicate != \''.$r.'\'';
+                my $grm_no_prm_fixed_effects_havg_cross_val_reps_test = join ' && ', @grm_no_prm_fixed_effects_havg_cross_val_reps_tests;
+
+                $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd .= '
+                mat_f <- mat['.$grm_no_prm_fixed_effects_havg_cross_val_reps_test.', ];
+                if (nrow(mat_f)>0) {
+                mix <- train('.$trait_name_encoded_string.' ~ replicate + id + fixed_effect_all_cont, data = mat_f, method = \'lm\', trControl = train.control);
+                res <- rbind(res, mix\$results);
+                } ';
+            }
+            $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd .= '
+            write.table(res, file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+            "';
+            print STDERR Dumper $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd;
+            my $grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd_status = system($grm_no_prm_fixed_effects_havg_cross_val_reps_gcorr_cmd);
+
+            open(my $F_avg_rep_acc_f_cross_val, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+                print STDERR "Opened $stats_out_tempfile_gcor\n";
+                $header_fits = <$F_avg_rep_acc_f_cross_val>;
+                while (my $row = <$F_avg_rep_acc_f_cross_val>) {
+                    my @columns;
+                    if ($csv->parse($row)) {
+                        @columns = $csv->fields();
+                    }
+                    push @reps_acc_cross_val_havg, \@columns;
+                }
+            close($F_avg_rep_acc_f_cross_val);
 
             my $grm_no_prm_fixed_effects_havg_reps_test_gcorr_cmd = 'R -e "library(sommer); library(data.table); library(reshape2); library(ggplot2); library(GGally);
             mat <- data.frame(fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\'));
@@ -13003,6 +13040,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             reps_test_acc_havg => $reps_test_acc_havg,
             reps_test_acc_f3_cont => $reps_test_acc_f3_cont,
             reps_test_acc_grm_prm => $reps_test_acc_grm_prm,
+            reps_acc_cross_val_havg => \@reps_acc_cross_val_havg
         }
     }
 

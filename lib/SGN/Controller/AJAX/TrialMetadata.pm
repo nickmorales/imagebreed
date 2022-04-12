@@ -6297,8 +6297,8 @@ sub trial_upload_phenotypes : Chained('trial') PathPart('upload_phenotypes') Arg
                 $store_data{$stock_name}->{$comp_trait_name} = $pheno_val;
             }
             else {
-                print STDERR Dumper \%composed_trait_map;
-                die "ERROR: $trait_name not in composed trait map\n";
+                # print STDERR Dumper \%composed_trait_map;
+                # die "ERROR: $trait_name not in composed trait map\n";
             }
         }
         push @stock_names, $stock_name;
