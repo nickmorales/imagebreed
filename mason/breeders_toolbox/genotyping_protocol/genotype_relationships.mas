@@ -3,6 +3,36 @@ $protocol_id
 </%args>
 
 <div class="well well-sm">
+    <div class="row">
+        <div class="col-sm-9">
+
+            <div class="form-horizontal">
+                <div class="form-group form-group-sm">
+                    <label class="col-sm-3 control-label">Download Format: </label>
+                    <div class="col-sm-9" >
+                        <select class="form-control" id="genotyping_protocol_grm_relationships_download_format">
+                            <option value="matrix_uniquenames">Matrix Stock Names (.tsv)</option>
+                            <option value="three_column_uniquenames">3-Column Stock Names (.tsv)</option>
+                            <option value="three_column_reciprocal_uniquenames">3-Column Reciprocal Stock Names (.tsv)</option>
+                            <option value="heatmap">Heatmap (.pdf)</option>
+                            <option value="matrix">Matrix Stock IDs (.tsv)</option>
+                            <option value="three_column">3-Column Stock IDs(.tsv)</option>
+                            <option value="three_column_stock_id_integer">3-Column Stock IDs Integer (.tsv)</option>
+                            <option value="three_column_reciprocal">3-Column Reciprocal Stock IDs (.tsv)</option>
+                            <option value="three_column_reciprocal_stock_id_integer">3-Column Reciprocal Stock IDs Integer (.tsv)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-sm-3">
+            <button class="btn btn-primary" id="genotyping_protocol_grm_relationships_download_button">Download</button>
+        </div>
+    </div>
+</div>
+
+<div class="well well-sm">
     <div class="form-horizontal">
         <div class="form-group form-group-sm">
             <label class="col-sm-3 control-label">Minimum Hue (0-360): </label>
@@ -28,6 +58,12 @@ jQuery(document).ready(function() {
 
     jQuery(document).on('click', '#genotyping_protocol_grm_relationships_onswitch', function(){
         render_genotype_relationships();
+    });
+
+    jQuery('#genotyping_protocol_grm_relationships_download_button').click(function(){
+        var format = jQuery('#genotyping_protocol_grm_relationships_download_format').val();
+        var url = document.location.origin+'/breeders/download_grm_action/?protocol_id=<% $protocol_id %>&format=accession_ids&download_format='+format;
+        window.open(url,'_blank');
     });
 
     jQuery('#genotyping_protocol_grm_relationships_min_color').change(function(){
