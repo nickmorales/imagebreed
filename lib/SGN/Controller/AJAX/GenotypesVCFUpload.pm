@@ -445,7 +445,7 @@ sub upload_genotype_verify_POST : Args(0) {
             $store_args->{genotype_info} = $genotype_info;
 
             $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new($store_args);
-            my $verified_errors = $store_genotypes->validate();
+            my $verified_errors = $store_genotypes->validate($accept_warnings);
             # print STDERR Dumper $verified_errors;
             if (scalar(@{$verified_errors->{error_messages}}) > 0){
                 my $error_string = join ', ', @{$verified_errors->{error_messages}};
@@ -539,7 +539,7 @@ sub upload_genotype_verify_POST : Args(0) {
         $store_args->{observation_unit_uniquenames} = $observation_unit_uniquenames;
 
         my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new($store_args);
-        my $verified_errors = $store_genotypes->validate();
+        my $verified_errors = $store_genotypes->validate($accept_warnings);
         if (scalar(@{$verified_errors->{error_messages}}) > 0){
             my $error_string = join ', ', @{$verified_errors->{error_messages}};
             $c->stash->{rest} = { error => "There exist errors in your file. $error_string", missing_stocks => $verified_errors->{missing_stocks} };
@@ -616,7 +616,7 @@ sub upload_genotype_verify_POST : Args(0) {
         $store_args->{genotyping_data_type} = 'ssr';
 
         my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new($store_args);
-        my $verified_errors = $store_genotypes->validate();
+        my $verified_errors = $store_genotypes->validate($accept_warnings);
         if (scalar(@{$verified_errors->{error_messages}}) > 0){
             my $error_string = join ', ', @{$verified_errors->{error_messages}};
             $c->stash->{rest} = { error => "There exist errors in your file. $error_string", missing_stocks => $verified_errors->{missing_stocks} };
@@ -718,7 +718,7 @@ sub upload_genotype_verify_POST : Args(0) {
         };
 
         my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new($store_args);
-        my $verified_errors = $store_genotypes->validate();
+        my $verified_errors = $store_genotypes->validate($accept_warnings);
         # print STDERR Dumper $verified_errors;
         if (scalar(@{$verified_errors->{error_messages}}) > 0){
             my $error_string = join ', ', @{$verified_errors->{error_messages}};
@@ -854,7 +854,7 @@ sub upload_genotype_verify_POST : Args(0) {
         };
 
         my $store_genotypes = CXGN::Genotype::StoreVCFGenotypes->new($store_args);
-        my $verified_errors = $store_genotypes->validate();
+        my $verified_errors = $store_genotypes->validate($accept_warnings);
         # print STDERR Dumper $verified_errors;
         if (scalar(@{$verified_errors->{error_messages}}) > 0){
             my $error_string = join ', ', @{$verified_errors->{error_messages}};

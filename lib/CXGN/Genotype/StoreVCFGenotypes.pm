@@ -545,6 +545,8 @@ sub BUILD {
 
 sub validate {
     my $self = shift;
+    my $accept_warnings = shift;
+
     my $schema = $self->bcs_schema;
     my $dbh = $schema->storage->dbh;
     my $organism_id = $self->organism_id;
@@ -779,33 +781,37 @@ sub validate {
             $previous_genotypes_search_params->{'me.type_id'} = $stock_type_id;
         }
 
-        my $previous_genotypes_rs = $schema->resultset("Stock::Stock")->search($previous_genotypes_search_params, {
-            join => {'nd_experiment_stocks' => {'nd_experiment' => [ {'nd_experiment_genotypes' => 'genotype'}, {'nd_experiment_protocols' => 'nd_protocol'}, {'nd_experiment_projects' => 'project'} ] } },
-            '+select' => ['nd_protocol.nd_protocol_id', 'nd_protocol.name', 'project.project_id', 'project.name'],
-            '+as' => ['protocol_id', 'protocol_name', 'project_id', 'project_name'],
-            order_by => 'genotype.genotype_id'
-        });
-        while(my $r = $previous_genotypes_rs->next){
-            # print STDERR "PREVIOUS GENOTYPES ".join (",", ($r->get_column('uniquename'), $r->get_column('protocol_name'), $r->get_column('project_name')))."\n";
-            my $uniquename = $r->uniquename;
-            my $protocol_name = $r->get_column('protocol_name');
-            my $project_name = $r->get_column('project_name');
-            push @warning_messages, "$uniquename in your file already has genotype stored using the protocol $protocol_name in the project $project_name.";
-            $previous_genotypes_exist = 1;
+        if (!$accept_warnings) {
+            my $previous_genotypes_rs = $schema->resultset("Stock::Stock")->search($previous_genotypes_search_params, {
+                join => {'nd_experiment_stocks' => {'nd_experiment' => [ {'nd_experiment_genotypes' => 'genotype'}, {'nd_experiment_protocols' => 'nd_protocol'}, {'nd_experiment_projects' => 'project'} ] } },
+                '+select' => ['nd_protocol.nd_protocol_id', 'nd_protocol.name', 'project.project_id', 'project.name'],
+                '+as' => ['protocol_id', 'protocol_name', 'project_id', 'project_name'],
+                order_by => 'genotype.genotype_id'
+            });
+            while(my $r = $previous_genotypes_rs->next){
+                # print STDERR "PREVIOUS GENOTYPES ".join (",", ($r->get_column('uniquename'), $r->get_column('protocol_name'), $r->get_column('project_name')))."\n";
+                my $uniquename = $r->uniquename;
+                my $protocol_name = $r->get_column('protocol_name');
+                my $project_name = $r->get_column('project_name');
+                push @warning_messages, "$uniquename in your file already has genotype stored using the protocol $protocol_name in the project $project_name.";
+                $previous_genotypes_exist = 1;
+            }
         }
     }
     else {
-        my $q = "SELECT stock_relatedness_id, nd_protocol.nd_protocol_id, nd_protocol.name, stock_relatedness.value
-            FROM stock_relatedness
-            JOIN nd_protocol ON(stock_relatedness.nd_protocol_id=nd_protocol.nd_protocol_id)
-            WHERE a_stock_id = ? AND b_stock_id = ? AND stock_relatedness.type_id = ?;";
-        my $h = $schema->storage->dbh()->prepare($q);
-        while(my($a_stock_name, $o) = each %$genotype_info) {
-            while(my($b_stock_name, $value) = each %$o) {
-                $h->execute($all_names{$observation_unit_name_stripped_map{$a_stock_name}->{name}}, $all_names{$observation_unit_name_stripped_map{$b_stock_name}->{name}}, $grm_genotyping_cvterm_id);
-                while (my ($stock_relatedness_id, $nd_protocol_id, $protocol_name, $stored_value) = $h->fetchrow_array()) {
-                    push @warning_messages, "$a_stock_name and $b_stock_name in your file already have relationship of $stored_value stored using the protocol $protocol_name.";
-                    $previous_genotypes_exist = 1;
+        if (!$accept_warnings) {
+            my $q = "SELECT stock_relatedness_id, nd_protocol.nd_protocol_id, nd_protocol.name, stock_relatedness.value
+                FROM stock_relatedness
+                JOIN nd_protocol ON(stock_relatedness.nd_protocol_id=nd_protocol.nd_protocol_id)
+                WHERE a_stock_id = ? AND b_stock_id = ? AND stock_relatedness.type_id = ?;";
+            my $h = $schema->storage->dbh()->prepare($q);
+            while(my($a_stock_name, $o) = each %$genotype_info) {
+                while(my($b_stock_name, $value) = each %$o) {
+                    $h->execute($all_names{$observation_unit_name_stripped_map{$a_stock_name}->{name}}, $all_names{$observation_unit_name_stripped_map{$b_stock_name}->{name}}, $grm_genotyping_cvterm_id);
+                    while (my ($stock_relatedness_id, $nd_protocol_id, $protocol_name, $stored_value) = $h->fetchrow_array()) {
+                        push @warning_messages, "$a_stock_name and $b_stock_name in your file already have relationship of $stored_value stored using the protocol $protocol_name.";
+                        $previous_genotypes_exist = 1;
+                    }
                 }
             }
         }
