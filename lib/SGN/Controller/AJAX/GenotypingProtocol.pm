@@ -45,8 +45,12 @@ sub genotyping_protocol_grm_genotype_relationships_GET : Args(1) {
    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_protocol($c, 'user', $private_company_id, 'user_access');
 
    my $grm = $protocol->grm_stock_relatedness();
+   my $a_stock_id_map = $grm->{a_stock_id_map};
 
-   $c->stash->{rest} = {grm => $grm};
+   $c->stash->{rest} = {
+       grm => $grm,
+       num_stocks => scalar(keys %$a_stock_id_map)
+   };
 }
 
 sub genotyping_protocol_grm_protocols_table : Path('/ajax/genotyping_protocol/grm_protocols_table') : ActionClass('REST') { }
