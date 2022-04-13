@@ -87,7 +87,7 @@ jQuery(document).ready(function() {
                     alert(response.error);
                 }
                 else if (response.num_stocks > 1000) {
-                    alert('The GRM is too large to display because it has more than 1000 accessions involved. Please download a file instead to view the relationships!');
+                    alert('The GRM is too large to display because it has more than 1000 accessions ('+response.num_stocks+') involved. Please download a file instead to view the relationships!');
                     return false;
                 }
                 else {
