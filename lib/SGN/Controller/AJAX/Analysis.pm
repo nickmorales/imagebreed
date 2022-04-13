@@ -386,6 +386,7 @@ sub store_analysis_spreadsheet_POST {
         while( my ($field_trial_id) = $h->fetchrow_array()) {
             $unique_field_trials{$field_trial_id}++;
         }
+        $h = undef;
         foreach my $field_trial_id (keys %unique_field_trials) {
             my $field_trial_design_full = CXGN::Trial->new({bcs_schema => $schema, trial_id=>$field_trial_id})->get_layout()->get_design();
             while (my($plot_number, $plot_obj) = each %$field_trial_design_full) {
@@ -698,10 +699,12 @@ sub analysis_model_delete :Path('/ajax/analysis_model/delete') Args(0) {
     my $q1 = "DELETE FROM nd_experiment WHERE nd_experiment_id=?;";
     my $h1 = $schema->storage->dbh()->prepare($q1);
     $h1->execute($nd_experiment_id);
+    $h1 = undef;
 
     my $q2 = "DELETE FROM nd_protocol WHERE nd_protocol_id=?;";
     my $h2 = $schema->storage->dbh()->prepare($q2);
     $h2->execute($model_id);
+    $h2 = undef;
 
     $c->stash->{rest} = { success => 1 };
 }

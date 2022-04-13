@@ -515,6 +515,7 @@ sub search {
         };
 
     }
+    $h = undef;
 
     print STDERR "Search End:".localtime."\n";
     return \@result;

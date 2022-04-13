@@ -163,6 +163,7 @@ sub get_arm {
             push @plot_female_stock_ids_found, $female_parent_stock_id;
             push @plot_male_stock_ids_found, $male_parent_stock_id;
         }
+        $h = undef;
 
         @all_individual_accessions_stock_ids = @plot_accession_stock_ids_found;
         @individuals_stock_ids = @plot_stock_ids_found;
@@ -208,6 +209,7 @@ sub get_arm {
             push @female_stock_ids_found, $female_parent_stock_id;
             push @male_stock_ids_found, $male_parent_stock_id;
         }
+        $h = undef;
 
         # print STDERR Dumper \@accession_stock_ids_found;
         # print STDERR Dumper \@female_stock_ids_found;

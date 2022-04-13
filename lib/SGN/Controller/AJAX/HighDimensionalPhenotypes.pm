@@ -468,6 +468,7 @@ sub high_dimensional_phenotypes_nirs_upload_store_POST : Args(0) {
         my $desc_q = "UPDATE nd_protocol SET description=? WHERE nd_protocol_id=?;";
         my $dbh = $schema->storage->dbh()->prepare($desc_q);
         $dbh->execute($protocol_desc, $protocol_id);
+        $dbh = undef;
     }
 
     my %parsed_data_agg_coalesced;
@@ -862,6 +863,7 @@ sub high_dimensional_phenotypes_transcriptomics_upload_store_POST : Args(0) {
         my $desc_q = "UPDATE nd_protocol SET description=? WHERE nd_protocol_id=?;";
         my $dbh = $schema->storage->dbh()->prepare($desc_q);
         $dbh->execute($protocol_desc, $protocol_id);
+        $dbh = undef;
     }
 
     my %parsed_data_agg_coalesced;
@@ -1295,6 +1297,7 @@ sub high_dimensional_phenotypes_metabolomics_upload_store_POST : Args(0) {
         my $desc_q = "UPDATE nd_protocol SET description=? WHERE nd_protocol_id=?;";
         my $dbh = $schema->storage->dbh()->prepare($desc_q);
         $dbh->execute($protocol_desc, $protocol_id);
+        $dbh = undef;
     }
 
     my %parsed_data_agg;

@@ -141,6 +141,8 @@ sub BUILD {
         my $h = $self->bcs_schema->storage->dbh()->prepare($q);
         $h->execute($self->nd_geolocation_id());
         my ($private_company_id, $private_company_name, $is_private) = $h->fetchrow_array();
+        $h = undef;
+
         $self->private_company_id($private_company_id);
         $self->private_company_name($private_company_name);
         $self->private_company_location_is_private($is_private);
@@ -314,6 +316,7 @@ sub delete_location {
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($self->nd_geolocation_id());
     my ($phenotype_experiment_count) = $h->fetchrow_array();
+    $h = undef;
 
     if ($phenotype_experiment_count) {
         my $error = "Location $name cannot be deleted because there are $phenotype_experiment_count measurements associated with it from at least one trial.\n";
@@ -374,6 +377,7 @@ sub _update_private_company {
     print STDERR Dumper [$private_company_id, $private_company_location_is_private, $nd_geolocation_id];
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($private_company_id, $private_company_location_is_private, $nd_geolocation_id);
+    $h = undef;
 }
 
 sub _store_breeding_programs {

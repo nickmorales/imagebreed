@@ -138,6 +138,7 @@ sub get_genotype_qc_info {
         $protocolprop_hash{$protocol_id}++;
         $total_count = $full_count;
     }
+    $h = undef;
     print STDERR "CXGN::Genotype::Search has genotypeprop_ids $total_count\n";
 
     my @found_genotypeprop_ids = keys %genotypeprop_hash;
@@ -158,6 +159,7 @@ sub get_genotype_qc_info {
                 }
             }
         }
+        $genotypeprop_h = undef;
     }
     print STDERR "CXGN::Genotype::Search has genotypeprops\n";
 
@@ -184,6 +186,8 @@ sub get_genotype_qc_info {
                 $selected_protocol_marker_info{$protocol_id}->{$marker_name}->{$protocolprop_marker_hash_select->[$s]} = $protocolprop_info_return[$s];
             }
         }
+        $protocolprop_h = undef;
+
         my $protocolprop_top_key_select_sql = scalar(@protocolprop_top_key_select_arr) > 0 ? ', '.join ',', @protocolprop_top_key_select_arr : '';
         my $protocolprop_top_key_q = "SELECT nd_protocol_id $protocolprop_top_key_select_sql from nd_protocolprop WHERE $protocolprop_where_sql;";
 
@@ -201,6 +205,7 @@ sub get_genotype_qc_info {
                 $selected_protocol_top_key_info{$protocol_id}->{$protocolprop_i} = $val;
             }
         }
+        $protocolprop_top_key_h = undef;
     }
     print STDERR "CXGN::Genotype::Search has protocolprops\n";
 

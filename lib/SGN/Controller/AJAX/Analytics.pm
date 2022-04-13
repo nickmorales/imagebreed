@@ -65,6 +65,7 @@ sub list_analytics_protocols_by_user_table :Path('/ajax/analytics_protocols/by_u
             $create_date
         ];
     }
+    $h = undef;
 
     #print STDERR Dumper(\@table);
     $c->stash->{rest} = { data => \@table };
@@ -111,6 +112,7 @@ sub list_analytics_protocols_result_files :Path('/ajax/analytics_protocols/resul
         # $result{$model_id}->{model_file_ids}->{$file_id} = $basename;
         push @table, [$basename, $filetype, "<a href='/breeders/phenotyping/download/$file_id'>Download</a>"];
     }
+    $h = undef;
 
     $c->stash->{rest} = { data => \@table };
 }
@@ -243,6 +245,7 @@ sub analytics_protocols_merge_results :Path('/ajax/analytics_protocols_merge_res
             $result_props_json_array_counter++;
         }
     }
+    $h = undef;
 
     my @analytics_protocol_charts;
     if (scalar(@env_corr_results_array) > 1) {
@@ -312,6 +315,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     my $h0 = $schema->storage->dbh()->prepare($q0);
     $h0->execute($protocol_id);
     my ($nd_protocol_id, $name, $type_id, $description, $create_date, $props_json, $result_props_json) = $h0->fetchrow_array();
+    $h0 = undef;
 
     if (!$name) {
         $c->stash->{rest} = { error => "There is no protocol with that ID!"};
@@ -1106,6 +1110,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     }
                 }
             }
+            $h_time = undef;
 
             my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
             my %filtered_seen_times_htp_rel;
@@ -2960,6 +2965,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
                     }
                 }
             }
+            $h_time = undef;
 
             my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
             my %filtered_seen_times_htp_rel;
@@ -3526,6 +3532,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     my $h0 = $schema->storage->dbh()->prepare($q0);
     $h0->execute($protocol_id);
     my ($nd_protocol_id, $name, $type_id, $description, $create_date, $props_json, $result_props_json) = $h0->fetchrow_array();
+    $h0 = undef;
 
     if (!$name) {
         $c->stash->{rest} = { error => "There is no protocol with that ID!"};
@@ -4417,6 +4424,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                     }
                 }
             }
+            $h_time = undef;
 
             my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
             my %filtered_seen_times_htp_rel;
@@ -5878,6 +5886,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
                         }
                     }
                 }
+                $h_time = undef;
 
                 my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
                 my %filtered_seen_times_htp_rel;
@@ -7232,6 +7241,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     #             }
     #         }
     #     }
+    #     $h_time = undef;
     #
     #     #my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
     #     my @allowed_standard_htp_values = ('Mean Pixel Value');
@@ -13179,6 +13189,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             reps_acc_cross_val_havg_and_traits => \@reps_acc_cross_val_havg_and_traits
         }
     }
+    $h = undef;
 
     my @analytics_protocol_charts;
     my @germplasm_results;

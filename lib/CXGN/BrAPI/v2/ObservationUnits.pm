@@ -325,6 +325,7 @@ sub _get_plants_plot_parent {
     while (my ($plant_id, $plot_id, $plot_number) = $h->fetchrow_array()) {
         $plant_hash{$plant_id} = { id => $plot_id, plot_number => $plot_number };
     }
+    $h = undef;
 
     return %plant_hash;
 }

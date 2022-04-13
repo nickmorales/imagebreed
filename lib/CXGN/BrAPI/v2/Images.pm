@@ -402,6 +402,7 @@ sub image_metadata_store {
                 return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Cannot find nd_experiment_phenotype_bridge associated with observation with id of %s, does not exist', $_));
             }
         }
+        $nd_experiment_phenotype_bridge_h = undef;
 
         push @image_ids, $image_id;
     }

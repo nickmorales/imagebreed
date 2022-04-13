@@ -93,6 +93,8 @@ sub get_model {
             $result{model_file_ids}->{$file_id} = $basename;
         }
     }
+    $model_h = undef;
+
     return \%result;
 }
 
@@ -284,6 +286,8 @@ sub get_models_by_user {
         $result{$model_id}->{model_files}->{$filetype} = $filename."/".$basename;
         $result{$model_id}->{model_file_ids}->{$file_id} = $basename;
     }
+    $model_h = undef;
+
     return \%result;
 }
 
@@ -310,6 +314,8 @@ sub get_analyses_by_model {
             description => $description
         };
     }
+    $model_h = undef;
+
     return \@results;
 }
 

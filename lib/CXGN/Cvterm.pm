@@ -160,6 +160,8 @@ sub get_image_ids {
     while (my ($image_id) = $h->fetchrow_array()){
         push @ids, [$image_id, 'cvterm'];
     }
+    $h = undef;
+
     return @ids;
 }
 

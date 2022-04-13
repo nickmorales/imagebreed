@@ -337,6 +337,8 @@ sub upload_genotype_verify_POST : Args(0) {
     while (my ($organism_id) = $h->fetchrow_array()){
         push @found_organisms, $organism_id;
     }
+    $h = undef;
+
     if (scalar(@found_organisms) == 0){
         $c->stash->{rest} = { error => 'The organism species you provided is not in the database! Please contact us.' };
         $c->detach();

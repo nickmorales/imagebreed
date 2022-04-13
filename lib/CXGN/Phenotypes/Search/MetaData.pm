@@ -9,7 +9,7 @@ CXGN::Phenotypes::Search::MetaData - an object to handle searching meta-data acr
 my $metadata_search = CXGN::Phenotypes::SearchFactory->instantiate(
     'MetaData',
     {
-        bcs_schema=>$self->bcs_schema, 
+        bcs_schema=>$self->bcs_schema,
         data_level=>$self->data_level,
         trial_list=>$self->trial_list,
     }
@@ -117,7 +117,7 @@ sub search {
     my  $q = $select_clause . $from_clause . $where_clause . $group_by . $order_clause;
 
     print STDERR "QUERY: $q\n\n";
-    
+
     my $location_rs = $schema->resultset('NaturalDiversity::NdGeolocation')->search();
     my %location_id_lookup;
     while( my $r = $location_rs->next()){
@@ -130,7 +130,7 @@ sub search {
 
     my $calendar_funcs = CXGN::Calendar->new({});
 
-    while (my ($project_id, $project_name, $project_description, $breeding_program_id, $breeding_program_name, $breeding_program_description, $year, $design, $location_id, $planting_date, $harvest_date, $plot_width, $plot_length, $plants_per_plot, $field_size, $field_trial_is_planned_to_be_genotyped, $field_trial_is_planned_to_cross, $folder_id, $folder_name, $folder_description, $treatments) = $h->fetchrow_array()) {        
+    while (my ($project_id, $project_name, $project_description, $breeding_program_id, $breeding_program_name, $breeding_program_description, $year, $design, $location_id, $planting_date, $harvest_date, $plot_width, $plot_length, $plants_per_plot, $field_size, $field_trial_is_planned_to_be_genotyped, $field_trial_is_planned_to_cross, $folder_id, $folder_name, $folder_description, $treatments) = $h->fetchrow_array()) {
 
         my $trial = CXGN::Trial->new( { bcs_schema => $schema, trial_id => $project_id });
         my $trial_type_data = $trial->get_project_type();
@@ -158,6 +158,8 @@ sub search {
         push @result, [ $project_id, $project_name, $project_description, $trial_type, $breeding_program_id, $breeding_program_name, $breeding_program_description, $year, $design, $location_id, $location_name, $planting_date_value, $harvest_date_value, $plot_width, $plot_length, $plants_per_plot, $number_of_blocks, $number_of_replicates, $field_size, $field_trial_is_planned_to_be_genotyped, $field_trial_is_planned_to_cross, $folder_id, $folder_name, $folder_description, $treatments ];
 
     }
+    $h = undef;
+    
     print STDERR "Search End:".localtime."\n";
     return \@result;
 }

@@ -556,6 +556,7 @@ sub get_genotype_info {
         $protocolprop_hash{$protocol_id}++;
         $total_count = $full_count;
     }
+    $h = undef;
     print STDERR "CXGN::Genotype::Search has genotype_ids $total_count\n";
 
     my @found_protocolprop_ids = keys %protocolprop_hash;
@@ -609,6 +610,8 @@ sub get_genotype_info {
             }
             $filtered_markers{$marker_name}++;
         }
+        $protocolprop_h = undef;
+
         my $protocolprop_top_key_select_sql = scalar(@protocolprop_top_key_select_arr) > 0 ? ', '.join ',', @protocolprop_top_key_select_arr : '';
         my $protocolprop_top_key_q = "SELECT nd_protocol_id $protocolprop_top_key_select_sql from nd_protocolprop WHERE $protocolprop_where_sql;";
         my $protocolprop_top_key_h = $schema->storage->dbh()->prepare($protocolprop_top_key_q);
@@ -625,6 +628,8 @@ sub get_genotype_info {
                 $selected_protocol_top_key_info{$protocol_id}->{$protocolprop_i} = $val;
             }
         }
+        $protocolprop_top_key_h = undef;
+
         if (exists($protocolprop_top_key_select_hash{'markers'})) {
             my $protocolprop_top_key_q = "SELECT nd_protocol_id, value from nd_protocolprop WHERE $protocolprop_where_markers_sql;";
             my $protocolprop_top_key_h = $schema->storage->dbh()->prepare($protocolprop_top_key_q);
@@ -632,6 +637,7 @@ sub get_genotype_info {
             while (my ($protocol_id, $markers_value) = $protocolprop_top_key_h->fetchrow_array()) {
                 $selected_protocol_top_key_info{$protocol_id}->{'markers'} = decode_json $markers_value;
             }
+            $protocolprop_top_key_h = undef;
         }
         if (exists($protocolprop_top_key_select_hash{'markers_array'})) {
             my $protocolprop_top_key_q = "SELECT nd_protocol_id, value from nd_protocolprop WHERE $protocolprop_where_markers_array_sql;";
@@ -640,6 +646,7 @@ sub get_genotype_info {
             while (my ($protocol_id, $markers_value) = $protocolprop_top_key_h->fetchrow_array()) {
                 $selected_protocol_top_key_info{$protocol_id}->{'markers_array'} = decode_json $markers_value;
             }
+            $protocolprop_top_key_h = undef;
         }
     }
 
@@ -676,6 +683,8 @@ sub get_genotype_info {
                 }
             }
         }
+        $h2 = undef;
+        $genotypeprop_h = undef;
     }
 
     foreach (@genotype_id_array) {
@@ -1477,6 +1486,7 @@ sub get_cached_file_dosage_matrix_compute_from_parents {
             push @female_stock_ids_found, $female_parent_stock_id;
             push @male_stock_ids_found, $male_parent_stock_id;
         }
+        $h = undef;
 
         # print STDERR Dumper \@accession_stock_ids_found;
         # print STDERR Dumper \@female_stock_ids_found;
@@ -1936,6 +1946,7 @@ sub get_cached_file_VCF_compute_from_parents {
             push @female_stock_ids_found, $female_parent_stock_id;
             push @male_stock_ids_found, $male_parent_stock_id;
         }
+        $h = undef;
 
         # print STDERR Dumper \@accession_stock_ids_found;
         # print STDERR Dumper \@female_stock_ids_found;
@@ -2334,6 +2345,8 @@ sub check_which_have_genotypes {
         };
         $seen_protocol_ids{$protocol_id}++;
     }
+    $h = undef;
+
     return (\@genotypeprop_infos, \%seen_protocol_ids);
 }
 
@@ -2370,6 +2383,7 @@ sub get_pcr_genotype_info {
     my $h1 = $schema->storage->dbh()->prepare($q1);
     $h1->execute($protocol_id, $pcr_protocolprop_cvterm_id);
     my $marker_names = $h1->fetchrow_array();
+    $h1 = undef;
 
     my $q = "SELECT stock.stock_id, stock.uniquename, stockprop.value, cvterm.name, genotype.genotype_id, genotype.description, genotypeprop.value
         FROM nd_protocol
@@ -2390,6 +2404,7 @@ sub get_pcr_genotype_info {
     while (my ($stock_id, $stock_name, $ploidy_level, $stock_type, $genotype_id, $genotype_description, $genotype_data, $protocol_id) = $h->fetchrow_array()){
         push @pcr_genotype_data, [$stock_id, $stock_name, $stock_type, $ploidy_level, $genotype_description, $genotype_id, $genotype_data]
     }
+    $h = undef;
 
     my %protocol_genotype_data = (
         marker_names => $marker_names,

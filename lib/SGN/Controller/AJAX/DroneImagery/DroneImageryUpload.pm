@@ -163,6 +163,8 @@ sub upload_drone_imagery_POST : Args(0) {
         my $h = $schema->storage->dbh()->prepare($q);
         $h->execute();
         my ($odm_running_count) = $h->fetchrow_array();
+        $h = undef;
+
         if ($odm_running_count >= $c->config->{opendronemap_max_processes}) {
             $c->stash->{rest} = { error => "There are already the maximum number of OpenDroneMap processes running on this machine! Please check back later when those processes are complete." };
             $c->detach();
@@ -206,6 +208,7 @@ sub upload_drone_imagery_POST : Args(0) {
                 $seen_field_trial_drone_run_dates{$epoch_seconds}++;
             }
         }
+        $drone_run_date_h = undef;
         my $drone_run_date_obj = Time::Piece->strptime($new_drone_run_date, "%Y/%m/%d %H:%M:%S");
         if (exists($seen_field_trial_drone_run_dates{$drone_run_date_obj->epoch})) {
             $c->stash->{rest} = { error => "An imaging event has already occured on this field trial at the same date and time! Please give a unique date/time for each imaging event!" };
@@ -252,6 +255,7 @@ sub upload_drone_imagery_POST : Args(0) {
         my $day_term_string = "day $time_diff_days";
         $h->execute($day_term_string, 'cxgn_time_ontology');
         my ($day_cvterm_id) = $h->fetchrow_array();
+        $h = undef;
 
         if (!$day_cvterm_id) {
             my $new_day_term = $schema->resultset("Cv::Cvterm")->create_with({
@@ -1415,6 +1419,7 @@ sub upload_drone_imagery_new_vehicle_POST : Args(0) {
     my $q_priv = "UPDATE stock SET private_company_id=?, is_private=? WHERE stock_id=?;";
     my $h_priv = $schema->storage->dbh()->prepare($q_priv);
     $h_priv->execute($private_company_id, $company_is_private, $new_vehicle_id);
+    $h_priv = undef;
 
     $c->stash->{rest} = {
         success => 1,

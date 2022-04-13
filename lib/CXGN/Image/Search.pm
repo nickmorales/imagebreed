@@ -524,6 +524,8 @@ sub search {
         };
         $total_count = $full_count;
     }
+    $h = undef;
+
     #print STDERR Dumper \@result;
     return (\@result, $total_count);
 }

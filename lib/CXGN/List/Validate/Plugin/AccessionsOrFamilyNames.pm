@@ -30,6 +30,7 @@ sub validate {
             }
         }
     }
+    $h = undef;
 
     #print STDERR Dumper \%all_names;
     my @missing;

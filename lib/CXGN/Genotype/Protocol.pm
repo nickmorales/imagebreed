@@ -168,6 +168,8 @@ sub BUILD {
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($protocol_vcf_details_cvterm_id, $pcr_marker_protocolprop_cvterm_id, $geno_cvterm_id, $pcr_marker_protocol_cvterm_id, $self->nd_protocol_id);
     my ($nd_protocol_id, $nd_protocol_name, $value, $create_date, $description, $private_company_id, $is_private) = $h->fetchrow_array();
+    $h = undef;
+
     my $map_details = $value ? decode_json $value : {};
     # print STDERR Dumper $map_details;
     $self->private_company_id($private_company_id);
@@ -258,6 +260,7 @@ sub _retrieve_nd_protocolprop_markers {
     while (my ($nd_protocol_id, $marker_name, $value) = $h->fetchrow_array()) {
         $markers{$marker_name} = decode_json $value;
     }
+    $h = undef;
 
     $self->markers(\%markers);
 }
@@ -274,6 +277,7 @@ sub _retrieve_nd_protocolprop_markers_array {
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($self->nd_protocol_id);
     my ($nd_protocol_id, $value) = $h->fetchrow_array();
+    $h = undef;
 
     my $markers_array = $value ? decode_json $value : [];
     $self->markers_array($markers_array);
@@ -307,6 +311,7 @@ sub _retrieve_stock_relatedness_grm {
             $maximum_value = $value;
         }
     }
+    $h = undef;
 
     $self->grm_stock_relatedness({
         a_stock_id_map => \%all_a_stock_ids,
@@ -429,6 +434,7 @@ sub list {
             is_grm_protocol => $is_grm
         };
     }
+    $h = undef;
     # print STDERR "PROTOCOL LIST =".Dumper(\@results);
     return \@results;
 }
@@ -504,6 +510,8 @@ sub list_simple {
             };
         }
     }
+    $h = undef;
+
     #print STDERR "SIMPLE LIST =".Dumper \@results."\n";
     return \@results;
 }
@@ -535,6 +543,7 @@ sub delete_protocol {
         push @{$genotype_ids_and_nd_experiment_ids_to_delete{genotype_ids}}, $genotype_id;
         push @{$genotype_ids_and_nd_experiment_ids_to_delete{nd_experiment_ids}}, $nd_experiment_id;
     }
+    $h = undef;
 
     my $q_grm = "SELECT stock_relatedness_id, nd_experiment_id
         FROM stock_relatedness
@@ -546,6 +555,7 @@ sub delete_protocol {
         push @{$genotype_ids_and_nd_experiment_ids_to_delete{stock_relatedness_ids}}, $stock_relatedness_id;
         push @{$genotype_ids_and_nd_experiment_ids_to_delete{nd_experiment_ids}}, $nd_experiment_id;
     }
+    $h_grm = undef;
 
     # Cascade will delete from genotypeprop
     if ($genotype_ids_and_nd_experiment_ids_to_delete{genotype_ids}) {
@@ -553,18 +563,21 @@ sub delete_protocol {
         my $del_geno_q = "DELETE from genotype WHERE genotype_id IN ($genotype_id_sql);";
         my $h_del_geno = $bcs_schema->storage->dbh()->prepare($del_geno_q);
         $h_del_geno->execute();
+        $h_del_geno = undef;
     }
 
     # Cascade will delete from nd_protocolprop
     my $del_geno_prot_q = "DELETE from nd_protocol WHERE nd_protocol_id=?;";
     my $h_del_geno_prot = $bcs_schema->storage->dbh()->prepare($del_geno_prot_q);
     $h_del_geno_prot->execute($protocol_id);
+    $h_del_geno_prot = undef;
 
     # Delete nd_experiment_md_files entries linking genotypes to archived genotyping upload file e.g. original VCF
     my $nd_experiment_id_sql = join (",", @{$genotype_ids_and_nd_experiment_ids_to_delete{nd_experiment_ids}});
     my $q_nd_exp_files_delete = "DELETE FROM phenome.nd_experiment_md_files WHERE nd_experiment_id IN ($nd_experiment_id_sql);";
     my $h3 = $bcs_schema->storage->dbh()->prepare($q_nd_exp_files_delete);
     $h3->execute();
+    $h3 = undef;
 
     # Delete stock_relatedness_ids for GRM protocols
     if ($genotype_ids_and_nd_experiment_ids_to_delete{stock_relatedness_ids}) {
@@ -572,6 +585,7 @@ sub delete_protocol {
         my $q_stock_relatedness_delete = "DELETE FROM stock_relatedness WHERE stock_relatedness_id IN ($stock_relatedness_id_sql);";
         my $h4 = $bcs_schema->storage->dbh()->prepare($q_stock_relatedness_delete);
         $h4->execute();
+        $h4 = undef;
     }
 
     # Delete from nd_experiment asynchronously because it takes long

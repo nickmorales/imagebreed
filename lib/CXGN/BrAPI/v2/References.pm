@@ -48,7 +48,7 @@ sub search {
     my $start_index = $page*$page_size;
     my $end_index = $page*$page_size + $page_size - 1;
 
-    while (my ($referenceset, $species, $protocol, $header ) = $h->fetchrow_array()) {   
+    while (my ($referenceset, $species, $protocol, $header ) = $h->fetchrow_array()) {
     	$referenceset =~ s/"//g;
     	$species =~ s/"//g;
         $protocol =~ s/"//g;
@@ -60,14 +60,14 @@ sub search {
             $source = $1 if ($_ =~ /##source=(\w+)/);
         }
 
-        foreach (@{$head}){        
+        foreach (@{$head}){
             my $referenceName = $1 if ($_ =~ /##contig=<ID=(\w+)/) ;
             my $length = $1 if ($_ =~ /,length=(\d+)/) ;
             my $md5 = $1 if ($_ =~ /,md5=(\w+)/) ;
-            if ( $md5checksum && $md5 && ! grep { $_ eq $md5 } @{$md5checksum}  ) { next; } 
-            if ( $referenceName && $reference_ids && ! grep { $_ eq $referenceName } @{$reference_ids} ) { next; } 
-            if ( $max_length && $length && $max_length->[0] < $length + 0 ) { next; } 
-            if ( $min_length && $length && $min_length->[0] > $length + 0 ) { next; } 
+            if ( $md5checksum && $md5 && ! grep { $_ eq $md5 } @{$md5checksum}  ) { next; }
+            if ( $referenceName && $reference_ids && ! grep { $_ eq $referenceName } @{$reference_ids} ) { next; }
+            if ( $max_length && $length && $max_length->[0] < $length + 0 ) { next; }
+            if ( $min_length && $length && $min_length->[0] > $length + 0 ) { next; }
 
             if($referenceName){
                 if ($counter >= $start_index && $counter <= $end_index) {
@@ -83,7 +83,7 @@ sub search {
                         sourceAccessions => undef,
                         sourceDivergence => undef,
                         sourceURI => undef,
-                        species => { 
+                        species => {
                             term => $species,
                             termURI => undef
                         }
@@ -93,6 +93,7 @@ sub search {
             }
         }
     }
+    $h = undef;
 
     my %result = (data=>\@data);
     my @data_files;
@@ -119,7 +120,7 @@ sub detail {
     my $h = $schema->storage->dbh()->prepare($subquery);
     $h->execute();
 
-    while (my ($referenceset, $species, $protocol, $header ) = $h->fetchrow_array()) {   
+    while (my ($referenceset, $species, $protocol, $header ) = $h->fetchrow_array()) {
         $referenceset =~ s/"//g;
         $species =~ s/"//g;
         $protocol =~ s/"//g;
@@ -131,7 +132,7 @@ sub detail {
             $source = $1 if ($_ =~ /##source=(\w+)/);
         }
 
-        foreach (@{$head}){        
+        foreach (@{$head}){
             my $referenceName = $1 if ($_ =~ /##contig=<ID=(\w+)/) ;
             my $length = $1 if ($_ =~ /,length=(\d+)/) ;
             my $md5 = $1 if ($_ =~ /,md5=(\w+)/) ;
@@ -149,7 +150,7 @@ sub detail {
                     sourceAccessions => undef,
                     sourceDivergence => undef,
                     sourceURI => undef,
-                    species => { 
+                    species => {
                         term => $species,
                         termURI => undef
                     }
@@ -158,7 +159,7 @@ sub detail {
             }
         }
     }
- 
+    $h = undef;
 
     my $status = $self->status;
 

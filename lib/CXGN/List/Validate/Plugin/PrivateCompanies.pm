@@ -24,6 +24,7 @@ sub validate {
             push @missing, $term;
         }
     }
+    $h = undef;
 
     return { missing => \@missing };
 }

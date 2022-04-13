@@ -872,6 +872,8 @@ sub get_high_dimensional_phenotypes_protocols : Path('/ajax/html/select/high_dim
         }
         $html .= '</td></tr>';
     }
+    $h = undef;
+
     $html .= "</tbody></table>";
 
     $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-highdimprotocol-table').DataTable({ 'lengthMenu': [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, 'All']] }); } );</script>";
@@ -909,6 +911,8 @@ sub get_analytics_protocols : Path('/ajax/html/select/analytics_protocols') Args
         }
         $html .= '</td></tr>';
     }
+    $h = undef;
+
     $html .= "</tbody></table>";
 
     $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-analyticsprotocol-table').DataTable({ 'lengthMenu': [[$limit, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, 'All']] }); } );</script>";
@@ -986,6 +990,8 @@ sub get_sequence_metadata_protocols : Path('/ajax/html/select/sequence_metadata_
         $html .= '</td></tr>';
 
     }
+    $h = undef;
+
     $html .= "</tbody></table>";
 
     $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-sdmprotocol-table-" . $data_type_cvterm_id . "').DataTable({ 'lengthMenu': [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, 'All']] }); } );</script>";
@@ -1025,6 +1031,8 @@ sub get_trained_nirs_models : Path('/ajax/html/select/trained_nirs_models') Args
 
         $html .= '<tr><td><input type="checkbox" name="'.$checkbox_name.'" value="'.$nd_protocol_id.'"></td><td>'.$name.'</td><td>'.$description.'</td><td>'.$format.'</td><td>'.$selected_trait_name.'</td><td>'.$algorithm.'</td></tr>';
     }
+    $model_h = undef;
+
     $html .= "</tbody></table>";
 
     $html .= "<script>jQuery(document).ready(function() { jQuery('#html-select-nirsmodel-table').DataTable({ 'lengthMenu': [[10, 25, 50, 100, 200, -1], [10, 25, 50, 100, 200, 'All']] }); } );</script>";
@@ -1066,6 +1074,7 @@ sub get_trained_keras_cnn_models : Path('/ajax/html/select/trained_keras_cnn_mod
         }
         push @keras_cnn_models, [$nd_protocol_id, $name];
     }
+    $model_h = undef;
 
     my $id = $c->req->param("id") || "html_keras_cnn_select";
     my $name = $c->req->param("name") || "html_keras_cnn_select";
@@ -1101,6 +1110,7 @@ sub get_trained_keras_mask_r_cnn_models : Path('/ajax/html/select/trained_keras_
 
         push @keras_cnn_models, [$nd_protocol_id, $name];
     }
+    $model_h = undef;
 
     my $id = $c->req->param("id") || "html_keras_mask_r_cnn_select";
     my $name = $c->req->param("name") || "html_keras_mask_r_cnn_select";
@@ -1133,6 +1143,7 @@ sub get_analysis_models : Path('/ajax/html/select/models') Args(0) {
 
         push @models, [$nd_protocol_id, $name];
     }
+    $model_h = undef;
 
     my $id = $c->req->param("id") || "html_model_select";
     my $name = $c->req->param("name") || "html_model_select";
@@ -1183,6 +1194,7 @@ sub get_imaging_event_vehicles : Path('/ajax/html/select/imaging_event_vehicles'
 
         push @imaging_vehicles, [$stock_id, $name];
     }
+    $h = undef;
 
     my $id = $c->req->param("id") || "html_imaging_vehicle_select";
     my $name = $c->req->param("name") || "html_imaging_vehicle_select";
@@ -1918,6 +1930,7 @@ sub get_drone_imagery_drone_runs_with_gcps : Path('/ajax/html/select/drone_runs_
     while( my ($project_id, $name) = $h->fetchrow_array()) {
         push @result, [$project_id, $name];
     }
+    $h = undef;
 
     if ($empty) {
         unshift @result, ['', "Select one"];
@@ -1958,6 +1971,7 @@ sub get_drone_imagery_drone_runs : Path('/ajax/html/select/drone_runs') Args(0) 
     while( my ($project_id, $name) = $h->fetchrow_array()) {
         push @result, [$project_id, $name];
     }
+    $h = undef;
 
     if ($empty) {
         unshift @result, ['', "Select one"];

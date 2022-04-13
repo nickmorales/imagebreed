@@ -335,6 +335,7 @@ sub save_trial {
         my $q = "INSERT INTO project (name, description, private_company_id, is_private, type_id) VALUES (?,?,?,?,?);";
         my $h = $chado_schema->storage->dbh()->prepare($q);
         $h->execute($trial_name, $self->get_trial_description(), $private_company_id, $private_company_project_is_private, $project_table_type_id);
+        $h = undef;
         $project = $chado_schema->resultset('Project::Project')->find( { name => $trial_name });
     }
     my $project_id = $project->project_id();

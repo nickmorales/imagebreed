@@ -485,6 +485,8 @@ sub store {
             my $h = $self->schema->storage->dbh()->prepare($q);
             $h->execute($key, 'stock_property');
             my ($cvterm_id) = $h->fetchrow_array();
+            $h = undef;
+
             if (!$cvterm_id) {
                 my $new_term = $self->schema->resultset("Cv::Cvterm")->create_with({
                    name => $key,

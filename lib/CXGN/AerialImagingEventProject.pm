@@ -34,6 +34,7 @@ sub get_associated_image_band_projects {
     while (my ($drone_run_band_project_id, $drone_run_band_name) = $h->fetchrow_array()) {
         push @image_band_projects, [$drone_run_band_project_id, $drone_run_band_name];
     }
+    $h = undef;
     return \@image_band_projects;
 }
 
@@ -75,6 +76,7 @@ sub get_field_trial_drone_run_projects_in_same_orthophoto {
     while (my ($nd_experiment_id) = $h->fetchrow_array()) {
         push @nd_experiment_ids, $nd_experiment_id;
     }
+    $h = undef;
     if (scalar(@nd_experiment_ids)>1) {
         die "It should not be possible to save an imaging event into more than one orthophoto!\n";
     }
@@ -92,6 +94,7 @@ sub get_field_trial_drone_run_projects_in_same_orthophoto {
             push @related_imaging_event_ids, $project_id;
             push @related_imaging_event_names, $project_name;
         }
+        $h = undef;
 
         my $q2 = "SELECT drone_run.project_id, drone_run.name, drone_run_band.project_id, drone_run_band.name, drone_run_band_project_type.value
             FROM nd_experiment_project
@@ -113,6 +116,7 @@ sub get_field_trial_drone_run_projects_in_same_orthophoto {
             };
             push @{$related_imaging_event_bands_type_hash{$drone_run_band_project_type}}, $drone_run_band_project_id;
         }
+        $h2 = undef;
 
         if (scalar(@related_imaging_event_ids)>0) {
             my $related_imaging_event_ids_string = join ',', @related_imaging_event_ids;
@@ -127,6 +131,7 @@ sub get_field_trial_drone_run_projects_in_same_orthophoto {
                 push @related_imaging_event_field_trial_ids, $project_id;
                 push @related_imaging_event_field_trial_names, $project_name;
             }
+            $h3 = undef;
         }
     }
 

@@ -52,6 +52,8 @@ sub get_matches {
     while (my ($species) = $h->fetchrow_array()) {
         $uniquename_hash{$species}++;
     }
+    $h = undef;
+
     my @complete_species_list = keys %uniquename_hash;
 
     foreach my $species_name (@$species_list_ref) {

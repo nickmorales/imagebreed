@@ -161,6 +161,7 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
         }
         $unique_drone_run_dates{$field_trial_project_name}->{$epoch_seconds} = $drone_run_project_id;
     }
+    $h = undef;
 
     my @return;
     foreach my $trial_name (sort keys %unique_drone_runs) {

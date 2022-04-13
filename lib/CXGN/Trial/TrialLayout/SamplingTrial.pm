@@ -92,6 +92,7 @@ sub retrieve_plot_info {
      my $h = $self->get_schema->storage->dbh()->prepare($organism_q);
      $h->execute($plot->organism_id);
      my ($species, $genus) = $h->fetchrow_array;
+     $h = undef;
      $design->{$plot_number}->{"species"} = $species;
      $design->{$plot_number}->{"genus"} = $genus;
  }

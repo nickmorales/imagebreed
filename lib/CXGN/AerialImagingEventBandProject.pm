@@ -36,7 +36,7 @@ sub get_associated_field_trial_to_drone_run_band {
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($self->get_trial_id);
     my ($drone_run_project_id, $drone_run_project_name, $drone_run_band_project_id, $drone_run_band_project_name, $field_trial_id, $field_trial_name) = $h->fetchrow_array();
-
+    $h = undef;
     return ($field_trial_id, $field_trial_name);
 }
 

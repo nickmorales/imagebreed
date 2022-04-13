@@ -262,7 +262,7 @@ sub sequence_metadata_upload_verify_POST : Args(0) {
         my $h = $schema->storage->dbh()->prepare($q);
         $h->execute($protocol_id);
         ($species) = $h->fetchrow_array();
-
+        $h = undef;
     }
 
     # Adding new protocol...
@@ -478,6 +478,7 @@ sub sequence_metadata_store_POST : Args(0) {
         my $h = $schema->storage->dbh()->prepare($q);
         $h->execute($protocol_id);
         ($species) = $h->fetchrow_array();
+        $h = undef;
     }
 
 

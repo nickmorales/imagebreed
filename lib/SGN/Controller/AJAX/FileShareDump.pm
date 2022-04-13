@@ -99,6 +99,7 @@ sub filesharedump_list_GET : Args(0) {
         my $options = '<a href="/breeders/phenotyping/download/'.$file_id.'">Download</a>';
         push @files, [$basename, $username, $create_date, $options];
     }
+    $h = undef;
 
     my $draw = $c->req->param('draw');
     if ($draw){

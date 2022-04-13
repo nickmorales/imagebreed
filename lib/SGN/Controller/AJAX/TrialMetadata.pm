@@ -129,6 +129,7 @@ sub delete_trial_data_GET : Chained('trial') PathPart('delete') Args(1) {
         my $drone_image_check_h = $schema->storage->dbh()->prepare($drone_image_check_q);;
         $drone_image_check_h->execute($c->stash->{trial_id}, $project_relationship_type_id);
         my ($drone_run_count) = $drone_image_check_h->fetchrow_array();
+        $drone_image_check_h = undef;
 
         if ($drone_run_count > 0) {
             $c->stash->{rest} = { error => "Please delete the imaging events belonging to this field trial first!" };
@@ -2096,6 +2097,7 @@ sub trial_completion_phenotype_section : Chained('trial') PathPart('trial_comple
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($c->stash->{trial_id});
     my ($phenotype_id) = $h->fetchrow_array();
+    $h = undef;
     my $has_phenotypes = $phenotype_id ? 1 : 0;
     $c->stash->{rest} = {has_phenotypes => $has_phenotypes};
 }

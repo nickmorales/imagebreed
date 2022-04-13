@@ -190,6 +190,7 @@ sub new_account :Path('/ajax/user/new') Args(0) {
         foreach (@$private_company_ids) {
             $h->execute($_, $person_id, $default_company_user_type_id);
         }
+        $h = undef;
     }
 
     my $host = $c->config->{main_production_site_url};

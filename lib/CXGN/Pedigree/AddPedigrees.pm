@@ -299,6 +299,8 @@ sub _get_available_stocks {
             }
         }
     }
+    $h = undef;
+    
     return (\%accessions_crosses_hash, \%accessions_crosses_populations_hash);
 }
 

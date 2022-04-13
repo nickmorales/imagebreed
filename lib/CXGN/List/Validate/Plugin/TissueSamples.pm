@@ -6,7 +6,7 @@ use Moose;
 use Data::Dumper;
 use SGN::Model::Cvterm;
 
-sub name { 
+sub name {
     return "tissue_samples";
 }
 
@@ -24,6 +24,7 @@ sub validate {
     while (my ($uniquename) = $h->fetchrow_array()) {
         $all_names{$uniquename}++;
     }
+    $h = undef;
 
     #print STDERR Dumper \%all_names;
     my @missing;

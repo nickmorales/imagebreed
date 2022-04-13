@@ -229,6 +229,8 @@ sub item_image_list :Path('/ajax/catalog/image_list') :Args(1) {
     while (my ($image_id, $stock_type) = $h->fetchrow_array()){
         push @image_ids, [$image_id, $stock_type];
     }
+    $h = undef;
+
 #    print STDERR "IMAGE IDS =".Dumper(\@image_ids)."\n";
     my @image_list;
     foreach my $image_info(@image_ids) {

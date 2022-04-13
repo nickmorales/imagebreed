@@ -628,6 +628,8 @@ sub _stock_images {
     while (my ($image_id, $stock_type) = $h->fetchrow_array()){
         push @ids, [$image_id, $stock_type];
     }
+    $h = undef;
+
     return \@ids;
 }
 
@@ -640,6 +642,8 @@ sub _related_stock_images {
     while (my ($image_id, $stock_type) = $h->fetchrow_array()){
         push @ids, [$image_id, $stock_type];
     }
+    $h = undef;
+
     return \@ids;
 }
 
@@ -662,6 +666,8 @@ sub _stock_editor_info {
     while (my ($sp_person_id, $timestamp, $modification_note) = $h->fetchrow_array){
         push @owner_info, [$sp_person_id, $timestamp, $modification_note];
     }
+    $h = undef;
+
     return \@owner_info;
 }
 

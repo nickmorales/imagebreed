@@ -361,6 +361,7 @@ sub _get_grm {
                 push @plot_female_stock_ids_found, $female_parent_stock_id;
                 push @plot_male_stock_ids_found, $male_parent_stock_id;
             }
+            $h = undef;
 
             @all_individual_accessions_stock_ids = @plot_accession_stock_ids_found;
 
@@ -435,6 +436,7 @@ sub _get_grm {
                 push @female_stock_ids_found, $female_parent_stock_id;
                 push @male_stock_ids_found, $male_parent_stock_id;
             }
+            $h = undef;
 
             # print STDERR Dumper \@accession_stock_ids_found;
             # print STDERR Dumper \@female_stock_ids_found;
@@ -608,6 +610,7 @@ sub _get_grm {
             while (my ($plot_stock_id, $accession_stock_id) = $h->fetchrow_array()) {
                 $plot_accession_ids{$accession_stock_id}++;
             }
+            $h = undef;
             my @seen_accession_ids = sort {$a <=> $b} keys %plot_accession_ids;
             $number_of_stocks = scalar(@seen_accession_ids);
             @individuals_stock_ids = @seen_accession_ids;
@@ -738,6 +741,8 @@ sub download_grm {
                 while (my ($plot_stock_id, $accession_stock_id) = $h->fetchrow_array()) {
                     $plot_accession_ids{$accession_stock_id}++;
                 }
+                $h = undef;
+
                 my @seen_accession_ids = sort {$a <=> $b} keys %plot_accession_ids;
                 $all_accession_stock_ids = \@seen_accession_ids;
             }
@@ -788,6 +793,7 @@ sub download_grm {
         while (my ($uniquename, $stock_id) = $h->fetchrow_array()) {
             $all_names{$stock_id} = $uniquename;
         }
+        $h = undef;
 
         my $matrix_data = '';
         my @matrix_header = ("stock_id");

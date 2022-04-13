@@ -248,6 +248,7 @@ sub create_hash_lookups {
                 $check_unique_value_trait_stock{$previous_value, $cvterm_id, $stock_id} = 1;
             }
         }
+        $h = undef;
 
     }
     $self->unique_value_trait_stock(\%check_unique_value_trait_stock);
@@ -729,6 +730,12 @@ sub store {
     #     $transaction_error =  $_;
     # };
 
+    $high_dim_pheno_dbh = undef;
+    $pheno_update_h = undef;
+    $h_bridge = undef;
+    $nd_experiment_phenotype_bridge_dbh = undef;
+    $nd_experiment_phenotype_bridge_update_image_dbh = undef;
+
     if ($transaction_error) {
         $error_message = $transaction_error;
         print STDERR "Transaction error storing phenotypes: $transaction_error\n";
@@ -796,6 +803,8 @@ sub delete_previous_phenotypes {
         push @{$phenotype_ids_and_nd_experiment_phenotype_bridge_ids_to_delete{nd_experiment_phenotype_bridge_ids}}, $nd_experiment_phenotype_bridge_id;
         push @deleted_phenotypes, [$file_id, $phenotype_id, $nd_experiment_phenotype_bridge_id];
     }
+    $h = undef;
+
     my $delete_phenotype_values_error = CXGN::Project::delete_phenotype_values_and_nd_experiment_md_values($self->dbhost, $self->dbname, $self->dbuser, $self->dbpass, $self->basepath, $self->bcs_schema, \%phenotype_ids_and_nd_experiment_phenotype_bridge_ids_to_delete);
     if ($delete_phenotype_values_error) {
         die "Error deleting phenotype values ".$delete_phenotype_values_error."\n";
@@ -830,6 +839,10 @@ sub check_overwritten_files_status {
             }
         }
     }
+    $h = undef;
+    $h2 = undef;
+    $h3 = undef;
+
     #print STDERR Dumper \@obsoleted_files;
     return \@obsoleted_files;
 }
@@ -857,6 +870,7 @@ sub _save_archived_file_metadata {
     my $q = "INSERT INTO metadata.md_files (basename, dirname, filetype, md5checksum, metadata_id, private_company_id, is_private) VALUES (?,?,?,?,?,?,?);";
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($basename, $dirname, $archived_file_type, $md5checksum, $metadata_id, $private_company_id, $private_company_is_private);
+    $h = undef;
 
     my $file_row = $self->metadata_schema->resultset("MdFiles")->search({
         md5checksum => $md5checksum,
@@ -905,6 +919,7 @@ sub get_linked_data {
         $data{$unit_name}{locationDbId} = $location_id;
         $data{$unit_name}{studyDbId} = $project_id;
     }
+    $h = undef;
 
     return \%data;
 }

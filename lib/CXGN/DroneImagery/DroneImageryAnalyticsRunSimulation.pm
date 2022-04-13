@@ -2295,6 +2295,8 @@ sub perform_drone_imagery_analytics {
                 }
             close($fh_yhat_res_cv5_2);
         }
+
+        $h_time = undef;
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         $analysis_model_language = "R";
@@ -6013,6 +6015,8 @@ sub perform_drone_imagery_analytics {
                 }
             close($fh_yhat_res_cv5_2);
         }
+
+        $h_time = undef;
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
 
@@ -9215,6 +9219,8 @@ sub perform_drone_imagery_analytics {
                 }
             close($fh_yhat_res_cv5_2);
         }
+
+        $h_time = undef;
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -12406,6 +12412,8 @@ sub perform_drone_imagery_analytics {
                 }
             close($fh_yhat_res_cv5_2);
         }
+
+        $h_time = undef;
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -15599,6 +15607,8 @@ sub perform_drone_imagery_analytics {
                 }
             close($fh_yhat_res_cv5_2);
         }
+
+        $h_time = undef;
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -18789,6 +18799,8 @@ sub perform_drone_imagery_analytics {
                 }
             close($fh_yhat_res_cv5_2);
         }
+
+        $h_time = undef;
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -21950,6 +21962,8 @@ sub perform_drone_imagery_analytics {
                 }
             close($fh_yhat_res_cv5_2);
         }
+
+        $h_time = undef;
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {
@@ -25164,6 +25178,8 @@ sub perform_drone_imagery_analytics {
                 }
             close($fh_yhat_res_cv5_2);
         }
+
+        $h_time = undef;
     }
     elsif ($statistics_select eq 'asreml_grm_univariate_spatial_genetic_blups') {
         foreach my $t (@sorted_trait_names) {

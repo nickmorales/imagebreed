@@ -523,6 +523,8 @@ sub BUILD {
         my $h = $self->schema->storage->dbh()->prepare($q);
         $h->execute($self->stock_id);
         my ($private_company_id, $private_company_name, $is_private) = $h->fetchrow_array();
+        $h = undef;
+
         $self->private_company_id($private_company_id);
         $self->private_company_name($private_company_name);
         $self->private_company_stock_is_private($is_private);
@@ -644,6 +646,7 @@ sub store {
                 $self->private_company_id(),
                 $self->private_company_stock_is_private()
             );
+            $h = undef;
 
             my $new_row_rs = $self->schema()->resultset("Stock::Stock")->search({
                 uniquename => $self->uniquename(),
@@ -897,16 +900,19 @@ sub _set_stock_private_company {
     my $q = "UPDATE stock SET private_company_id=? WHERE stock_id=?;";
     my $h = $self->schema->storage->dbh()->prepare($q);
     $h->execute($self->private_company_id, $self->stock_id());
+    $h = undef;
 
     my $q1 = "SELECT cvterm.name FROM sgn_people.private_company AS p JOIN cvterm ON(p.type_id=cvterm.cvterm_id) WHERE private_company_id=?;";
     my $h1 = $self->schema->storage->dbh()->prepare($q1);
     $h1->execute($self->private_company_id);
     my ($type_name) = $h1->fetchrow_array();
+    $h1 = undef;
 
     my $stock_is_private = $type_name eq 'private_access' ? 1 : 0;
     my $q2 = "UPDATE stock SET is_private=? WHERE stock_id=?;";
     my $h2 = $self->schema->storage->dbh()->prepare($q2);
     $h2->execute($stock_is_private, $self->stock_id());
+    $h2 = undef;
 
     $self->private_company_stock_is_private($stock_is_private);
 }
@@ -930,6 +936,8 @@ sub get_image_ids {
     while (my ($image_id, $stock_type, $display_order) = $h->fetchrow_array()){
         push @ids, [$image_id, $stock_type];
     }
+    $h = undef;
+
     return @ids;
 }
 
@@ -953,8 +961,9 @@ sub get_genotypeprop_ids {
     $h->execute($self->stock_id());
     my @genotypeprop_ids;
     while (my ($genotypeprop_id) = $h->fetchrow_array()) {
-	push @genotypeprop_ids, $genotypeprop_id;
+        push @genotypeprop_ids, $genotypeprop_id;
     }
+    $h = undef;
 
     return \@genotypeprop_ids;
 

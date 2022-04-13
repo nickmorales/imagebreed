@@ -63,6 +63,8 @@ sub BUILD {
     my $h = $self->schema->storage->dbh()->prepare($q);
     $h->execute($self->get_program_id());
     my ($private_company_id) = $h->fetchrow_array();
+    $h = undef;
+
     $self->private_company_id($private_company_id);
 }
 
@@ -376,6 +378,7 @@ sub get_crosses {
     while (my($cross_id, $cross_name, $female_parent_id, $female_parent_name, $male_parent_id, $male_parent_name, $cross_type) = $h->fetchrow_array()){
         push @crosses, [$cross_id, $cross_name, $female_parent_id, $female_parent_name, $male_parent_id, $male_parent_name, $cross_type]
     }
+    $h = undef;
 
     return \@crosses;
 
@@ -416,6 +419,7 @@ sub get_seedlots {
     while (my($seedlot_id, $seedlot_name, $content_id, $content_name, $content_type) = $h->fetchrow_array()){
         push @seedlots, [$seedlot_id, $seedlot_name, $content_id, $content_name, $content_type]
     }
+    $h = undef;
 
     return \@seedlots;
 

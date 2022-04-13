@@ -278,6 +278,7 @@ sub delete_uploaded_phenotype_files : Path('/ajax/breeders/phenotyping/delete/')
         push @{$phenotype_ids_and_nd_experiment_phenotype_bridge_ids_to_delete{nd_experiment_phenotype_bridge_ids}}, $nd_experiment_phenotype_bridge_id;
         $count++;
     }
+    $h = undef;
 
     if ($count > 0) {
         my $delete_phenotype_values_error = CXGN::Project::delete_phenotype_values_and_nd_experiment_md_values($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, $c->config->{basepath}, $self->bcs_schema, \%phenotype_ids_and_nd_experiment_phenotype_bridge_ids_to_delete);
@@ -288,6 +289,7 @@ sub delete_uploaded_phenotype_files : Path('/ajax/breeders/phenotyping/delete/')
 
     my $h4 = $dbh->prepare("UPDATE metadata.md_metadata SET obsolete = 1 where metadata_id IN (SELECT metadata_id from metadata.md_files where file_id=?);");
     $h4->execute($file_id);
+    $h4 = undef;
     print STDERR "Phenotype file successfully made obsolete (AKA deleted).\n";
 
     my $bs = CXGN::BreederSearch->new( { dbh=>$c->dbc->dbh, dbname=>$c->config->{dbname} } );
@@ -312,6 +314,7 @@ sub progress : Path('/ajax/progress') Args(0) {
     while (my ($year, $mean, $stddev, $count) = $h->fetchrow_array()) {
         push @$data, [ $year, sprintf("%.2f", $mean), sprintf("%.2f", $stddev), $count ];
     }
+    $h = undef;
 
     $c->stash->{rest} = { data => $data };
 }
@@ -324,7 +327,8 @@ sub _get_private_company_from_project_id {
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($project_id);
     my ($private_company_id) = $h->fetchrow_array();
-
+    $h = undef;
+    
     return $private_company_id;
 }
 

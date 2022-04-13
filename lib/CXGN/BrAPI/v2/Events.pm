@@ -47,6 +47,7 @@ sub search {
         while (my($trial_id) = $h0->fetchrow_array()) {
             push @$studydbid_arrayref, $trial_id;
         }
+        $h0 = undef;
     }
 
     my @where_clause;
@@ -131,6 +132,8 @@ sub search {
             studyDbId => $trial_id
         };
     }
+    $h = undef;
+    $h2 = undef;
 
     my %result = (data => \@data);
     my @data_files = ();

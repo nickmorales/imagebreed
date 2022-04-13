@@ -76,6 +76,7 @@ sub get_selected_stocks {
     $type_h->execute($protocol_id, $vcf_map_details_id);
 
     my ($sample_type) = $type_h->fetchrow_array();
+    $type_h = undef;
 
     my %chrom_hash;
     my @incorrect_marker_names;

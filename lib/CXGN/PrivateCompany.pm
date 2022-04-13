@@ -144,6 +144,7 @@ sub BUILD {
             my $h = $self->schema->storage->dbh()->prepare($q);
             $h->execute($self->private_company_id);
             my ($private_company_id, $name, $description, $email, $first_name, $last_name, $phone, $address, $address2, $state, $city, $zipcode, $country, $create_date, $company_type_id, $company_type_name) = $h->fetchrow_array();
+            $h = undef;
 
             $self->private_company_name($name);
             $self->private_company_description($description);
@@ -174,6 +175,8 @@ sub BUILD {
             while (my ($sp_person_id, $sp_username, $sp_first_name, $sp_last_name, $sp_user_type_id, $sp_user_type_name) = $h2->fetchrow_array()){
                 push @members, [$sp_person_id, $sp_username, $sp_first_name, $sp_last_name, $sp_user_type_id, $sp_user_type_name];
             }
+            $h2 = undef;
+
             $self->private_company_members(\@members);
         }
 
@@ -189,6 +192,8 @@ sub BUILD {
             my $h3 = $self->schema->storage->dbh()->prepare($q3);
             $h3->execute($self->private_company_id,$self->sp_person_id,$default_company_type_id,$private_company_type_id);
             my ($user_type_id, $user_type_name) = $h3->fetchrow_array();
+            $h3 = undef;
+
             $self->sp_person_access_cvterm_id($user_type_id);
             $self->sp_person_access_cvterm_name($user_type_name);
         }
@@ -249,6 +254,8 @@ sub get_users_private_companies {
         push @private_companies, [$private_company_id, $name, $description, $email, $first_name, $last_name, $phone, $address, $address2, $state, $city, $zipcode, $country, $create_date, $company_type_id, $company_type_name, $user_type_id, $user_type_name, \@members];
         push @private_companies_ids, $private_company_id;
     }
+    $h = undef;
+    $h2 = undef;
     # print STDERR Dumper \@private_companies;
 
     my %allowed_private_company_ids = map {$_=>1} @private_companies_ids;
@@ -349,6 +356,10 @@ sub store_private_company {
     my $h1 = $self->schema->storage->dbh()->prepare($q1);
     $h1->execute($private_company_id, $sp_person_id, $company_curator_access_type_id);
 
+    $h0 = undef;
+    $h = undef;
+    $h1 = undef;
+
     return {success => 1};
 }
 
@@ -421,12 +432,14 @@ sub edit_private_company {
     my $h = $self->schema->storage->dbh()->prepare($q);
     $h->execute($private_company_id);
     my ($private_company_id_saved, $name_saved, $description_saved, $email_saved, $first_name_saved, $last_name_saved, $phone_saved, $address_saved, $address2_saved, $state_saved, $city_saved, $zipcode_saved, $country_saved, $create_date_saved, $company_type_id_saved, $company_type_name_saved) = $h->fetchrow_array();
+    $h = undef;
 
     if ($name ne $name_saved) {
         my $q0 = "SELECT private_company_id FROM sgn_people.private_company WHERE name=?;";
         my $h0 = $self->schema->storage->dbh()->prepare($q0);
         $h0->execute($name);
         my ($private_company_id_check) = $h0->fetchrow_array();
+        $h0 = undef;
         if ($private_company_id_check) {
             return {error => "There is already a company with the name: $name! Cannot save company with the same name!"};
         }
@@ -435,6 +448,7 @@ sub edit_private_company {
     my $q1 = "UPDATE sgn_people.private_company SET name=?, description=?, contact_email=?, contact_person_first_name=?, contact_person_last_name=?, contact_person_phone=?, address_street=?, address_street_2=?, address_state=?, city=?, address_zipcode=?, address_country=?, type_id=? WHERE private_company_id=?;";
     my $h1 = $self->schema->storage->dbh()->prepare($q1);
     $h1->execute($name, $description, $email, $first_name, $last_name, $phone, $address, $address2, $state, $city, $zipcode, $country, $company_type_id, $private_company_id);
+    $h1 = undef;
 
     return {success => 1};
 }
@@ -467,16 +481,19 @@ sub add_private_company_member {
     my $h3 = $self->schema->storage->dbh()->prepare($q3);
     $h3->execute($private_company_id,$new_member_sp_person_id);
     my ($private_company_sp_person_id, $user_type_id, $user_type_name) = $h3->fetchrow_array();
+    $h3 = undef;
 
     if ($private_company_sp_person_id) {
         my $q_update = "UPDATE sgn_people.private_company_sp_person SET type_id=? WHERE private_company_sp_person_id=?;";
         my $h_update = $self->schema->storage->dbh()->prepare($q_update);
         $h_update->execute($company_user_type_id,$private_company_sp_person_id);
+        $h_update = undef;
     }
     else {
         my $q = "INSERT INTO sgn_people.private_company_sp_person (type_id,private_company_id,sp_person_id) VALUES (?,?,?);";
         my $h = $self->schema->storage->dbh()->prepare($q);
         $h->execute($company_user_type_id,$private_company_id,$new_member_sp_person_id);
+        $h = undef;
     }
 
     return {success => 1};
@@ -503,6 +520,7 @@ sub remove_private_company_member {
     my $h0 = $self->schema->storage->dbh()->prepare($q0);
     $h0->execute($private_company_id,$remove_sp_person_id);
     my ($user_access_type_id, $user_access_type_name) = $h0->fetchrow_array();
+    $h0 = undef;
 
     if ($user_access_type_name eq 'curator_access') {
         return {error => "Cannot remove curators from a company!"};
@@ -511,6 +529,7 @@ sub remove_private_company_member {
     my $q = "DELETE FROM sgn_people.private_company_sp_person WHERE private_company_id=? AND sp_person_id=?;";
     my $h = $self->schema->storage->dbh()->prepare($q);
     $h->execute($private_company_id,$remove_sp_person_id);
+    $h = undef;
 
     return {success => 1};
 }
@@ -539,6 +558,7 @@ sub edit_private_company_member {
     my $h0 = $self->schema->storage->dbh()->prepare($q0);
     $h0->execute($private_company_id,$edit_sp_person_id);
     my ($private_company_sp_person_id, $user_access_type_id, $user_access_type_name) = $h0->fetchrow_array();
+    $h0 = undef;
 
     if ($user_access_type_name eq 'curator_access') {
         return {error => "Cannot edit curators access to a company!"};
@@ -547,6 +567,7 @@ sub edit_private_company_member {
     my $q = "UPDATE sgn_people.private_company_sp_person SET type_id=? WHERE private_company_id=? AND sp_person_id=?;";
     my $h = $self->schema->storage->dbh()->prepare($q);
     $h->execute($company_user_type_id,$private_company_id,$edit_sp_person_id);
+    $h = undef;
 
     return {success => 1};
 }

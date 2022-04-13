@@ -6,7 +6,7 @@ use Moose;
 use Data::Dumper;
 use SGN::Model::Cvterm;
 
-sub name { 
+sub name {
     return "plants";
 }
 
@@ -24,6 +24,7 @@ sub validate {
     while (my ($uniquename, $synonym, $type_id) = $h->fetchrow_array()) {
         $all_names{$uniquename}++;
     }
+    $h = undef;
 
     #print STDERR Dumper \%all_names;
     my @missing;

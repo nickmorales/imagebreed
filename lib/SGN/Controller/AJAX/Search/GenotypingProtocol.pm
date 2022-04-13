@@ -141,6 +141,8 @@ sub genotyping_protocol_pcr_markers_GET : Args(0) {
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($pcr_marker_details_cvterm_id, $protocol_id);
     my @info = $h->fetchrow_array();
+    $h = undef;
+    
     my $protocol_info_string = $info[0];
 
     my $protocol_info_ref = decode_json $protocol_info_string;

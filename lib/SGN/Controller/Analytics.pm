@@ -55,6 +55,7 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($analytics_protocol_id);
     my ($nd_protocol_id, $name, $type_id, $description, $create_date, $props_json) = $h->fetchrow_array();
+    $h = undef;
 
     if (! $name) {
         $c->stash->{template} = '/generic_message.mas';
@@ -107,6 +108,7 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
     my $h2 = $schema->storage->dbh()->prepare($q2);
     $h2->execute($analytics_protocol_id);
     my ($result_props_json) = $h2->fetchrow_array();
+    $h2 = undef;
 
     my %available_types = (
         SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_imagery_analytics_env_simulation_protocol', 'protocol_type')->cvterm_id() => 'Drone Imagery Environment Simulation'
@@ -576,6 +578,7 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
                     col_number => $col_number
                 };
             }
+            $plot_germplasm_h = undef;
 
             my $analytics_protocol_data_tempfile10 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
             my $analytics_protocol_data_tempfile11 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
@@ -968,6 +971,7 @@ sub analytics_protocol_detail :Path('/analytics_protocols') Args(1) {
                 plots_spatial_ggcorr_plot => $analytics_protocol_tempfile_string_4,
             };
         }
+        $h3 = undef;
     }
 
     $c->stash->{analytics_protocol_id} = $nd_protocol_id;

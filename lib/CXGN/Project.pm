@@ -372,6 +372,7 @@ sub get_project_table_type_id {
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($self->get_trial_id());
     my ($type_id) = $h->fetchrow_array();
+    $h = undef;
 
     return $type_id;
 }
@@ -383,6 +384,7 @@ sub set_project_table_type_id {
     my $q = "UPDATE project SET type_id = ? WHERE project_id = ?;";
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($project_table_type_id, $self->get_trial_id());
+    $h = undef;
 }
 
 
@@ -399,16 +401,19 @@ sub set_private_company {
     my $q = "UPDATE project SET private_company_id = ? WHERE project_id = ?;";
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($private_company_id, $self->project_id);
+    $h = undef;
 
     my $q1 = "SELECT cvterm.name FROM sgn_people.private_company AS p JOIN cvterm ON(p.type_id=cvterm.cvterm_id) WHERE private_company_id=?;";
     my $h1 = $self->bcs_schema->storage->dbh()->prepare($q1);
     $h1->execute($private_company_id);
     my ($type_name) = $h1->fetchrow_array();
+    $h1 = undef;
 
     my $project_is_private = $type_name eq 'private_access' ? 1 : 0;
     my $q2 = "UPDATE project SET is_private=? WHERE project_id=?;";
     my $h2 = $self->bcs_schema->storage->dbh()->prepare($q2);
     $h2->execute($project_is_private, $self->project_id());
+    $h2 = undef;
 
     $self->private_company_project_is_private($project_is_private);
 }
@@ -420,6 +425,7 @@ sub set_private_company_project_is_private {
     my $q = "UPDATE project SET is_private = ? WHERE project_id = ?;";
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($is_private, $self->project_id);
+    $h = undef;
 }
 
 =head2 function get_nd_experiment_id()
@@ -536,6 +542,7 @@ sub set_location {
         my $q = "UPDATE nd_experiment_phenotype_bridge SET nd_geolocation_id=$location_id WHERE project_id=?;";
         my $h = $schema->storage->dbh()->prepare($q);
         $h->execute($project_id);
+        $h = undef;
     };
 
     try {
@@ -566,6 +573,8 @@ sub get_location_noaa_station_id {
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($nd_geolocation_id, $noaa_station_id_cvterm_id);
     my ($noaa_station_id) = $h->fetchrow_array();
+    $h = undef;
+
     return $noaa_station_id;
 }
 
@@ -593,6 +602,7 @@ sub get_location_country_name {
 
             $h->execute($nd_geolocation_id, $country_name_cvterm_id);
             ($country_name) = $h->fetchrow_array();
+            $h = undef;
         }
     };
 
@@ -1539,6 +1549,8 @@ sub get_grm_genotyping_protocols {
     while (my ($nd_protocol_id, $name, $description) = $h->fetchrow_array()) {
         push @protocols, [$nd_protocol_id, $name, $description];
     }
+    $h = undef;
+
     print STDERR Dumper \@protocols;
     return \@protocols;
 }
@@ -2130,6 +2142,8 @@ sub _get_trial_owners {
     while (my ($sp_person_id, $create_date) = $owner_h->fetchrow_array()) {
         $owners{$sp_person_id} = $create_date;
     }
+    $owner_h = undef;
+
     return \%owners;
 }
 
@@ -2141,6 +2155,7 @@ sub set_trial_owner {
     my $q = "INSERT INTO phenome.project_owner (project_id, sp_person_id, create_date) VALUES (?,?,now())";
     my $h =  $schema->storage->dbh()->prepare($q);
     $h->execute($trial_id,$sp_person_id);
+    $h = undef;
 }
 
 =head2 function delete_phenotype_data()
@@ -2181,6 +2196,8 @@ sub delete_phenotype_data {
         push @{$phenotype_ids_and_nd_experiment_phenotype_bridge_ids_to_delete{phenotype_ids}}, $phenotype_id;
         push @{$phenotype_ids_and_nd_experiment_phenotype_bridge_ids_to_delete{nd_experiment_phenotype_bridge_ids}}, $nd_experiment_phenotype_bridge_id;
     }
+    $h = undef;
+
     return delete_phenotype_values_and_nd_experiment_md_values($dbhost, $dbname, $dbuser, $dbpass, $basepath, $self->bcs_schema, \%phenotype_ids_and_nd_experiment_phenotype_bridge_ids_to_delete);
 }
 
@@ -2199,10 +2216,13 @@ sub delete_phenotype_values_and_nd_experiment_md_values {
         my $q_pheno_delete = "DELETE FROM phenotype WHERE phenotype_id IN ($phenotype_id_sql);";
         my $h2 = $schema->storage->dbh()->prepare($q_pheno_delete);
         $h2->execute();
+        $h2 = undef;
+
         my $nd_experiment_phenotype_bridge_id_sql = join (",", @{$phenotype_ids_and_nd_experiment_phenotype_bridge_ids_to_delete->{nd_experiment_phenotype_bridge_ids}});
         my $q_nd_exp_files_delete = "DELETE FROM nd_experiment_phenotype_bridge WHERE nd_experiment_phenotype_bridge_id IN ($nd_experiment_phenotype_bridge_id_sql);";
         my $h3 = $schema->storage->dbh()->prepare($q_nd_exp_files_delete);
         $h3->execute();
+        $h3 = undef;
 
         #print STDERR "DELETED ".scalar(@{$phenotype_ids_and_nd_experiment_phenotype_bridge_ids_to_delete->{phenotype_ids}})." Phenotype Values and nd_experiment_phenotype_bridge link\n";
     };
@@ -2466,6 +2486,7 @@ sub _delete_field_layout_experiment {
         my $delete_stocks_sql = "DELETE FROM phenome.stock_owner WHERE stock_id IN ($all_stock_ids_sql);";
         my $delete_stocks_h = $self->bcs_schema->storage->dbh()->prepare($delete_stocks_sql);
         $delete_stocks_h->execute();
+        $delete_stocks_h = undef;
 
         my $stock_delete_rs = $self->bcs_schema->resultset('Stock::Stock')->search({stock_id=>{'-in'=>\@all_stock_ids}});
         while (my $r = $stock_delete_rs->next){
@@ -2569,6 +2590,7 @@ sub delete_project_entry {
     my $q = "DELETE FROM phenome.project_owner WHERE project_id=?;";
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($self->get_trial_id());
+    $h = undef;
 
     eval {
         my $row = $self->bcs_schema->resultset("Project::Project")->find( { project_id=> $self->get_trial_id() });
@@ -2603,6 +2625,8 @@ sub phenotype_count {
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($self->get_trial_id());
     my ($count) = $h->fetchrow_array();
+    $h = undef;
+
     return $count;
 }
 
@@ -4515,6 +4539,8 @@ sub get_accessions {
     while (my ($stock_id, $uniquename, $stock_type) = $h->fetchrow_array()) {
         push @accessions, {accession_name=>$uniquename, stock_id=>$stock_id, stock_type=>$stock_type};
     }
+    $h = undef;
+
     return \@accessions;
 }
 
@@ -4554,6 +4580,8 @@ sub get_tissue_sources {
     while (my ($stock_id, $uniquename, $type) = $h->fetchrow_array()) {
         push @tissue_samples, {uniquename=>$uniquename, type=>$type, stock_id=>$stock_id };
     }
+    $h = undef;
+
     return \@tissue_samples;
 }
 
@@ -4665,6 +4693,7 @@ sub get_seedlots {
     while (my ($stock_id, $uniquename) = $h->fetchrow_array()) {
         push @seedlots, [$stock_id, $uniquename];
     }
+    $h = undef;
 
     return \@seedlots;
 }
@@ -4721,6 +4750,8 @@ sub get_observation_units_direct {
     while (my ($uniquename, $stock_id) = $h->fetchrow_array()) {
         push @obs, [$stock_id, $uniquename];
     }
+    $h = undef;
+
     return \@obs;
 }
 
@@ -4885,6 +4916,7 @@ sub get_controls {
     while (my ($stock_id, $uniquename) = $h->fetchrow_array()) {
         push @controls, {accession_name=> $uniquename, stock_id=>$stock_id } ;
     }
+    $h = undef;
 
     return \@controls;
 }
@@ -5122,6 +5154,8 @@ sub delete_assayed_trait {
             push @{$phenotype_ids_and_nd_experiment_phenotype_bridge_ids_to_delete{phenotype_ids}}, $phenotype_id;
             push @{$phenotype_ids_and_nd_experiment_phenotype_bridge_ids_to_delete{nd_experiment_phenotype_bridge_ids}}, $nd_experiment_phenotype_bridge_id;
         }
+        $h = undef;
+
         return delete_phenotype_values_and_nd_experiment_md_values($dbhost, $dbname, $dbuser, $dbpass, $basepath, $schema, \%phenotype_ids_and_nd_experiment_phenotype_bridge_ids_to_delete);
     }
     else {
@@ -5183,6 +5217,8 @@ sub cross_count {
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($self->get_trial_id());
     my ($count) = $h->fetchrow_array();
+    $h = undef;
+
     return $count;
 }
 
@@ -5234,13 +5270,13 @@ sub delete_genotyping_plate_from_field_trial_linkage {
     } else {
         push @errors, "Project relationship does not exists or has more than 1 occurrence.";
     }
- 
+
     if (@errors >0) {
     return { errors => \@errors };
     }
 
     return { success => 1 };
-        
+
 
 }
 

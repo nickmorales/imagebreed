@@ -229,6 +229,7 @@ sub create {
     my $q = "INSERT INTO project (name, description, type_id) VALUES (?,?,?);";
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($folder_name, $description, $folder_project_table_type_id);
+    $h = undef;
 
     my $project = $schema->resultset('Project::Project')->find({ name => $folder_name });
 
@@ -318,6 +319,7 @@ sub list {
         while (my($project_id, $name) = $h->fetchrow_array()) {
             push @folders, [$project_id, $name];
         }
+        $h = undef;
     }
 
 	return @folders;

@@ -97,6 +97,7 @@ sub raw_drone_imagery_plot_image_count_GET : Args(0) {
         $unique_drone_runs{$drone_run_project_id}->{$project_image_type_id_hash->{$project_image_type_id}->{display_name}}++;
         $unique_drone_runs{$drone_run_project_id}->{total_plot_image_count}++;
     }
+    $h = undef;
     #print STDERR Dumper \%unique_drone_runs;
 
     $c->stash->{rest} = { data => \%unique_drone_runs };
@@ -390,6 +391,7 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
             $refresh_mat_views = 1;
         }
     }
+    $h = undef;
     if ($refresh_mat_views) {
         my $bs = CXGN::BreederSearch->new( { dbh=>$c->dbc->dbh, dbname=>$c->config->{dbname}, } );
         my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
@@ -667,6 +669,7 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
                     }
                 }
             }
+            $h_time = undef;
             if (scalar(keys %seen_times) == 0) {
                 $c->stash->{rest} = { error => "There are no phenotypes with associated days after planting time associated to the traits you have selected!"};
                 return;
@@ -866,6 +869,8 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
                     }
                 }
             }
+            $h_time = undef;
+
             if (scalar(keys %seen_times) == 0) {
                 $c->stash->{rest} = { error => "There are no phenotypes with associated days after planting time associated to the traits you have selected!"};
                 return;
@@ -1923,6 +1928,7 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
                         }
                     }
                 }
+                $h_time = undef;
 
                 my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
                 my %filtered_seen_times_htp_rel;
@@ -2665,6 +2671,8 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
             }
             close($Fpc);
 
+            $h_time = undef;
+
             @sorted_trait_names = sort keys %rr_unique_traits;
         }
         elsif ($statistics_select eq 'sommer_grm_genetic_only_random_regression_dap_genetic_blups' || $statistics_select eq 'sommer_grm_genetic_only_random_regression_gdd_genetic_blups') {
@@ -2834,6 +2842,8 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
                 }
             }
             close($Fgc);
+
+            $h_time = undef;
 
             @sorted_trait_names = sort keys %rr_unique_traits;
         }
@@ -3290,6 +3300,8 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
                     $result_blup_pe_data_delta->{$plot_name}->{$time_term} = [$value, $timestamp, $user_name, '', ''];
                 }
             }
+
+            $h_time = undef;
 
             # print STDERR Dumper \%fixed_effects;
             # print STDERR Dumper $result_blup_data;
@@ -6648,6 +6660,7 @@ sub get_drone_run_projects_GET : Args(0) {
         );
         push @result, \@res;
     }
+    $h = undef;
 
     $c->stash->{rest} = { data => \@result };
 }
@@ -6703,6 +6716,7 @@ sub get_drone_run_projects_kv_GET : Args(0) {
         );
         push @result,\%data;
     }
+    $h = undef;
 
     $c->stash->{rest} = { data => \@result };
 }
@@ -6806,6 +6820,7 @@ sub get_plot_polygon_types_images_GET : Args(0) {
         );
         push @result, \@res;
     }
+    $h = undef;
 
     $c->stash->{rest} = { data => \@result };
 }
@@ -6990,6 +7005,7 @@ sub get_plot_polygon_types_GET : Args(0) {
         );
         push @result, \@res;
     }
+    $h = undef;
 
     $c->stash->{rest} = { data => \@result };
 }
@@ -7099,6 +7115,7 @@ sub get_drone_run_band_projects_GET : Args(0) {
             push @result, \@res;
         }
     }
+    $h = undef;
 
     $c->stash->{rest} = { data => \@result };
 }
@@ -7201,6 +7218,7 @@ sub _perform_get_weeks_drone_run_after_planting {
     my $day_term_string = "day $time_diff_days";
     $h->execute($day_term_string, 'cxgn_time_ontology');
     my ($day_cvterm_id) = $h->fetchrow_array();
+    $h = undef;
 
     if (!$day_cvterm_id) {
         my $new_day_term = $schema->resultset("Cv::Cvterm")->create_with({
@@ -7399,6 +7417,7 @@ sub standard_process_apply_POST : Args(0) {
         my $h = $bcs_schema->storage->dbh()->prepare($q);
         $h->execute($drone_run_project_id_input);
         my ($camera_rig) = $h->fetchrow_array();
+        $h = undef;
 
         my $q2 = "SELECT drone_run_band.project_id, drone_run.project_id, processed.value, inprogress.value
             FROM project AS drone_run_band
@@ -7418,6 +7437,8 @@ sub standard_process_apply_POST : Args(0) {
                 push @{$apply_project_hash{$drone_run_project_id}}, $drone_run_band_project_id;
             }
         }
+        $h2 = undef;
+
         while (my ($k, $v) = each %apply_project_hash) {
             my $time_hash = _perform_get_weeks_drone_run_after_planting($bcs_schema, $k);
             my $time_cvterm_id = $time_hash->{time_ontology_day_cvterm_id};

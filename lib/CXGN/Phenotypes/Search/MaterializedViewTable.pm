@@ -442,6 +442,7 @@ sub search {
             full_count => $full_count,
         };
     }
+    $h = undef;
     #print STDERR Dumper \@result;
 
     print STDERR "Search End:".localtime."\n";

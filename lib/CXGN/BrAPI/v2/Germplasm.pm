@@ -365,10 +365,10 @@ sub germplasm_pedigree {
             my $h = $self->bcs_schema->storage->dbh()->prepare($q);
             $h->execute($cross_experiment_type_id, $cross_member_of_type_id, $family_name_type_id, $stock_id, $project_year_cvterm_id);
 
-
             while (my ($crossing_experiment_id, $crossing_experiment_name, $description, $family_id, $family_name, $year) = $h->fetchrow_array()){
                 push @membership_info, [$crossing_experiment_id, $crossing_experiment_name, $description, $family_id, $family_name, $year]
             }
+            $h = undef;
         }
 
         #Add parents:

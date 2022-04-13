@@ -1006,6 +1006,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
         my $h0 = $schema->storage->dbh()->prepare($q0);
         $h0->execute($analytics_protocol_name);
         my ($analytics_protocol_name_check) = $h0->fetchrow_array();
+        $h0 = undef;
 
         if ($analytics_protocol_name_check) {
             $c->stash->{rest} = { error => "Please give a unique name for your analytics protocol! The name $analytics_protocol_name is already used!"};
@@ -1016,6 +1017,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
         my $h = $schema->storage->dbh()->prepare($q);
         $h->execute($analytics_protocol_name, $analytics_protocol_desc, $protocol_type_cvterm_id);
         ($analytics_protocol_id) = $h->fetchrow_array();
+        $h = undef;
 
         my $number_iterations = $c->req->param('number_iterations') || 2;
         my $env_iterations;
@@ -1090,11 +1092,13 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
         my $q2 = "INSERT INTO nd_protocolprop (nd_protocol_id, value, type_id) VALUES (?,?,?);";
         my $h2 = $schema->storage->dbh()->prepare($q2);
         $h2->execute($analytics_protocol_id, encode_json $protocol_properties, $protocolprop_type_cvterm_id);
+        $h2 = undef;
 
         my $q3 = "INSERT INTO nd_protocolprop (nd_protocol_id, value, type_id) VALUES (?,?,?) RETURNING nd_protocolprop_id;";
         my $h3 = $schema->storage->dbh()->prepare($q3);
         $h3->execute($analytics_protocol_id, encode_json $protocol_result_summary, $protocolprop_result_type_cvterm_id);
         ($protocol_result_summary_id) = $h3->fetchrow_array();
+        $h3 = undef;
 
         my $location_id = $schema->resultset("NaturalDiversity::NdGeolocation")->search({description=>'[Computation]'})->first->nd_geolocation_id();
         my $experiment = $schema->resultset('NaturalDiversity::NdExperiment')->create({
@@ -1109,6 +1113,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
         my $h = $schema->storage->dbh()->prepare($q);
         $h->execute($analytics_protocol_id, $protocolprop_type_cvterm_id);
         my ($value) = $h->fetchrow_array();
+        $h = undef;
+
         $protocol_properties = decode_json $value;
 
         my $q3 = "SELECT nd_experiment.nd_experiment_id
@@ -1118,6 +1124,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
         my $h3 = $schema->storage->dbh()->prepare($q3);
         $h3->execute($analytics_protocol_id, $analytics_experiment_type_cvterm_id);
         ($analytics_nd_experiment_id) = $h3->fetchrow_array();
+        $h3 = undef;
     }
     # print STDERR Dumper $protocol_properties;
 
@@ -1223,6 +1230,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                 $refresh_mat_views = 1;
             }
         }
+        $h = undef;
+
         if ($refresh_mat_views) {
             my $bs = CXGN::BreederSearch->new( { dbh=>$c->dbc->dbh, dbname=>$c->config->{dbname}, } );
             my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
@@ -2061,6 +2070,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 }
                             }
                         }
+                        $h_time = undef;
 
                         my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
                         my %filtered_seen_times_htp_rel;
@@ -2433,6 +2443,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     }
+                    $h_time = undef;
+
                     if (scalar(keys %seen_times) == 0) {
                         $c->stash->{rest} = { error => "There are no phenotypes with associated days after planting time associated to the traits you have selected!"};
                         return;
@@ -6292,6 +6304,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 }
                             }
                         }
+                        $h_time = undef;
 
                         my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
                         my %filtered_seen_times_htp_rel;
@@ -8664,6 +8677,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 }
                             }
                         }
+                        $h_time = undef;
 
                         my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
                         my %filtered_seen_times_htp_rel;
@@ -10373,6 +10387,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     }
+                    $h_time = undef;
+
                     if (scalar(keys %seen_times_5) == 0) {
                         $c->stash->{rest} = { error => "There are no phenotypes with associated days after planting time associated to the traits you have selected!"};
                         return;
@@ -11131,6 +11147,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 }
                             }
                         }
+                        $h_time = undef;
 
                         my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
                         my %filtered_seen_times_htp_rel;
@@ -12845,6 +12862,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             }
                         }
                     }
+                    $h_time = undef;
+
                     if (scalar(keys %seen_times_6) == 0) {
                         $c->stash->{rest} = { error => "There are no phenotypes with associated days after planting time associated to the traits you have selected!"};
                         return;
@@ -13603,6 +13622,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                                 }
                             }
                         }
+                        $h_time = undef;
 
                         my @allowed_standard_htp_values = ('Nonzero Pixel Count', 'Total Pixel Sum', 'Mean Pixel Value', 'Harmonic Mean Pixel Value', 'Median Pixel Value', 'Pixel Variance', 'Pixel Standard Deviation', 'Pixel Population Standard Deviation', 'Minimum Pixel Value', 'Maximum Pixel Value', 'Minority Pixel Value', 'Minority Pixel Count', 'Majority Pixel Value', 'Majority Pixel Count', 'Pixel Group Count');
                         my %filtered_seen_times_htp_rel;
@@ -15444,6 +15464,8 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     my $h_save_res = $schema->storage->dbh()->prepare($q_save_res);
     $h_save_res->execute($analytics_protocol_id, $protocolprop_result_type_cvterm_id);
     my ($protocol_result_summary_id_select, $value2) = $h_save_res->fetchrow_array();
+    $h_save_res = undef;
+
     $protocol_result_summary = $value2 ? decode_json $value2 : [];
     $protocol_result_summary_id = $protocol_result_summary_id_select;
 
@@ -15465,6 +15487,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
     my $q2 = "UPDATE nd_protocolprop SET value=? WHERE nd_protocolprop_id=?;";
     my $h2 = $schema->storage->dbh()->prepare($q2);
     $h2->execute(encode_json $protocol_result_summary, $protocol_result_summary_id);
+    $h2 = undef;
 
     foreach my $f (@$spatial_effects_plots) {
         my $auxiliary_model_file = $c->config->{basepath}.$f->[0];

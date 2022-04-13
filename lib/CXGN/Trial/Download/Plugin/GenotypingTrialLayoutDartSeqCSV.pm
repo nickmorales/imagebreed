@@ -41,11 +41,11 @@ use CXGN::Trial;
 use CXGN::Trial::TrialLayout;
 use Text::CSV;
 
-sub verify { 
+sub verify {
     return 1;
-} 
+}
 
-sub download { 
+sub download {
     my $self = shift;
 
     print STDERR "DATALEVEL ".$self->data_level."\n";
@@ -105,6 +105,7 @@ sub download {
                 $csv->print($F, $o);
             }
         }
+        $h = undef;
     }
     close($F);
 }

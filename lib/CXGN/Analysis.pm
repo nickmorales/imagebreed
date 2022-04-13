@@ -254,6 +254,8 @@ sub BUILD {
         my $nd_protocol_h = $schema->storage->dbh()->prepare($nd_protocol_q);
         $nd_protocol_h->execute($self->get_trial_id());
         my ($nd_protocol_id) = $nd_protocol_h->fetchrow_array();
+        $nd_protocol_h = undef;
+
         if ($nd_protocol_id) {
             my $m = CXGN::AnalysisModel::GetModel->new({
                 bcs_schema=>$schema,

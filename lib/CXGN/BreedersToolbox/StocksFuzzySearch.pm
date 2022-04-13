@@ -64,6 +64,7 @@ sub get_matches {
             }
         }
     }
+    $h = undef;
 
     my @stock_names = keys %uniquename_hash;
     my @synonym_names = keys %synonym_uniquename_lookup;

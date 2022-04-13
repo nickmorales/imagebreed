@@ -50,6 +50,7 @@ sub get_trial_related_stock {
 
       push @trial_related_stock, [$stock_id, $stock_name, $cvterm_name]
     }
+    $h = undef;
 
     return\@trial_related_stock;
 }

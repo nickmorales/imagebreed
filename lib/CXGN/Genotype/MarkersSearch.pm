@@ -159,12 +159,14 @@ sub search {
         }
         push @results, $marker_obj;
     }
+    $protocolprop_h = undef;
 
     my $where_marker_count_clause = " WHERE " . (join (" AND " , @where_marker_count_clause));
     my $count_q = "SELECT jsonb_array_length(value->'marker_names') FROM nd_protocolprop $where_marker_count_clause;";
     my $count_h = $schema->storage->dbh()->prepare($count_q);
     $count_h->execute();
     my ($total_marker_count) = $count_h->fetchrow_array();
+    $count_h = undef;
 
     return (\@results, $total_marker_count);
 }

@@ -93,6 +93,7 @@ sub BUILD {
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($self->nd_protocol_id);
     my ($nd_protocol_id, $nd_protocol_name, $value, $create_date, $description) = $h->fetchrow_array();
+    $h = undef;
 
     my $protocol_details = $value ? decode_json $value : {};
     my $header_column_names = $protocol_details->{header_column_names} || [];
@@ -115,4 +116,3 @@ sub BUILD {
 }
 
 1;
-

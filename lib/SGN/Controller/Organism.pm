@@ -390,6 +390,7 @@ sub phenotype_data {
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($organism_id);
     my ($trait_count) = $h->fetchrow_array();
+    $h = undef;
 
     my $pheno_list =
         qq|<a href= "/search/stocks?organism=$organism_id">$pheno_count</a>|;

@@ -61,6 +61,7 @@ sub get_breeding_programs {
     while (my($project_id, $name, $description, $private_company_id, $private_company_name) = $h->fetchrow_array()) {
         push @projects, [$project_id, $name, $description, $private_company_id, $private_company_name];
     }
+    $h = undef;
 
     return \@projects;
 }
@@ -337,6 +338,7 @@ sub get_all_locations {
     while (my ($nd_geolocation_id, $desc) = $h->fetchrow_array()) {
         push @locations, [ $nd_geolocation_id, $desc ];
     }
+    $h = undef;
 
     return \@locations;
  }
@@ -546,6 +548,7 @@ sub new_breeding_program {
         my $q = "INSERT INTO project (name, description, private_company_id) VALUES (?,?,?);";
         my $h = $self->schema->storage->dbh()->prepare($q);
         $h->execute($name, $description, $private_company_id);
+        $h = undef;
 
         my $row = $self->schema()->resultset("Project::Project")->find({name => $name});
         $project_id = $row->project_id();
@@ -732,6 +735,8 @@ sub get_gt_protocols {
             push @protocols, [ $protocol_id, $name];
         }
     }
+    $h = undef;
+
     return \@protocols;
 }
 

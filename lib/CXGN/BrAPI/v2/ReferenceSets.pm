@@ -63,7 +63,7 @@ sub search {
 	            referenceSetName => $reference,
 	            sourceAccessions => undef,
 	            sourceURI => undef,
-	            species => { 
+	            species => {
 	            	term => $species,
 	            	termURI => undef
 	            }
@@ -71,6 +71,7 @@ sub search {
 	    }
 	    $counter++;
     }
+    $h = undef;
 
     my %result = (data=>\@data);
     my @data_files;
@@ -120,13 +121,14 @@ sub detail {
             referenceSetName => $reference,
             sourceAccessions => undef,
             sourceURI => undef,
-            species => { 
+            species => {
             	term => $species,
             	termURI => undef
             }
         };
         $counter++;
     }
+    $h = undef;
 
     my %result = (data=>\@data);
     my @data_files;

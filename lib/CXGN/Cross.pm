@@ -170,6 +170,7 @@ sub get_membership {
      while (my ($crossing_experiment_id, $crossing_experiment_name, $description, $family_id, $family_name) = $h->fetchrow_array()){
          push @membership_info, [$crossing_experiment_id, $crossing_experiment_name, $description, $family_id, $family_name]
      }
+     $h = undef;
 
      return \@membership_info;
 }
@@ -221,16 +222,16 @@ sub cross_parents {
         LEFT JOIN stockprop AS cross_combination ON (stock.stock_id = cross_combination.stock_id) AND cross_combination.type_id =?
         WHERE stock.stock_id = ?";
 
-        my $h = $schema->storage->dbh()->prepare($q);
-        $h->execute($female_accession_cvterm, $ploidy_level_cvterm, $female_plot_cvterm, $female_plant_cvterm, $male_accession_cvterm, $ploidy_level_cvterm, $male_plot_cvterm, $male_plant_cvterm, $cross_combination_cvterm, $cross_id);
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute($female_accession_cvterm, $ploidy_level_cvterm, $female_plot_cvterm, $female_plant_cvterm, $male_accession_cvterm, $ploidy_level_cvterm, $male_plot_cvterm, $male_plant_cvterm, $cross_combination_cvterm, $cross_id);
 
-        my @cross_parents = ();
-        while(my ($female_accession_id, $female_accession_name, $female_plot_id, $female_plot_name, $female_plant_id, $female_plant_name, $male_accession_id, $male_accession_name, $male_plot_id, $male_plot_name, $male_plant_id, $male_plant_name, $cross_type, $cross_combination, $female_ploidy, $male_ploidy) = $h->fetchrow_array()){
-            push @cross_parents, [$female_accession_id, $female_accession_name, $female_plot_id, $female_plot_name, $female_plant_id, $female_plant_name, $male_accession_id, $male_accession_name, $male_plot_id, $male_plot_name, $male_plant_id, $male_plant_name, $cross_type, $cross_combination, $female_ploidy, $male_ploidy]
-        }
+    my @cross_parents = ();
+    while(my ($female_accession_id, $female_accession_name, $female_plot_id, $female_plot_name, $female_plant_id, $female_plant_name, $male_accession_id, $male_accession_name, $male_plot_id, $male_plot_name, $male_plant_id, $male_plant_name, $cross_type, $cross_combination, $female_ploidy, $male_ploidy) = $h->fetchrow_array()){
+        push @cross_parents, [$female_accession_id, $female_accession_name, $female_plot_id, $female_plot_name, $female_plant_id, $female_plant_name, $male_accession_id, $male_accession_name, $male_plot_id, $male_plot_name, $male_plant_id, $male_plant_name, $cross_type, $cross_combination, $female_ploidy, $male_ploidy]
+    }
+    $h = undef;
 
-        return \@cross_parents;
-
+    return \@cross_parents;
 }
 
 
@@ -300,6 +301,8 @@ sub get_cross_details {
     while (my ($female_parent_id, $male_parent_id, $cross_entry_id, $female_parent_name, $male_parent_name, $cross_name, $cross_type, $family_id, $family_name, $project_id, $project_name) = $h->fetchrow_array()){
         push @cross_details, [$female_parent_id, $female_parent_name, $male_parent_id, $male_parent_name, $cross_entry_id, $cross_name, $cross_type, $family_id, $family_name, $project_id, $project_name]
     }
+    $h = undef;
+
 #    print STDERR Dumper(\@cross_details);
     return \@cross_details;
 }
@@ -352,6 +355,8 @@ sub get_cross_info_for_progeny {
     while (my ($cross_entry_id, $cross_name, $cross_type, $year) = $h->fetchrow_array()){
         push @cross_info, [$cross_entry_id, $cross_name, $cross_type, $year];
     }
+    $h = undef;
+
     #print STDERR Dumper(\@cross_info);
     if (scalar(@cross_info)>1){
         print STDERR "There is more than one (".scalar(@cross_info).") cross linked to this progeny\n";
@@ -422,9 +427,10 @@ sub get_progeny_info {
 
     my @progeny_info = ();
     while (my($female_parent_id, $female_parent_name, $male_parent_id, $male_parent_name, $progeny_id, $progeny_name, $cross_type) = $h->fetchrow_array()){
-
         push @progeny_info, [$female_parent_id, $female_parent_name, $male_parent_id, $male_parent_name, $progeny_id, $progeny_name, $cross_type]
     }
+    $h = undef;
+
       #print STDERR Dumper(\@progeny_info);
     return \@progeny_info;
 }
@@ -457,6 +463,7 @@ sub get_crosses_in_crossing_experiment {
     while(my($cross_id, $cross_name) = $h->fetchrow_array()){
         push @data, [$cross_id, $cross_name]
     }
+    $h = undef;
 
     return \@data;
 }
@@ -490,6 +497,7 @@ sub get_female_accessions_in_crossing_experiment {
     while(my($female_accession_id, $female_accession_name) = $h->fetchrow_array()){
         push @data, [$female_accession_id, $female_accession_name]
     }
+    $h = undef;
 
     return \@data;
 }
@@ -523,6 +531,7 @@ sub get_male_accessions_in_crossing_experiment {
     while(my($male_accession_id, $male_accession_name) = $h->fetchrow_array()){
         push @data, [$male_accession_id, $male_accession_name]
     }
+    $h = undef;
 
     return \@data;
 }
@@ -556,6 +565,7 @@ sub get_female_plots_in_crossing_experiment {
     while(my($female_plot_id, $female_plot_name) = $h->fetchrow_array()){
         push @data, [$female_plot_id, $female_plot_name]
     }
+    $h = undef;
 
     return \@data;
 }
@@ -589,6 +599,7 @@ sub get_male_plots_in_crossing_experiment {
     while(my($male_plot_id, $male_plot_name) = $h->fetchrow_array()){
         push @data, [$male_plot_id, $male_plot_name]
     }
+    $h = undef;
 
     return \@data;
 }
@@ -622,6 +633,7 @@ sub get_female_plants_in_crossing_experiment {
     while(my($female_plant_id, $female_plant_name) = $h->fetchrow_array()){
         push @data, [$female_plant_id, $female_plant_name]
     }
+    $h = undef;
 
     return \@data;
 }
@@ -655,6 +667,7 @@ sub get_male_plants_in_crossing_experiment {
     while(my($male_plant_id, $male_plant_name) = $h->fetchrow_array()){
         push @data, [$male_plant_id, $male_plant_name]
     }
+    $h = undef;
 
     return \@data;
 }
@@ -712,6 +725,8 @@ sub get_crosses_and_details_in_crossingtrial {
     while(my($cross_id, $cross_name, $cross_combination, $cross_type, $female_parent_id, $female_parent_name, $female_ploidy, $male_parent_id, $male_parent_name, $male_ploidy, $female_plot_id, $female_plot_name, $male_plot_id, $male_plot_name, $female_plant_id, $female_plant_name, $male_plant_id, $male_plant_name) = $h->fetchrow_array()){
         push @data, [$cross_id, $cross_name, $cross_combination, $cross_type, $female_parent_id, $female_parent_name, $female_ploidy, $male_parent_id, $male_parent_name, $male_ploidy, $female_plot_id, $female_plot_name, $male_plot_id, $male_plot_name, $female_plant_id, $female_plant_name, $male_plant_id, $male_plant_name]
     }
+    $h = undef;
+
     return \@data;
 }
 
@@ -753,9 +768,9 @@ sub get_cross_properties_trial {
             push @data, [$cross_id, $cross_name, $cross_combination, $cross_props]
         }
     }
+    $h = undef;
 
     return \@data;
-
 }
 
 
@@ -789,9 +804,9 @@ sub get_seedlots_from_crossingtrial {
     while(my($cross_id, $cross_name, $seedlot_id, $seedlot_uniquename) = $h->fetchrow_array()){
         push @data, [$cross_id, $cross_name, $seedlot_id, $seedlot_uniquename]
     }
+    $h = undef;
 
     return \@data;
-
 }
 
 =head2 get_cross_progenies_trial
@@ -837,9 +852,9 @@ sub get_cross_progenies_trial {
     while(my($cross_id, $cross_name, $cross_combination, $family_id, $family_name, $progeny_number) = $h->fetchrow_array()){
         push @data, [$cross_id, $cross_name, $cross_combination, $family_id, $family_name, $progeny_number]
     }
+    $h = undef;
 
     return \@data;
-
 }
 
 
@@ -887,6 +902,7 @@ sub delete {
 	        die "Cross has associated seedlot: $seedlot_name. Cannot delete.\n";
 	    }
     }
+    $h = undef;
 
     #checking if cross has associated trial
     my $q2 = "SELECT nd_experiment_stock.type_id, project.name FROM stock_relationship JOIN nd_experiment_stock ON (stock_relationship.subject_id = nd_experiment_stock.stock_id) AND stock_relationship.type_id = ?
@@ -903,6 +919,7 @@ sub delete {
             die "Cross has associated trial: $project_name. Cannot delete.\n";
         }
     }
+    $h2 = undef;
 
     #checking if any progeny has associated data
 	my $properties = $self->progeny_properties();
@@ -937,6 +954,7 @@ sub delete {
     my $nd_h = $schema->storage->dbh()->prepare($nd_q);
     $nd_h->execute($cross_experiment_type_id, $cross_id);
     my @nd_experiment_ids= $nd_h->fetchrow_array();
+    $nd_h = undef;
     if (scalar @nd_experiment_ids == 1) {
         $experiment_id = $nd_experiment_ids[0];
     } else {
@@ -949,12 +967,14 @@ sub delete {
     my $md_files_q = "DELETE FROM phenome.nd_experiment_md_files WHERE nd_experiment_id = ?";
     my $md_files_h = $schema->storage->dbh()->prepare($md_files_q);
     $md_files_h->execute($experiment_id);
+    $md_files_h = undef;
 
 	# delete the nd_experiment entries
 	print STDERR "Deleting nd_experiment entry for cross...\n";
 	$q2= "delete from nd_experiment where nd_experiment.nd_experiment_id = ? AND nd_experiment.type_id = ?";
 	$h2 = $dbh->prepare($q2);
 	$h2->execute($experiment_id, $cross_experiment_type_id);
+    $h2 = undef;
 
 	# delete stock owner entries
 	#
@@ -962,6 +982,7 @@ sub delete {
 	my $q3 = "delete from phenome.stock_owner where stock_id=?";
 	my $h3 = $dbh->prepare($q3);
 	$h3->execute($self->cross_stock_id());
+    $h3 = undef;
 
 	# delete the stock entries
 	#
@@ -969,6 +990,7 @@ sub delete {
 	my $q4 = "delete from stock where stock.stock_id=? and stock.type_id = ?";
 	my $h4 = $dbh->prepare($q4);
 	$h4->execute($self->cross_stock_id(), $cross_type_id);
+    $h4 = undef;
 
 	print STDERR Dumper($properties);
 	# delete the progeny...
@@ -1016,35 +1038,37 @@ sub progeny_properties {
     my $has_images;
 
     while (my($stock_id, $name, $type) = $h->fetchrow_array()) {
-	print STDERR "ID $stock_id NAME $name TYPE $type\n";
-	push @subjects, [$stock_id, $name, $type];
+        print STDERR "ID $stock_id NAME $name TYPE $type\n";
+        push @subjects, [$stock_id, $name, $type];
 
-	if ($type eq "offspring_of") { # child
-	    my $s = CXGN::Stock->new( { schema => $self->schema(),  stock_id => $stock_id });
-	    if (my @traits = $s->get_trait_list()) {
-		print STDERR "Associated traits: ".Dumper(\@traits);
-		$has_traits += scalar(@traits);
-	    }
-	    if (my @trials = $s->get_trials()) {
-		print STDERR "Associated trials: ".Dumper(\@trials);
-		$has_trials += scalar(@trials);
-	    }
-	    if (my $genotypeprop_ids = $s->get_genotypeprop_ids()) {
-		print STDERR "Associated genotypes: ".Dumper($genotypeprop_ids);
-		$has_genotypes += scalar(@$genotypeprop_ids);
-	    }
-	    if (my @image_ids = $s->get_image_ids()) {
-		print STDERR "Associated images: ".Dumper(\@image_ids);
-		$has_images += scalar(@image_ids);
-	    }
-	}
+        if ($type eq "offspring_of") { # child
+            my $s = CXGN::Stock->new( { schema => $self->schema(),  stock_id => $stock_id });
+            if (my @traits = $s->get_trait_list()) {
+                print STDERR "Associated traits: ".Dumper(\@traits);
+                $has_traits += scalar(@traits);
+            }
+            if (my @trials = $s->get_trials()) {
+                print STDERR "Associated trials: ".Dumper(\@trials);
+                $has_trials += scalar(@trials);
+            }
+            if (my $genotypeprop_ids = $s->get_genotypeprop_ids()) {
+                print STDERR "Associated genotypes: ".Dumper($genotypeprop_ids);
+                $has_genotypes += scalar(@$genotypeprop_ids);
+            }
+            if (my @image_ids = $s->get_image_ids()) {
+                print STDERR "Associated images: ".Dumper(\@image_ids);
+                $has_images += scalar(@image_ids);
+            }
+        }
     }
+    $h = undef;
+
     my $data = {
-	traits => $has_traits,
-	trials => $has_trials,
-	genotypes => $has_genotypes,
-	images => $has_images,
-	subjects => \@subjects,
+        traits => $has_traits,
+        trials => $has_trials,
+        genotypes => $has_genotypes,
+        images => $has_images,
+        subjects => \@subjects,
     };
 
     print STDERR Dumper($data);
@@ -1260,6 +1284,7 @@ sub get_cross_identifiers_in_crossing_experiment {
     while(my($cross_unique_id, $cross_identifier) = $h->fetchrow_array()){
         $cross_identifier_hash{$cross_identifier} = $cross_unique_id;
     }
+    $h = undef;
 
     return \%cross_identifier_hash;
 }
@@ -1301,6 +1326,7 @@ sub get_cross_additional_info_trial {
             push @data, [$cross_id, $cross_name, $cross_combination, $cross_additional_info_json]
         }
     }
+    $h = undef;
 
     return \@data;
 }
@@ -1337,6 +1363,8 @@ sub get_nd_experiment_id_with_type_cross_experiment {
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($cross_experiment_type_id, $cross_id);
     my @nd_experiment_ids= $h->fetchrow_array();
+    $h = undef;
+
     if (scalar @nd_experiment_ids == 1) {
         $experiment_id = $nd_experiment_ids[0];
     } else {

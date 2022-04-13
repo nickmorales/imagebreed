@@ -41,6 +41,7 @@ sub transform {
             push @transform, $private_company_id;
         }
     }
+    $h = undef;
 
     # print STDERR " transform array = " . Dumper(@transform);
     # print STDERR " missing array = " . Dumper(@missing);

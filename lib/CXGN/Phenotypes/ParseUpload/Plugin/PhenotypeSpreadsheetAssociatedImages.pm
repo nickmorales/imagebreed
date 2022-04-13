@@ -204,6 +204,8 @@ sub parse {
             project_id => $project_id
         };
     }
+    $h = undef;
+
     while (my ($image_name, $uniquename) = each %image_observation_unit_hash) {
         $image_observation_unit_hash{$image_name} = $observationunit_lookup{$uniquename};
     }

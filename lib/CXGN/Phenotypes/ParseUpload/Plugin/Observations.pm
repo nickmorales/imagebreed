@@ -50,6 +50,8 @@ sub check_unique_var_unit_time {
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($variable_id, $unit, $timestamp);
     my ($id, $value) = $h->fetchrow_array();
+    $h = undef;
+
     if ($id) {
         #print STDERR "Found id $id and value $value\n";
         $check_result{'error'} = "The combination of observationVariableDbId $variable_id with observationUnitDbId $unit at observationTimeStamp $timestamp already exists in the database with value $value and observationDbId $id. To update this measurement includes its observationDbId in your request";

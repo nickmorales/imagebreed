@@ -143,6 +143,7 @@ sub get_trial_phenotypes_heatmap {
         push @phenoID, $pheno_id;
 		push @msg, "plot_No:".$plot_number."\nblock_No:".$block_number."\nrep_No:".$rep."\nstock:".$stock_name."\nvalue:".$value;
     }
+    $h = undef;
 
 	# my ($min_col, $max_col) = minmax @col_No;
 	# my ($min_row, $max_row) = minmax @row_No;

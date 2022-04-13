@@ -466,6 +466,7 @@ sub search {
         };
         $total_count = $full_count;
     }
+    $h = undef;
 
     #pagination in sql query not possible unitl we have project_class explicitly
     my @data_window;

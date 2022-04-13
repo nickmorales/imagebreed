@@ -157,6 +157,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
         my $h = $schema->storage->dbh()->prepare($q);
         $h->execute();
         my ($odm_running_count) = $h->fetchrow_array();
+        $h = undef;
+
         if ($odm_running_count >= $c->config->{opendronemap_max_processes}) {
             $c->stash->{message} = "There are already the maximum number of OpenDroneMap processes running on this machine! Please check back later when those processes are complete.";
             $c->stash->{template} = 'generic_message.mas';
@@ -205,6 +207,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 $seen_field_trial_drone_run_dates{$epoch_seconds}++;
             }
         }
+        $drone_run_date_h = undef;
+
         my $drone_run_date_obj = Time::Piece->strptime($new_drone_run_date, "%Y/%m/%d %H:%M:%S");
         if (exists($seen_field_trial_drone_run_dates{$drone_run_date_obj->epoch})) {
             $c->stash->{rest} = { error => "An imaging event has already occured on these field trial(s) at the same date and time! Please give a unique date/time for each imaging event on a field trial!" };
@@ -269,6 +273,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
             my $day_term_string = "day $time_diff_days";
             $h->execute($day_term_string, 'cxgn_time_ontology');
             my ($day_cvterm_id) = $h->fetchrow_array();
+            $h = undef;
 
             if (!$day_cvterm_id) {
                 my $new_day_term = $schema->resultset("Cv::Cvterm")->create_with({
@@ -1279,6 +1284,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
         $odm_check_prop->value('0');
         $odm_check_prop->update();
 
+        $h_priv = undef;
+
         if (scalar(@return_drone_run_band_project_ids) > 0 && scalar(@return_drone_run_band_project_ids) == scalar(@stitched_bands)*scalar(@new_drone_run_names)) {
             $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";
             $c->stash->{template} = 'generic_message.mas';
@@ -1687,6 +1694,9 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
             }
         }
     }
+    $h_comp = undef;
+    $h_project = undef;
+    $h_stock = undef;
 
     # my $seen_field_trial_ids_check = join ',', keys %field_trial_ids_seen;
     # my $drone_run_date_q = "SELECT drone_run_date.value
@@ -1704,6 +1714,7 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
     #         $seen_field_trial_drone_run_dates{$date_obj->epoch}++;
     #     }
     # }
+    # $drone_run_date_h = undef;
     #
     # while (my($imaging_event_name,$v) = each %seen_upload_dates) {
     #     my $time = $v->{time};
@@ -1790,6 +1801,7 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
         my $day_term_string = "day $time_diff_days";
         $h->execute($day_term_string, 'cxgn_time_ontology');
         my ($day_cvterm_id) = $h->fetchrow_array();
+        $h = undef;
 
         if (!$day_cvterm_id) {
             my $new_day_term = $schema->resultset("Cv::Cvterm")->create_with({
@@ -1933,6 +1945,7 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
             };
         }
     }
+    $h_priv = undef;
 
     $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";
     $c->stash->{template} = 'generic_message.mas';
@@ -1994,6 +2007,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             $seen_field_trial_drone_run_dates{$date_obj->epoch}++;
         }
     }
+    $drone_run_date_h = undef;
 
     my %spectral_lookup = (
         blue => "Blue (450-520nm)",
@@ -2468,6 +2482,9 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             }
         close($fh_geojson_check);
     }
+    $h_comp = undef;
+    $h_project = undef;
+    $h_stock = undef;
 
     if (scalar(@parse_csv_errors) > 0) {
         my $error_string = join "<br/>", @parse_csv_errors;
@@ -2547,6 +2564,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         my $day_term_string = "day $time_diff_days";
         $h->execute($day_term_string, 'cxgn_time_ontology');
         my ($day_cvterm_id) = $h->fetchrow_array();
+        $h = undef;
 
         if (!$day_cvterm_id) {
             my $new_day_term = $schema->resultset("Cv::Cvterm")->create_with({
@@ -2809,6 +2827,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             name => $project_rs->name()
         };
     }
+    $h_priv = undef;
 
     my $vegetative_indices = ['VARI', 'TGI', 'NDRE', 'NDVI', 'CCC'];
     my $phenotype_methods = ['zonal'];
@@ -3244,6 +3263,7 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
 
         push @drone_run_band_results, [$drone_run_band_project_id, $field_trial_id, $plot_polygon_json, $rotate_value, $cropped_polygon_json, $rotated_image_id, $cropped_image_id, $denoised_image_id, $original_image_id, $original_image_width, $original_image_length, $original_image_resize_json, $rotated_image_resize_json];
     }
+    $drone_run_band_h = undef;
 
     print STDERR Dumper \@drone_run_band_results;
     foreach my $d (@drone_run_band_results) {
@@ -3361,6 +3381,7 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
             key=>'projectprop_c1'
         });
     }
+    $stock_h = undef;
 
     foreach my $trial_id (keys %seen_field_trial_ids) {
         my $layout = CXGN::Trial::TrialLayout->new({
@@ -3450,6 +3471,7 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
         $drone_run_project_info{$drone_run_project_id}->{name} = $drone_run_name;
         push @apply_drone_run_band_project_ids, $drone_run_band_project_id;
     }
+    $drone_run_band_h = undef;
 
     my $apply_geocood_polygons_q = "SELECT geocoord_polygons.value, rotate_keep_original_size.value, cropped_polygon.value, original_image_resize.value, rotated_image_resize.value
         FROM project AS drone_run
@@ -3464,6 +3486,8 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
     my $apply_geocood_polygons_h = $schema->storage->dbh()->prepare($apply_geocood_polygons_q);
     $apply_geocood_polygons_h->execute($geoparam_drone_run_project_id_input);
     my ($previous_geocoord_polygon_json, $rotate_keep_original_size, $previous_cropped_polygon_json, $original_image_resize_json, $rotated_image_resize_json) = $apply_geocood_polygons_h->fetchrow_array();
+    $apply_geocood_polygons_h = undef;
+
     my $previous_geocoord_polygons = decode_json $previous_geocoord_polygon_json;
     my $previous_cropped_polygon = decode_json $previous_cropped_polygon_json;
     my $original_image_resize = $original_image_resize_json ? decode_json $original_image_resize_json : [1,1];

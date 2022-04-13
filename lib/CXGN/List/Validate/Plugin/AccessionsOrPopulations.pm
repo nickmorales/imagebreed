@@ -6,7 +6,7 @@ use Moose;
 use Data::Dumper;
 use SGN::Model::Cvterm;
 
-sub name { 
+sub name {
     return "accessions_or_populations";
 }
 
@@ -31,6 +31,7 @@ sub validate {
             }
         }
     }
+    $h = undef;
 
     #print STDERR Dumper \%all_names;
     my @missing;

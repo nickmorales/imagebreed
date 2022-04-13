@@ -556,6 +556,7 @@ sub search {
         while (my $stock_id = $h->fetchrow_array()) {
             push @stockprop_filtered_stock_ids, $stock_id;
         }
+        $h = undef;
     }
 
     my $stock_join = '';
@@ -669,6 +670,7 @@ sub search {
             };
         }
     }
+    $stock_search_h = undef;
     #print STDERR Dumper \%result_hash;
 
     # Comma separated list of query placeholders for the result stock ids
@@ -702,6 +704,7 @@ sub search {
 
         push @{$organism_props{$organism_id}->{$prop_type}}, $prop_value;
     }
+    $organism_sth = undef;
 
     # Get additional stock properties (pedigree, synonyms, donor info)
     my $stock_query = "SELECT stock.stock_id, stock.uniquename, stock.organism_id,
@@ -753,6 +756,7 @@ sub search {
         $result_hash{$stock_id}{subtaxa} = $organism_id && defined($organism_props{$organism_id}) ? $organism_props{$organism_id}->{'subtaxa'} : undef;
         $result_hash{$stock_id}{subtaxaAuthority} = $organism_id && defined($organism_props{$organism_id}) ? $organism_props{$organism_id}->{'subtaxa authority'} : undef;
     }
+    $sth = undef;
 
     if ($self->stockprop_columns_view && scalar(keys %{$self->stockprop_columns_view})>0 && scalar(@result_stock_ids)>0){
         my @stockprop_view = keys %{$self->stockprop_columns_view};
@@ -777,6 +781,7 @@ sub search {
                 $result_hash{$stock_id}->{$stockprop_view[$s]} = $stockprop_vals_string;
             }
         }
+        $h = undef;
 
         while (my ($uniquename, $info) = each %result_hash){
             foreach (@stockprop_view){
@@ -806,6 +811,7 @@ sub _refresh_materialized_stockprop {
         my $stockprop_query = "SELECT stock_id $stockprop_select_sql FROM materialized_stockprop;";
         my $h = $schema->storage->dbh()->prepare($stockprop_query);
         $h->execute();
+        $h = undef;
     };
     if ($@) {
         my @stock_props = ('block', 'col_number', 'igd_synonym', 'is a control', 'location_code', 'organization', 'plant_index_number', 'subplot_index_number', 'tissue_sample_index_number', 'plot number', 'plot_geo_json', 'range', 'replicate', 'row_number', 'stock_synonym', 'T1', 'T2', 'variety',
@@ -852,6 +858,7 @@ sub _refresh_materialized_stockprop {
 
             $stockprop_refresh_q .= ",(''".$cvterm_id."'')";
         }
+        $h = undef;
 
         $stockprop_refresh_q .= ") AS t (type_id);'
         )

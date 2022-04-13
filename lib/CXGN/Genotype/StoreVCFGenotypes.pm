@@ -747,6 +747,7 @@ sub validate {
             $all_names{$synonym} = $stock_id;
         }
     }
+    $h = undef;
 
     #check if genotype_info is correct
     #print STDERR Dumper($genotype_info);
@@ -814,6 +815,7 @@ sub validate {
                     }
                 }
             }
+            $h = undef;
         }
     }
 
@@ -961,6 +963,7 @@ sub store_metadata {
         my $q = "UPDATE nd_protocol SET description = ? WHERE nd_protocol_id = ?;";
         my $h = $schema->storage->dbh()->prepare($q);
         $h->execute($map_protocol_description, $protocol_id);
+        $h = undef;
 
         if ($is_from_grm_trial_ids && scalar(@$is_from_grm_trial_ids)>0) {
             my $grm_geno_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'grm_genotyping_protocol_experiment', 'experiment_type')->cvterm_id();
@@ -1023,6 +1026,7 @@ sub store_metadata {
 
         my $nd_protocol_json_string = encode_json $new_protocol_info;
         $h_protocolprop->execute($protocol_id, $vcf_map_details_id, 0, $nd_protocol_json_string);
+        $h_protocolprop = undef;
         print STDERR "Protocolprop Info stored...\n";
     }
     $self->protocol_id($protocol_id);
@@ -1051,6 +1055,7 @@ sub store_metadata {
             }
         }
     }
+    $h = undef;
 
     if ($genotyping_data_type ne 'GRM') {
         # Updates stock_lookup to have the genotypeprop_ids for samples previously saved in this protocol/project. Useful for when appending genotypes to the jsonb
@@ -1071,6 +1076,7 @@ sub store_metadata {
                 $stock_lookup{$synonym} = { stock_id => $stock_id, genotype_id => $genotype_id, chrom => {$chromosome_counter => $genotypeprop_id} };
             }
         }
+        $q_g_h = undef;
     }
 
     $self->stock_lookup(\%stock_lookup);
@@ -1226,6 +1232,9 @@ sub store_identifiers {
                 }
             }
         }
+        $h_new_genotypeprop = undef;
+        $h_genotypeprop = undef;
+
         close($fh);
 
         foreach my $nd_experiment_id (keys %nd_experiment_ids) {

@@ -467,6 +467,7 @@ sub _validate_with_plugin {
         }
 
     }
+    $h_comp = undef;
 
     ## END ROW BY ROW VALIDATION, BEGIN OVERALL VALIDATION
     my $validator = CXGN::List::Validate->new();
@@ -854,6 +855,7 @@ sub _parse_with_plugin {
         }
 
     }
+    $h_comp = undef;
 
     # add last trial design to all_designs and save parsed data, then return
     my %final_design_details = ();

@@ -12,7 +12,7 @@ my $marker_search = CXGN::Marker::SearchBrAPI->new({
     marker_names=>\@marker_names,
     get_synonyms=>$synonyms,
     match_method=>$method,
-    types=>\@types, 
+    types=>\@types,
     offset=>$page_size*$page,
     limit=>$page_size
 });
@@ -131,7 +131,7 @@ sub searchv1 {
     my @where_clause;
     my $comparison;
 
-    if ($match_method eq 'exact'){ $comparison = 'in';} 
+    if ($match_method eq 'exact'){ $comparison = 'in';}
     elsif ($match_method eq 'case_insensitive'){ $comparison = 'ilike'; }
     else { $comparison = 'like'; }
 
@@ -152,13 +152,13 @@ sub searchv1 {
 
     my $where_clause = scalar(@where_clause)>0 ? " WHERE " . (join (" AND " , @where_clause)) : '';
 
-       
-    my $subquery = "SELECT distinct m2m.marker_id,name,alias,protocol,organism_name,common_name.common_name FROM sgn.marker 
-        LEFT JOIN sgn.marker_to_map as m2m using(marker_id) 
-        INNER JOIN sgn.accession ON(parent_1 = accession.accession_id OR parent_2 = accession.accession_id) 
-        INNER JOIN sgn.organism using(organism_id) 
-        INNER JOIN sgn.common_name USING(common_name_id) 
-        INNER JOIN marker_names ON(m2m.marker_id=marker_names.marker_id) 
+
+    my $subquery = "SELECT distinct m2m.marker_id,name,alias,protocol,organism_name,common_name.common_name FROM sgn.marker
+        LEFT JOIN sgn.marker_to_map as m2m using(marker_id)
+        INNER JOIN sgn.accession ON(parent_1 = accession.accession_id OR parent_2 = accession.accession_id)
+        INNER JOIN sgn.organism using(organism_id)
+        INNER JOIN sgn.common_name USING(common_name_id)
+        INNER JOIN marker_names ON(m2m.marker_id=marker_names.marker_id)
         INNER JOIN marker_alias ON(m2m.marker_id=marker_alias.marker_id) $where_clause";
 
     my $h = $schema->storage->dbh()->prepare($subquery);
@@ -179,6 +179,7 @@ sub searchv1 {
         };
         $total_count = $full_count;
     }
+    $h = undef;
 
     my @data_window;
     if (($limit && defined($limit) || ($offset && defined($offset)))){
@@ -231,7 +232,7 @@ sub search {
         $protocol_where = "nd_protocolprop.nd_protocol_id in ($protocol_sql)";
         push @where_clause, $protocol_where;
     }
-   
+
     if ($marker_name_list && scalar(@$marker_name_list)>0) {
         foreach (@$marker_name_list) {
             push @or_clause, " s.key = '$_'";
@@ -269,10 +270,10 @@ sub search {
 
     my $protocolprop_q = "SELECT nd_protocolprop.nd_protocol_id, s.key, array_agg(project.project_id)
         $protocolprop_hash_select_sql
-        FROM nd_protocolprop, jsonb_each(nd_protocolprop.value) as s,  (select DISTINCT nd_experiment_project.project_id as project_id, nd_experiment_protocol.nd_protocol_id from  nd_experiment_protocol  
-        inner join nd_experiment ON(nd_experiment.nd_experiment_id = nd_experiment_protocol.nd_experiment_id ) 
+        FROM nd_protocolprop, jsonb_each(nd_protocolprop.value) as s,  (select DISTINCT nd_experiment_project.project_id as project_id, nd_experiment_protocol.nd_protocol_id from  nd_experiment_protocol
+        inner join nd_experiment ON(nd_experiment.nd_experiment_id = nd_experiment_protocol.nd_experiment_id )
         inner join nd_experiment_project ON(nd_experiment_project.nd_experiment_id = nd_experiment_protocol.nd_experiment_id))  project
-        $where_clause and nd_protocolprop.nd_protocol_id = project.nd_protocol_id  $project_where 
+        $where_clause and nd_protocolprop.nd_protocol_id = project.nd_protocol_id  $project_where
         GROUP BY nd_protocolprop.nd_protocol_id, nd_protocolprop.value, s.key $protocolprop_hash_select_sql
         ORDER BY s.key ASC
         $limit_clause
@@ -295,6 +296,7 @@ sub search {
         push @results, $marker_obj;
         $total_marker_count++;
     }
+    $protocolprop_h = undef;
 
     return (\@results, $total_marker_count);
 }

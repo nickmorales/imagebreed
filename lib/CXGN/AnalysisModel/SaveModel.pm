@@ -176,6 +176,7 @@ sub save_model {
     my $q = "UPDATE nd_protocol SET description = ? WHERE nd_protocol_id = ?;";
     my $h = $schema->storage->dbh()->prepare($q);
     $h->execute($model_description, $protocol_id);
+    $h = undef;
 
 	return {success => 1, nd_protocol_id => $protocol_id};
 }

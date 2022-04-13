@@ -112,6 +112,7 @@ sub get_synonym_hash_lookup {
     while (my ($uniquename, $synonym) = $h->fetchrow_array()) {
         push @{$result{$uniquename}}, $synonym;
     }
+    $h = undef;
     print STDERR "Synonym End:".localtime."\n";
     return \%result;
 }
@@ -133,6 +134,7 @@ sub get_owner_hash_lookup {
     while (my ($stock_id, $sp_person_id, $username, $first_name, $last_name) = $h->fetchrow_array()) {
         push @{$result{$stock_id}}, [$sp_person_id, $username, $first_name, $last_name];
     }
+    $h = undef;
     print STDERR "StockOwner End:".localtime."\n";
     return \%result;
 }
@@ -149,6 +151,7 @@ sub get_organization_hash_lookup {
     while (my ($stock_id, $organization) = $h->fetchrow_array()) {
         push @{$result{$stock_id}}, $organization;
     }
+    $h = undef;
     print STDERR "StockOrg End:".localtime."\n";
     return \%result;
 }

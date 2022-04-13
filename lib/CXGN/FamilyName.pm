@@ -80,6 +80,7 @@ sub get_family_parents {
     while (my ($female_parent_id,  $female_parent_name, $female_stock_type, $female_ploidy, $male_parent_id, $male_parent_name, $male_stock_type, $male_ploidy) = $h->fetchrow_array()){
         push @family_parents, [$female_parent_id,  $female_parent_name, $female_stock_type, $female_ploidy, $male_parent_id, $male_parent_name, $male_stock_type, $male_ploidy]
     }
+    $h = undef;
 #    print STDERR Dumper(\@family_parents);
     return \@family_parents;
 }
@@ -110,17 +111,17 @@ sub get_family_members {
         WHERE stock_relationship.object_id = ? GROUP BY cross_id) AS progeny_count_table
         ON (cross_table.cross_id = progeny_count_table.cross_id)";
 
-        my $h = $schema->storage->dbh()->prepare($q);
+    my $h = $schema->storage->dbh()->prepare($q);
 
-        $h->execute($cross_member_of_type_id, $female_parent_type_id, $cross_experiment_type_id, $family_stock_id, $cross_member_of_type_id, $offspring_of_type_id, $family_stock_id);
+    $h->execute($cross_member_of_type_id, $female_parent_type_id, $cross_experiment_type_id, $family_stock_id, $cross_member_of_type_id, $offspring_of_type_id, $family_stock_id);
 
-        my @data =();
-        while(my($cross_id, $cross_name, $cross_type, $crossing_experiment_id, $crossing_experiment_name, $progeny_number) = $h->fetchrow_array()){
-            push @data, [$cross_id, $cross_name, $cross_type, $crossing_experiment_id, $crossing_experiment_name, $progeny_number]
-        }
+    my @data =();
+    while(my($cross_id, $cross_name, $cross_type, $crossing_experiment_id, $crossing_experiment_name, $progeny_number) = $h->fetchrow_array()){
+        push @data, [$cross_id, $cross_name, $cross_type, $crossing_experiment_id, $crossing_experiment_name, $progeny_number]
+    }
+    $h = undef;
 
-#        print STDERR "CROSS MEMBERS =".Dumper(\@data);
-        return \@data;
+    return \@data;
 }
 
 
@@ -147,7 +148,9 @@ sub get_all_progenies {
     while (my ($progeny_id,  $progeny_name, $cross_id, $cross_name) = $h->fetchrow_array()){
         push @progenies, [$progeny_id, $progeny_name, $cross_id, $cross_name]
     }
-    print STDERR Dumper(\@progenies);
+    $h = undef;
+
+    # print STDERR Dumper(\@progenies);
     return \@progenies;
 }
 

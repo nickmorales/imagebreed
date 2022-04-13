@@ -923,6 +923,7 @@ sub get_seedlots {
 	while (my ($stock_id, $uniquename, $plot_id) = $h->fetchrow_array()) {
 		 $seedlots{$plot_id} = [$stock_id, $uniquename];
 	}
+    $h = undef;
 
 	return %seedlots;
 }

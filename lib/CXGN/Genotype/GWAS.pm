@@ -372,6 +372,7 @@ sub _get_gwas {
             push @female_stock_ids_found, $female_parent_stock_id;
             push @male_stock_ids_found, $male_parent_stock_id;
         }
+        $h = undef;
 
         # print STDERR Dumper \@accession_stock_ids_found;
         # print STDERR Dumper \@female_stock_ids_found;
