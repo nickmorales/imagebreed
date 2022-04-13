@@ -165,8 +165,8 @@ jQuery(document).ready(function() {
                 if (response.error) {
                     alert(response.error);
                 }
-                else if (response.num_stocks > 2000) {
-                    alert('The GRM is too large to display because it has more than 2000 accessions involved. Please download a file instead to view the relatinoships!');
+                else if (response.num_stocks > 1000) {
+                    alert('The GRM is too large to display because it has more than 1000 accessions involved. Please download a file instead to view the relatinoships!');
                     return false;
                 }
                 else {
