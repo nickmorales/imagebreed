@@ -1113,9 +1113,10 @@ sub store_identifiers {
 
     my $nd_experiment_schema = $schema->resultset('NaturalDiversity::NdExperiment');
 
+    my $csv = Text::CSV->new({ binary => 1, auto_diag => 1, eol => "\n"});
+    open(my $fh, ">>", $temp_file_sql_copy) or die "Failed to open file $temp_file_sql_copy: $!";
+
     if ($genotyping_data_type ne 'GRM') {
-        my $csv = Text::CSV->new({ binary => 1, auto_diag => 1, eol => "\n"});
-        open(my $fh, ">>", $temp_file_sql_copy) or die "Failed to open file $temp_file_sql_copy: $!";
 
         my $new_genotypeprop_sql = "INSERT INTO genotypeprop (genotype_id, type_id, rank, value) VALUES (?, ?, ?, ?) RETURNING genotypeprop_id;";
         my $h_new_genotypeprop = $schema->storage->dbh()->prepare($new_genotypeprop_sql);
@@ -1235,8 +1236,6 @@ sub store_identifiers {
         $h_new_genotypeprop = undef;
         $h_genotypeprop = undef;
 
-        close($fh);
-
         foreach my $nd_experiment_id (keys %nd_experiment_ids) {
             my $experiment_files = $self->phenome_schema->resultset("NdExperimentMdFiles")->create({
                 nd_experiment_id => $nd_experiment_id,
@@ -1254,9 +1253,6 @@ sub store_identifiers {
         });
         my $nd_experiment_id = $experiment->nd_experiment_id();
 
-        my $relatedness_fill_q = "INSERT INTO stock_relatedness (nd_experiment_id, type_id, nd_protocol_id, a_stock_id, b_stock_id, value) VALUES (".$nd_experiment_id.", ".$self->grm_genotyping_cvterm_id().",".$self->protocol_id().",?,?,?);";
-        my $relatedness_fill_h = $schema->storage->dbh->prepare($relatedness_fill_q);
-
         while(my($a_stock_name, $o) = each %$genotypeprop_observation_units) {
             while(my($b_stock_name, $value) = each %$o) {
                 my $a_stock_name = $observation_unit_uniquenames_map->{$a_stock_name}->{name};
@@ -1266,8 +1262,8 @@ sub store_identifiers {
                 my $b_stock_lookup_obj = $self->stock_lookup()->{$b_stock_name};
                 my $b_stock_id = $b_stock_lookup_obj->{stock_id};
 
-                $relatedness_fill_h->execute($a_stock_id, $b_stock_id, $value);
-                $relatedness_fill_h->execute($b_stock_id, $a_stock_id, $value);
+                $csv->print($fh, [ $nd_experiment_id, $self->grm_genotyping_cvterm_id(), $self->protocol_id(), $a_stock_id, $b_stock_id, $value ]);
+                $csv->print($fh, [ $nd_experiment_id, $self->grm_genotyping_cvterm_id(), $self->protocol_id(), $b_stock_id, $a_stock_id, $value ]);
             }
         }
 
@@ -1276,6 +1272,9 @@ sub store_identifiers {
             file_id => $self->md_file_id(),
         });
     }
+
+    close($fh);
+
     my %response = (
         success => 1,
         nd_protocol_id => $self->protocol_id(),
@@ -1296,6 +1295,32 @@ sub store_genotypeprop_table {
     print STDERR "SQL COPY $temp_file_sql_copy\n";
 
     open(my $infile, "<", $temp_file_sql_copy) or die "Failed to open file in store_genotypeprop_table() $temp_file_sql_copy: $!";
+    while (my $line = <$infile>) {
+        $dbh->pg_putcopydata($line);
+    }
+    $dbh->pg_putcopyend();
+    close($infile);
+
+    my %response = (
+        success => 1,
+        nd_protocol_id => $self->protocol_id(),
+        project_id => $self->project_id(),
+    );
+
+    return \%response;
+}
+
+sub store_stock_relatedness_table {
+    my $self = shift;
+    my $temp_file_sql_copy = $self->temp_file_sql_copy;
+    my $dbh = $self->bcs_schema->storage->dbh;
+
+    my $SQL = "COPY stock_relatedness (nd_experiment_id, type_id, nd_protocol_id, a_stock_id, b_stock_id, value) FROM STDIN WITH DELIMITER ',' CSV";
+    my $sth = $dbh->do($SQL);
+
+    print STDERR "SQL COPY $temp_file_sql_copy\n";
+
+    open(my $infile, "<", $temp_file_sql_copy) or die "Failed to open file in store_stock_relatedness_table() $temp_file_sql_copy: $!";
     while (my $line = <$infile>) {
         $dbh->pg_putcopydata($line);
     }

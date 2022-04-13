@@ -737,7 +737,8 @@ sub upload_genotype_verify_POST : Args(0) {
         }
 
         $store_genotypes->store_metadata();
-        $return = $store_genotypes->store_identifiers();
+        $store_genotypes->store_identifiers();
+        $return = $store_genotypes->store_stock_relatedness_table();
 
     } elsif ($is_from_grm) {
         #For creating a GRM and saving it as a GRM genotyping protocol. Similar to GRMTSV but creating GRM here.
@@ -873,7 +874,8 @@ sub upload_genotype_verify_POST : Args(0) {
         }
 
         $store_genotypes->store_metadata();
-        $return = $store_genotypes->store_identifiers();
+        $store_genotypes->store_identifiers();
+        $return = $store_genotypes->store_stock_relatedness_table();
 
     } else {
         print STDERR "Parser plugin $parser_plugin not recognized!\n";
