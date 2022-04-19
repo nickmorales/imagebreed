@@ -27,7 +27,7 @@
     "nock": "^10.0.6",
     "node-fetch": "^2.3.0",
     "source-map-support": "^0.5.10",
-    "tape": "^4.10.1",
+    "tape": "^5.5.3",
     "uglifyjs-webpack-plugin": "^1.2.7",
     "webpack": "^4.29.5",
     "webpack-command": "^0.4.2"

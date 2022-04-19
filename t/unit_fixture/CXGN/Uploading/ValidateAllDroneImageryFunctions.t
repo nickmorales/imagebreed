@@ -689,6 +689,7 @@ my $response_raster = $ua->post(
             "drone_run_imaging_vehicle_id"=>$new_vehicle_id,
             "drone_run_imaging_vehicle_battery_name"=>"blue",
             "drone_image_upload_drone_run_band_stitching"=>"no",
+            "drone_image_upload_drone_run_band_type"=>"Pix4D",
             "drone_run_band_number"=>5,
             "drone_run_band_name_1"=>"NewStitchedMicasense5BandDroneRunProjectTESTING_Blue",
             "drone_run_band_description_1"=>"raster blue",
