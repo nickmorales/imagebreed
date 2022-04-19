@@ -228,6 +228,19 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="form-group" id="drone_run_upload_drone_run_band_image_type_div">
+                            <label class="col-sm-3 control-label">Orthophotomosaic Product From:</label>
+                            <div class="col-sm-9" >
+                                <select class="form-control" id="drone_run_upload_drone_run_band_image_type" name="drone_run_upload_drone_run_band_image_type">
+                                    <option value="">Select One</option>
+                                    <option value="None">None</option>
+                                    <option value="ODM">OpenDroneMap</option>
+                                    <option value="Pix4D">Pix4D</option>
+                                    <option value="Agisoft">Agisoft</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
 
                         <center>
                         <button class="btn btn-primary" id="drone_image_upload_drone_run_band_continue">Go to Next Step</button>
@@ -276,6 +289,7 @@
                 <input type="hidden" name="drone_run_camera_rig_description" value="" />
                 <input type="hidden" name="drone_run_base_date" value="" />
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
                 <input type="hidden" name="drone_run_band_number" value="" />
 
                 <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_odm" &>
@@ -343,6 +357,7 @@
                 <input type="hidden" name="drone_run_camera_rig_description" value="" />
                 <input type="hidden" name="drone_run_base_date" value="" />
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
                 <input type="hidden" name="drone_run_band_number" value="" />
 
                 <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_odm_micasense" &>
@@ -428,6 +443,7 @@
                 <input type="hidden" name="drone_run_camera_rig_description" value="" />
                 <input type="hidden" name="drone_run_base_date" value="" />
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
                 <input type="hidden" name="drone_run_band_number" value="" />
 
                 <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_one_band" &>
@@ -535,6 +551,7 @@
                 <input type="hidden" name="drone_run_camera_rig_description" value="" />
                 <input type="hidden" name="drone_run_base_date" value="" />
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
                 <input type="hidden" name="drone_run_band_number" value="" />
 
                 <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_two_band" &>
@@ -681,6 +698,7 @@
                 <input type="hidden" name="drone_run_camera_rig_description" value="" />
                 <input type="hidden" name="drone_run_base_date" value="" />
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
                 <input type="hidden" name="drone_run_band_number" value="" />
 
                 <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_three_band" &>
@@ -867,6 +885,7 @@
                 <input type="hidden" name="drone_run_camera_rig_description" value="" />
                 <input type="hidden" name="drone_run_base_date" value="" />
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
                 <input type="hidden" name="drone_run_band_number" value="" />
 
                 <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_four_band" &>
@@ -1093,6 +1112,7 @@
                 <input type="hidden" name="drone_run_camera_rig_description" value="" />
                 <input type="hidden" name="drone_run_base_date" value="" />
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
                 <input type="hidden" name="drone_run_band_number" value="" />
 
                 <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_five_band" &>
@@ -1330,6 +1350,81 @@
   </div>
 </div>
 
+<div class="modal fade" id="upload_drone_imagery_dialog_five_band_ODM" name="upload_drone_imagery_dialog_five_band_ODM" tabindex="-1" role="dialog" aria-labelledby="uploadDroneImageryFiveBandODMDialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="uploadDroneImageryFiveBandODMDialog">Upload ODM Aerial Imagery</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <& /page/page_title.mas, title=>"Select Image(s) to Upload" &>
+
+            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_five_band_form" name="upload_drone_imagery_five_band_form" action="/drone_imagery/upload_drone_imagery" >
+                <input type="hidden" name="drone_run_field_trial_id" value="" >
+
+                <!-- If drone run is selected above, the drone_run_project_id is passed to controller, negating need to create new drone run -->
+                <input type="hidden" name="drone_run_id" value=""/>
+                <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
+
+                <input type="hidden" name="private_company_id" value="" />
+                <input type="hidden" name="drone_run_name" value="" />
+                <input type="hidden" name="drone_run_type" value="" />
+                <input type="hidden" name="drone_image_upload_camera_info" value="" />
+                <input type="hidden" name="drone_run_imaging_vehicle_id" value="" />
+                <input type="hidden" name="drone_run_imaging_vehicle_battery_name" value="" />
+                <input type="hidden" name="drone_run_description" value="" />
+                <input type="hidden" name="drone_run_date" value="" />
+                <input type="hidden" name="drone_run_camera_rig_description" value="" />
+                <input type="hidden" name="drone_run_base_date" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
+                <input type="hidden" name="drone_run_band_number" value="" />
+
+                <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_five_band_odm" &>
+                    <&| /util/workflow.mas:step, title=> "Select Images" &>
+                        <& /page/page_title.mas, title=>"Select Orthophoto ODM Raster Image" &>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">ODM Orthophotomosaic: (.tif) <br/><small>Since you used ODM, look at "/odm_orthophoto/odm_orthophoto.tif"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_five_odm" name="drone_run_band_stitched_ortho_image_odm" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>Since you used ODM, look at "/odm_report/report.pdf"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_five_odm" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <center>
+                            <button class="btn btn-primary" name="upload_drone_imagery_select_images_five" id="upload_drone_imagery_select_images_five">Go To Next Step</button>
+                        </center>
+                    </&>
+                    <&| /util/workflow.mas:step, title=> "Submit" &>
+                        <& /page/page_title.mas, title=>"Submit Imaging Event" &>
+                        <center>
+                            <button type="submit" class="btn btn-info" name="upload_drone_imagery_five_odm_submit" id="upload_drone_imagery_five_odm_submit">Submit. Click Once and Be Patient As This Can Take A Long Time.</button>
+                        </center>
+                    </&>
+                </&>
+            </form><br/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="upload_drone_imagery_dialog_six_band" name="upload_drone_imagery_dialog_six_band" tabindex="-1" role="dialog" aria-labelledby="uploadDroneImagerySixBandDialog">
   <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
@@ -1359,6 +1454,7 @@
                 <input type="hidden" name="drone_run_camera_rig_description" value="" />
                 <input type="hidden" name="drone_run_base_date" value="" />
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
                 <input type="hidden" name="drone_run_band_number" value="" />
 
                 <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_six_band" &>
@@ -1665,6 +1761,7 @@
                 <input type="hidden" name="drone_run_camera_rig_description" value="" />
                 <input type="hidden" name="drone_run_base_date" value="" />
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
                 <input type="hidden" name="drone_run_band_number" value="" />
 
                 <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_seven_band" &>
@@ -2011,6 +2108,7 @@
                 <input type="hidden" name="drone_run_camera_rig_description" value="" />
                 <input type="hidden" name="drone_run_base_date" value="" />
                 <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
                 <input type="hidden" name="drone_run_band_number" value="" />
 
                 <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_eight_band" &>
@@ -3050,19 +3148,23 @@ jQuery(document).ready(function() {
     jQuery('#drone_image_upload_drone_run_band_stitching').change(function() {
         if (jQuery(this).val() == 'no') {
             jQuery('#drone_run_upload_drone_run_band_number_div').show();
+            jQuery('#drone_run_upload_drone_run_band_image_type_div').show();
         }
         else {
             jQuery('#drone_run_upload_drone_run_band_number_div').hide();
+            jQuery('#drone_run_upload_drone_run_band_image_type_div').hide();
         }
     });
 
     var drone_run_band_unstitched = '';
+    var drone_run_band_image_type = '';
     var new_drone_run_band_stitching_odm_more_images = '';
     jQuery('#drone_image_upload_drone_run_band_continue').click(function(e){
         e.preventDefault();
 
         var drone_run_band_number = jQuery('#drone_run_band_number').val();
         drone_run_band_unstitched = jQuery('#drone_image_upload_drone_run_band_stitching').val();
+        drone_run_band_image_type = jQuery('#drone_run_upload_drone_run_band_image_type').val();
         var drone_run_camera_info = jQuery('#drone_image_upload_camera_info').val();
         var drone_run_id = jQuery('#drone_run_id').val();
         var drone_run_name = jQuery('#drone_run_name').val();
@@ -3109,12 +3211,19 @@ jQuery(document).ready(function() {
         jQuery('input[name="drone_run_camera_rig_description"]').val(drone_run_camera_rig_description);
         jQuery('input[name="drone_run_base_date"]').val(drone_run_base_date);
         jQuery('input[name="drone_image_upload_drone_run_band_stitching"]').val(drone_run_band_unstitched);
+        jQuery('input[name="drone_image_upload_drone_run_band_type"]').val(drone_run_band_image_type);
         jQuery('input[name="drone_run_band_number"]').val(drone_run_band_number);
 
         if (drone_run_band_unstitched == 'no') {
             if (drone_run_band_number == '') {
                 alert('Please select the number of imaging event bands you will upload!');
-            } else {
+                return false;
+            }
+            else if (drone_run_band_image_type == '') {
+                alert('Please select an option for how the orthophotomosaic was produced.');
+                return false;
+            }
+            else {
                 if (drone_run_band_number == 5 && drone_run_camera_info == 'micasense_5'){
                     jQuery('select[name="drone_run_band_type_1"] option[value="Blue (450-520nm)"]').attr('selected','selected');
                     jQuery('select[name="drone_run_band_type_2"] option[value="Green (515-600nm)"]').attr('selected','selected');
@@ -3137,7 +3246,12 @@ jQuery(document).ready(function() {
                 jQuery('#upload_drone_imagery_dialog_four_band').modal('show');
             }
             if (drone_run_band_number == 5) {
-                jQuery('#upload_drone_imagery_dialog_five_band').modal('show');
+                if (drone_run_band_image_type != 'ODM') {
+                    jQuery('#upload_drone_imagery_dialog_five_band').modal('show');
+                }
+                else {
+                    jQuery('#upload_drone_imagery_dialog_five_band_ODM').modal('show');
+                }
             }
             if (drone_run_band_number == 6) {
                 jQuery('#upload_drone_imagery_dialog_six_band').modal('show');

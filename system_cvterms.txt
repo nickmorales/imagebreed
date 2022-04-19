@@ -144,6 +144,7 @@ project_property	drone_run_is_raw_images	To distinguish when uploading raw image
 project_property	drone_run_ground_control_points	Ground control points (GCPs) can optionally be saved for a drone run	08/01/2020	nm529	00127
 project_property	drone_run_project_type	To distinguish the type of drone run being stored (Aerial Medium to High Res, Aerial Low Res)	10/5/2018	nm529	00103
 project_property	drone_run_camera_type	To identify the camera used in the drone run (micasense 5 band, cmos, ccd)	10/5/2018	nm529	00103
+project_property	drone_run_orthophoto_stitching_type	To identify the orthophoto stitching software used in the drone run (None, ODM, Pix4D, Agisoft, Other)	04/19/2022	nm529	00161
 project_property	drone_run_band_project_type	To distinguish the type of band being stored under a drone run (red, blue, nir, etc)	10/5/2018	nm529	00103
 project_property	drone_run_band_rotate_angle	The angle that the drone run band was rotated	10/5/2018	nm529	00103
 project_property	drone_run_band_cropped_polygon	The polygon that the drone run band was cropped to	10/5/2018	nm529	00103

@@ -119,6 +119,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
     my $new_drone_run_camera_info = $c->req->param('drone_image_upload_camera_info');
     my $new_drone_run_band_numbers = $c->req->param('drone_run_band_number');
     my $new_drone_run_band_stitching = $c->req->param('drone_image_upload_drone_run_band_stitching');
+    my $new_drone_run_band_file_type = $c->req->param('drone_image_upload_drone_run_band_type');
     my $new_drone_run_band_stitching_odm_radiocalibration = $c->req->param('drone_image_upload_drone_run_band_stitching_odm_radiocalibration') eq "Yes" ? 1 : 0;
 
     if (!$new_drone_run_camera_info) {
@@ -129,6 +130,11 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
 
     if ($new_drone_run_band_stitching eq 'no' && !$new_drone_run_band_numbers) {
         $c->stash->{message} = "Please give the number of new imaging event bands!";
+        $c->stash->{template} = 'generic_message.mas';
+        return;
+    }
+    if ($new_drone_run_band_stitching eq 'no' && !$new_drone_run_band_file_type) {
+        $c->stash->{message} = "Please indicate how the orthophotomosaic was produced!";
         $c->stash->{template} = 'generic_message.mas';
         return;
     }
@@ -220,6 +226,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
         my $drone_run_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_project_type', 'project_property')->cvterm_id();
         my $drone_run_is_raw_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_raw_images', 'project_property')->cvterm_id();
         my $drone_run_camera_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_type', 'project_property')->cvterm_id();
+        my $drone_run_stitching_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_orthophoto_stitching_type', 'project_property')->cvterm_id();
         my $drone_run_base_date_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_base_date', 'project_property')->cvterm_id();
         my $drone_run_rig_desc_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_rig_description', 'project_property')->cvterm_id();
         my $drone_run_related_cvterms_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_related_time_cvterms_json', 'project_property')->cvterm_id();
@@ -298,7 +305,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 {type_id => $project_start_date_type_id, value => $drone_run_event},
                 {type_id => $design_cvterm_id, value => 'drone_run'},
                 {type_id => $drone_run_camera_type_cvterm_id, value => $new_drone_run_camera_info},
-                {type_id => $drone_run_related_cvterms_cvterm_id, value => encode_json \%related_cvterms}
+                {type_id => $drone_run_related_cvterms_cvterm_id, value => encode_json \%related_cvterms},
+                {type_id => $drone_run_stitching_type_cvterm_id, value => $new_drone_run_band_file_type}
             ];
 
             if ($new_drone_run_band_stitching ne 'no') {
@@ -456,45 +464,101 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 coordinate_system => $new_drone_run_band_coordinate_system
             };
         } else {
-            foreach (1..$new_drone_run_band_numbers) {
-                my $new_drone_run_band_desc = $c->req->param('drone_run_band_description_'.$_);
-                my $new_drone_run_band_type = $c->req->param('drone_run_band_type_'.$_);
-                my $new_drone_run_band_coordinate_system = $c->req->param('drone_run_band_coordinate_system_'.$_) || 'Pixels';
-                if (!$new_drone_run_band_desc){
-                    $c->stash->{message} = "Please give a new imaging event band description!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                if (!$new_drone_run_band_type){
-                    $c->stash->{message} = "Please give a new imaging event band type!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                if (!exists($image_types_allowed->{$new_drone_run_band_type})) {
-                    $c->stash->{message} = "Imaging event band type not supported: $new_drone_run_band_type!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                if (exists($seen_image_types_upload{$new_drone_run_band_type})) {
-                    $c->stash->{message} = "Imaging event band type is repeated: $new_drone_run_band_type! Each imaging event band in an imaging event should have a unique type!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                $seen_image_types_upload{$new_drone_run_band_type}++;
-
-                my $upload_file = $c->req->upload('drone_run_band_stitched_ortho_image_'.$_);
+            if ($new_drone_run_band_numbers == 5 && $new_drone_run_band_file_type eq 'ODM') {
+                my $upload_file = $c->req->upload('drone_run_band_stitched_ortho_image_odm');
                 if (!$upload_file) {
-                    $c->stash->{message} = "Please provide a zipfile OR a stitched ortho image!";
+                    $c->stash->{message} = "Please provide an ODM file!";
                     $c->stash->{template} = 'generic_message.mas';
                     return;
                 }
 
-                push @new_drone_run_bands, {
-                    description => $new_drone_run_band_desc,
-                    type => $new_drone_run_band_type,
-                    upload_file => $upload_file,
-                    coordinate_system => $new_drone_run_band_coordinate_system
-                };
+                my $new_drone_run_input_image = $upload_file->tempname;
+
+                my $dir = $c->tempfiles_subdir('/upload_drone_imagery_odm_stitched_ortho');
+                my $odm_b1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".png";
+                my $odm_b2 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".png";
+                my $odm_b3 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".png";
+                my $odm_b4 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".png";
+                my $odm_b5 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".png";
+
+                my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImage.py --image_path $new_drone_run_input_image --outfile_path_b1 $odm_b1 --outfile_path_b2 $odm_b2 --outfile_path_b3 $odm_b3 --outfile_path_b4 $odm_b4 --outfile_path_b5 $odm_b5 ";
+                print STDERR $odm_cmd."\n";
+                my $odm_open_status = system($odm_cmd);
+
+                push @new_drone_run_bands, (
+                    {
+                        description => "ODM orthophotomosaic Blue (450-520nm)",
+                        type => "Blue (450-520nm)",
+                        upload_file_name => $odm_b1,
+                        coordinate_system => "Pixels"
+                    },
+                    {
+                        description => "ODM orthophotomosaic Green (515-600nm)",
+                        type => "Green (515-600nm)",
+                        upload_file_name => $odm_b2,
+                        coordinate_system => "Pixels"
+                    },
+                    {
+                        description => "ODM orthophotomosaic Red (600-690nm)",
+                        type => "Red (600-690nm)",
+                        upload_file_name => $odm_b3,
+                        coordinate_system => "Pixels"
+                    },
+                    {
+                        description => "ODM orthophotomosaic NIR (780-3000nm)",
+                        type => "NIR (780-3000nm)",
+                        upload_file_name => $odm_b4,
+                        coordinate_system => "Pixels"
+                    },
+                    {
+                        description => "ODM orthophotomosaic Red Edge (690-750nm)",
+                        type => "Red Edge (690-750nm)",
+                        upload_file_name => $odm_b5,
+                        coordinate_system => "Pixels"
+                    }
+                );
+            }
+            else {
+                foreach (1..$new_drone_run_band_numbers) {
+                    my $new_drone_run_band_desc = $c->req->param('drone_run_band_description_'.$_);
+                    my $new_drone_run_band_type = $c->req->param('drone_run_band_type_'.$_);
+                    my $new_drone_run_band_coordinate_system = $c->req->param('drone_run_band_coordinate_system_'.$_) || 'Pixels';
+                    if (!$new_drone_run_band_desc){
+                        $c->stash->{message} = "Please give a new imaging event band description!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    if (!$new_drone_run_band_type){
+                        $c->stash->{message} = "Please give a new imaging event band type!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    if (!exists($image_types_allowed->{$new_drone_run_band_type})) {
+                        $c->stash->{message} = "Imaging event band type not supported: $new_drone_run_band_type!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    if (exists($seen_image_types_upload{$new_drone_run_band_type})) {
+                        $c->stash->{message} = "Imaging event band type is repeated: $new_drone_run_band_type! Each imaging event band in an imaging event should have a unique type!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    $seen_image_types_upload{$new_drone_run_band_type}++;
+
+                    my $upload_file = $c->req->upload('drone_run_band_stitched_ortho_image_'.$_);
+                    if (!$upload_file) {
+                        $c->stash->{message} = "Please provide a zipfile OR a stitched ortho image!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+
+                    push @new_drone_run_bands, {
+                        description => $new_drone_run_band_desc,
+                        type => $new_drone_run_band_type,
+                        upload_file => $upload_file,
+                        coordinate_system => $new_drone_run_band_coordinate_system
+                    };
+                }
             }
         }
         foreach (@new_drone_run_bands) {
@@ -502,7 +566,10 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
             my $drone_run_band_description = $_->{description};
             my $drone_run_band_type = $_->{type};
             my $upload_file = $_->{upload_file};
-            my $new_drone_run_input_image = $upload_file->tempname;
+            my $new_drone_run_input_image = $_->{upload_file_name};
+            if (!$new_drone_run_input_image) {
+                $new_drone_run_input_image = $upload_file->tempname;
+            }
 
             my @drone_run_band_projectprops = (
                 {type_id => $drone_run_band_type_cvterm_id, value => $drone_run_band_type},
