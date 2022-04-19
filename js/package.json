@@ -6,7 +6,9 @@
   "scripts": {
     "reset": "npm config set engine-strict true; rm -r build/ || true && npm install .",
     "build": "npm run reset && webpack --config build.webpack.config.js",
+    "build-ci": "npm ci && webpack --config build.webpack.config.js",
     "build-watch": "npm run reset && webpack --config build.webpack.config.js -w",
+    "build-ci-watch": "npm ci && webpack --config build.webpack.config.js -w",
     "reset-test": "npm config set engine-strict true; rm -r build_test/ || true && npm install .",
     "build-test": "npm run reset-test && webpack --config test.webpack.config.js"
   },
