@@ -1361,7 +1361,7 @@
         <div class="container-fluid">
             <& /page/page_title.mas, title=>"Select Image(s) to Upload" &>
 
-            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_five_band_form" name="upload_drone_imagery_five_band_form" action="/drone_imagery/upload_drone_imagery" >
+            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_five_band_odm_form" name="upload_drone_imagery_five_band_odm_form" action="/drone_imagery/upload_drone_imagery" >
                 <input type="hidden" name="drone_run_field_trial_id" value="" >
 
                 <!-- If drone run is selected above, the drone_run_project_id is passed to controller, negating need to create new drone run -->
@@ -1405,7 +1405,7 @@
                         </div>
 
                         <center>
-                            <button class="btn btn-primary" name="upload_drone_imagery_select_images_five" id="upload_drone_imagery_select_images_five">Go To Next Step</button>
+                            <button class="btn btn-primary" name="upload_drone_imagery_select_images_five_odm" id="upload_drone_imagery_select_images_five_odm">Go To Next Step</button>
                         </center>
                     </&>
                     <&| /util/workflow.mas:step, title=> "Submit" &>
@@ -3480,6 +3480,17 @@ jQuery(document).ready(function() {
         return false;
     });
 
+    jQuery('#upload_drone_imagery_select_images_five_odm').click(function(e){
+        e.preventDefault();
+        if (jQuery('#drone_run_band_stitched_ortho_image_five_odm').val() == '') {
+            alert('Please select an image');
+            return;
+        }
+        Workflow.complete('#upload_drone_imagery_select_images_five_odm');
+        Workflow.focus('#drone_imagery_upload_workflow_five_band_odm', 1);
+        return false;
+    });
+
     jQuery('#upload_drone_imagery_select_images_six').click(function(e){
         e.preventDefault();
         if (jQuery('#drone_run_band_description_six_1').val() == ''){
@@ -3825,6 +3836,12 @@ jQuery(document).ready(function() {
     });
 
     jQuery('#upload_drone_imagery_five_band_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
+    });
+
+    jQuery('#upload_drone_imagery_five_band_odm_form').submit(function() {
         jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
         jQuery('#working_modal').modal('show');
         return true;
