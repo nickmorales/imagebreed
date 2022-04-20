@@ -480,41 +480,72 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_b3 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".png";
                 my $odm_b4 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".png";
                 my $odm_b5 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".png";
+                my $odm_geoparam = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".csv";
+                my $odm_geoparam_proj = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".csv";
 
-                my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImage.py --image_path $new_drone_run_input_image --outfile_path_b1 $odm_b1 --outfile_path_b2 $odm_b2 --outfile_path_b3 $odm_b3 --outfile_path_b4 $odm_b4 --outfile_path_b5 $odm_b5 ";
+                my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImage5ChannelGeoTiff.py --image_path $new_drone_run_input_image --outfile_path_image_1 $odm_b1 --outfile_path_image_2 $odm_b2 --outfile_path_image_3 $odm_b3 --outfile_path_image_4 $odm_b4 --outfile_path_image_5 $odm_b5 --outfile_path_geo_params $odm_geoparam --outfile_path_geo_projection $odm_geoparam_proj";
                 print STDERR $odm_cmd."\n";
                 my $odm_open_status = system($odm_cmd);
+
+                open(my $fh_geoparams, '<', $odm_geoparam) or die "Could not open file '".$odm_geoparam."' $!";
+                    print STDERR "Opened ".$odm_geoparam."\n";
+                    my $geoparams = <$fh_geoparams>;
+                    chomp $geoparams;
+                    my @geoparams_coordinates = split ',', $geoparams;
+                    print STDERR Dumper [$geoparams, \@geoparams_coordinates];
+                close($fh_geoparams);
+
+                open(my $fh_geoparam_proj, '<', $odm_geoparam_proj) or die "Could not open file '".$odm_geoparam_proj."' $!";
+                    print STDERR "Opened ".$odm_geoparam_proj."\n";
+                    my $geoparams_proj = <$fh_geoparam_proj>;
+                    chomp $geoparams_proj;
+                    $geoparams_proj =~ s/,//g;
+                    my @geoparams_proj_arr = split "\"\"\"\"", $geoparams_proj;
+                    my $geoparams_projection = $geoparams_proj_arr[3];
+                    $geoparams_projection =~ s/\s//g;
+                    print STDERR Dumper [$geoparams_proj, $geoparams_projection];
+                close($fh_geoparam_proj);
 
                 push @new_drone_run_bands, (
                     {
                         description => "ODM orthophotomosaic Blue (450-520nm)",
                         type => "Blue (450-520nm)",
                         upload_file_name => $odm_b1,
-                        coordinate_system => "Pixels"
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection
                     },
                     {
                         description => "ODM orthophotomosaic Green (515-600nm)",
                         type => "Green (515-600nm)",
                         upload_file_name => $odm_b2,
-                        coordinate_system => "Pixels"
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection
                     },
                     {
                         description => "ODM orthophotomosaic Red (600-690nm)",
                         type => "Red (600-690nm)",
                         upload_file_name => $odm_b3,
-                        coordinate_system => "Pixels"
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection
                     },
                     {
                         description => "ODM orthophotomosaic NIR (780-3000nm)",
                         type => "NIR (780-3000nm)",
                         upload_file_name => $odm_b4,
-                        coordinate_system => "Pixels"
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection
                     },
                     {
                         description => "ODM orthophotomosaic Red Edge (690-750nm)",
                         type => "Red Edge (690-750nm)",
                         upload_file_name => $odm_b5,
-                        coordinate_system => "Pixels"
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection
                     }
                 );
             }
@@ -566,10 +597,14 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
             my $drone_run_band_description = $_->{description};
             my $drone_run_band_type = $_->{type};
             my $upload_file = $_->{upload_file};
+
             my $new_drone_run_input_image = $_->{upload_file_name};
             if (!$new_drone_run_input_image) {
                 $new_drone_run_input_image = $upload_file->tempname;
             }
+
+            my $new_drone_run_geoparam_coords = $_->{geoparam_coords};
+            my $new_drone_run_geoparam_proj = $_->{geoparam_proj};
 
             my @drone_run_band_projectprops = (
                 {type_id => $drone_run_band_type_cvterm_id, value => $drone_run_band_type},
@@ -650,6 +685,13 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 }
 
                 push @drone_run_band_projectprops, {type_id => $geoparam_coordinates_cvterm_id, value => encode_json \@geoparams_coordinates};
+            }
+
+            if ($new_drone_run_geoparam_coords) {
+                push @drone_run_band_projectprops, {type_id => $geoparam_coordinates_cvterm_id, value => encode_json $new_drone_run_geoparam_coords};
+            }
+            if ($new_drone_run_geoparam_proj) {
+                $geoparams_projection = $new_drone_run_geoparam_proj;
             }
 
             push @drone_run_band_projectprops, {type_id => $geoparam_coordinates_type_cvterm_id, value => $geoparams_projection};
