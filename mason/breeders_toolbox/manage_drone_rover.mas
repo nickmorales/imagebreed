@@ -23,7 +23,7 @@
       <div class="modal-body">
         <div class="container-fluid">
 
-            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_rover_form" name="upload_drone_rover_form" action="/drone_imagery/upload_drone_rover" >
+            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_rover_form" name="upload_drone_rover_form" action="/drone_rover/upload_drone_rover" >
 
                 <&| /util/workflow.mas, id=> "drone_rover_upload_workflow" &>
                     <&| /util/workflow.mas:step, title=> "Intro" &>
@@ -226,7 +226,7 @@
         <div class="container-fluid">
             <& /page/page_title.mas, title=>"Select Lidar Point Clouds to Upload" &>
 
-            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_rover_lidar_form" name="upload_drone_rover_lidar_form" action="/drone_imagery/upload_drone_rover" >
+            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_rover_lidar_form" name="upload_drone_rover_lidar_form" action="/drone_rover/upload_drone_rover" >
 
                 <input type="hidden" name="rover_run_field_trial_id" value="" >
                 <input type="hidden" name="rover_run_id" value=""/>
@@ -316,7 +316,7 @@ jQuery(document).ready(function() {
 
         jQuery('#drone_rover_upload_drone_runs_table').DataTable({
             destroy : true,
-            ajax : '/api/drone_imagery/drone_runs?select_checkbox_name=upload_drone_rover_drone_run_select&field_trial_ids='+upload_drone_rover_field_trial_ids_string+'&disable=1'
+            ajax : '/api/drone_imagery/drone_runs?is_rover=1&select_checkbox_name=upload_drone_rover_drone_run_select&field_trial_ids='+upload_drone_rover_field_trial_ids_string+'&disable=1'
         });
 
         jQuery.ajax({
@@ -379,7 +379,7 @@ jQuery(document).ready(function() {
                 var rover_run_date = jQuery('#rover_run_date').val();
                 var rover_run_date_gen = rover_run_date.replace(/\//g, '');
                 for (var i=0; i<upload_drone_rover_field_trial_names.length; i++) {
-                    var rover_run_name_gen = upload_drone_rover_field_trial_names[i]+"_"+rover_run_date_gen;
+                    var rover_run_name_gen = upload_drone_rover_field_trial_names[i]+"_Rover_"+rover_run_date_gen;
                     rover_run_name_gen = rover_run_name_gen.replace(/ /g, '_');
                     rover_run_name_gen = rover_run_name_gen.replace(/\,/g, '_');
 
@@ -393,6 +393,8 @@ jQuery(document).ready(function() {
                             }
                             else if (response.error) {
                                 alert("Error: " + response.error);
+
+                                Workflow.focus('#drone_rover_upload_workflow', 1);
                             }
                         },
                         error: function(response) {

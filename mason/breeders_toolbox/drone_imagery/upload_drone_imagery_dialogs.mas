@@ -2965,6 +2965,8 @@ jQuery(document).ready(function() {
                             }
                             else if (response.error) {
                                 alert("Error: " + response.error);
+
+                                Workflow.focus('#drone_imagery_upload_workflow', 1);
                             }
                         },
                         error: function(response) {

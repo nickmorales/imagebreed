@@ -6604,6 +6604,7 @@ sub get_drone_run_projects_GET : Args(0) {
     my $checkbox_select_name = $c->req->param('select_checkbox_name');
     my $checkbox_select_all = $c->req->param('checkbox_select_all');
     my $field_trial_ids = $c->req->param('field_trial_ids');
+    my $is_rover = $c->req->param('is_rover');
     my $disable = $c->req->param('disable');
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 0, 0, 0);
 
@@ -6612,6 +6613,7 @@ sub get_drone_run_projects_GET : Args(0) {
     my $drone_run_camera_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_camera_type', 'project_property')->cvterm_id();
     my $drone_run_project_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_project_type', 'project_property')->cvterm_id();
     my $drone_run_gdd_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_averaged_temperature_growing_degree_days', 'project_property')->cvterm_id();
+    my $drone_run_is_rover_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_is_rover', 'project_property')->cvterm_id();
     my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
 
     my $where_clause = '';
@@ -6619,8 +6621,14 @@ sub get_drone_run_projects_GET : Args(0) {
         $where_clause = ' WHERE field_trial.project_id IN ('.$field_trial_ids.') ';
     }
 
+    my $is_rover_join = '';
+    if ($is_rover) {
+        $is_rover_join = "JOIN projectprop AS is_rover ON (project.project_id=is_rover.project_id AND is_rover.type_id=$drone_run_is_rover_cvterm_id)";
+    }
+
     my $q = "SELECT project.project_id, project.name, project.description, drone_run_type.value, project_start_date.value, field_trial.project_id, field_trial.name, field_trial.description, drone_run_camera_type.value, drone_run_gdd.value FROM project
         JOIN projectprop AS project_start_date ON (project.project_id=project_start_date.project_id AND project_start_date.type_id=$project_start_date_type_id)
+        $is_rover_join
         LEFT JOIN projectprop AS drone_run_type ON (project.project_id=drone_run_type.project_id AND drone_run_type.type_id=$drone_run_project_type_cvterm_id)
         LEFT JOIN projectprop AS drone_run_camera_type ON (project.project_id=drone_run_camera_type.project_id AND drone_run_camera_type.type_id=$drone_run_camera_cvterm_id)
         LEFT JOIN projectprop AS drone_run_gdd ON (project.project_id=drone_run_gdd.project_id AND drone_run_gdd.type_id=$drone_run_gdd_cvterm_id)

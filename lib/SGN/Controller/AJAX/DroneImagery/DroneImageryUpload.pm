@@ -53,7 +53,7 @@ sub upload_drone_imagery_check_drone_name_GET : Args(0) {
 
     my $project_rs = $schema->resultset("Project::Project")->search({name=>$drone_name});
     if ($project_rs->count > 0) {
-        $c->stash->{rest} = { error => "Please use a globally unique drone run name! The name you specified has already ben used." };
+        $c->stash->{rest} = { error => "The name you specified has already been used. Try giving the specific time of day for the imaging/rover event." };
         $c->detach();
     }
     else {
