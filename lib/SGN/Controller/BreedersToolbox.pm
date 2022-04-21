@@ -840,4 +840,18 @@ sub manage_drone_imagery : Path("/breeders/drone_imagery") Args(0) {
     $c->stash->{template} = '/breeders_toolbox/manage_drone_imagery.mas';
 }
 
+sub manage_drone_rover : Path("/breeders/drone_rover") Args(0) {
+    my $self = shift;
+    my $c = shift;
+
+    if (!$c->user()) {
+        # redirect to login page
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
+    }
+
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    $c->stash->{template} = '/breeders_toolbox/manage_drone_rover.mas';
+}
+
 1;

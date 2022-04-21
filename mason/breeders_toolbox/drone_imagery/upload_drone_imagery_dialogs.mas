@@ -78,8 +78,8 @@
                         <button class="btn btn-primary" id="upload_drone_image_field_trial_select_date_continue">Go to Next Step</button>
                         </center>
                     </&>
-                    <&| /util/workflow.mas:step, title=> "Drone Run" &>
-                        <& /page/page_title.mas, title=>"Create a new drone run" &>
+                    <&| /util/workflow.mas:step, title=> "Imaging Event" &>
+                        <& /page/page_title.mas, title=>"Create a new imaging event" &>
 
                         <table class="table table-bordered table-hover" id="drone_image_upload_drone_runs_table">
                             <thead>
@@ -3085,7 +3085,7 @@ jQuery(document).ready(function() {
                 }
                 else if (response.success) {
                     alert('Vehicle added!');
-                    get_select_box('imaging_event_vehicles', 'drone_run_imaging_vehicle_div', {'id':'drone_run_imaging_vehicle_id', 'name':'drone_run_imaging_vehicle_id'});
+                    get_select_box('imaging_event_vehicles', 'drone_run_imaging_vehicle_div', {'id':'drone_run_imaging_vehicle_id', 'name':'drone_run_imaging_vehicle_id', 'private_company_id':private_company_id});
                     upload_drone_imagery_vehicle_id = response.new_vehicle_id;
                     _show_vehicle_battery_select();
                 }

@@ -241,8 +241,11 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
             else {
                 $drone_run_html .= '<div class="row"><div class="col-sm-5"><b>Precipitation Sum</b>:</div><div class="col-sm-7"><button class="btn btn-default btn-sm" name="drone_imagery_drone_run_calculate_precipitation_sum" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'">Calculate Precipitation Sum</button></div></div>';
             }
-            my @days_after_planting_strings = split '\|', $v->{drone_run_related_time_cvterm_json}->{day};
-            my $days_after_planting_string = $days_after_planting_strings[0];
+            my $days_after_planting_string = 'NA. Recalculate GDD or Contact Us.';
+            if ($v->{drone_run_related_time_cvterm_json}->{day}) {
+                my @days_after_planting_strings = split '\|', $v->{drone_run_related_time_cvterm_json}->{day};
+                $days_after_planting_string = $days_after_planting_strings[0];
+            }
             $drone_run_html .= '<div class="row"><div class="col-sm-5"><b>Growing Season Days</b>:</div><div class="col-sm-7">'.$days_after_planting_string.'</div></div>';
             $drone_run_html .= '<div class="row"><div class="col-sm-5"><b>Field Trial</b>:</div><div class="col-sm-7"><a href="/breeders_toolbox/trial/'.$v->{trial_id}.'" _target="blank">'.$v->{trial_name}.'</a></div></div>';
 
