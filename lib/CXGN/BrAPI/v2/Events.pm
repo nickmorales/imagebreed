@@ -60,18 +60,18 @@ sub search {
         push @where_clause, "treatment.project_id IN ($string)";
     }
 
-    #Others are everything besides fertilizer, fungicide, irrigation, herbicide, weeding 
+    #Others are everything besides fertilizer, fungicide, irrigation, herbicide, weeding
     if ($eventtypedbid_arrayref && scalar(@$eventtypedbid_arrayref)>0) {
-        if ("chemicals" ~~ @$eventtypedbid_arrayref ) {
+        my %eventtypedbid_arrayref_map = map {$_ => 1} @$eventtypedbid_arrayref;
+        if (exists($eventtypedbid_arrayref_map{"chemicals"})) {
             my $string = join '","', @$eventtypedbid_arrayref;
             push @where_clause, "lower(treatment_type.value) IN ('fungicide', 'herbicide' )";
 
-        } elsif ("other" ~~ @$eventtypedbid_arrayref ) {
+        } elsif (exists($eventtypedbid_arrayref_map{"other"})) {
             my $string = join '","', @$eventtypedbid_arrayref;
             push @where_clause, "lower(treatment_type.value) NOT IN ('fertilizer', 'fungicide', 'irrigation', 'herbicide', 'weeding' )";
 
         } else {
-
             my $string = join '","', @$eventtypedbid_arrayref;
             push @where_clause, "lower(treatment_type.value) IN ('". lc $string."')";
         }
@@ -128,13 +128,13 @@ sub search {
 
         if (!$treatment_desc || $treatment_desc eq 'No description'){
             $treatment_desc = $treatment_name;
-        } 
+        }
 
         my $treatment_type = _get_event_type($treatment_type_raw);
 
         push @data, {
             additionalInfo => {
-                year => $treatment_year,    
+                year => $treatment_year,
                 studyDescription => $trial_desc,
                 eventCreateDate => $treatment_create_date,
                 studyCreateDate => $trial_create_date
@@ -189,7 +189,7 @@ sub _get_event_type {
 sub _format_date {
 
     my $str_date = shift; #It gets 2022-04-19T000000
-    my $date; 
+    my $date;
 
     if ($str_date ) {
         my  $formatted_time = Time::Piece->strptime($str_date, '%Y-%m-%d');
