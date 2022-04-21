@@ -1,6 +1,6 @@
 {
   "name": "@solgenomics/cxgn_js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "node package containing all importable CXGN/SGN JavaScript files.",
   "main": "webpack.config.js",
   "scripts": {
@@ -29,7 +29,7 @@
     "node-fetch": "^2.3.0",
     "source-map-support": "^0.5.10",
     "tape": "^5.5.3",
-    "uglifyjs-webpack-plugin": "^1.2.7",
+    "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack": "^4.29.5",
     "webpack-command": "^0.4.2"
   },

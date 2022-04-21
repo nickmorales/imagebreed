@@ -68,6 +68,7 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
     my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
     my $geoparam_coordinates_plot_polygons_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_plot_polygons', 'project_property')->cvterm_id();
     my $odm_process_running_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_opendronemap_process_running', 'project_property')->cvterm_id();
+    my $drone_run_is_rover_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_rover', 'project_property')->cvterm_id();
 
     my $drone_run_q = "SELECT drone_run_band_project.project_id, drone_run_band_project.name, drone_run_band_project.description, drone_run_project.project_id, drone_run_project.name, drone_run_project.description, field_trial.project_id, field_trial.name, field_trial.description, drone_run_band_type.value, drone_run_date.value, drone_run_type.value, drone_run_averaged_temperature_gdd.value, drone_run_averaged_precipitation_sum.value, drone_run_related_time_cvterm_json.value, drone_run_indicator.value, drone_run_phenotypes_indicator.value, drone_run_processed.value, drone_run_processed_extended.value, drone_run_processed_vi.value, drone_run_is_raw_images.value, drone_run_ground_control_points.value, drone_run_camera_rig.value, drone_run_base_date.value, drone_run_band_geoparam_coordinates.value, drone_run_band_geoparam_coordinate_type.value, drone_run_band_geoparam_polygons.value, drone_run_odm_indicator.value, company.private_company_id, company.name
         FROM project AS drone_run_band_project
@@ -93,9 +94,10 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
         LEFT JOIN projectprop AS drone_run_odm_indicator ON(drone_run_odm_indicator.project_id = drone_run_project.project_id AND drone_run_odm_indicator.type_id = $odm_process_running_cvterm_id)
         LEFT JOIN projectprop AS drone_run_camera_rig ON(drone_run_camera_rig.project_id = drone_run_project.project_id AND drone_run_camera_rig.type_id = $drone_run_camera_rig_cvterm_id)
         LEFT JOIN projectprop AS drone_run_base_date ON(drone_run_base_date.project_id = drone_run_project.project_id AND drone_run_base_date.type_id = $drone_run_base_date_cvterm_id)
+        LEFT JOIN projectprop AS is_rover ON (drone_run_project.project_id=is_rover.project_id AND is_rover.type_id=$drone_run_is_rover_cvterm_id)
         JOIN project_relationship AS field_trial_rel ON (drone_run_project.project_id = field_trial_rel.subject_project_id AND field_trial_rel.type_id=$drone_run_field_trial_project_relationship_type_id_cvterm_id)
         JOIN project AS field_trial ON (field_trial_rel.object_project_id = field_trial.project_id)
-        WHERE company.private_company_id IN($private_company_ids_sql);";
+        WHERE company.private_company_id IN($private_company_ids_sql) AND is_rover.value IS NULL;";
     my $h = $schema->storage->dbh()->prepare($drone_run_q);
     $h->execute();
 
