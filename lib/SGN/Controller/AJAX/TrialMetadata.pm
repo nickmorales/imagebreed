@@ -3626,20 +3626,21 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
     mat\$colNumber <- as.numeric(mat\$colNumber);
     ';
 
-    my $multivariate_cmd_model = 'mix <- mmer('.$cbind_string.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+    my $multivariate_cmd_model = 'mix <- mmer('.$cbind_string.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) + spl2Da(rowNumber, colNumber), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
     if (!is.null(mix\$U)) {
     #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
     write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
     write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
     write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
     spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-    X <- with(mat, spl2D(rowNumber, colNumber));
+    W <- with(mat, spl2Da(rowNumber, colNumber));
+    X <- W\$Z\$\`A:all\`;
     ';
     my $trait_index = 1;
     foreach my $enc_trait_name (@encoded_traits) {
         $multivariate_cmd_model .= '
-    blups'.$trait_index.' <- mix\$U\$\`u:rowNumber\`\$'.$enc_trait_name.';
-    spatial_blup_results\$'.$enc_trait_name.' <- data.matrix(X) %*% data.matrix(blups'.$trait_index.');
+    blups'.$trait_index.' <- mix\$U\$\`A:all\`\$'.$enc_trait_name.';
+    spatial_blup_results\$'.$enc_trait_name.' <- X %*% blups'.$trait_index.';
         ';
         $trait_index++;
     }
@@ -3850,16 +3851,17 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
             my ($stats_out_tempfile_rds_fh, $stats_out_tempfile_rds) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
             $stats_out_tempfile_rds .= '.rds';
 
-            my $univariate_cmd_model = 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) +vs(spl2D(rowNumber, colNumber)), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
+            my $univariate_cmd_model = 'mix <- mmer('.$t.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat, tolparinv='.$tolparinv.');
             if (!is.null(mix\$U)) {
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
             write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
             write.table(data.frame(plot_id = mix\$data\$plot_id, residuals = mix\$residuals, fitted = mix\$fitted), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
             spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-            X <- with(mat, spl2D(rowNumber, colNumber));
-            blups1 <- mix\$U\$\`u:rowNumber\`\$'.$t.';
-            spatial_blup_results\$'.$t.' <- data.matrix(X) %*% data.matrix(blups1);
+            W <- with(mat, spl2Da(rowNumber, colNumber));
+            X <- W\$Z\$\`A:all\`;
+            blups1 <- mix\$U\$\`A:all\`\$'.$t.';
+            spatial_blup_results\$'.$t.' <- X %*% blups1;
             write.table(spatial_blup_results, file=\''.$stats_out_tempfile_2dspl.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
             e2 <- vpredict(mix, e2 ~ (V2) / ( V2+V3) );

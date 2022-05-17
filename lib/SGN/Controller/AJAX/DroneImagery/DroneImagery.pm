@@ -2268,19 +2268,20 @@ sub drone_imagery_calculate_statistics_POST : Args(0) {
             geno_mat[is.na(geno_mat)] <- 0;
             mat\$rowNumber <- as.numeric(mat\$rowNumber);
             mat\$colNumber <- as.numeric(mat\$colNumber);
-            mix <- mmer('.$cbind_string.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) +vs(spl2D(rowNumber, colNumber), Gtc=diag('.$number_traits.')), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
+            mix <- mmer('.$cbind_string.'~1 + replicate, random=~vs(id, Gu=geno_mat, Gtc=unsm('.$number_traits.')) +vs(rowNumberFactor, Gtc=diag('.$number_traits.')) +vs(colNumberFactor, Gtc=diag('.$number_traits.')) + spl2Da(rowNumber, colNumber), rcov=~vs(units, Gtc=unsm('.$number_traits.')), data=mat, tolparinv='.$tolparinv.');
             #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
             write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
             write.table(mix\$U\$\`u:rowNumberFactor\`, file=\''.$stats_out_tempfile_row.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
             write.table(mix\$U\$\`u:colNumberFactor\`, file=\''.$stats_out_tempfile_col.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
             spatial_blup_results <- data.frame(plot_id = mat\$plot_id);
-            X <- with(mat, spl2D(rowNumber, colNumber));
+            W <- with(mat, spl2Da(rowNumber, colNumber));
+            X <- W\$Z\$\`A:all\`;
             ';
             my $trait_index = 1;
             foreach my $enc_trait_name (@encoded_traits) {
                 $cmd .= '
-            blups'.$trait_index.' <- mix\$U\$\`u:rowNumber\`\$'.$enc_trait_name.';
-            spatial_blup_results\$'.$enc_trait_name.' <- data.matrix(X) %*% data.matrix(blups'.$trait_index.');
+            blups'.$trait_index.' <- mix\$U\$\`A:all\`\$'.$enc_trait_name.';
+            spatial_blup_results\$'.$enc_trait_name.' <- X %*% blups'.$trait_index.';
                 ';
                 $trait_index++;
             }
