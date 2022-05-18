@@ -31,12 +31,13 @@ wls <- colnames(raw.spectra) %>%
 raw.spectra <- raw.spectra %>%
     dplyr::select(observationUnitId, device_type, paste0("nirs_spectra.X", wls))
 
-#### Generate plot and identify outliers ####
-spec.plot <- raw.spectra %>%
+raw.spectra.plot <- raw.spectra %>%
   rename_at(vars(starts_with("nirs_spectra")), ~str_replace(., "nirs_spectra.", "")) %>%
   rownames_to_column(var = "unique.id") %>%
-  dplyr::select(-device_type) %>%
-  plot_spectra(wls, num.col.before.spectra = 3, window.size = 100)
+  dplyr::select(-device_type)
+
+#### Generate plot and identify outliers ####
+spec.plot <- plot_spectra(raw.spectra.plot, num.col.before.spectra = 2, window.size = 100)
 
 #### Output plot ####
 ggsave(plot = spec.plot, filename = args[4], units = "in", height = 7, width = 10)
