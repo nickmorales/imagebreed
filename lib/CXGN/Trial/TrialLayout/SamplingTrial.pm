@@ -56,32 +56,32 @@ sub retrieve_plot_info {
 	 # was $accession_cvterm_id, $plot_cvterm_id, $plant_cvterm_id, $tissue_cvterm_id, $subplot_cvterm_id
 
 
-     print STDERR "Now dealing with metadata... [".$source_rs->count()."]\n";
+     # print STDERR "Now dealing with metadata... [".$source_rs->count()."]\n";
      while (my $r=$source_rs->next){
-	 print STDERR "TYPE= ".$r->type_id()."\n";
+	 # print STDERR "TYPE= ".$r->type_id()."\n";
 	 if ($r->type_id == $self->cvterm_id('accession')){
-	     print STDERR "Dealing with accession metadata.\n";
+	     # print STDERR "Dealing with accession metadata.\n";
 	     $design->{$plot_number}->{"source_accession_id"} = $r->stock_id;
 	     $design->{$plot_number}->{"source_accession_name"} = $r->uniquename;
 	     $design->{$plot_number}->{"source_observation_unit_name"} = $r->uniquename;
 	     $design->{$plot_number}->{"source_observation_unit_id"} = $r->stock_id;
 	 }
 	 if ($r->type_id == $self->cvterm_id('plot')){
-	     print STDERR "Dealing with plot metadata.\n";
+	     # print STDERR "Dealing with plot metadata.\n";
 	     $design->{$plot_number}->{"source_plot_id"} = $r->stock_id;
 	     $design->{$plot_number}->{"source_plot_name"} = $r->uniquename;
 	     $design->{$plot_number}->{"source_observation_unit_name"} = $r->uniquename;
 	     $design->{$plot_number}->{"source_observation_unit_id"} = $r->stock_id;
 	 }
 	 if ($r->type_id == $self->cvterm_id('plant')){
-	     print STDERR "Dealing with plant metadata\n";
+	     # print STDERR "Dealing with plant metadata\n";
 	     $design->{$plot_number}->{"source_plant_id"} = $r->stock_id;
 	     $design->{$plot_number}->{"source_plant_name"} = $r->uniquename;
 	     $design->{$plot_number}->{"source_observation_unit_name"} = $r->uniquename;
 	     $design->{$plot_number}->{"source_observation_unit_id"} = $r->stock_id;
 	 }
 	 if ($r->type_id == $self->cvterm_id('tissue_sample')){
-	     print STDERR "Dealing with tieeus metadata\n";
+	     # print STDERR "Dealing with tieeus metadata\n";
 	      $design->{$plot_number}->{"source_tissue_id"} = $r->stock_id;
 	      $design->{$plot_number}->{"source_tissue_name"} = $r->uniquename;
 	      $design->{$plot_number}->{"source_observation_unit_name"} = $r->uniquename;
