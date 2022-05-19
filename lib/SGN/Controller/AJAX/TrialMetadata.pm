@@ -3462,7 +3462,7 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
         return;
     }
 
-    foreach my $obs_unit (@$data) {
+    foreach my $obs_unit (@$data_all) {
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
         my $replicate_number = $obs_unit->{obsunit_rep} || '';
