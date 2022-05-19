@@ -19,19 +19,11 @@ my $mech = Test::WWW::Mechanize->new;
 my $response;
 
 $mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
-<<<<<<< HEAD
 $response = decode_json $mech->content;
 print STDERR Dumper $response;
 is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
 my $sgn_session_id = $response->{access_token};
 
-=======
-my $response = decode_json $mech->content;
-is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
-my $sgn_session_id = $response->{access_token};
-
-
->>>>>>> 220b92ce6 (added test)
 #test search male parents
 $mech->post_ok('http://localhost:3010/ajax/search/pedigree_male_parents?sgn_session_id='.$sgn_session_id ,["pedigree_female_parent" => "test_accession4"] );
 $response = decode_json $mech->content;
@@ -126,7 +118,7 @@ is($first_row->{'male_name'}, 'test_accession2');
 is($first_row->{'no_of_accessions'}, '1');
 
 is($second_row->{'female_name'}, 'test_accession3');
-is($second_row->{'male_name'}, 'unknown');
+is($second_row->{'male_name'}, 'unspecified');
 is($second_row->{'no_of_accessions'}, '1');
 
 is($third_row->{'female_name'}, 'test_accession4');

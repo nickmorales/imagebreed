@@ -173,7 +173,7 @@ jQuery(document).ready(function(){
         female_list_id = jQuery('#wishlist_female_list_select').val();
         if (female_list_id){
             var female_accession_validation = 1;
-            female_accession_validation = lo.legacy_validate(female_list_id, 'uniquenames', true);
+            female_accession_validation = lo.validate(female_list_id, 'accessions', true);
             if (female_accession_validation != 1) {
                 alert("The female list did not pass validation. Names in the list must be uniquenames in the database");
                 return;
@@ -187,7 +187,7 @@ jQuery(document).ready(function(){
         male_list_id = jQuery('#wishlist_male_list_select').val();
         if (male_list_id){
             var male_accession_validation = 1;
-            male_accession_validation = lo.legacy_validate(male_list_id, 'uniquenames', true);
+            male_accession_validation = lo.validate(male_list_id, 'accessions', true);
             if (male_accession_validation != 1) {
                 alert("The male list did not pass validation. Names in the list must be uniquenames in the database");
                 return;
