@@ -929,6 +929,7 @@ sub download_grm {
         my $heatmap_cmd = 'R -e "library(reshape2); library(ggplot2); library(data.table); library(viridis); library(GGally); library(gridExtra); library(psych);
         mat <- fread(\''.$grm_tempfile_heatmap_data.'\', header=FALSE, sep=\'\t\', stringsAsFactors=FALSE);
         grm_mat_wide <- dcast(mat, V1~V2, value.var=\'V3\');
+        grm_mat_wide[is.na(grm_mat_wide)] <- 0;
         grm_mat <- grm_mat_wide[,-1];
         rownames(grm_mat) <- grm_mat_wide\$V1;
         gg <- ggcorr(data=NULL, cor_matrix = mat.sort(grm_mat, fa(grm_mat)), hjust = 1, size = 2, color = \'grey50\', layout.exp = 1, label = FALSE);
