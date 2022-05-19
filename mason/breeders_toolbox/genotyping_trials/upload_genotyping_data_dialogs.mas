@@ -1194,6 +1194,10 @@ jQuery(document).ready(function(){
             Workflow.focus('#upload_genotypes_workflow', 5);
             return false;
         }
+%  } else {
+        Workflow.complete('#upload_genotype_data_info_button');
+        Workflow.focus('#upload_genotypes_workflow', 5);
+        return true;
 %  }
 
     });
