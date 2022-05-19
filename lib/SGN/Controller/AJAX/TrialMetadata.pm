@@ -3415,6 +3415,54 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
     my %trait_to_time_map;
     my %trait_time_map;
     foreach my $obs_unit (@$data) {
+        my $obsunit_stock_uniquename = $obs_unit->{observationunit_uniquename};
+
+        my $observations = $obs_unit->{observations};
+        foreach (@$observations){
+            my $value = $_->{value};
+            my $trait_name = $_->{trait_name};
+            my $trait_id = $_->{trait_id};
+            $phenotype_data_original{$obsunit_stock_uniquename}->{$trait_name} = $value;
+            $seen_trait_names{$trait_name} = $trait_id;
+
+            if ($value < $phenotype_min_original) {
+                $phenotype_min_original = $value;
+            }
+            elsif ($value >= $phenotype_max_original) {
+                $phenotype_max_original = $value;
+            }
+
+            if ($_->{associated_image_project_time_json}) {
+                my $related_time_terms_json = decode_json $_->{associated_image_project_time_json};
+                my $time_days_cvterm = $related_time_terms_json->{day};
+                my $time_term_string = $time_days_cvterm;
+                my $time_days = (split '\|', $time_days_cvterm)[0];
+                my $time_value = (split ' ', $time_days)[1];
+                $trait_to_time_map{$trait_name} = $time_value;
+                $trait_time_map{$trait_name} = $time_days_cvterm;
+            }
+        }
+    }
+
+    my $phenotypes_search_all = CXGN::Phenotypes::SearchFactory->instantiate(
+        'MaterializedViewTable',
+        {
+            bcs_schema=>$schema,
+            data_level=>$obsunit_level,
+            trial_list=>[$c->stash->{trial_id}],
+            include_timestamp=>0,
+            exclude_phenotype_outlier=>0
+        }
+    );
+    my ($data_all, $unique_traits_all) = $phenotypes_search_all->search();
+    my @sorted_trait_names_all = sort keys %$unique_traits_all;
+
+    if (scalar(@$data_all) == 0) {
+        $c->stash->{rest} = { error => "There are no phenotypes for the trials and traits you have selected!"};
+        return;
+    }
+
+    foreach my $obs_unit (@$data) {
         my $germplasm_name = $obs_unit->{germplasm_uniquename};
         my $germplasm_stock_id = $obs_unit->{germplasm_stock_id};
         my $replicate_number = $obs_unit->{obsunit_rep} || '';
@@ -3473,31 +3521,6 @@ sub trial_spatial_2dspl_correct_traits : Chained('trial') PathPart('spatial_2dsp
         $stock_info{"S".$germplasm_stock_id} = {
             uniquename => $germplasm_name
         };
-        my $observations = $obs_unit->{observations};
-        foreach (@$observations){
-            my $value = $_->{value};
-            my $trait_name = $_->{trait_name};
-            my $trait_id = $_->{trait_id};
-            $phenotype_data_original{$obsunit_stock_uniquename}->{$trait_name} = $value;
-            $seen_trait_names{$trait_name} = $trait_id;
-
-            if ($value < $phenotype_min_original) {
-                $phenotype_min_original = $value;
-            }
-            elsif ($value >= $phenotype_max_original) {
-                $phenotype_max_original = $value;
-            }
-
-            if ($_->{associated_image_project_time_json}) {
-                my $related_time_terms_json = decode_json $_->{associated_image_project_time_json};
-                my $time_days_cvterm = $related_time_terms_json->{day};
-                my $time_term_string = $time_days_cvterm;
-                my $time_days = (split '\|', $time_days_cvterm)[0];
-                my $time_value = (split ' ', $time_days)[1];
-                $trait_to_time_map{$trait_name} = $time_value;
-                $trait_time_map{$trait_name} = $time_days_cvterm;
-            }
-        }
     }
     my @unique_plot_names = sort keys %seen_plot_names;
 
