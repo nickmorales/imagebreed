@@ -120,7 +120,7 @@ sub search_progenies : Path('/ajax/search/progenies') Args(0) {
 sub search_common_parents : Path('/ajax/search/common_parents') Args(0) {
     my $self = shift;
     my $c = shift;
-    my $schema = $c->dbic_schema("Bio::Chado::Schema");
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
     my $accession_list_id = $c->req->param("accession_list_id");
 
     my $accession_list = CXGN::List->new({dbh => $schema->storage->dbh, list_id => $accession_list_id});
