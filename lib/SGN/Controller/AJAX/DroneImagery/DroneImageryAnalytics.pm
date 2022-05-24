@@ -3512,7 +3512,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                         attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions_pe.'));
                         attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions_pe.'));
                         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-                        mix <- asreml('.$cbind_string_pe.'~trait + replicate, random=~us(trait,init=c('.$init_values_string_pe.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string_pe.')), data=mat, tol='.$tol_asr_pe.', fail=\'soft\');
+                        mix <- asreml('.$cbind_string_pe.'~trait + replicate, random=~us(trait,init=c('.$init_values_string_pe.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string_pe.')), data=mat, tol='.$tol_asr_pe.', fail=\'soft\', ai.sing=TRUE);
                         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
                         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_pe_pheno_rel_tempfile5.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
                         write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors), file=\''.$stats_out_pe_pheno_rel_tempfile4.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
@@ -3879,7 +3879,7 @@ sub drone_imagery_calculate_analytics_POST : Args(0) {
                             attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions_pe.'));
                             attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions_pe.'));
                             attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-                            mix <- asreml(t'.$t.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr_pe.', fail=\'soft\');
+                            mix <- asreml(t'.$t.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr_pe.', fail=\'soft\', ai.sing=TRUE);
                             if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
                             write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_pe_pheno_rel_tempfile5.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
                             write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors), file=\''.$stats_out_pe_pheno_rel_tempfile4.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
