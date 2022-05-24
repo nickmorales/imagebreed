@@ -4811,7 +4811,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     geno_mat[is.na(geno_mat)] <- 0;
     mat\$rowNumber <- as.numeric(mat\$rowNumber);
     mat\$colNumber <- as.numeric(mat\$colNumber);
-    mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', iters=1);
+    mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.');
     if (!is.null(mix\$U)) {
     #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
     write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -4826,7 +4826,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
     e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
     write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    ff <- fitted(mix);
+    ff <- fitted(mix, tolparinv='.$tolparinv_10.');
     r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
     SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
     write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -5031,7 +5031,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
     h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V2) );
     write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-    ff <- fitted(mix);
+    ff <- fitted(mix, tolparinv='.$tolparinv_10.');
     r2 <- cor(ff\$dataWithFitted\$'.$trait_name_encoded_string.', ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted);
     SSE <- sum( abs(ff\$dataWithFitted\$'.$trait_name_encoded_string.'- ff\$dataWithFitted\$'.$trait_name_encoded_string.'.fitted) );
     write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -6217,7 +6217,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
         e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
         write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-        ff <- fitted(mix);
+        ff <- fitted(mix, tol='.$tol_asr.');
         r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
         SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -6383,7 +6383,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
         e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
         write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-        ff <- fitted(mix);
+        ff <- fitted(mix, tol='.$tol_asr.');
         r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
         SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -6554,7 +6554,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
         e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
         write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-        ff <- fitted(mix);
+        ff <- fitted(mix, tol='.$tol_asr.');
         r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
         SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -6725,7 +6725,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
         e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
         write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-        ff <- fitted(mix);
+        ff <- fitted(mix, tol='.$tol_asr.');
         r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
         SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -6896,7 +6896,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
         e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
         write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-        ff <- fitted(mix);
+        ff <- fitted(mix, tol='.$tol_asr.');
         r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
         SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -7077,7 +7077,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
         e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
         write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-        ff <- fitted(mix);
+        ff <- fitted(mix, tol='.$tol_asr.');
         r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
         SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -7247,7 +7247,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             h2s <- append(h2s, h2\$Estimate); h2ses <- append(h2ses, h2\$SE);';
         }
         $factor_analytic_cmd .= 'write.table(data.frame(h2s=h2s, h2ses=h2ses), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
-        ff <- fitted(mix);
+        ff <- fitted(mix, tol='.$tol_asr.');
         r2 <- cor(ff, mix\$mf\$value, use = \'complete.obs\');
         SSE <- sum( abs(ff - mix\$mf\$value),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
