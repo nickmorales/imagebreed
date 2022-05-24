@@ -934,7 +934,7 @@ sub download_grm {
         rownames(grm_mat) <- grm_mat_wide\$V1;
         grm_sorted <- NULL;
         try(grm_sorted <- mat.sort(grm_mat, fa(grm_mat)) );
-        if (!is.null(grm_sorted)) {
+        if (is.null(grm_sorted)) {
             grm_sorted <- grm_mat;
         }
         gg <- ggcorr(data=NULL, cor_matrix = grm_sorted, hjust = 1, size = 2, color = \'grey50\', layout.exp = 1, label = FALSE);
