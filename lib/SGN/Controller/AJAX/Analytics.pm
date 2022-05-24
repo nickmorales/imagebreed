@@ -4811,7 +4811,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     geno_mat[is.na(geno_mat)] <- 0;
     mat\$rowNumber <- as.numeric(mat\$rowNumber);
     mat\$colNumber <- as.numeric(mat\$colNumber);
-    mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', iters=3);
+    mix <- mmer('.$trait_name_encoded_string.'~1 + replicate, random=~vs(id, Gu=geno_mat) + spl2Da(rowNumber, colNumber), rcov=~vs(units), data=mat, tolparinv='.$tolparinv_10.', iters=1);
     if (!is.null(mix\$U)) {
     #gen_cor <- cov2cor(mix\$sigma\$\`u:id\`);
     write.table(mix\$U\$\`u:id\`, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
