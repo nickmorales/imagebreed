@@ -1511,7 +1511,7 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
         attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, pxem=7, na.action=na.method(y = \'include\', x = \'include\') );
+        mix <- asreml('.$trait_name_encoded_string.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, pxem=6, na.action=na.method(y = \'include\', x = \'include\') );
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
         summary(mix);
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
