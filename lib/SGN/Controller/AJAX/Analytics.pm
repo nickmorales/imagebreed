@@ -7166,6 +7166,77 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         # print STDERR Dumper $result_blup_spatial_data_ar1;
     }
 
+    # Factor Analytic on HTP and agronomic trait
+
+    my @trait_list_all_long = ($trait_id, @$observation_variable_id_list);
+    my $phenotypes_search_long = CXGN::Phenotypes::PhenotypeMatrixLong->new(
+        bcs_schema=>$schema,
+        search_type=>'MaterializedViewTable',
+        data_level=>'plot',
+        trait_list=>\@trait_list_all_long,
+        trial_list=>$field_trial_id_list
+    );
+    my @data_long = $phenotypes_search_long->get_phenotype_matrix();
+    #print STDERR Dumper \@data;
+
+    my $stats_tempfile_long = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
+
+    open(my $fh_factor_long, '>', $stats_tempfile_long) or die "Could not open file '$stats_tempfile_long' $!";
+
+        print $fh_factor_long join (',', ('accession_id','accession_id_factor','plot_id','plot_id_factor','replicate','block','row_number','col_number','trait','value'))."\n";
+
+        # my @phenotype_header = ('studyYear', 'programDbId', 'programName', 'programDescription', 'studyDbId', 'studyName', 'studyDescription', 'studyDesign', 'plotWidth', 'plotLength', 'fieldSize', 'fieldTrialIsPlannedToBeGenotyped', 'fieldTrialIsPlannedToCross', 'plantingDate', 'harvestDate', 'locationDbId', 'locationName', 'germplasmDbId', 'germplasmName', 'germplasmSynonyms', 'observationLevel', 'observationUnitDbId', 'observationUnitName', 'replicate', 'blockNumber', 'plotNumber', 'rowNumber', 'colNumber', 'entryType', 'plantNumber', 'notes', 'createDate', 'collectDate', 'timestamp', 'observationVariableName', 'value');
+        for (my $line = 1; $line < scalar(@data_long); $line++) {
+            my $columns = $data_long[$line];
+
+            my $accession_id = $columns->[17];
+            my $plot_id = $columns->[21];
+            my $value = $columns->[35];
+            my $trait = $columns->[34];
+            my $replicate = $columns->[23];
+            my $block = $columns->[24];
+            my $row_number = $columns->[26];
+            my $col_number = $columns->[27];
+
+            my $plot_id_factor = $stock_row_col{$plot_id}->{plot_id_factor};
+            my $accession_id_factor = $accession_id_factor_map{$accession_id};
+
+            print $fh_factor_long join (',', ($accession_id, $accession_id_factor, $plot_id, $plot_id_factor, $replicate, $block, $row_number, $col_number, $trait, $value))."\n";
+        }
+
+    close($fh_factor_long);
+
+    if ($analysis_run_type eq '2dspl_asremlFA') {
+        my $factor_analytic_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
+        mat <- data.frame(fread(\''.$stats_tempfile_long.'\', header=TRUE, sep=\',\'));
+        geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
+        mat\$row_number <- as.numeric(mat\$row_number);
+        mat\$col_number <- as.numeric(mat\$col_number);
+        mat\$accession_id_factor <- as.factor(mat\$accession_id_factor);
+        mat\$rep_trait <- as.factor(paste(ma\t$replicate, mat\$trait));
+        mat <- mat[order(mat\$row_number, mat\$col_number),];
+        attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'INVERSE\') <- TRUE;
+        mix <- asreml(value~1 + rep_trait, random=~fa(trait):vm($accession_id_factor, geno_mat_3col), residual=~idv(units), data=mat, tol='.$tol_asr.');
+        if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
+        write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$rowNumber, colNumber = mat\$colNumber), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+        h2 <- vpredict(mix, h2 ~ (V1) / ( V1+V3) );
+        e2 <- vpredict(mix, h2 ~ (V2) / ( V2+V3) );
+        write.table(data.frame(heritability=h2\$Estimate, hse=h2\$SE, env=e2\$Estimate, ese=e2\$SE), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        ff <- fitted(mix);
+        r2 <- cor(ff, mix\$mf\$'.$trait_name_encoded_string.', use = \'complete.obs\');
+        SSE <- sum( abs(ff - mix\$mf\$'.$trait_name_encoded_string.'),na.rm=TRUE );
+        write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        }
+        "';
+        print STDERR Dumper $factor_analytic_cmd;
+        my $asreml_fa_status = system($factor_analytic_cmd);
+
+    }
+
     open(my $F_genfile, ">", $analytics_protocol_genfile_tempfile_1) || die "Can't open file ".$analytics_protocol_genfile_tempfile_1;
         print $F_genfile "trait,accession_name,genetic_effect_g,genetic_effect_2dspl,genetic_effect_ar1\n";
         foreach my $accession_name (sort keys %$result_blup_data_g) {
