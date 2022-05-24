@@ -41,6 +41,7 @@ $analytics_protocol_id
                                         <option value="default_both">Default Tol (2Dspl and AR(1))</option>
                                         <option value="pre_2dspl_def_ar1">Predefined Tol 2Dspl, Default Tol AR(1)</option>
                                         <option value="pre_ar1_def_2dspl">Predefined Tol AR(1), Default Tol 2Dspl</option>
+                                        <option value="large_tol">Large Tol</option>
                                     </select>
                                 </div>
                             </div>
@@ -85,6 +86,7 @@ $analytics_protocol_id
                                     <option value="default_both">Default Tol (2Dspl and AR(1))</option>
                                     <option value="pre_2dspl_def_ar1">Predefined Tol 2Dspl, Default Tol AR(1)</option>
                                     <option value="pre_ar1_def_2dspl">Predefined Tol AR(1), Default Tol 2Dspl</option>
+                                    <option value="large_tol">Large Tol</option>
                                 </select>
                             </div>
                         </div>

@@ -1469,6 +1469,9 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
     if ($default_tol eq 'default_both' || $default_tol eq 'pre_2dspl_def_ar1') {
         $tol_asr = 'c(-8,-10)';
     }
+    elsif ($default_tol eq 'large_tol') {
+        $tol_asr = 'c(-1,-2)';
+    }
 
     my $number_traits = scalar(@sorted_trait_names);
     my $number_accessions = scalar(@accession_ids);
@@ -3171,6 +3174,10 @@ sub analytics_protocols_compare_to_trait_test_ar1_models :Path('/ajax/analytics_
         $tolparinv = 0.000001;
         $tolparinv_10 = $tolparinv*10;
     }
+    elsif ($default_tol eq 'large_tol') {
+        $tolparinv = 10;
+        $tolparinv_10 = 10;
+    }
 
     my @data_matrix_original_sp;
     foreach my $p (@seen_plots) {
@@ -3595,6 +3602,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
     if ($default_tol eq 'default_both' || $default_tol eq 'pre_ar1_def_2dspl') {
         $tolparinv = 0.000001;
+    }
+    elsif ($default_tol eq 'large_tol') {
+        $tolparinv = 10;
     }
     my $tolparinv_10 = $tolparinv*10;
 
@@ -6155,6 +6165,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
     if ($default_tol eq 'default_both' || $default_tol eq 'pre_2dspl_def_ar1') {
         $tol_asr = 'c(-8,-10)';
+    }
+    elsif ($default_tol eq 'large_tol') {
+        $tol_asr = 'c(-1,-2)';
     }
 
     my $number_traits = scalar(@sorted_trait_names);
