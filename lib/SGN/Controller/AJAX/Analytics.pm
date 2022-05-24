@@ -3603,10 +3603,12 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
     if ($default_tol eq 'default_both' || $default_tol eq 'pre_ar1_def_2dspl') {
         $tolparinv = 0.000001;
     }
-    elsif ($default_tol eq 'large_tol') {
-        $tolparinv = 10;
-    }
     my $tolparinv_10 = $tolparinv*10;
+
+    if ($default_tol eq 'large_tol') {
+        $tolparinv = 10;
+        $tolparinv_10 = 10;
+    }
 
     my @legendre_coeff_exec = (
         '1 * $b',
