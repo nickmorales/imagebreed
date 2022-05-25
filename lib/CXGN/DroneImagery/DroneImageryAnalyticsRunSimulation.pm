@@ -2475,7 +2475,7 @@ sub perform_drone_imagery_analytics {
             attr(geno_mat_3col,\'INVERSE\') <- TRUE;
             ';
             my $statistics_cmd_model = '
-            mix <- asreml(t'.$t.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
+            mix <- asreml(t'.$t.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
             if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
             write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
             write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
@@ -2485,11 +2485,11 @@ sub perform_drone_imagery_analytics {
 
             my $cv_classify_string = 'id_factor';
             $statistics_cmd_cv_1 = '
-            mix_cv1 <- asreml('.$t_coded_cv1.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv2 <- asreml('.$t_coded_cv2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv3 <- asreml('.$t_coded_cv3.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv4 <- asreml('.$t_coded_cv4.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv5 <- asreml('.$t_coded_cv5.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
+            mix_cv1 <- asreml('.$t_coded_cv1.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv2 <- asreml('.$t_coded_cv2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv3 <- asreml('.$t_coded_cv3.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv4 <- asreml('.$t_coded_cv4.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv5 <- asreml('.$t_coded_cv5.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
 
             write.table(data.frame(plot_id = mat\$plot_id, t'.$t.' = mat\$t'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$linear.predictors), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             write.table(data.frame(plot_id = mat\$plot_id, t'.$t.' = mat\$t'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$linear.predictors), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
@@ -2499,11 +2499,11 @@ sub perform_drone_imagery_analytics {
             "';
 
             $statistics_cmd_cv_2 = '
-            mix_cv_2_1 <- asreml('.$t_coded_cv1_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv_2_2 <- asreml('.$t_coded_cv2_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv_2_3 <- asreml('.$t_coded_cv3_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv_2_4 <- asreml('.$t_coded_cv4_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv_2_5 <- asreml('.$t_coded_cv5_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
+            mix_cv_2_1 <- asreml('.$t_coded_cv1_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv_2_2 <- asreml('.$t_coded_cv2_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv_2_3 <- asreml('.$t_coded_cv3_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv_2_4 <- asreml('.$t_coded_cv4_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv_2_5 <- asreml('.$t_coded_cv5_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + rowNumberFactorSep + colNumberFactorSep + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
 
             write.table(data.frame(plot_id = mat\$plot_id, t'.$t.' = mat\$t'.$t.','.$t_coded_cv1_2.' = mat\$'.$t_coded_cv1_2.', residuals = mix_cv_2_1\$residuals, fitted = mix_cv_2_1\$linear.predictors), file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             write.table(data.frame(plot_id = mat\$plot_id, t'.$t.' = mat\$t'.$t.','.$t_coded_cv2_2.' = mat\$'.$t_coded_cv2_2.', residuals = mix_cv_2_2\$residuals, fitted = mix_cv_2_2\$linear.predictors), file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
@@ -3050,7 +3050,7 @@ sub perform_drone_imagery_analytics {
             attr(geno_mat_3col,\'INVERSE\') <- TRUE;
             ';
             my $statistics_cmd_model = '
-            mix <- asreml(t'.$t.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
+            mix <- asreml(t'.$t.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
             if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
             write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
             write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
@@ -3060,11 +3060,11 @@ sub perform_drone_imagery_analytics {
 
             my $cv_classify_string = 'id_factor';
             $statistics_cmd_cv_1 = '
-            mix_cv1 <- asreml('.$t_coded_cv1.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv2 <- asreml('.$t_coded_cv2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv3 <- asreml('.$t_coded_cv3.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv4 <- asreml('.$t_coded_cv4.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv5 <- asreml('.$t_coded_cv5.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
+            mix_cv1 <- asreml('.$t_coded_cv1.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv2 <- asreml('.$t_coded_cv2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv3 <- asreml('.$t_coded_cv3.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv4 <- asreml('.$t_coded_cv4.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv5 <- asreml('.$t_coded_cv5.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
 
             write.table(data.frame(plot_id = mat\$plot_id, t'.$t.' = mat\$t'.$t.','.$t_coded_cv1.' = mat\$'.$t_coded_cv1.', residuals = mix_cv1\$residuals, fitted = mix_cv1\$linear.predictors), file=\''.$stats_out_cv1_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             write.table(data.frame(plot_id = mat\$plot_id, t'.$t.' = mat\$t'.$t.','.$t_coded_cv2.' = mat\$'.$t_coded_cv2.', residuals = mix_cv2\$residuals, fitted = mix_cv2\$linear.predictors), file=\''.$stats_out_cv2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
@@ -3074,11 +3074,11 @@ sub perform_drone_imagery_analytics {
             "';
 
             $statistics_cmd_cv_2 = '
-            mix_cv_2_1 <- asreml('.$t_coded_cv1_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv_2_2 <- asreml('.$t_coded_cv2_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv_2_3 <- asreml('.$t_coded_cv3_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv_2_4 <- asreml('.$t_coded_cv4_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-            mix_cv_2_5 <- asreml('.$t_coded_cv5_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
+            mix_cv_2_1 <- asreml('.$t_coded_cv1_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv_2_2 <- asreml('.$t_coded_cv2_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv_2_3 <- asreml('.$t_coded_cv3_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv_2_4 <- asreml('.$t_coded_cv4_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+            mix_cv_2_5 <- asreml('.$t_coded_cv5_2.'~1 + replicate, random=~vm(id_factor, geno_mat_3col) + ar1v(rowNumberFactor):ar1(colNumberFactor), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
 
             write.table(data.frame(plot_id = mat\$plot_id, t'.$t.' = mat\$t'.$t.','.$t_coded_cv1_2.' = mat\$'.$t_coded_cv1_2.', residuals = mix_cv_2_1\$residuals, fitted = mix_cv_2_1\$linear.predictors), file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
             write.table(data.frame(plot_id = mat\$plot_id, t'.$t.' = mat\$t'.$t.','.$t_coded_cv2_2.' = mat\$'.$t_coded_cv2_2.', residuals = mix_cv_2_2\$residuals, fitted = mix_cv_2_2\$linear.predictors), file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
@@ -3700,7 +3700,7 @@ sub perform_drone_imagery_analytics {
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
         ';
         my $statistics_cmd_model = '
-        mix <- asreml('.$cbind_string.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
+        mix <- asreml('.$cbind_string.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
         write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');
@@ -3719,11 +3719,11 @@ sub perform_drone_imagery_analytics {
         my $encoded_trait_cv_string_5 = join ',', @encoded_traits_cv_5;
         my $cbind_string_cv_5 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_5)" : $encoded_trait_cv_string_5;
         $statistics_cmd_cv_1 = '
-        mix_cv_1 <- asreml('.$cbind_string_cv_1.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-        mix_cv_2 <- asreml('.$cbind_string_cv_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-        mix_cv_3 <- asreml('.$cbind_string_cv_3.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-        mix_cv_4 <- asreml('.$cbind_string_cv_4.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-        mix_cv_5 <- asreml('.$cbind_string_cv_5.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
+        mix_cv_1 <- asreml('.$cbind_string_cv_1.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+        mix_cv_2 <- asreml('.$cbind_string_cv_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+        mix_cv_3 <- asreml('.$cbind_string_cv_3.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+        mix_cv_4 <- asreml('.$cbind_string_cv_4.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+        mix_cv_5 <- asreml('.$cbind_string_cv_5.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
         ';
         my $encoded_traits_cv_save_1 = join ',', @encoded_traits_cv_save_1;
         my $encoded_traits_cv_save_2 = join ',', @encoded_traits_cv_save_2;
@@ -3762,11 +3762,11 @@ sub perform_drone_imagery_analytics {
         my $encoded_trait_cv_string_5_2 = join ',', @encoded_traits_cv_5_2;
         my $cbind_string_cv_5_2 = $number_traits > 1 ? "cbind($encoded_trait_cv_string_5_2)" : $encoded_trait_cv_string_5_2;
         $statistics_cmd_cv_2 = '
-        mix_cv_1_2 <- asreml('.$cbind_string_cv_1_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-        mix_cv_2_2 <- asreml('.$cbind_string_cv_2_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-        mix_cv_3_2 <- asreml('.$cbind_string_cv_3_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-        mix_cv_4_2 <- asreml('.$cbind_string_cv_4_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
-        mix_cv_5_2 <- asreml('.$cbind_string_cv_5_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=FALSE);
+        mix_cv_1_2 <- asreml('.$cbind_string_cv_1_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+        mix_cv_2_2 <- asreml('.$cbind_string_cv_2_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+        mix_cv_3_2 <- asreml('.$cbind_string_cv_3_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+        mix_cv_4_2 <- asreml('.$cbind_string_cv_4_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
+        mix_cv_5_2 <- asreml('.$cbind_string_cv_5_2.'~trait + replicate, random=~us(trait,init=c('.$init_values_string.')):vm(id_factor, geno_mat_3col) + id(trait):ar1(rowNumberFactor):ar1v(colNumberFactor), residual=~units:us(trait,init=c('.$init_values_string.')), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6);
 
         write.table(data.frame(plot_id = c('.$plot_id_cbind_string.'), true_values = c('.$encoded_traits_cv_check.'), cv_values = c('.$encoded_traits_cv_save_1_2.'), residuals = mix_cv_1_2\$residuals, fitted = mix_cv_1_2\$linear.predictors), file=\''.$stats_out_cv1_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
         write.table(data.frame(plot_id = c('.$plot_id_cbind_string.'), true_values = c('.$encoded_traits_cv_check.'), cv_values = c('.$encoded_traits_cv_save_2_2.'), residuals = mix_cv_2_2\$residuals, fitted = mix_cv_2_2\$linear.predictors), file=\''.$stats_out_cv2_2_predict_tempfile.'\', row.names=FALSE, col.names=TRUE, sep=\'\t\');
