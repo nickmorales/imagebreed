@@ -7253,9 +7253,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         }
         mix1 <- asreml(value~1 + rep_trait, random=~fa(trait):vm(accession_id_factor, geno_mat_3col), residual=~idv(units), data=mat[mat\$replicate == \'1\', ], tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=2, workspace=\'10gb\');
-        if (!is.null(summary(mix_g1,coef=TRUE)\$coef.random)) {
+        if (!is.null(summary(mix1,coef=TRUE)\$coef.random)) {
         mix2 <- asreml(value~1 + rep_trait, random=~fa(trait):vm(accession_id_factor, geno_mat_3col), residual=~idv(units), data=mat[mat\$replicate == \'2\', ], tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=2, workspace=\'10gb\');
-        if (!is.null(summary(mix_g1,coef=TRUE)\$coef.random)) {
+        if (!is.null(summary(mix2,coef=TRUE)\$coef.random)) {
         mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$coefficients\$random), data.frame(g_rep2=mix2\$coefficients\$random), by=\'row.names\', all=TRUE);
         g_corr <- 0;
         try (g_corr <- cor(mix_gp_g_reps\$g_rep1, mix_gp_g_reps\$g_rep2, use = \'complete.obs\'));
