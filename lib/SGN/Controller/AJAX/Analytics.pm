@@ -7235,7 +7235,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
         attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-        mix <- asreml(value~1 + rep_trait, random=~fa(trait):vm(accession_id_factor, geno_mat_3col), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6, workspace=\'10gb\');
+        mix <- asreml(value~1 + rep_trait, random=~fa(trait):vm(accession_id_factor, geno_mat_3col), residual=~idv(units), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=2, workspace=\'10gb\');
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -7252,9 +7252,9 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         SSE <- sum( abs(ff - mix\$mf\$value),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         }
-        mix1 <- asreml(value~1 + rep_trait, random=~fa(trait):vm(accession_id_factor, geno_mat_3col), residual=~idv(units), data=mat[mat\$replicate == \'1\', ], tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6, workspace=\'10gb\');
+        mix1 <- asreml(value~1 + rep_trait, random=~fa(trait):vm(accession_id_factor, geno_mat_3col), residual=~idv(units), data=mat[mat\$replicate == \'1\', ], tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=2, workspace=\'10gb\');
         if (!is.null(summary(mix_g1,coef=TRUE)\$coef.random)) {
-        mix2 <- asreml(value~1 + rep_trait, random=~fa(trait):vm(accession_id_factor, geno_mat_3col), residual=~idv(units), data=mat[mat\$replicate == \'2\', ], tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=6, workspace=\'10gb\');
+        mix2 <- asreml(value~1 + rep_trait, random=~fa(trait):vm(accession_id_factor, geno_mat_3col), residual=~idv(units), data=mat[mat\$replicate == \'2\', ], tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=2, workspace=\'10gb\');
         if (!is.null(summary(mix_g1,coef=TRUE)\$coef.random)) {
         mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$coefficients\$random), data.frame(g_rep2=mix2\$coefficients\$random), by=\'row.names\', all=TRUE);
         g_corr <- 0;
