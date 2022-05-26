@@ -7245,7 +7245,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $fa_trait_total = scalar(@trait_list_all_long);
         for (my $fa_trait = $fa_trait_total; $fa_trait >= 1; $fa_trait--) {
             my $fa_trait2 = $fa_trait_total + $fa_trait;
+            my $fa_trait3 = 2*$fa_trait_total + $fa_trait;
             $factor_analytic_cmd .= 'h2 <- vpredict(mix, as.formula(paste(\"h2 ~ (V\", count+1-'.$fa_trait2.', \") / ( V\", count+1-'.$fa_trait2.' , \"+V\", count+1-'.$fa_trait.', \")\", sep=\"\")) );
+            h2s <- append(h2s, h2\$Estimate); h2ses <- append(h2ses, h2\$SE);';
+            $factor_analytic_cmd .= 'h2 <- vpredict(mix, as.formula(paste(\"h2 ~ (V\", count+1-'.$fa_trait3.', \") / ( V\", count+1-'.$fa_trait3.' , \"+V\", count+1-'.$fa_trait.', \")\", sep=\"\")) );
             h2s <- append(h2s, h2\$Estimate); h2ses <- append(h2ses, h2\$SE);';
         }
         $factor_analytic_cmd .= 'write.table(data.frame(h2s=h2s, h2ses=h2ses), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
