@@ -7259,7 +7259,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$coefficients\$random), data.frame(g_rep2=mix2\$coefficients\$random), by=\'row.names\', all=TRUE);
         mix1p <- predict(mix1, classify=\'trait:accession_id_factor\'); mix1po <- mix1p\$pvals; mix1po <- mix1po[order(mix1po\$trait),];
         mix2p <- predict(mix2, classify=\'trait:accession_id_factor\'); mix2po <- mix2p\$pvals; mix2po <- mix2po[order(mix2po\$trait),];
-        g_corr <- cor(mix1po$predicted.value[1:'.$number_accessions.'], mix2po$predicted.value[1:'.$number_accessions.'], use = \'complete.obs\');
+        g_corr <- cor(mix1po\$predicted.value[1:'.$number_accessions.'], mix2po\$predicted.value[1:'.$number_accessions.'], use = \'complete.obs\');
         write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         }
         }
