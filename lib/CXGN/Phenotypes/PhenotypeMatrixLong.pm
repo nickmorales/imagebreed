@@ -218,6 +218,7 @@ sub get_phenotype_matrix {
 
     if ($self->search_type eq 'MaterializedViewTable'){
         ($data, $unique_traits) = $phenotypes_search->search();
+        my @unique_traits_sorted = sort keys %$unique_traits;
 
         print STDERR "No of lines retrieved: ".scalar(@$data)."\n";
         print STDERR "Construct Pheno Matrix Long MaterializedViewTable Start:".localtime."\n";
@@ -288,8 +289,8 @@ sub get_phenotype_matrix {
                     push @{$trait_observations{$_->{trait_name}}}, $_->{value};
                 }
 
-                foreach my $trait_name (sort keys %trait_observations) {
-                    my $values = $trait_observations{$trait_name};
+                foreach my $trait_name (@unique_traits_sorted) {
+                    my $values = $trait_observations{$trait_name} || ['NA'];
                     my $val;
                     if ($return_only_first_measurement) {
                         $val = $values->[0];
@@ -380,7 +381,7 @@ sub get_phenotype_matrix {
                 push @obsunit_line, ($d->{obsunit_type_name}, $d->{obsunit_stock_id}, $d->{obsunit_uniquename}, $d->{rep}, $d->{block}, $d->{plot_number}, $d->{row_number}, $d->{col_number}, $entry_type, $d->{plant_number}, $d->{notes});
 
                 foreach my $trait_name (@traits_sorted) {
-                    my $values = $trait_observations{$stock_id}->{$trait_name};
+                    my $values = $trait_observations{$stock_id}->{$trait_name} || ['NA'];
                     my $val;
                     if ($return_only_first_measurement) {
                         $val = $values->[0];
