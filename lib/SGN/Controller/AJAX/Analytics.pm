@@ -6174,6 +6174,7 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
 
     my $number_traits = scalar(@sorted_trait_names);
     my $number_accessions = scalar(@accession_ids);
+    my $number_plots = scalar(@seen_plots);
 
     my $current_gen_row_count_ar1 = 0;
     my $current_env_row_count_ar1 = 0;
@@ -7225,8 +7226,6 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         my $factor_analytic_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
         mat <- data.frame(fread(\''.$stats_tempfile_long.'\', header=TRUE, sep=\',\'));
         geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
-        mat\$row_number <- as.numeric(mat\$row_number);
-        mat\$col_number <- as.numeric(mat\$col_number);
         mat\$accession_id_factor <- as.factor(as.numeric(as.factor(mat\$accession_id)));
         mat\$plot_id_factor <- as.numeric(as.factor(mat\$plot_id));
         mat\$rep_trait <- as.factor(paste(mat\$replicate, mat\$trait));
@@ -7253,8 +7252,8 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
         $factor_analytic_cmd .= 'write.table(data.frame(h2s=h2s, h2ses=h2ses), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         ff <- fitted(mix);
-        r2 <- cor(ff, mix\$mf\$value, use = \'complete.obs\');
-        SSE <- sum( abs(ff - mix\$mf\$value),na.rm=TRUE );
+        r2 <- cor(ff[1:'.$number_plots.'], mix\$mf\$value[1:'.$number_plots.'], use = \'complete.obs\');
+        SSE <- sum( abs(ff[1:'.$number_plots.'] - mix\$mf\$value[1:'.$number_plots.']),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         }
         mix1 <- asreml(value~1 + rep_trait, random=~fa(trait,k=1):vm(accession_id_factor, geno_mat_3col), residual=~dsum(~id(plot_id)|trait), data=mat[mat\$replicate == \'1\', ], tol='.$tol_asr.', workspace=\'10gb\');
