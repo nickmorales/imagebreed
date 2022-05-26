@@ -7231,11 +7231,11 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         mat\$plot_id_factor <- as.numeric(as.factor(mat\$plot_id));
         mat\$rep_trait <- as.factor(paste(mat\$replicate, mat\$trait));
         mat\$trait <- as.factor(mat\$trait);
-        mat <- mat[order(mat\$row_number, mat\$col_number),];
+        mat <- mat[order(mat\$trait, mat\$plot_id),];
         attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
         attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
         attr(geno_mat_3col,\'INVERSE\') <- TRUE;
-        mix <- asreml(value~1 + rep_trait, random=~fa(trait):vm(accession_id_factor, geno_mat_3col), residual=~fa(trait):idv(plot_id), data=mat, tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=3, workspace=\'10gb\');
+        mix <- asreml(value~1 + rep_trait, random=~fa(trait,k=1):vm(accession_id_factor, geno_mat_3col), residual=~dsum(~id(plot_id)|trait), data=mat, tol='.$tol_asr.', workspace=\'10gb\');
         if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
         write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
@@ -7252,13 +7252,14 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         SSE <- sum( abs(ff - mix\$mf\$value),na.rm=TRUE );
         write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
         }
-        mix1 <- asreml(value~1 + rep_trait, random=~fa(trait):vm(accession_id_factor, geno_mat_3col), residual=~fa(trait):idv(plot_id), data=mat[mat\$replicate == \'1\', ], tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=3, workspace=\'10gb\');
+        mix1 <- asreml(value~1 + rep_trait, random=~fa(trait,k=1):vm(accession_id_factor, geno_mat_3col), residual=~dsum(~id(plot_id)|trait), data=mat[mat\$replicate == \'1\', ], tol='.$tol_asr.', workspace=\'10gb\');
         if (!is.null(summary(mix1,coef=TRUE)\$coef.random)) {
-        mix2 <- asreml(value~1 + rep_trait, random=~fa(trait):vm(accession_id_factor, geno_mat_3col), residual=~fa(trait):idv(plot_id), data=mat[mat\$replicate == \'2\', ], tol='.$tol_asr.', fail=\'soft\', ai.sing=TRUE, maxit=3, workspace=\'10gb\');
+        mix2 <- asreml(value~1 + rep_trait, random=~fa(trait,k=1):vm(accession_id_factor, geno_mat_3col), residual=~dsum(~id(plot_id)|trait), data=mat[mat\$replicate == \'2\', ], tol='.$tol_asr.', workspace=\'10gb\');
         if (!is.null(summary(mix2,coef=TRUE)\$coef.random)) {
         mix_gp_g_reps <- merge(data.frame(g_rep1=mix1\$coefficients\$random), data.frame(g_rep2=mix2\$coefficients\$random), by=\'row.names\', all=TRUE);
-        g_corr <- 0;
-        try (g_corr <- cor(mix_gp_g_reps\$bu.x, mix_gp_g_reps\$bu.y, use = \'complete.obs\'));
+        mix1p <- predict(mix1, classify=\'trait:accession_id_factor\'); mix1po <- mix1p\$pvals; mix1po <- mix1po[order(mix1po\$trait),];
+        mix2p <- predict(mix2, classify=\'trait:accession_id_factor\'); mix2po <- mix2p\$pvals; mix2po <- mix2po[order(mix2po\$trait),];
+        g_corr <- cor(mix1po$predicted.value[1:'.$number_accessions.'], mix2po$predicted.value[1:'.$number_accessions.'], use = \'complete.obs\');
         write.table(data.frame(gcorr = c(g_corr) ), file=\''.$stats_out_tempfile_gcor.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         }
         }
