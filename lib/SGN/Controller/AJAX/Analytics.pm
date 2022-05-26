@@ -7242,8 +7242,10 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$row_number, colNumber = mat\$col_number), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
         count <- nrow(summary(mix)\$varcomp);
         h2s <- c(); h2ses <- c(); ';
-        for (my $fa_trait = scalar(@trait_list_all_long); $fa_trait >= 1; $fa_trait--) {
-            $factor_analytic_cmd .= 'h2 <- vpredict(mix, as.formula(paste(\"h2 ~ (V\", count-1-'.$fa_trait.', \") / ( V\", count-1-'.$fa_trait.' , \"+V\", count-1, \")\", sep=\"\")) );
+        my $fa_trait_total = scalar(@trait_list_all_long);
+        for (my $fa_trait = $fa_trait_total; $fa_trait >= 1; $fa_trait--) {
+            my $fa_trait2 = $fa_trait_total + $fa_trait;
+            $factor_analytic_cmd .= 'h2 <- vpredict(mix, as.formula(paste(\"h2 ~ (V\", count+1-'.$fa_trait2.', \") / ( V\", count+1-'.$fa_trait2.' , \"+V\", count+1-'.$fa_trait.', \")\", sep=\"\")) );
             h2s <- append(h2s, h2\$Estimate); h2ses <- append(h2ses, h2\$SE);';
         }
         $factor_analytic_cmd .= 'write.table(data.frame(h2s=h2s, h2ses=h2ses), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
