@@ -4663,6 +4663,19 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
         }
     }
 
+    my $trait_name_encoded_all = 1;
+    my %trait_name_encoder_all;
+    my %trait_name_encoder_rev_all;
+    my @trait_names_all = (@sorted_trait_names, @sorted_trait_names_htp);
+    foreach my $trait_name (@trait_names_all) {
+        if (!exists($trait_name_encoder_all{$trait_name})) {
+            my $trait_name_e = 'at'.$trait_name_encoded_all;
+            $trait_name_encoder_all{$trait_name} = $trait_name_e;
+            $trait_name_encoder_rev_all{$trait_name_e} = $trait_name;
+            $trait_name_encoded_all++;
+        }
+    }
+
     # Prepare phenotype file for Trait Spatial Correction
     my $stats_tempfile = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
     my $stats_tempfile_q1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'analytics_protocol_figure/figureXXXX').".csv";
@@ -7283,8 +7296,67 @@ sub analytics_protocols_compare_to_trait :Path('/ajax/analytics_protocols_compar
             }
         close($F_fa_f);
 
+        die;
     }
-    die;
+
+    if ($analysis_run_type eq '2dspl_asremlFAmultitrait') {
+
+        my @trait_names_all_encoded = sort keys %trait_name_encoder_rev_all;
+        my $factor_analytic_cbind_string = "cbind(".join(',', @trait_names_all_encoded).")";
+
+        my $factor_analytic_cmd = 'R -e "library(asreml); library(data.table); library(reshape2);
+        mat <- data.frame(fread(\''.$stats_tempfile_long.'\', header=TRUE, sep=\',\'));
+        geno_mat_3col <- data.frame(fread(\''.$grm_rename_tempfile.'\', header=FALSE, sep=\' \'));
+        mat\$accession_id_factor <- as.factor(as.numeric(as.factor(mat\$accession_id)));
+        mat\$plot_id_factor <- as.numeric(as.factor(mat\$plot_id));
+        mat_wide <- dcast(mat, accession_id+accession_id_factor+plot_id+plot_id_factor+replicate+block+row_number+col_number ~ trait, value.var=\'value\');';
+        foreach my $t (@trait_names_all) {
+            my $trait_name_encoded = $trait_name_encoder_all{$t};
+            $factor_analytic_cmd .= 'names(mat_wide)[names(mat_wide) == \''.$t.'\'] <- \''.$trait_name_encoded.'\';';
+        }
+        $factor_analytic_cmd .= 'attr(geno_mat_3col,\'rowNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'colNames\') <- as.character(seq(1,'.$number_accessions.'));
+        attr(geno_mat_3col,\'INVERSE\') <- TRUE;
+        mix <- asreml('.$factor_analytic_cbind_string.'~trait + replicate, random=~fa(trait,k=1):vm(accession_id_factor, geno_mat_3col), residual=~units:us(trait), data=mat_wide, tol='.$tol_asr.', workspace=\'10gb\');
+        if (!is.null(summary(mix,coef=TRUE)\$coef.random)) {
+        write.table(summary(mix,coef=TRUE)\$coef.random, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(summary(mix)\$varcomp, file=\''.$stats_out_tempfile_varcomp.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        write.table(data.frame(plot_id = mat\$plot_id, residuals = mix\$residuals, fitted = mix\$linear.predictors, rowNumber = mat\$row_number, colNumber = mat\$col_number), file=\''.$stats_out_tempfile_residual.'\', row.names=FALSE, col.names=TRUE, sep=\',\');
+        count <- nrow(summary(mix)\$varcomp);
+        h2s <- c(); h2ses <- c(); ';
+        my $fa_trait_total = scalar(@trait_list_all_long);
+        for (my $fa_trait = $fa_trait_total; $fa_trait >= 1; $fa_trait--) {
+            my $fa_trait2 = $fa_trait_total + $fa_trait;
+            my $fa_trait3 = 2*$fa_trait_total + $fa_trait;
+            $factor_analytic_cmd .= 'h2 <- vpredict(mix, as.formula(paste(\"h2 ~ (V\", count+1-'.$fa_trait2.', \") / ( V\", count+1-'.$fa_trait2.' , \"+V\", count+1-'.$fa_trait.', \")\", sep=\"\")) );
+            h2s <- append(h2s, h2\$Estimate); h2ses <- append(h2ses, h2\$SE);';
+            $factor_analytic_cmd .= 'h2 <- vpredict(mix, as.formula(paste(\"h2 ~ (V\", count+1-'.$fa_trait3.', \") / ( V\", count+1-'.$fa_trait3.' , \"+V\", count+1-'.$fa_trait.', \")\", sep=\"\")) );
+            h2s <- append(h2s, h2\$Estimate); h2ses <- append(h2ses, h2\$SE);';
+        }
+        $factor_analytic_cmd .= 'write.table(data.frame(h2s=h2s, h2ses=h2ses), file=\''.$stats_out_tempfile_vpredict.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        ff <- fitted(mix);
+        r2 <- cor(ff[1:'.$number_plots.'], mix\$mf\$value[1:'.$number_plots.'], use = \'complete.obs\');
+        SSE <- sum( abs(ff[1:'.$number_plots.'] - mix\$mf\$value[1:'.$number_plots.']),na.rm=TRUE );
+        write.table(data.frame(sse=c(SSE), r2=c(r2)), file=\''.$stats_out_tempfile_fits.'\', row.names=TRUE, col.names=TRUE, sep=\',\');
+        }
+        "';
+        print STDERR Dumper $factor_analytic_cmd;
+        my $asreml_fa_status = system($factor_analytic_cmd);
+
+        open(my $F_fa_f, '<', $stats_out_tempfile_gcor) or die "Could not open file '$stats_out_tempfile_gcor' $!";
+            print STDERR "Opened $stats_out_tempfile_gcor\n";
+            $header_fits = <$F_fa_f>;
+            while (my $row = <$F_fa_f>) {
+                my @columns;
+                if ($csv->parse($row)) {
+                    @columns = $csv->fields();
+                }
+                print STDERR Dumper $columns[0];
+            }
+        close($F_fa_f);
+
+        die;
+    }
 
     open(my $F_genfile, ">", $analytics_protocol_genfile_tempfile_1) || die "Can't open file ".$analytics_protocol_genfile_tempfile_1;
         print $F_genfile "trait,accession_name,genetic_effect_g,genetic_effect_2dspl,genetic_effect_ar1\n";
