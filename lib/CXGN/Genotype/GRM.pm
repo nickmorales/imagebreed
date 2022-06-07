@@ -444,17 +444,15 @@ sub _get_grm {
 
             @all_individual_accessions_stock_ids = @$accession_list;
 
-            # my $pm = Parallel::ForkManager->new($max_processes);
+            my $pm = Parallel::ForkManager->new($max_processes);
 
-            # LINKS:
+            LINKS:
             for my $i (0..scalar(@accession_stock_ids_found)-1) {
-                # $pm->start and next LINKS;
+                $pm->start and next LINKS;
 
                 my $female_stock_id = $female_stock_ids_found[$i];
                 my $male_stock_id = $male_stock_ids_found[$i];
                 my $accession_stock_id = $accession_stock_ids_found[$i];
-
-                if ($accession_stock_id == 47428) {
 
                 my $dataset = CXGN::Dataset->new({
                     people_schema=>$people_schema,
@@ -465,7 +463,6 @@ sub _get_grm {
                 my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, [], undef, undef, [], $dosage_key);
 
                 if (scalar(@$genotypes) > 0) {
-                    print STDERR "GENOS:". scalar(@$genotypes)."\n";
                     # For old genotyping protocols without nd_protocolprop info...
                     if (scalar(@all_marker_objects) == 0) {
                         foreach my $o (sort genosort keys %{$genotypes->[0]->{selected_genotype_hash}}) {
@@ -481,20 +478,18 @@ sub _get_grm {
                     });
                     my $progeny_genotype = $geno->get_hybrid_genotype();
 
-                    print STDERR "PROJ GENOS:".scalar(@$progeny_genotype)."\n";
-
                     unshift @$progeny_genotype, $accession_stock_id;
                     my $genotype_string_scores = join "\t", @$progeny_genotype;
                     $genotype_string .= $genotype_string_scores . "\n";
                     write_file($grm_tempfile, {append => 1}, $genotype_string);
                     undef $progeny_genotype;
+                    sleep(2);
                 }
 
-                # $pm->finish;
-                }
+                $pm->finish;
             }
 
-            # $pm->wait_all_children;
+            $pm->wait_all_children;
         }
 
         # print STDERR Dumper \@all_marker_names;
