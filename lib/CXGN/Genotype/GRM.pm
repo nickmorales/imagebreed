@@ -327,6 +327,7 @@ sub _get_grm {
                         $genotype_string .= $genotype_string_scores . "\n";
                         write_file($grm_tempfile, {append => 1}, $genotype_string);
                         undef $genotypes->[$p];
+                        sleep(2);
                     }
                     undef $genotypes;
                 }
@@ -369,6 +370,8 @@ sub _get_grm {
             # print STDERR Dumper \@plot_female_stock_ids_found;
             # print STDERR Dumper \@plot_male_stock_ids_found;
 
+            print STDERR "Found Plots with Genotypes: ".scalar(@plot_stock_ids_found)."\n";
+
             my $pm = Parallel::ForkManager->new($max_processes);
 
             LINKS:
@@ -385,7 +388,7 @@ sub _get_grm {
                     cache_root=>$cache_root_dir,
                     accessions=>[$female_stock_id, $male_stock_id]
                 });
-                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, [], undef, undef, [], $dosage_key);
+                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 0, [], undef, undef, [], $dosage_key);
 
                 if (scalar(@$genotypes) > 0) {
                     # For old genotyping protocols without nd_protocolprop info...
@@ -408,6 +411,7 @@ sub _get_grm {
                     $genotype_string .= $genotype_string_scores . "\n";
                     write_file($grm_tempfile, {append => 1}, $genotype_string);
                     undef $progeny_genotype;
+                    sleep(2);
                 }
 
                 $pm->finish;
@@ -443,6 +447,8 @@ sub _get_grm {
             # print STDERR Dumper \@male_stock_ids_found;
 
             @all_individual_accessions_stock_ids = @$accession_list;
+
+            print STDERR "Found Accessions with Genotypes: ".scalar(@accession_stock_ids_found)."\n";
 
             my $pm = Parallel::ForkManager->new($max_processes);
 
