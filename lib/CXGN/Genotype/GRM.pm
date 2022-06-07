@@ -460,9 +460,11 @@ sub _get_grm {
                     cache_root=>$cache_root_dir,
                     accessions=>[$female_stock_id, $male_stock_id]
                 });
-                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, [], undef, undef, [], $dosage_key);
+                my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 0, [], undef, undef, [], $dosage_key);
 
                 if (scalar(@$genotypes) > 0) {
+                    print STDERR Dumper scalar(@$genotypes);
+
                     # For old genotyping protocols without nd_protocolprop info...
                     if (scalar(@all_marker_objects) == 0) {
                         foreach my $o (sort genosort keys %{$genotypes->[0]->{selected_genotype_hash}}) {
