@@ -68,6 +68,7 @@ use File::Temp qw | tempfile |;
 use File::Copy;
 use POSIX;
 use Parallel::ForkManager;
+use CXGN::Dataset;
 
 has 'bcs_schema' => (
     isa => 'Bio::Chado::Schema',
@@ -1527,13 +1528,13 @@ sub get_cached_file_dosage_matrix_compute_from_parents {
             my $male_stock_id = $male_stock_ids_found[0];
             my $accession_stock_id = $accession_stock_ids_found[0];
 
-            my $dataset = CXGN::Dataset::Cache->new({
+            my $dataset = CXGN::Dataset->new({
                 people_schema=>$self->people_schema,
                 schema=>$schema,
                 cache_root=>$cache_root_dir,
                 accessions=>[$female_stock_id, $male_stock_id]
             });
-            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, $self->chromosome_list, $self->start_position, $self->end_position, $self->marker_name_list, $dosage_key);
+            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], $self->return_only_first_genotypeprop_for_stock, $self->chromosome_list, $self->start_position, $self->end_position, $self->marker_name_list, $dosage_key);
 
             foreach my $o (sort genosort keys %{$genotypes->[0]->{selected_genotype_hash}}) {
                 push @all_marker_objects, {name => $o};
@@ -1560,13 +1561,13 @@ sub get_cached_file_dosage_matrix_compute_from_parents {
             my $male_stock_id = $male_stock_ids_found[$i];
             my $accession_stock_id = $accession_stock_ids_found[$i];
 
-            my $dataset = CXGN::Dataset::Cache->new({
+            my $dataset = CXGN::Dataset->new({
                 people_schema=>$self->people_schema,
                 schema=>$schema,
                 cache_root=>$cache_root_dir,
                 accessions=>[$female_stock_id, $male_stock_id]
             });
-            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, $self->chromosome_list, $self->start_position, $self->end_position, $self->marker_name_list, $dosage_key);
+            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], $self->return_only_first_genotypeprop_for_stock, $self->chromosome_list, $self->start_position, $self->end_position, $self->marker_name_list, $dosage_key);
 
             my $geno = CXGN::Genotype::ComputeHybridGenotype->new({
                 parental_genotypes=>$genotypes,
@@ -2014,13 +2015,13 @@ sub get_cached_file_VCF_compute_from_parents {
             my $male_stock_id = $male_stock_ids_found[$i];
             my $accession_stock_id = $accession_stock_ids_found[$i];
 
-            my $dataset = CXGN::Dataset::Cache->new({
+            my $dataset = CXGN::Dataset->new({
                 people_schema=>$self->people_schema,
                 schema=>$schema,
                 cache_root=>$cache_root_dir,
                 accessions=>[$female_stock_id, $male_stock_id]
             });
-            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name', 'chrom', 'pos', 'alt', 'ref'], 1, $self->chromosome_list, $self->start_position, $self->end_position, $self->marker_name_list, $dosage_key);
+            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name', 'chrom', 'pos', 'alt', 'ref'], $self->return_only_first_genotypeprop_for_stock, $self->chromosome_list, $self->start_position, $self->end_position, $self->marker_name_list, $dosage_key);
 
             # For old protocols with no protocolprop info...
             if (scalar(@all_marker_objects) == 0) {
