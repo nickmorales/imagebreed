@@ -67,6 +67,7 @@ use File::Slurp qw | write_file |;
 use File::Temp qw | tempfile |;
 use File::Copy;
 use POSIX;
+use Parallel::ForkManager;
 
 has 'bcs_schema' => (
     isa => 'Bio::Chado::Schema',
@@ -1448,6 +1449,14 @@ sub get_cached_file_dosage_matrix_compute_from_parents {
     }
     my $protocol_id = $protocol_ids->[0];
 
+    my $number_system_cores = `getconf _NPROCESSORS_ONLN` or die "Could not get number of system cores!\n";
+    chomp($number_system_cores);
+    print STDERR "NUMCORES $number_system_cores\n";
+
+    my $max_processes_limit = 10;
+    my $max_processes = ceil($number_system_cores/4) <= $max_processes_limit ? ceil($number_system_cores/4) : $max_processes_limit;
+    print STDERR "NUMCORES USE $max_processes\n";
+
     my $key = $self->key("get_cached_file_dosage_matrix_compute_from_parents_v03");
     $self->cache( Cache::File->new( cache_root => $cache_root_dir ));
 
@@ -1512,8 +1521,41 @@ sub get_cached_file_dosage_matrix_compute_from_parents {
         @all_marker_objects = sort { $a->{chrom} cmp $b->{chrom} || $a->{pos} <=> $b->{pos} || $a->{name} cmp $b->{name} } @all_marker_objects;
         @all_marker_objects = $self->_check_filtered_markers(\@all_marker_objects);
 
-        my $counter = 0;
+        # For old protocols with no protocolprop info...
+        if (scalar(@all_marker_objects) == 0) {
+            my $female_stock_id = $female_stock_ids_found[0];
+            my $male_stock_id = $male_stock_ids_found[0];
+            my $accession_stock_id = $accession_stock_ids_found[0];
+
+            my $dataset = CXGN::Dataset::Cache->new({
+                people_schema=>$self->people_schema,
+                schema=>$schema,
+                cache_root=>$cache_root_dir,
+                accessions=>[$female_stock_id, $male_stock_id]
+            });
+            my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, $self->chromosome_list, $self->start_position, $self->end_position, $self->marker_name_list, $dosage_key);
+
+            foreach my $o (sort genosort keys %{$genotypes->[0]->{selected_genotype_hash}}) {
+                push @all_marker_objects, {name => $o};
+            }
+            @all_marker_objects = $self->_check_filtered_markers(\@all_marker_objects);
+        }
+
+        my $genotype_string = "Marker\t";
+        foreach my $m (@all_marker_objects) {
+            $genotype_string .= $m->{name} . "\t";
+        }
+        $genotype_string .= "\n";
+
+        write_file($tempfile, {append => 1}, $genotype_string);
+        sleep(2);
+
+        my $pm = Parallel::ForkManager->new($max_processes);
+
+        LINKS:
         for my $i (0..scalar(@accession_stock_ids_found)-1) {
+            $pm->start and next LINKS;
+
             my $female_stock_id = $female_stock_ids_found[$i];
             my $male_stock_id = $male_stock_ids_found[$i];
             my $accession_stock_id = $accession_stock_ids_found[$i];
@@ -1525,23 +1567,6 @@ sub get_cached_file_dosage_matrix_compute_from_parents {
                 accessions=>[$female_stock_id, $male_stock_id]
             });
             my $genotypes = $dataset->retrieve_genotypes($protocol_id, [$dosage_key], ['markers'], ['name'], 1, $self->chromosome_list, $self->start_position, $self->end_position, $self->marker_name_list, $dosage_key);
-
-            # For old protocols with no protocolprop info...
-            if (scalar(@all_marker_objects) == 0) {
-                foreach my $o (sort genosort keys %{$genotypes->[0]->{selected_genotype_hash}}) {
-                    push @all_marker_objects, {name => $o};
-                }
-                @all_marker_objects = $self->_check_filtered_markers(\@all_marker_objects);
-            }
-
-            my $genotype_string = "";
-            if ($counter == 0) {
-                $genotype_string .= "Marker\t";
-                foreach my $m (@all_marker_objects) {
-                    $genotype_string .= $m->{name} . "\t";
-                }
-                $genotype_string .= "\n";
-            }
 
             my $geno = CXGN::Genotype::ComputeHybridGenotype->new({
                 parental_genotypes=>$genotypes,
@@ -1556,10 +1581,13 @@ sub get_cached_file_dosage_matrix_compute_from_parents {
                 $genotype_id = $accession_stock_id."|".$geno->{markerProfileDbId};
             }
 
-            $genotype_string .= $genotype_id."\t".$genotype_string_scores."\n";
+            my $genotype_string .= $genotype_id."\t".$genotype_string_scores."\n";
             write_file($tempfile, {append => 1}, $genotype_string);
-            $counter++;
+            sleep(2);
+
+            $pm->finish;
         }
+        $pm->wait_all_children;
 
         my $transpose_tempfile = $tempfile . "_transpose";
 
