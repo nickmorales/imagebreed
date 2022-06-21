@@ -110,6 +110,8 @@ $latest_trial_activity => undef
 
 <& /page/detail_page_2_col_section.mas, trial_id => $trial_id, info_section_title => "<h4 style='display:inline'>Compute New Phenotypes</h4>", info_section_subtitle => 'Compute derived traits or compute plot phenotypes from plant phenotypes.', icon_class => "glyphicon glyphicon-floppy-save", info_section_id => "compute_derived_traits" &>
 
+<& /page/detail_page_2_col_section.mas, trial_id => $trial_id, info_section_title => "<h4 style='display:inline'>Soil Data</h4>", info_section_subtitle => 'View soil data for this trial.', icon_class => "glyphicon glyphicon-info-sign", buttons_html => "<button class='btn btn-sm btn-primary' style='margin:3px' id='trial_upload_soil_data_button' >Upload Soil Data</button>", info_section_id => "trial_soil_data_section"&>
+
 <& /page/detail_page_2_col_section.mas, trial_id => $trial_id, info_section_title => "<h4 style='display:inline'>JBrowse Genome Alignments For this Experiment</h4>", info_section_subtitle => 'View JBrowse alignments for accessions in this trial.', icon_class => "glyphicon glyphicon-align-left", info_section_id => "trial_jbrowse_data" &>
 
 <& /page/detail_page_2_col_section.mas, trial_id => $trial_id, info_section_title => "<h4 style='display:inline'>Experiment Linkage</h4>", info_section_subtitle => 'View other experiments, crosses, and genotyping plates linked to this experiment.', icon_class => "glyphicon glyphicon-link", info_section_id => "trial_linkage_section" &>
