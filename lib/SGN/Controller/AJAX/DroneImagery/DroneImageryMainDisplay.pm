@@ -295,9 +295,9 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
 
                             $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_ground_control_points" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Save Ground Control Points</button><br/><br/>';
 
-                            if ($missing_geocoord_params) {
+                            # if ($missing_geocoord_params) {
                                 $drone_run_html .= '<button class="btn btn-default btn-sm" name="drone_imagery_drone_run_band_add_geocoordinate_params" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Add GeoCoordinate Params</button><br/><br/>';
-                            }
+                            # }
 
                             $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_quality_control_check" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Quality Control Plot Images</button><br/><br/>';
 

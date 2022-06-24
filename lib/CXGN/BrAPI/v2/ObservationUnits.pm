@@ -114,6 +114,8 @@ sub search {
         %plant_parents = $self->_get_plants_plot_parent(\@plant_ids);
     }
 
+    my $plot_geojson_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'plot_geo_json', 'stock_property')->cvterm_id();
+
     foreach my $obs_unit (@$data){
         my @brapi_observations;
 
@@ -159,16 +161,12 @@ sub search {
             };
         }
 
-        my $type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'plot_geo_json', 'stock_property')->cvterm_id();
-        my $sp_rs ='';
-        eval {
-            $sp_rs = $self->bcs_schema->resultset("Stock::Stockprop")->search({ type_id => $type_id, stock_id => $obs_unit->{observationunit_stock_id} });
-        };
+        my $sp_rs = $self->bcs_schema->resultset("Stock::Stockprop")->search({ type_id => $plot_geojson_type_id, stock_id => $obs_unit->{observationunit_stock_id} });
         my %geolocation_lookup;
         while( my $r = $sp_rs->next()){
             $geolocation_lookup{$r->stock_id} = $r->value;
         }
-        my $geo_coordinates_string = $geolocation_lookup{$obs_unit->{observationunit_stock_id}} ?$geolocation_lookup{$obs_unit->{observationunit_stock_id}} : undef;
+        my $geo_coordinates_string = $geolocation_lookup{$obs_unit->{observationunit_stock_id}} ? $geolocation_lookup{$obs_unit->{observationunit_stock_id}} : undef;
         my $geo_coordinates;
 
         if ($geo_coordinates_string){
@@ -238,13 +236,16 @@ sub search {
             }
         }
 
+        my $positionCoordinateXType = !$geo_coordinates ? "GRID_COL" : "LONGITUDE";
+        my $positionCoordinateYType = !$geo_coordinates ? "GRID_ROW" : "LATITUDE";
+
         my %observationUnitPosition = (
             entryType => $entry_type,
             geoCoordinates => $geo_coordinates,
             positionCoordinateX => $obs_unit->{obsunit_col_number} ? $obs_unit->{obsunit_col_number} + 0 : undef,
-            positionCoordinateXType => 'GRID_COL',
+            positionCoordinateXType => $positionCoordinateXType,
             positionCoordinateY => $obs_unit->{obsunit_row_number} ? $obs_unit->{obsunit_row_number} + 0 : undef,
-            positionCoordinateYType => 'GRID_ROW',
+            positionCoordinateYType => $positionCoordinateYType,
             # replicate => $obs_unit->{obsunit_rep}, #obsolete v2?
             observationLevel =>  {
                 levelName => $level_name,
@@ -303,6 +304,8 @@ sub search {
         };
         $total_count = $obs_unit->{full_count};
     }
+
+    # print STDERR Dumper \@data_window;
 
     my %result = (data=>\@data_window);
     my $pagination = CXGN::BrAPI::Pagination->pagination_response($total_count,$page_size,$page);

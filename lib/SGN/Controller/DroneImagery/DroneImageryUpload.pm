@@ -404,6 +404,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
     my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
     my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
     my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_extent_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_extent', 'project_property')->cvterm_id();
     my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
     my $original_image_resize_ratio_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_original_image_resize_ratio', 'project_property')->cvterm_id();
     my $rotated_image_resize_ratio_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotated_image_resize_ratio', 'project_property')->cvterm_id();
@@ -482,8 +483,9 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_b5 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".png";
                 my $odm_geoparam = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".csv";
                 my $odm_geoparam_proj = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".csv";
+                my $odm_geoparam_extent = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_odm_stitched_ortho/fileXXXX').".csv";
 
-                my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImage5ChannelGeoTiff.py --image_path $new_drone_run_input_image --outfile_path_image_1 $odm_b1 --outfile_path_image_2 $odm_b2 --outfile_path_image_3 $odm_b3 --outfile_path_image_4 $odm_b4 --outfile_path_image_5 $odm_b5 --outfile_path_geo_params $odm_geoparam --outfile_path_geo_projection $odm_geoparam_proj";
+                my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImage5ChannelGeoTiff.py --image_path $new_drone_run_input_image --outfile_path_image_1 $odm_b1 --outfile_path_image_2 $odm_b2 --outfile_path_image_3 $odm_b3 --outfile_path_image_4 $odm_b4 --outfile_path_image_5 $odm_b5 --outfile_path_geo_params $odm_geoparam --outfile_path_geo_projection $odm_geoparam_proj --outfile_path_geo_extent $odm_geoparam_extent";
                 print STDERR $odm_cmd."\n";
                 my $odm_open_status = system($odm_cmd);
 
@@ -506,6 +508,17 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                     print STDERR Dumper [$geoparams_proj, $geoparams_projection];
                 close($fh_geoparam_proj);
 
+                my @geoparams_extent;
+                open(my $fh_geoparams_extent, '<', $odm_geoparam_extent) or die "Could not open file '".$odm_geoparam_extent."' $!";
+                    print STDERR "Opened ".$odm_geoparam_extent."\n";
+                    while (my $geoparams_extent = <$fh_geoparams_extent>) {
+                        chomp $geoparams_extent;
+                        my @geoparams_extent_coordinates = split ',', $geoparams_extent;
+                        push @geoparams_extent, \@geoparams_extent_coordinates;
+                    }
+                    print STDERR Dumper \@geoparams_extent;
+                close($fh_geoparams);
+
                 push @new_drone_run_bands, (
                     {
                         description => "ODM orthophotomosaic Blue (450-520nm)",
@@ -513,7 +526,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         upload_file_name => $odm_b1,
                         coordinate_system => "Pixels",
                         geoparam_coords => \@geoparams_coordinates,
-                        geoparam_proj => $geoparams_projection
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
                     },
                     {
                         description => "ODM orthophotomosaic Green (515-600nm)",
@@ -521,7 +535,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         upload_file_name => $odm_b2,
                         coordinate_system => "Pixels",
                         geoparam_coords => \@geoparams_coordinates,
-                        geoparam_proj => $geoparams_projection
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
                     },
                     {
                         description => "ODM orthophotomosaic Red (600-690nm)",
@@ -529,7 +544,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         upload_file_name => $odm_b3,
                         coordinate_system => "Pixels",
                         geoparam_coords => \@geoparams_coordinates,
-                        geoparam_proj => $geoparams_projection
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
                     },
                     {
                         description => "ODM orthophotomosaic NIR (780-3000nm)",
@@ -537,7 +553,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         upload_file_name => $odm_b4,
                         coordinate_system => "Pixels",
                         geoparam_coords => \@geoparams_coordinates,
-                        geoparam_proj => $geoparams_projection
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
                     },
                     {
                         description => "ODM orthophotomosaic Red Edge (690-750nm)",
@@ -545,7 +562,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         upload_file_name => $odm_b5,
                         coordinate_system => "Pixels",
                         geoparam_coords => \@geoparams_coordinates,
-                        geoparam_proj => $geoparams_projection
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
                     }
                 );
             }
@@ -605,6 +623,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
 
             my $new_drone_run_geoparam_coords = $_->{geoparam_coords};
             my $new_drone_run_geoparam_proj = $_->{geoparam_proj};
+            my $new_drone_run_geoparam_extent = $_->{geoparam_extent};
 
             my @drone_run_band_projectprops = (
                 {type_id => $drone_run_band_type_cvterm_id, value => $drone_run_band_type},
@@ -624,17 +643,19 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
             }
             else {
                 my @geoparams_coordinates;
+                my @geoparams_extent;
 
                 my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
                 my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
                 my $outfile_geoparams_projection = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
+                my $outfile_geoparams_extent = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
 
                 if ($drone_run_band_type eq 'RGB Color Image') {
                     my $outfile_image_r = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
                     my $outfile_image_g = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
                     my $outfile_image_b = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
 
-                    my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $new_drone_run_input_image --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
+                    my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $new_drone_run_input_image --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection --outfile_path_geo_extent $outfile_geoparams_extent";
                     print STDERR $geo_cmd."\n";
                     my $geo_cmd_status = system($geo_cmd);
                     $ortho_file = $outfile_image;
@@ -657,9 +678,19 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         $geoparams_projection =~ s/\s//g;
                         print STDERR Dumper [$geoparams_proj, $geoparams_projection];
                     close($fh_geoparam_proj);
+
+                    open(my $fh_geoparams_extent, '<', $outfile_geoparams_extent) or die "Could not open file '".$outfile_geoparams_extent."' $!";
+                        print STDERR "Opened ".$outfile_geoparams_extent."\n";
+                        while (my $geoparams_extent = <$fh_geoparams_extent>) {
+                            chomp $geoparams_extent;
+                            my @geoparams_extent_coordinates = split ',', $geoparams_extent;
+                            push @geoparams_extent, \@geoparams_extent_coordinates;
+                        }
+                        print STDERR Dumper \@geoparams_extent;
+                    close($fh_geoparams);
                 }
                 else {
-                    my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $new_drone_run_input_image --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
+                    my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $new_drone_run_input_image --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection --outfile_path_geo_extent $outfile_geoparams_extent";
                     print STDERR $geo_cmd."\n";
                     my $geo_cmd_status = system($geo_cmd);
                     $ortho_file = $outfile_image;
@@ -682,13 +713,27 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         $geoparams_projection =~ s/\s//g;
                         print STDERR Dumper [$geoparams_proj, $geoparams_projection];
                     close($fh_geoparam_proj);
+
+                    open(my $fh_geoparams_extent, '<', $outfile_geoparams_extent) or die "Could not open file '".$outfile_geoparams_extent."' $!";
+                        print STDERR "Opened ".$outfile_geoparams_extent."\n";
+                        while (my $geoparams_extent = <$fh_geoparams_extent>) {
+                            chomp $geoparams_extent;
+                            my @geoparams_extent_coordinates = split ',', $geoparams_extent;
+                            push @geoparams_extent, \@geoparams_extent_coordinates;
+                        }
+                        print STDERR Dumper \@geoparams_extent;
+                    close($fh_geoparams);
                 }
 
                 push @drone_run_band_projectprops, {type_id => $geoparam_coordinates_cvterm_id, value => encode_json \@geoparams_coordinates};
+                push @drone_run_band_projectprops, {type_id => $geoparam_coordinates_extent_type_cvterm_id, value => encode_json \@geoparams_extent};
             }
 
             if ($new_drone_run_geoparam_coords) {
                 push @drone_run_band_projectprops, {type_id => $geoparam_coordinates_cvterm_id, value => encode_json $new_drone_run_geoparam_coords};
+            }
+            if ($new_drone_run_geoparam_extent) {
+                push @drone_run_band_projectprops, {type_id => $geoparam_coordinates_extent_type_cvterm_id, value => encode_json $new_drone_run_geoparam_extent};
             }
             if ($new_drone_run_geoparam_proj) {
                 $geoparams_projection = $new_drone_run_geoparam_proj;
@@ -1093,11 +1138,13 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_report', $odm_final_report];
 
                 my @geoparams_coordinates;
+                my @geoparams_extent;
                 my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
                 my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
                 my $outfile_geoparams_projection = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
+                my $outfile_geoparams_extent = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
 
-                my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $odm_final_orthophoto --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
+                my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $odm_final_orthophoto --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection --outfile_path_geo_extent $outfile_geoparams_extent";
                 print STDERR $geo_cmd."\n";
                 my $geo_cmd_status = system($geo_cmd);
                 my $ortho_file = $outfile_image;
@@ -1122,13 +1169,23 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                     print STDERR Dumper [$geoparams_proj, $geoparams_projection];
                 close($fh_geoparam_proj);
 
+                open(my $fh_geoparams_extent, '<', $outfile_geoparams_extent) or die "Could not open file '".$outfile_geoparams_extent."' $!";
+                    print STDERR "Opened ".$outfile_geoparams_extent."\n";
+                    while (my $geoparams_extent = <$fh_geoparams_extent>) {
+                        chomp $geoparams_extent;
+                        my @geoparams_extent_coordinates = split ',', $geoparams_extent;
+                        push @geoparams_extent, \@geoparams_extent_coordinates;
+                    }
+                    print STDERR Dumper \@geoparams_extent;
+                close($fh_geoparams);
+
                 @stitched_bands = (
-                    ["Band 1", "OpenDroneMap Blue", "Blue (450-520nm)", $odm_b1, \@geoparams_coordinates, $geoparams_projection],
-                    ["Band 2", "OpenDroneMap Green", "Green (515-600nm)", $odm_b2, \@geoparams_coordinates, $geoparams_projection],
-                    ["Band 3", "OpenDroneMap Red", "Red (600-690nm)", $odm_b3, \@geoparams_coordinates, $geoparams_projection],
-                    ["Band 4", "OpenDroneMap NIR", "NIR (780-3000nm)", $odm_b4, \@geoparams_coordinates, $geoparams_projection],
-                    ["Band 5", "OpenDroneMap RedEdge", "Red Edge (690-750nm)", $odm_b5, \@geoparams_coordinates, $geoparams_projection],
-                    ["Band 6", "OpenDroneMap DSM", "Black and White Image", $odm_dsm_png, \@geoparams_coordinates, $geoparams_projection]
+                    ["Band 1", "OpenDroneMap Blue", "Blue (450-520nm)", $odm_b1, \@geoparams_coordinates, $geoparams_projection, \@geoparams_extent],
+                    ["Band 2", "OpenDroneMap Green", "Green (515-600nm)", $odm_b2, \@geoparams_coordinates, $geoparams_projection, \@geoparams_extent],
+                    ["Band 3", "OpenDroneMap Red", "Red (600-690nm)", $odm_b3, \@geoparams_coordinates, $geoparams_projection, \@geoparams_extent],
+                    ["Band 4", "OpenDroneMap NIR", "NIR (780-3000nm)", $odm_b4, \@geoparams_coordinates, $geoparams_projection, \@geoparams_extent],
+                    ["Band 5", "OpenDroneMap RedEdge", "Red Edge (690-750nm)", $odm_b5, \@geoparams_coordinates, $geoparams_projection, \@geoparams_extent],
+                    ["Band 6", "OpenDroneMap DSM", "Black and White Image", $odm_dsm_png, \@geoparams_coordinates, $geoparams_projection, \@geoparams_extent]
                 );
             }
             elsif ($new_drone_run_camera_info eq 'ccd_color' || $new_drone_run_camera_info eq 'cmos_color') {
@@ -1194,14 +1251,17 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_report', $odm_final_report];
 
                 my @geoparams_coordinates;
+                my $geoparams_projection;
+                my @geoparams_extent;
                 my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
                 my $outfile_image_r = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
                 my $outfile_image_g = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
                 my $outfile_image_b = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
                 my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
                 my $outfile_geoparams_projection = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
+                my $outfile_geoparams_extent = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
 
-                my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $odm_rgb_orthophoto --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
+                my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $odm_rgb_orthophoto --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection --outfile_path_geo_extent $outfile_geoparams_extent";
                 print STDERR $geo_cmd."\n";
                 my $geo_cmd_status = system($geo_cmd);
                 my $ortho_file = $outfile_image;
@@ -1214,7 +1274,6 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                     print STDERR Dumper [$geoparams, \@geoparams_coordinates];
                 close($fh_geoparams);
 
-                my $geoparams_projection;
                 open(my $fh_geoparam_proj, '<', $outfile_geoparams_projection) or die "Could not open file '".$outfile_geoparams_projection."' $!";
                     print STDERR "Opened ".$outfile_geoparams_projection."\n";
                     my $geoparams_proj = <$fh_geoparam_proj>;
@@ -1226,9 +1285,19 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                     print STDERR Dumper [$geoparams_proj, $geoparams_projection];
                 close($fh_geoparam_proj);
 
+                open(my $fh_geoparams_extent, '<', $outfile_geoparams_extent) or die "Could not open file '".$outfile_geoparams_extent."' $!";
+                    print STDERR "Opened ".$outfile_geoparams_extent."\n";
+                    while (my $geoparams_extent = <$fh_geoparams_extent>) {
+                        chomp $geoparams_extent;
+                        my @geoparams_extent_coordinates = split ',', $geoparams_extent;
+                        push @geoparams_extent, \@geoparams_extent_coordinates;
+                    }
+                    print STDERR Dumper \@geoparams_extent;
+                close($fh_geoparams);
+
                 @stitched_bands = (
-                    ["Color Image", "OpenDroneMap RGB Color Image", "RGB Color Image", $odm_rgb_orthophoto, \@geoparams_coordinates, $geoparams_projection],
-                    ["DSM", "OpenDroneMap DSM", "Black and White Image", $odm_dsm_png, \@geoparams_coordinates, $geoparams_projection]
+                    ["Color Image", "OpenDroneMap RGB Color Image", "RGB Color Image", $odm_rgb_orthophoto, \@geoparams_coordinates, $geoparams_projection, \@geoparams_extent],
+                    ["DSM", "OpenDroneMap DSM", "Black and White Image", $odm_dsm_png, \@geoparams_coordinates, $geoparams_projection, \@geoparams_extent]
                 );
             }
             else {
@@ -1252,6 +1321,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $drone_run_band_img = $m->[3];
                 my $drone_run_band_geoparam_coordinates = $m->[4];
                 my $drone_run_band_geoparam_coordinates_type = $m->[5];
+                my $drone_run_band_geoparam_extent = $m->[6];
 
                 my $time = DateTime->now();
                 my $timestamp = $time->ymd()."_".$time->hms();
@@ -1318,6 +1388,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                             {type_id => $drone_run_band_type_cvterm_id, value => $drone_run_band_type},
                             {type_id => $design_cvterm_id, value => 'drone_run_band'},
                             {type_id => $geoparam_coordinates_cvterm_id, value => encode_json $drone_run_band_geoparam_coordinates},
+                            {type_id => $geoparam_coordinates_extent_type_cvterm_id, value => encode_json $drone_run_band_geoparam_extent},
                             {type_id => $geoparam_coordinates_type_cvterm_id, value => $drone_run_band_geoparam_coordinates_type},
                             {type_id => $original_image_resize_ratio_cvterm_id, value => encode_json \@original_image_resize_ratio}
                         ],
@@ -2079,6 +2150,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
     my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
     my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_extent_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_extent', 'project_property')->cvterm_id();
     my $geoparam_coordinates_plot_polygons_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_plot_polygons', 'project_property')->cvterm_id();
     my $drone_run_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_project_type', 'project_property')->cvterm_id();
     my $drone_run_is_raw_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_raw_images', 'project_property')->cvterm_id();
@@ -2099,6 +2171,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
     my $original_image_resize_ratio_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_original_image_resize_ratio', 'project_property')->cvterm_id();
     my $rotated_image_resize_ratio_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotated_image_resize_ratio', 'project_property')->cvterm_id();
+    my $stock_geo_json_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot_geo_json', 'stock_property');
     my $calendar_funcs = CXGN::Calendar->new({});
 
     my %seen_field_trial_drone_run_dates;
@@ -2744,6 +2817,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         my @drone_run_band_projects;
         my @drone_run_band_project_ids;
         my @drone_run_band_geoparams_coordinates;
+        my @drone_run_band_geoparams_projections;
+        my @drone_run_band_geoparams_extents;
 
         my $geojson_temp_filename = $filename_imaging_event_geojson_lookup{$geojson_filename};
         my $geojson_value;
@@ -2761,6 +2836,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             my $ortho_file;
             my @geoparams_coordinates;
             my $geoparams_projection;
+            my @geoparams_extent;
+
             if ($coordinate_system eq 'Pixels') {
                 $ortho_file = $file;
                 $geoparams_projection = $coordinate_system;
@@ -2769,13 +2846,14 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                 my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
                 my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
                 my $outfile_geoparams_projection = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
+                my $outfile_geoparams_extent = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
 
                 if ($band_short eq 'rgb') {
                     my $outfile_image_r = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
                     my $outfile_image_g = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
                     my $outfile_image_b = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
 
-                    my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $file --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
+                    my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $file --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection --outfile_path_geo_extent $outfile_geoparams_extent";
                     print STDERR $geo_cmd."\n";
                     my $geo_cmd_status = system($geo_cmd);
                     $ortho_file = $outfile_image;
@@ -2798,9 +2876,19 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                         $geoparams_projection =~ s/\s//g;
                         print STDERR Dumper [$geoparams_proj, $geoparams_projection];
                     close($fh_geoparam_proj);
+
+                    open(my $fh_geoparams_extent, '<', $outfile_geoparams_extent) or die "Could not open file '".$outfile_geoparams_extent."' $!";
+                        print STDERR "Opened ".$outfile_geoparams_extent."\n";
+                        while (my $geoparams_extent = <$fh_geoparams_extent>) {
+                            chomp $geoparams_extent;
+                            my @geoparams_extent_coordinates = split ',', $geoparams_extent;
+                            push @geoparams_extent, \@geoparams_extent_coordinates;
+                        }
+                        print STDERR Dumper \@geoparams_extent;
+                    close($fh_geoparams);
                 }
                 else {
-                    my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $file --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
+                    my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $file --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection --outfile_path_geo_extent $outfile_geoparams_extent";
                     print STDERR $geo_cmd."\n";
                     my $geo_cmd_status = system($geo_cmd);
                     $ortho_file = $outfile_image;
@@ -2823,9 +2911,21 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                         $geoparams_projection =~ s/\s//g;
                         print STDERR Dumper [$geoparams_proj, $geoparams_projection];
                     close($fh_geoparam_proj);
+
+                    open(my $fh_geoparams_extent, '<', $outfile_geoparams_extent) or die "Could not open file '".$outfile_geoparams_extent."' $!";
+                        print STDERR "Opened ".$outfile_geoparams_extent."\n";
+                        while (my $geoparams_extent = <$fh_geoparams_extent>) {
+                            chomp $geoparams_extent;
+                            my @geoparams_extent_coordinates = split ',', $geoparams_extent;
+                            push @geoparams_extent, \@geoparams_extent_coordinates;
+                        }
+                        print STDERR Dumper \@geoparams_extent;
+                    close($fh_geoparams);
                 }
             }
             push @drone_run_band_geoparams_coordinates, \@geoparams_coordinates;
+            push @drone_run_band_geoparams_projections, $geoparams_projection;
+            push @drone_run_band_geoparams_extents, \@geoparams_extent;
 
             open(my $fh_geojson, '<', $geojson_temp_filename) or die "Could not open file '$geojson_temp_filename' $!";
                 print STDERR "Opened $geojson_temp_filename\n";
@@ -2895,6 +2995,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                     {type_id => $design_cvterm_id, value => 'drone_run_band'},
                     {type_id => $geoparam_coordinates_type_cvterm_id, value => $geoparams_projection},
                     {type_id => $geoparam_coordinates_cvterm_id, value => encode_json \@geoparams_coordinates},
+                    {type_id => $geoparam_coordinates_extent_cvterm_id, value => encode_json \@geoparams_extent},
                     {type_id => $geoparam_coordinates_plot_polygons_cvterm_id, value => encode_json \%geocoord_plot_polygons},
                     {type_id => $original_image_resize_ratio_cvterm_id, value => encode_json \@original_image_resize_ratio},
                 ],
@@ -2929,6 +3030,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             field_trial_id => $selected_trial_id,
             coordinate_system => $coordinate_system,
             drone_run_band_geoparams_coordinates => \@drone_run_band_geoparams_coordinates,
+            drone_run_band_geoparams_projections => \@drone_run_band_geoparams_projections,
+            drone_run_band_geoparams_extents => \@drone_run_band_geoparams_extents,
             rotation_angle => $rotation_angle
         };
 
@@ -2954,6 +3057,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         my $field_trial_id = $_->{field_trial_id};
         my $coordinate_system = $_->{coordinate_system};
         my $drone_run_band_geoparams_coordinates = $_->{drone_run_band_geoparams_coordinates};
+        my $drone_run_band_geoparams_projections = $_->{drone_run_band_geoparams_projections};
+        my $drone_run_band_geoparams_extents = $_->{drone_run_band_geoparams_extents};
         my $rotate_value = $_->{rotation_angle}*-1;
         my $apply_drone_run_band_projects = $_->{drone_run_band_projects};
         # my $rotate_value = 0;
@@ -3009,6 +3114,9 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
 
         my $term_map = CXGN::DroneImagery::ImageTypes::get_base_imagery_observation_unit_plot_polygon_term_map();
 
+        my $stock_q = "SELECT stock_id FROM stock WHERE uniquename = ?;";
+        my $stock_h = $schema->storage->dbh()->prepare($stock_q);
+
         my %drone_run_band_info;
         my $drone_run_band_counter = 0;
         foreach my $apply_drone_run_band_project_id (@$apply_drone_run_band_project_ids) {
@@ -3026,12 +3134,23 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             my $apply_image_width_ratio = 1;
             my $apply_image_height_ratio = 1;
 
+            my $original_image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
+            my $original_image_fullpath = $original_image->get_filename('original_converted', 'full');
+
+            my @original_size = imgsize($original_image_fullpath);
+            my $original_image_width = $original_size[0];
+            my $original_image_length = $original_size[1];
+
             my $dir = $c->tempfiles_subdir('/drone_imagery_rotate');
             my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
             $archive_rotate_temp_image .= '.png';
 
             my $rotate_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_image_rotate($c, $schema, $metadata_schema, $drone_run_band_project_id, [], $image_id, $rotate_value, 0, $user_id, $user_name, $user_role, $archive_rotate_temp_image, 0, 0, 1, 1, $private_company_id, $private_company_is_private);
             my $rotated_image_id = $rotate_return->{rotated_image_id};
+            my $apply_rotated_image_resize = $rotate_return->{original_image_resize_ratio};
+            my $apply_rotated_image_resize_x = $apply_rotated_image_resize->[0];
+            my $apply_rotated_image_resize_y = $apply_rotated_image_resize->[1];
+            print STDERR Dumper $apply_rotated_image_resize;
 
             my $image = SGN::Image->new( $schema->storage->dbh, $rotated_image_id, $c );
             my $image_fullpath = $image->get_filename('original_converted', 'full');
@@ -3048,10 +3167,17 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
 
             my $plot_polygons_value;
             my %geocoord_plot_polygons;
+            my $geoparams_projection;
             foreach (@{$geojson_value->{features}}) {
                 my $plot_number = $_->{properties}->{ID};
                 my $coordinates = $_->{geometry}->{coordinates};
                 my $stock_name = $trial_lookup->{$plot_number}->{plot_name};
+
+                $stock_h->execute($stock_name);
+                my ($stock_id) = $stock_h->fetchrow_array();
+
+                my $plot = $schema->resultset("Stock::Stock")->find({stock_id => $stock_id});
+
                 my @coords;
                 my @geojson_coords_original;
                 foreach my $crd (@{$coordinates->[0]}) {
@@ -3062,53 +3188,89 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                         };
                     }
                     else {
-                        my $geocoords = $drone_run_band_geoparams_coordinates->[$drone_run_band_counter];
+                        my $geoparams_extent = $drone_run_band_geoparams_extents->[$drone_run_band_counter];
+                        $geoparams_projection = $drone_run_band_geoparams_projections->[$drone_run_band_counter];
 
-                        my $xOrigin = $geocoords->[0];
-                        my $yOrigin = $geocoords->[3];
-                        my $pixelWidth = $geocoords->[1];
-                        my $pixelHeight = -1*$geocoords->[5];
-                        my $x_pos = ($crd->[0] - $xOrigin) / $pixelWidth;
-                        my $y_pos = ($yOrigin - $crd->[1] ) / $pixelHeight;
+                        my $max_gps_x = $geoparams_extent->[1]->[0] + 0;
+                        my $max_gps_y = $geoparams_extent->[1]->[1] + 0;
+                        my $min_gps_x = $geoparams_extent->[3]->[0] + 0;
+                        my $min_gps_y = $geoparams_extent->[3]->[1] + 0;
 
-                        my $x_pos_rotated = ($x_pos - $x_center)*cos($rad_conversion*$rotate_value*-1) - ($y_pos - $y_center)*sin($rad_conversion*$rotate_value*-1) + $x_center;
-                        my $y_pos_rotated = ($y_pos - $y_center)*cos($rad_conversion*$rotate_value*-1) + ($x_pos - $x_center)*sin($rad_conversion*$rotate_value*-1) + $y_center;
+                        my $gps_extent_x = $max_gps_x - $min_gps_x;
+                        my $gps_extent_y = $max_gps_y - $min_gps_y;
+
+                        my $gps_x = $crd->[0];
+                        my $gps_y = $crd->[1];
+
+                        my $original_image_x_ratio = ($gps_x - $min_gps_x)/$gps_extent_x;
+                        my $original_image_y_ratio = ($gps_y - $min_gps_y)/$gps_extent_y;
+
+                        my $x_pos_rotated = $original_image_x_ratio*$original_image_width;
+                        my $y_pos_rotated = $original_image_y_ratio*$original_image_length;
+
+                        $x_pos_rotated = $x_pos_rotated/$apply_original_image_resize_ratio_x;
+                        $y_pos_rotated = $y_pos_rotated/$apply_original_image_resize_ratio_y;
+
+                        my $x_pos = ($x_pos_rotated - $x_center)*cos($rad_conversion*$rotate_value*-1) - ($y_pos_rotated - $y_center)*sin($rad_conversion*$rotate_value*-1) + $x_center;
+                        my $y_pos = ($y_pos_rotated - $y_center)*cos($rad_conversion*$rotate_value*-1) + ($x_pos_rotated - $x_center)*sin($rad_conversion*$rotate_value*-1) + $y_center;
+
+                        $x_pos = $x_pos/$apply_rotated_image_resize_x;
+                        $y_pos = $y_pos/$apply_rotated_image_resize_y;
+
+                        my $x_pos_c = $x_pos - $cropping_x_offset;
+                        my $y_pos_c = $y_pos - $cropping_y_offset;
 
                         my $poly = {
-                            x => round($x_pos_rotated),
-                            y => round($y_pos_rotated),
+                            x => round($x_pos_c),
+                            y => round($y_pos_c),
                         };
 
                         push @coords, $poly;
-
-                        my $x_pos_geo = $poly->{x} + $cropping_x_offset;
-                        my $y_pos_geo = $poly->{y} + $cropping_y_offset;
-
-                        my $x_pos_rotated_geo = round( ($x_pos_geo - $x_center)*cos($rad_conversion*$rotate_value*-1) - ($y_pos_geo - $y_center)*sin($rad_conversion*$rotate_value*-1) + $x_center );
-                        my $y_pos_rotated_geo = round( ($y_pos_geo - $y_center)*cos($rad_conversion*$rotate_value*-1) + ($x_pos_geo - $x_center)*sin($rad_conversion*$rotate_value*-1) + $y_center );
-
-                        my $x_coord = ($x_pos_rotated_geo * $pixelWidth) + $xOrigin;
-                        my $y_coord = $yOrigin - ($y_pos_rotated_geo * $pixelHeight);
-
-                        push @geojson_coords_original, [$x_coord, $y_coord];
+                        push @geojson_coords_original, [$gps_y, $gps_x];
                     }
                 }
                 my $last_point = pop @coords;
                 my $last_point_geo = pop @geojson_coords_original;
                 $plot_polygons_value->{$stock_name} = \@coords;
                 $geocoord_plot_polygons{$stock_name} = \@geojson_coords_original;
+
+                if ($coordinate_system ne 'Pixels') {
+                    my $first_geojson = $geojson_coords_original[0];
+                    my @geojson_coords = ($first_geojson, @geojson_coords_original);
+
+                    my $geo_json = {
+                        "type"=> "Feature",
+                        "geometry"=> {
+                            "type"=> "Polygon",
+                            "coordinates"=> [
+                                \@geojson_coords
+                            ]
+                        },
+                        "properties"=> {
+                            "format"=> $geoparams_projection,
+                        }
+                    };
+                    my $geo_json_string = encode_json $geo_json;
+                    # print STDERR $geno_json_string."\n";
+
+                    my $previous_plot_gps_rs = $schema->resultset("Stock::Stockprop")->search({stock_id=>$plot->stock_id, type_id=>$stock_geo_json_cvterm->cvterm_id});
+                    $previous_plot_gps_rs->delete_all();
+                    $plot->create_stockprops({$stock_geo_json_cvterm->name() => $geo_json_string});
+                }
             }
             $plot_polygons_value = encode_json $plot_polygons_value;
 
-            my $drone_run_band_geoparam_coordinates_polygons_rs = $schema->resultset('Project::Projectprop')->update_or_create({
-                type_id=>$geoparam_coordinates_plot_polygons_cvterm_id,
-                project_id=>$drone_run_band_project_id,
-                rank=>0,
-                value=> encode_json \%geocoord_plot_polygons
-            },
-            {
-                key=>'projectprop_c1'
-            });
+            if ($coordinate_system ne 'Pixels') {
+                my $drone_run_band_geoparam_coordinates_polygons_rs = $schema->resultset('Project::Projectprop')->update_or_create({
+                    type_id=>$geoparam_coordinates_plot_polygons_cvterm_id,
+                    project_id=>$drone_run_band_project_id,
+                    rank=>0,
+                    value=> encode_json \%geocoord_plot_polygons
+                },
+                {
+                    key=>'projectprop_c1'
+                });
+            }
 
             $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
             my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');
@@ -3242,6 +3404,7 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
     my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
     my $geoparam_coordinates_plot_polygons_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_plot_polygons', 'project_property')->cvterm_id();
     my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_extent_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_extent', 'project_property')->cvterm_id();
     my $stock_geo_json_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot_geo_json', 'stock_property');
     my $field_trial_project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
     my $rotated_stitched_drone_imagery_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'rotated_stitched_drone_imagery', 'project_md_image')->cvterm_id();
@@ -3253,17 +3416,19 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
 
     my @geoparams_coordinates;
     my $geoparams_projection;
+    my @geoparams_extent;
     my $ortho_file;
     my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
     my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
     my $outfile_geoparams_projection = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
+    my $outfile_geoparams_extent = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/fileXXXX').".csv";
 
     if ($image_type eq 'rgb') {
         my $outfile_image_r = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
         my $outfile_image_g = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
         my $outfile_image_b = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_geocoordinate_param/imageXXXX').".png";
 
-        my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $upload_tempfile --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
+        my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $upload_tempfile --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection --outfile_path_geo_extent $outfile_geoparams_extent";
         print STDERR $geo_cmd."\n";
         my $geo_cmd_status = system($geo_cmd);
         $ortho_file = $outfile_image;
@@ -3286,9 +3451,19 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
             $geoparams_projection =~ s/\s//g;
             print STDERR Dumper [$geoparams_proj, $geoparams_projection];
         close($fh_geoparam_proj);
+
+        open(my $fh_geoparams_extent, '<', $outfile_geoparams_extent) or die "Could not open file '".$outfile_geoparams_extent."' $!";
+            print STDERR "Opened ".$outfile_geoparams_extent."\n";
+            while (my $geoparams_extent = <$fh_geoparams_extent>) {
+                chomp $geoparams_extent;
+                my @geoparams_extent_coordinates = split ',', $geoparams_extent;
+                push @geoparams_extent, \@geoparams_extent_coordinates;
+            }
+            print STDERR Dumper \@geoparams_extent;
+        close($fh_geoparams);
     }
     else {
-        my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $upload_tempfile --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
+        my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $upload_tempfile --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection --outfile_path_geo_extent $outfile_geoparams_extent";
         print STDERR $geo_cmd."\n";
         my $geo_cmd_status = system($geo_cmd);
         $ortho_file = $outfile_image;
@@ -3311,6 +3486,16 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
             $geoparams_projection =~ s/\s//g;
             print STDERR Dumper [$geoparams_proj, $geoparams_projection];
         close($fh_geoparam_proj);
+
+        open(my $fh_geoparams_extent, '<', $outfile_geoparams_extent) or die "Could not open file '".$outfile_geoparams_extent."' $!";
+            print STDERR "Opened ".$outfile_geoparams_extent."\n";
+            while (my $geoparams_extent = <$fh_geoparams_extent>) {
+                chomp $geoparams_extent;
+                my @geoparams_extent_coordinates = split ',', $geoparams_extent;
+                push @geoparams_extent, \@geoparams_extent_coordinates;
+            }
+            print STDERR Dumper \@geoparams_extent;
+        close($fh_geoparams);
     }
 
     my @input_image_size = imgsize($outfile_image);
@@ -3318,10 +3503,14 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
     my $input_image_length = $input_image_size[1];
 
     my $rad_conversion = 0.0174533;
-    my $xOrigin = $geoparams_coordinates[0];
-    my $yOrigin = $geoparams_coordinates[3];
-    my $pixelWidth = $geoparams_coordinates[1];
-    my $pixelHeight = -1*$geoparams_coordinates[5];
+
+    my $max_gps_x = $geoparams_extent[1]->[0] + 0;
+    my $max_gps_y = $geoparams_extent[1]->[1] + 0;
+    my $min_gps_x = $geoparams_extent[3]->[0] + 0;
+    my $min_gps_y = $geoparams_extent[3]->[1] + 0;
+
+    my $gps_extent_x = $max_gps_x - $min_gps_x;
+    my $gps_extent_y = $max_gps_y - $min_gps_y;
 
     my $drone_run_band_q = "SELECT drone_run_band.project_id, field_trial.project_id, plot_polygons.value, rotate_value.value, cropped_polygon.value, rotated_image.image_id, cropped_image.image_id, denoised_image.image_id, original_image.image_id, original_image_resize.value, rotated_image_resize.value
         FROM project AS drone_run
@@ -3374,7 +3563,7 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
     }
     $drone_run_band_h = undef;
 
-    print STDERR Dumper \@drone_run_band_results;
+    # print STDERR Dumper \@drone_run_band_results;
     foreach my $d (@drone_run_band_results) {
         my ($drone_run_band_project_id, $field_trial_id, $plot_polygon_json, $rotate_value, $cropped_polygon_json, $rotated_image_id, $cropped_image_id, $denoised_image_id, $original_image_id, $original_image_width, $original_image_length, $original_image_resize_json, $rotated_image_resize_json) = @$d;
 
@@ -3403,6 +3592,9 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
         my $cropping_x_offset = $cropped_polygon->[0]->[0]->{x};
         my $cropping_y_offset = $cropped_polygon->[0]->[0]->{y};
 
+        # print STDERR Dumper [$original_image_resize_x, $original_image_resize_y, $rotated_image_resize_x, $rotated_image_resize_y];
+        # print STDERR Dumper [$x_center, $y_center, $rotate_value, $cropping_x_offset, $cropping_y_offset];
+
         my %geocoord_plot_polygons;
         while (my($stock_name, $polygon_arr) = each %$plot_polygon) {
 
@@ -3413,22 +3605,31 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
 
             my @geojson_coords_original;
             foreach my $poly (@$polygon_arr) {
+                #original post-processed ref frame, pixel positions, adding cropping
                 my $x_pos = $poly->{x} + $cropping_x_offset;
                 my $y_pos = $poly->{y} + $cropping_y_offset;
 
+                #undo post-rotation resizing
+                $x_pos = $x_pos*$rotated_image_resize_x;
+                $y_pos = $y_pos*$rotated_image_resize_y;
+
+                #undo rotation around center of post-processed ref frame
                 my $x_pos_rotated = round( ($x_pos - $x_center)*cos($rad_conversion*$rotate_value*-1) - ($y_pos - $y_center)*sin($rad_conversion*$rotate_value*-1) + $x_center );
                 my $y_pos_rotated = round( ($y_pos - $y_center)*cos($rad_conversion*$rotate_value*-1) + ($x_pos - $x_center)*sin($rad_conversion*$rotate_value*-1) + $y_center );
 
-                $x_pos_rotated = $x_pos_rotated*$rotated_image_resize_x;
-                $y_pos_rotated = $y_pos_rotated*$rotated_image_resize_y;
-
+                #undo post-upload resizing
                 $x_pos_rotated = $x_pos_rotated*$original_image_resize_x;
                 $y_pos_rotated = $y_pos_rotated*$original_image_resize_y;
 
-                my $x_coord = ($x_pos_rotated * $pixelWidth) + $xOrigin;
-                my $y_coord = $yOrigin - ($y_pos_rotated * $pixelHeight);
+                #get percent positions across original image
+                my $original_image_x_ratio = $x_pos_rotated/$original_image_width;
+                my $original_image_y_ratio = $y_pos_rotated/$original_image_length;
 
-                push @geojson_coords_original, [$x_coord, $y_coord];
+                #convert proportion of pixels to gps extent frame
+                my $gps_x = ($gps_extent_x * $original_image_x_ratio) + $min_gps_x;
+                my $gps_y = ($gps_extent_y * $original_image_y_ratio) + $min_gps_y;
+
+                push @geojson_coords_original, [$gps_y, $gps_x];
             }
             $geocoord_plot_polygons{$stock_name} = \@geojson_coords_original;
             # print STDERR Dumper \@geojson_coords_original;
@@ -3449,7 +3650,7 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
                 }
             };
             my $geno_json_string = encode_json $geo_json;
-            print STDERR $geno_json_string."\n";
+            # print STDERR $geno_json_string."\n";
 
             if ($overwrite_geojson) {
                 my $previous_plot_gps_rs = $schema->resultset("Stock::Stockprop")->search({stock_id=>$plot->stock_id, type_id=>$stock_geo_json_cvterm->cvterm_id});
@@ -3459,6 +3660,16 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
                 $seen_field_trial_ids{$field_trial_id}++;
             }
         }
+
+        my $drone_run_band_geoparam_coordinates_polygons_rs = $schema->resultset('Project::Projectprop')->update_or_create({
+            type_id=>$geoparam_coordinates_plot_polygons_cvterm_id,
+            project_id=>$drone_run_band_project_id,
+            rank=>0,
+            value=> encode_json \%geocoord_plot_polygons
+        },
+        {
+            key=>'projectprop_c1'
+        });
 
         my $drone_run_band_coordinate_system_type_rs = $schema->resultset('Project::Projectprop')->update_or_create({
             type_id=>$geoparam_coordinates_type_cvterm_id,
@@ -3480,11 +3691,11 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
             key=>'projectprop_c1'
         });
 
-        my $drone_run_band_geoparam_coordinates_polygons_rs = $schema->resultset('Project::Projectprop')->update_or_create({
-            type_id=>$geoparam_coordinates_plot_polygons_cvterm_id,
+        my $drone_run_band_geoparam_coordinates_extent_rs = $schema->resultset('Project::Projectprop')->update_or_create({
+            type_id=>$geoparam_coordinates_extent_cvterm_id,
             project_id=>$drone_run_band_project_id,
             rank=>0,
-            value=> encode_json \%geocoord_plot_polygons
+            value=> encode_json \@geoparams_extent
         },
         {
             key=>'projectprop_c1'
@@ -3500,6 +3711,9 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
         });
         $layout->generate_and_cache_layout();
     }
+
+    my $bs = CXGN::BreederSearch->new( { dbh=>$dbh, dbname=>$c->config->{dbname}, } );
+    my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
 
     $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_imagery'>Drone Imagery</a>";
     $c->stash->{template} = 'generic_message.mas';
@@ -3533,6 +3747,7 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
     my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
     my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
     my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_extent_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_extent', 'project_property')->cvterm_id();
     my $geoparam_coordinates_plot_polygons_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_plot_polygons', 'project_property')->cvterm_id();
     my $drone_run_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_project_type', 'project_property')->cvterm_id();
     my $drone_run_is_raw_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_raw_images', 'project_property')->cvterm_id();
@@ -3612,17 +3827,19 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
 
     my @geoparams_coordinates;
     my $geoparams_projection;
+    my @geoparams_extent;
     my $ortho_file;
     my $outfile_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/imageXXXX').".png";
     my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/fileXXXX').".csv";
     my $outfile_geoparams_projection = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/fileXXXX').".csv";
+    my $outfile_geoparams_extent = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/fileXXXX').".csv";
 
     if ($image_type eq 'rgb') {
         my $outfile_image_r = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/imageXXXX').".png";
         my $outfile_image_g = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/imageXXXX').".png";
         my $outfile_image_b = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'standard_process_drone_imagery_geocoordinate_param/imageXXXX').".png";
 
-        my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $upload_tempfile --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
+        my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageRGBGeoTiff.py --image_path $upload_tempfile --outfile_path_image $outfile_image --outfile_path_image_1 $outfile_image_r --outfile_path_image_2 $outfile_image_g --outfile_path_image_3 $outfile_image_b --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection --outfile_path_geo_extent $outfile_geoparams_extent";
         print STDERR $geo_cmd."\n";
         my $geo_cmd_status = system($geo_cmd);
         $ortho_file = $outfile_image;
@@ -3645,9 +3862,19 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
             $geoparams_projection =~ s/\s//g;
             print STDERR Dumper [$geoparams_proj, $geoparams_projection];
         close($fh_geoparam_proj);
+
+        open(my $fh_geoparams_extent, '<', $outfile_geoparams_extent) or die "Could not open file '".$outfile_geoparams_extent."' $!";
+            print STDERR "Opened ".$outfile_geoparams_extent."\n";
+            while (my $geoparams_extent = <$fh_geoparams_extent>) {
+                chomp $geoparams_extent;
+                my @geoparams_extent_coordinates = split ',', $geoparams_extent;
+                push @geoparams_extent, \@geoparams_extent_coordinates;
+            }
+            print STDERR Dumper \@geoparams_extent;
+        close($fh_geoparams);
     }
     else {
-        my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $upload_tempfile --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection";
+        my $geo_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenSingleChannelImageGeoTiff.py --image_path $upload_tempfile --outfile_path_image $outfile_image --outfile_path_geo_params $outfile_geoparams --outfile_path_geo_projection $outfile_geoparams_projection --outfile_path_geo_extent $outfile_geoparams_extent";
         print STDERR $geo_cmd."\n";
         my $geo_cmd_status = system($geo_cmd);
         $ortho_file = $outfile_image;
@@ -3670,13 +3897,35 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
             $geoparams_projection =~ s/\s//g;
             print STDERR Dumper [$geoparams_proj, $geoparams_projection];
         close($fh_geoparam_proj);
+
+        open(my $fh_geoparams_extent, '<', $outfile_geoparams_extent) or die "Could not open file '".$outfile_geoparams_extent."' $!";
+            print STDERR "Opened ".$outfile_geoparams_extent."\n";
+            while (my $geoparams_extent = <$fh_geoparams_extent>) {
+                chomp $geoparams_extent;
+                my @geoparams_extent_coordinates = split ',', $geoparams_extent;
+                push @geoparams_extent, \@geoparams_extent_coordinates;
+            }
+            print STDERR Dumper \@geoparams_extent;
+        close($fh_geoparams);
     }
 
     my $vegetative_indices = ['VARI', 'TGI', 'NDRE', 'NDVI', 'CCC'];
     my $phenotype_methods = ['zonal'];
     my $standard_process_type = 'minimal';
 
+    my @input_image_size = imgsize($outfile_image);
+    my $input_image_width = $input_image_size[0];
+    my $input_image_length = $input_image_size[1];
+
     my $rad_conversion = 0.0174533;
+
+    my $max_gps_x = $geoparams_extent[1]->[0] + 0;
+    my $max_gps_y = $geoparams_extent[1]->[1] + 0;
+    my $min_gps_x = $geoparams_extent[3]->[0] + 0;
+    my $min_gps_y = $geoparams_extent[3]->[1] + 0;
+
+    my $gps_extent_x = $max_gps_x - $min_gps_x;
+    my $gps_extent_y = $max_gps_y - $min_gps_y;
 
     my $drone_run_process_in_progress = $schema->resultset('Project::Projectprop')->update_or_create({
         type_id=>$process_indicator_cvterm_id,
@@ -3727,6 +3976,12 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
 
     my $term_map = CXGN::DroneImagery::ImageTypes::get_base_imagery_observation_unit_plot_polygon_term_map();
 
+    my $apply_image_width_ratio = 1;
+    my $apply_image_height_ratio = 1;
+
+    my $stock_q = "SELECT stock_id FROM stock WHERE uniquename = ?;";
+    my $stock_h = $schema->storage->dbh()->prepare($stock_q);
+
     my %drone_run_band_info;
     foreach my $apply_drone_run_band_project_id (@apply_drone_run_band_project_ids) {
         my $apply_original_image_resize = $drone_run_project_info{$apply_drone_run_band_project_id}->{original_image_resize};
@@ -3739,8 +3994,12 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
         my ($image_id, $drone_run_band_type, $drone_run_band_project_id) = $h2->fetchrow_array();
         $selected_drone_run_band_types{$drone_run_band_type} = $drone_run_band_project_id;
 
-        my $apply_image_width_ratio = 1;
-        my $apply_image_height_ratio = 1;
+        my $original_image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
+        my $original_image_fullpath = $original_image->get_filename('original_converted', 'full');
+
+        my @original_size = imgsize($original_image_fullpath);
+        my $original_image_width = $original_size[0];
+        my $original_image_length = $original_size[1];
 
         my $dir = $c->tempfiles_subdir('/drone_imagery_rotate');
         my $archive_rotate_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_rotate/imageXXXX');
@@ -3765,32 +4024,65 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
         my $cropping_value = encode_json [[{x=>0, y=>0}, {x=>$width, y=>0}, {x=>$width, y=>$length}, {x=>0, y=>$length}]];
 
         my $plot_polygons_value;
+        my @geojson_coords_original;
         while( my ($stock_name, $polygons) = each %$previous_geocoord_polygons) {
+
+            $stock_h->execute($stock_name);
+            my ($stock_id) = $stock_h->fetchrow_array();
+
+            my $plot = $schema->resultset("Stock::Stock")->find({stock_id => $stock_id});
+
             my @coords;
             foreach my $crd (@$polygons) {
-                my $xOrigin = $geoparams_coordinates[0];
-                my $yOrigin = $geoparams_coordinates[3];
-                my $pixelWidth = $geoparams_coordinates[1];
-                my $pixelHeight = -1*$geoparams_coordinates[5];
-                my $x_pos = ($crd->[0] - $xOrigin) / $pixelWidth;
-                my $y_pos = ($yOrigin - $crd->[1] ) / $pixelHeight;
+                my $gps_x = $crd->[0];
+                my $gps_y = $crd->[1];
+                my $original_image_x_ratio = ($gps_x - $min_gps_x)/$gps_extent_x;
+                my $original_image_y_ratio = ($gps_y - $min_gps_y)/$gps_extent_y;
+
+                my $x_pos = $original_image_x_ratio*$original_image_width;
+                my $y_pos = $original_image_y_ratio*$original_image_length;
 
                 $x_pos = $x_pos/$apply_original_image_resize_x;
                 $y_pos = $y_pos/$apply_original_image_resize_y;
 
-                $x_pos = $x_pos/$apply_rotated_image_resize_x;
-                $y_pos = $y_pos/$apply_rotated_image_resize_y;
-
                 my $x_pos_rotated = ($x_pos - $x_center)*cos($rad_conversion*$rotate_value*-1) - ($y_pos - $y_center)*sin($rad_conversion*$rotate_value*-1) + $x_center;
                 my $y_pos_rotated = ($y_pos - $y_center)*cos($rad_conversion*$rotate_value*-1) + ($x_pos - $x_center)*sin($rad_conversion*$rotate_value*-1) + $y_center;
+
+                $x_pos_rotated = $x_pos_rotated/$apply_rotated_image_resize_x;
+                $x_pos_rotated = $x_pos_rotated/$apply_rotated_image_resize_y;
 
                 push @coords, {
                     x => round($x_pos_rotated),
                     y => round($y_pos_rotated),
                 };
+
+                push @geojson_coords_original, [$gps_x, $gps_y];
             }
             $plot_polygons_value->{$stock_name} = \@coords;
+
+            my $first_geojson = $geojson_coords_original[0];
+            my @geojson_coords = ($first_geojson, @geojson_coords_original);
+
+            my $geo_json = {
+                "type"=> "Feature",
+                "geometry"=> {
+                    "type"=> "Polygon",
+                    "coordinates"=> [
+                        \@geojson_coords
+                    ]
+                },
+                "properties"=> {
+                    "format"=> $geoparams_projection,
+                }
+            };
+            my $geo_json_string = encode_json $geo_json;
+            # print STDERR $geno_json_string."\n";
+
+            my $previous_plot_gps_rs = $schema->resultset("Stock::Stockprop")->search({stock_id=>$plot->stock_id, type_id=>$stock_geo_json_cvterm->cvterm_id});
+            $previous_plot_gps_rs->delete_all();
+            $plot->create_stockprops({$stock_geo_json_cvterm->name() => $geo_json_string});
         }
+
         $plot_polygons_value = encode_json $plot_polygons_value;
 
         $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
@@ -3860,6 +4152,16 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
             project_id=>$drone_run_band_project_id,
             rank=>0,
             value=> encode_json \@geoparams_coordinates
+        },
+        {
+            key=>'projectprop_c1'
+        });
+
+        my $drone_run_band_geoparam_coordinates_extent_rs = $schema->resultset('Project::Projectprop')->update_or_create({
+            type_id=>$geoparam_coordinates_extent_cvterm_id,
+            project_id=>$drone_run_band_project_id,
+            rank=>0,
+            value=> encode_json \@geoparams_extent
         },
         {
             key=>'projectprop_c1'

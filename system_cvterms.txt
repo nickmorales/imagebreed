@@ -177,6 +177,7 @@ project_property	drone_run_raw_images_saved_gps_pixel_positions	When interactive
 project_property	drone_run_opendronemap_process_running	When an opendronemap process is running this is set to 1	03/16/2021	nm529	00140
 project_property	drone_run_geoparam_coordinates_type	When GeoTIFF orthophotos are saved, this indicates if WGS84 or UTM was used	04/22/2021	nm529	00142
 project_property	drone_run_geoparam_coordinates	When GeoTIFF orthophotos are saved, this saves the geocoords	04/22/2021	nm529	00142
+project_property	drone_run_geoparam_coordinates_extent	When GeoTIFF orthophotos are saved, this saves the geocoords GPS of min and max enxtent of image	06/24/2022	nm529	00142
 project_property	drone_run_geoparam_coordinates_plot_polygons	This saves the plot-polygons geocoordinates for a given imaging event	06/15/2021	nm529	00146
 project_property	drone_run_band_plot_polygons_phenotype_margins_json	This saves the plot-polygons margins when calculating phenotypes from images	09/13/2021	nm529	00146
 project_property	drone_run_polygon_template_metadata	This saves the plot-polygons template metadata	02/08/2022	nm529	00156
