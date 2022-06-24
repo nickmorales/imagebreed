@@ -370,6 +370,7 @@ sub observationunits_update {
     my $plot_of_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot_of', 'stock_relationship')->cvterm_id();
     my $plant_of_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'plant_of', 'stock_relationship')->cvterm_id();
 
+    my $is_updating_geo_json_from_map = 0;
     foreach my $params (@$data) {
         my $observation_unit_db_id = $params->{observationUnitDbId} ? $params->{observationUnitDbId} : undef;
         my $data_level = $params->{observationUnitLevelName}->[0] || 'all';
@@ -482,6 +483,7 @@ sub observationunits_update {
 
         #Update: geo coordinates
         if ($plot_geo_json) {
+            $is_updating_geo_json_from_map = 1;
             my $geno_json_string = encode_json $plot_geo_json;
 
             #sub upload coordinates
@@ -532,8 +534,10 @@ sub observationunits_update {
 
     }
 
-    my $bs = CXGN::BreederSearch->new( { dbh=>$dbh, dbname=>$c->config->{dbname}, } );
-    my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
+    if (!$is_updating_geo_json_from_map) {
+        my $bs = CXGN::BreederSearch->new( { dbh=>$dbh, dbname=>$c->config->{dbname}, } );
+        my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
+    }
 
     my @observation_unit_db_ids;
     foreach my $params (@$data) { push @observation_unit_db_ids, $params->{observationUnitDbId}; }
