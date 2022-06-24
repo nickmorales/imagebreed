@@ -2509,7 +2509,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
 
                     <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_geocoordinate_param_form" name="upload_drone_imagery_geocoordinate_param_form" action="/drone_imagery/upload_drone_imagery_geocoordinate_param">
                         <div class="form-group">
-                            <label class="col-sm-6 control-label">WGS84/UTM GeoTIFF (.tif): (should be same dimensions as uploaded reflectance maps)</label>
+                            <label class="col-sm-6 control-label">WGS84/UTM GeoTIFF (.tif): (should be same dimensions as the originally uploaded reflectance maps)</label>
                             <div class="col-sm-6" >
                                 <input type="file" id="upload_drone_imagery_geocoordinate_param_geotiff" name="upload_drone_imagery_geocoordinate_param_geotiff" encoding="multipart/form-data" />
                             </div>

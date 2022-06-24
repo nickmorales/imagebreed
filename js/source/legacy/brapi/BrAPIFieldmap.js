@@ -2271,7 +2271,7 @@
 	    }).on('mousemove', (e)=>{
 	      let sourceTarget = e.sourceTarget;
 	      let ou = this.plot_map[sourceTarget.feature.properties.observationUnitDbId];
-	      get_oup_rel(ou).forEach((levels)=>{ 
+	      get_oup_rel(ou).forEach((levels)=>{
 	      	if(levels.levelName == 'replicate'){ ou.replicate = levels.levelCode;}
 	  		else if(levels.levelName == 'block'){ ou.blockNumber = levels.levelCode;}
 	  		else if(levels.levelName == 'plot'){ ou.plotNumber = levels.levelCode;}});

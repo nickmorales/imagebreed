@@ -26,7 +26,7 @@ sub search {
     my $status = $self->status;
     my @data_files;
 
-    my $data_level = $params->{observationUnitLevelName} || ['all'];
+    my $data_level = $params->{observationUnitLevelName} ? [$params->{observationUnitLevelName}] : ['all'];
     my $years_arrayref = $params->{seasonDbId} || ($params->{seasonDbIds} || ());
     my $location_ids_arrayref = $params->{locationDbId} || ($params->{locationDbIds} || ());
     my $study_ids_arrayref = $params->{studyDbId} || ($params->{studyDbIds} || ());
@@ -347,6 +347,7 @@ sub observationunits_update {
     my $self = shift;
     my $data = shift;
     my $c = shift;
+    # print STDERR Dumper $data;
 
     my $page_size = $self->page_size;
     my $page = $self->page;
@@ -423,7 +424,7 @@ sub observationunits_update {
         }
         my $stock_type = $stock->type_id;
 
-        if (( $stock_type ne $plot_cvterm_id && $stock_type ne $plant_cvterm_id ) || ($level_name ne 'plant' && $level_name ne 'plot')){
+        if (( $stock_type ne $plot_cvterm_id && $stock_type ne $plant_cvterm_id ) || ($level_name && $level_name ne 'plant' && $level_name ne 'plot')){
             return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf("Only 'plot' or 'plant' allowed for observation level and observationUnitDbId."), 400);
         }
 
@@ -436,14 +437,13 @@ sub observationunits_update {
         }
 
         #Update: accession
-        if (!$accession_id && !$accession_name) {
-            return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Either germplasmDbId or germplasmName is required.'), 400);
-        }
-        my $germplasm_search_result = $self->_get_existing_germplasm($schema, $accession_id, $accession_name);
-        if ($germplasm_search_result->{error}) {
-            return $germplasm_search_result->{error};
-        } else {
-            $accession_name = $germplasm_search_result->{name};
+        if ($accession_id || $accession_name) {
+            my $germplasm_search_result = $self->_get_existing_germplasm($schema, $accession_id, $accession_name);
+            if ($germplasm_search_result->{error}) {
+                return $germplasm_search_result->{error};
+            } else {
+                $accession_name = $germplasm_search_result->{name};
+            }
         }
 
         my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate('MaterializedViewTable',
@@ -481,10 +481,8 @@ sub observationunits_update {
         }
 
         #Update: geo coordinates
-        my $geo_coordinates = $observationUnit_position_arrayref->{geoCoordinates} || undef;
-        if($geo_coordinates) {
-
-            my $geno_json_string = encode_json $geo_coordinates;
+        if ($plot_geo_json) {
+            my $geno_json_string = encode_json $plot_geo_json;
 
             #sub upload coordinates
             my $upload_plot_gps_txn = sub {
