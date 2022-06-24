@@ -1,11 +1,11 @@
-<%args> 
+<%args>
 $trial_id => undef
 </%args>
 
 
 <& /util/import_css.mas, paths => ['fieldmap/leaflet-search.min.css', 'fieldmap/leaflet.css'] &>
 
-<& '/util/import_javascript.mas', 
+<& '/util/import_javascript.mas',
  classes => ['jquery','d3.d3v4Min', 'brapi.fieldmap.leaflet', 'brapi.fieldmap.L-Path-Transform', 'brapi.fieldmap.leaflet-search', 'brapi.fieldmap.turf', 'brapi.BrAPI', 'brapi.BrAPIFieldmap']
 &>
 
@@ -22,8 +22,9 @@ $trial_id => undef
 </div>
 <br>
 <form id="formOptions" class="form-inline" style="padding:10px;">
-    <a class="btn btn-default" onclick="load()">Load plots</a>
-    <a class="btn btn-default" onclick="update()">Save Geo coordinates</a>
+    <a class="btn btn-primary btn-sm" onclick="load()">Load Plots</a>
+    <a class="btn btn-success btn-sm" onclick="update()">Save Geo Coordinates</a>
+    <a class="btn btn-danger btn-sm" onclick="clear_geo_coordinates()">Delete Geo Coordinates</a>
 </form>
 
 
@@ -42,7 +43,7 @@ $trial_id => undef
         load();
     });
     document.getElementById("formOptions").style.display="none";
- 
+
     var brapi_endpoint = "/brapi/v2";
     var auth_token;
     var require_login = "<%  $c->get_conf('brapi_require_login') %>";
@@ -60,25 +61,25 @@ $trial_id => undef
     }
 
     function load(){
-        var trialId = getStudyId();  
+        var trialId = getStudyId();
         var studyDbId = '<% $trial_id %>' || trialId; // jQuery('#select_trial_for_selection_index').val();
         setupBrAPI();
 
         if (studyDbId){
             fieldMap.load(studyDbId)
                 .then((value)=>{
-                  if (!value) return setLocation(studyDbId); 
+                  if (!value) return setLocation(studyDbId);
                   else { jQuery("#select_trial_for_selection_index option[value="+studyDbId+"]").attr('selected', 'selected'); }
-                }); 
+                });
             document.getElementById("formOptions").style.display="block";
         } else alert("Invalid trial!");
     }
 
     function setLocation(studyDbId) {
-        jQuery("#select_trial_for_selection_index option[value="+studyDbId+"]").attr('selected', 'selected'); 
+        jQuery("#select_trial_for_selection_index option[value="+studyDbId+"]").attr('selected', 'selected');
         fieldMap.setLocation(studyDbId).then(()=>alert("Please select an area over the field and click 'Load plots'."), ()=>alert("No geo reference for location in this trial!"));
     }
-    
+
     function update() {
         setupBrAPI();
         fieldMap.update().then((resp)=>alert(resp), (resp)=>alert(resp));
@@ -90,5 +91,31 @@ $trial_id => undef
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         return urlParams.get('trial_id');
+    }
+
+    function clear_geo_coordinates() {
+        if (window.confirm('Are you sure you want to delete the GPS Geo Coordinates?')) {
+            jQuery.ajax({
+                type: 'POST',
+                url : '/ajax/breeders/trial/<% $trial_id %>/delete_plot_gps',
+                beforeSend: function() {
+                    jQuery('#working_modal').modal('show');
+                },
+                success: function(response){
+                    jQuery('#working_modal').modal('hide');
+                    console.log(response);
+                    if (response.error) {
+                        alert(response.error);
+                    }
+                    if (response.success) {
+                        alert('Plot GPS Geo Coordinates Deleted!');
+                        location.reload();
+                    }
+                },
+                error: function(response){
+                    alert('Error saving analysis multiple!');
+                }
+            });
+        }
     }
 </script>

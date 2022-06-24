@@ -1528,6 +1528,42 @@ sub trial_plot_gps_upload : Chained('trial') PathPart('upload_plot_gps') Args(0)
     $c->stash->{rest} = { success => 1 };
 }
 
+sub trial_plot_gps_delete : Chained('trial') PathPart('delete_plot_gps') Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'submitter', 'submitter_access');
+
+    my $schema = $c->stash->{schema};
+    my $trial = $c->stash->{trial};
+
+    my $data = $trial->get_plots();
+
+    my $stock_geo_json_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot_geo_json', 'stock_property')->cvterm_id();
+
+    my $delete_plot_gps_txn = sub {
+        foreach my $plot (@$data) {
+            my $previous_plot_gps_rs = $schema->resultset("Stock::Stockprop")->search({stock_id=>$plot->[0], type_id=>$stock_geo_json_cvterm});
+            $previous_plot_gps_rs->delete_all();
+        }
+        my $layout = $c->stash->{trial_layout};
+        $layout->generate_and_cache_layout();
+    };
+    eval {
+        $schema->txn_do($delete_plot_gps_txn);
+    };
+    if ($@) {
+        $c->stash->{rest} = { error => $@ };
+        print STDERR "An error condition occurred, was not able to delete trial plot GPS coordinates. ($@).\n";
+        $c->detach();
+    }
+
+    my $dbh = $c->dbc->dbh();
+    my $bs = CXGN::BreederSearch->new( { dbh=>$dbh, dbname=>$c->config->{dbname}, } );
+    my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
+
+    $c->stash->{rest} = { success => 1 };
+}
+
 sub trial_change_plot_accessions_upload : Chained('trial') PathPart('change_plot_accessions_using_file') Args(0) {
     my $self = shift;
     my $c = shift;
