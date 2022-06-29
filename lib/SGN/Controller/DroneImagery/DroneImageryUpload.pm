@@ -3188,45 +3188,33 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                         };
                     }
                     else {
+                        my $geocoords = $drone_run_band_geoparams_coordinates->[$drone_run_band_counter];
                         my $geoparams_extent = $drone_run_band_geoparams_extents->[$drone_run_band_counter];
                         $geoparams_projection = $drone_run_band_geoparams_projections->[$drone_run_band_counter];
 
-                        my $max_gps_x = $geoparams_extent->[1]->[0] + 0;
-                        my $max_gps_y = $geoparams_extent->[1]->[1] + 0;
-                        my $min_gps_x = $geoparams_extent->[3]->[0] + 0;
-                        my $min_gps_y = $geoparams_extent->[3]->[1] + 0;
+                        my $gps_1 = $crd->[0];
+                        my $gps_2 = $crd->[1];
 
-                        my $gps_extent_x = $max_gps_x - $min_gps_x;
-                        my $gps_extent_y = $max_gps_y - $min_gps_y;
+                        my $xOrigin = $geocoords->[0];
+                        my $yOrigin = $geocoords->[3];
+                        my $pixelWidth = $geocoords->[1];
+                        my $pixelHeight = -1*$geocoords->[5];
+                        my $x_pos = ($gps_1 - $xOrigin) / $pixelWidth;
+                        my $y_pos = ($yOrigin - $gps_2 ) / $pixelHeight;
 
-                        my $gps_x = $crd->[0];
-                        my $gps_y = $crd->[1];
-
-                        my $original_image_x_ratio = ($gps_x - $min_gps_x)/$gps_extent_x;
-                        my $original_image_y_ratio = ($gps_y - $min_gps_y)/$gps_extent_y;
-
-                        my $x_pos_rotated = $original_image_x_ratio*$original_image_width;
-                        my $y_pos_rotated = $original_image_y_ratio*$original_image_length;
-
-                        $x_pos_rotated = $x_pos_rotated/$apply_original_image_resize_ratio_x;
-                        $y_pos_rotated = $y_pos_rotated/$apply_original_image_resize_ratio_y;
-
-                        my $x_pos = ($x_pos_rotated - $x_center)*cos($rad_conversion*$rotate_value*-1) - ($y_pos_rotated - $y_center)*sin($rad_conversion*$rotate_value*-1) + $x_center;
-                        my $y_pos = ($y_pos_rotated - $y_center)*cos($rad_conversion*$rotate_value*-1) + ($x_pos_rotated - $x_center)*sin($rad_conversion*$rotate_value*-1) + $y_center;
-
-                        $x_pos = $x_pos/$apply_rotated_image_resize_x;
-                        $y_pos = $y_pos/$apply_rotated_image_resize_y;
-
-                        my $x_pos_c = $x_pos - $cropping_x_offset;
-                        my $y_pos_c = $y_pos - $cropping_y_offset;
+                        my $x_pos_rotated = ($x_pos - $x_center)*cos($rad_conversion*$rotate_value*-1) - ($y_pos - $y_center)*sin($rad_conversion*$rotate_value*-1) + $x_center;
+                        my $y_pos_rotated = ($y_pos - $y_center)*cos($rad_conversion*$rotate_value*-1) + ($x_pos - $x_center)*sin($rad_conversion*$rotate_value*-1) + $y_center;
 
                         my $poly = {
-                            x => round($x_pos_c),
-                            y => round($y_pos_c),
+                            x => round($x_pos_rotated),
+                            y => round($y_pos_rotated),
                         };
 
                         push @coords, $poly;
-                        push @geojson_coords_original, [$gps_y, $gps_x];
+
+                        #convert [312290.6173,1567248.5259] GPS coordinates to Long/Lat (in that order)
+
+                        push @geojson_coords_original, [$gps_1, $gps_2];
                     }
                 }
                 my $last_point = pop @coords;
