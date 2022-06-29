@@ -2548,13 +2548,17 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             push @parse_csv_errors, "Rotation angle $rotation_angle not valid! Must be clock-wise between 0 and 360!";
         }
 
-        if ($coordinate_system ne 'UTM' && $coordinate_system ne 'WGS84' && $coordinate_system ne 'WGS84/UTM' && $coordinate_system ne 'Pixels') {
-            push @parse_csv_errors, "The given coordinate system $coordinate_system is not one of: UTM, WGS84, WGS84/UTM, or Pixels!";
+        if ($coordinate_system ne 'UTM' && $coordinate_system ne 'WGS84' && $coordinate_system ne 'Pixels') {
+            push @parse_csv_errors, "The given coordinate system $coordinate_system is not one of: UTM, WGS84, or Pixels!";
         }
         # if ($coordinate_system ne 'Pixels') {
         #     $c->stash->{rest} = {error => "Only the Pixels coordinate system is currently supported. In the future GeoTIFFs will be supported, but for now please only upload simple raster images (.png, .tiff, .jpg)." };
         #     $c->detach;
         # }
+        if ($coordinate_system eq 'WGS84') {
+            $c->stash->{rest} = {error => "Only the UTM and Pixels coordinate systems are currently supported. In the future WGS84 will be supported, but for now please use UTM if you have GeoTiffs with geo-coordinate GeoJSON or Pixels if you have simple rasters with pixel position GeoJSON." };
+            $c->detach;
+        }
 
         my $field_trial_rs = $schema->resultset("Project::Project")->search({name=>$field_trial_name});
         if ($field_trial_rs->count != 1) {
@@ -2677,6 +2681,9 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
 
     my $q_priv = "UPDATE project SET private_company_id=?, is_private=? WHERE project_id=?;";
     my $h_priv = $schema->storage->dbh()->prepare($q_priv);
+
+    my $stock_q = "SELECT stock_id FROM stock WHERE uniquename = ?;";
+    my $stock_h = $schema->storage->dbh()->prepare($stock_q);
 
     my $dir = $c->tempfiles_subdir('/upload_drone_imagery_bulk_previous');
 
@@ -2819,10 +2826,18 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         my @drone_run_band_geoparams_coordinates;
         my @drone_run_band_geoparams_projections;
         my @drone_run_band_geoparams_extents;
+        my %geocoord_plot_polygons;
 
         my $geojson_temp_filename = $filename_imaging_event_geojson_lookup{$geojson_filename};
-        my $geojson_value;
 
+        open(my $fh_geojson, '<', $geojson_temp_filename) or die "Could not open file '$geojson_temp_filename' $!";
+            print STDERR "Opened $geojson_temp_filename\n";
+            my $geojson_value = decode_json <$fh_geojson>;
+        close($fh_geojson);
+
+        my $trial_lookup = $field_trial_layout_lookup{$selected_trial_id};
+
+        my $ortho_image_count = 0;
         foreach my $m (@ortho_images) {
             my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
             my $band = $m->{band};
@@ -2847,6 +2862,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                 my $outfile_geoparams = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
                 my $outfile_geoparams_projection = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
                 my $outfile_geoparams_extent = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
+                my $coord_conversion_input = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
+                my $coord_conversion_output = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/fileXXXX').".csv";
 
                 if ($band_short eq 'rgb') {
                     my $outfile_image_r = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_bulk_previous/imageXXXX').".png";
@@ -2922,30 +2939,90 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                         print STDERR Dumper \@geoparams_extent;
                     close($fh_geoparams);
                 }
+
+                if ($ortho_image_count == 0) {
+                    my %plot_geocoords_conversion;
+
+                    open(my $F_coord_conversion_input, ">", $coord_conversion_input) || die "Can't open file ".$coord_conversion_input;
+
+                    foreach (@{$geojson_value->{features}}) {
+                        my $plot_number = $_->{properties}->{ID};
+                        my $coordinates = $_->{geometry}->{coordinates};
+                        my $stock_name = $trial_lookup->{$plot_number}->{plot_name};
+
+                        my @coords;
+                        my @geojson_coords_original;
+                        foreach my $crd (@{$coordinates->[0]}) {
+                            my $gps_1 = $crd->[0];
+                            my $gps_2 = $crd->[1];
+
+                            print $F_coord_conversion_input "$stock_name\t$gps_1\t$gps_2\n";
+                        }
+                    }
+
+                    close($F_coord_conversion_input);
+
+                    my $geo_conversion_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImageGeoTiffConvertGPS.py --image_path $file --input_coords_path $coord_conversion_input --output_coords_path $coord_conversion_output";
+                    print STDERR $geo_conversion_cmd."\n";
+                    my $geo_conversion_cmd_status = system($geo_conversion_cmd);
+
+                    open(my $F_coord_conversion_output, '<', $coord_conversion_output) or die "Could not open file '".$coord_conversion_output."' $!";
+
+                    while (my $coord_conversion_output = <$F_coord_conversion_output>) {
+                        chomp $coord_conversion_output;
+                        my @coord_conversion_line = split ",", $coord_conversion_output;
+                        # print STDERR Dumper \@coord_conversion_line;
+                        my $stock_name = $coord_conversion_line[0];
+                        my $gps_converted_1 = $coord_conversion_line[1] + 0;
+                        my $gps_converted_2 = $coord_conversion_line[2] + 0;
+
+                        push @{$plot_geocoords_conversion{$stock_name}}, [$gps_converted_2, $gps_converted_1];
+                    }
+
+                    close($F_coord_conversion_output);
+
+                    foreach (@{$geojson_value->{features}}) {
+                        my $plot_number = $_->{properties}->{ID};
+                        my $coordinates = $_->{geometry}->{coordinates};
+                        my $stock_name = $trial_lookup->{$plot_number}->{plot_name};
+
+                        $stock_h->execute($stock_name);
+                        my ($stock_id) = $stock_h->fetchrow_array();
+
+                        my $plot = $schema->resultset("Stock::Stock")->find({stock_id => $stock_id});
+
+                        my $geojson_coords_original = $plot_geocoords_conversion{$stock_name};
+
+                        print STDERR Dumper $geojson_coords_original;
+
+                        my $geo_json = {
+                            "type"=> "Feature",
+                            "geometry"=> {
+                                "type"=> "Polygon",
+                                "coordinates"=> [
+                                    $geojson_coords_original
+                                ]
+                            },
+                            "properties"=> {
+                                "format"=> $geoparams_projection,
+                            }
+                        };
+                        my $geo_json_string = encode_json $geo_json;
+                        # print STDERR $geno_json_string."\n";
+
+                        my $last_point_geo = pop @$geojson_coords_original;
+                        $geocoord_plot_polygons{$stock_name} = $geojson_coords_original;
+
+                        my $previous_plot_gps_rs = $schema->resultset("Stock::Stockprop")->search({stock_id=>$plot->stock_id, type_id=>$stock_geo_json_cvterm->cvterm_id});
+                        $previous_plot_gps_rs->delete_all();
+                        $plot->create_stockprops({$stock_geo_json_cvterm->name() => $geo_json_string});
+                    }
+                }
+
             }
             push @drone_run_band_geoparams_coordinates, \@geoparams_coordinates;
             push @drone_run_band_geoparams_projections, $geoparams_projection;
             push @drone_run_band_geoparams_extents, \@geoparams_extent;
-
-            open(my $fh_geojson, '<', $geojson_temp_filename) or die "Could not open file '$geojson_temp_filename' $!";
-                print STDERR "Opened $geojson_temp_filename\n";
-                $geojson_value = decode_json <$fh_geojson>;
-            close($fh_geojson);
-
-            my $trial_lookup = $field_trial_layout_lookup{$selected_trial_id};
-
-            my %geocoord_plot_polygons;
-            # foreach (@{$geojson_value->{features}}) {
-            #     my $plot_number = $_->{properties}->{ID};
-            #     my $coordinates = $_->{geometry}->{coordinates};
-            #     my $stock_name = $trial_lookup->{$plot_number}->{plot_name};
-            #     my @coords;
-            #     foreach my $crd (@{$coordinates->[0]}) {
-            #         push @coords, [$crd->[0], $crd->[1]];
-            #     }
-            #     my $last_element = pop @coords;
-            #     $geocoord_plot_polygons{$stock_name} = \@coords;
-            # }
 
             my $uploader = CXGN::UploadFile->new({
                 tempfile => $ortho_file,
@@ -3016,6 +3093,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                 original_image_resize_ratio => \@original_image_resize_ratio
             };
             push @drone_run_band_project_ids, $selected_drone_run_band_id;
+
+            $ortho_image_count++;
         }
 
         push @drone_run_projects, {
@@ -3114,9 +3193,6 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
 
         my $term_map = CXGN::DroneImagery::ImageTypes::get_base_imagery_observation_unit_plot_polygon_term_map();
 
-        my $stock_q = "SELECT stock_id FROM stock WHERE uniquename = ?;";
-        my $stock_h = $schema->storage->dbh()->prepare($stock_q);
-
         my %drone_run_band_info;
         my $drone_run_band_counter = 0;
         foreach my $apply_drone_run_band_project_id (@$apply_drone_run_band_project_ids) {
@@ -3166,20 +3242,12 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             my $cropping_value = encode_json [[{x=>$cropping_x_offset, y=>$cropping_y_offset}, {x=>$width, y=>$cropping_y_offset}, {x=>$width, y=>$length}, {x=>$cropping_x_offset, y=>$length}]];
 
             my $plot_polygons_value;
-            my %geocoord_plot_polygons;
-            my $geoparams_projection;
             foreach (@{$geojson_value->{features}}) {
                 my $plot_number = $_->{properties}->{ID};
                 my $coordinates = $_->{geometry}->{coordinates};
                 my $stock_name = $trial_lookup->{$plot_number}->{plot_name};
 
-                $stock_h->execute($stock_name);
-                my ($stock_id) = $stock_h->fetchrow_array();
-
-                my $plot = $schema->resultset("Stock::Stock")->find({stock_id => $stock_id});
-
                 my @coords;
-                my @geojson_coords_original;
                 foreach my $crd (@{$coordinates->[0]}) {
                     if ($coordinate_system eq 'Pixels') {
                         push @coords, {
@@ -3190,7 +3258,6 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                     else {
                         my $geocoords = $drone_run_band_geoparams_coordinates->[$drone_run_band_counter];
                         my $geoparams_extent = $drone_run_band_geoparams_extents->[$drone_run_band_counter];
-                        $geoparams_projection = $drone_run_band_geoparams_projections->[$drone_run_band_counter];
 
                         my $gps_1 = $crd->[0];
                         my $gps_2 = $crd->[1];
@@ -3211,54 +3278,12 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
                         };
 
                         push @coords, $poly;
-
-                        #convert [312290.6173,1567248.5259] GPS coordinates to Long/Lat (in that order)
-
-                        push @geojson_coords_original, [$gps_1, $gps_2];
                     }
                 }
                 my $last_point = pop @coords;
-                my $last_point_geo = pop @geojson_coords_original;
                 $plot_polygons_value->{$stock_name} = \@coords;
-                $geocoord_plot_polygons{$stock_name} = \@geojson_coords_original;
-
-                if ($coordinate_system ne 'Pixels') {
-                    my $first_geojson = $geojson_coords_original[0];
-                    my @geojson_coords = ($first_geojson, @geojson_coords_original);
-
-                    my $geo_json = {
-                        "type"=> "Feature",
-                        "geometry"=> {
-                            "type"=> "Polygon",
-                            "coordinates"=> [
-                                \@geojson_coords
-                            ]
-                        },
-                        "properties"=> {
-                            "format"=> $geoparams_projection,
-                        }
-                    };
-                    my $geo_json_string = encode_json $geo_json;
-                    # print STDERR $geno_json_string."\n";
-
-                    my $previous_plot_gps_rs = $schema->resultset("Stock::Stockprop")->search({stock_id=>$plot->stock_id, type_id=>$stock_geo_json_cvterm->cvterm_id});
-                    $previous_plot_gps_rs->delete_all();
-                    $plot->create_stockprops({$stock_geo_json_cvterm->name() => $geo_json_string});
-                }
             }
             $plot_polygons_value = encode_json $plot_polygons_value;
-
-            if ($coordinate_system ne 'Pixels') {
-                my $drone_run_band_geoparam_coordinates_polygons_rs = $schema->resultset('Project::Projectprop')->update_or_create({
-                    type_id=>$geoparam_coordinates_plot_polygons_cvterm_id,
-                    project_id=>$drone_run_band_project_id,
-                    rank=>0,
-                    value=> encode_json \%geocoord_plot_polygons
-                },
-                {
-                    key=>'projectprop_c1'
-                });
-            }
 
             $dir = $c->tempfiles_subdir('/drone_imagery_cropped_image');
             my $archive_temp_image = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_cropped_image/imageXXXX');

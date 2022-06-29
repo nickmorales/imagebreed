@@ -2533,7 +2533,7 @@
                             <li><b>Field Trial Name</b>: (required) The name of the field trial which was imaged. This must already exist in the database.</li>
                             <li><b>GeoJSON Filename</b>: (required) The name of the GeoJSON plot-polygon file that corresponds to this imaging event. This filename must exist in the uploaded GeoJSON zipfile. The same GeoJSON file can be used for multiple imaging events.</li>
                             <li><b>Image Filenames</b>: (required) Comma-separated list of image filenames that corresponds to this imaging event (e.g. Field1Ortho01012020__nir.tiff,Field1Ortho01012020__rgb.tiff,Field1Ortho01012020__bw.tiff). The image filenames must exist in the uploaded images zipfile. The same image file can be used for multiple imaging events.</li>
-                            <li><b>Coordinate System</b>: (required) The coordinate system for the supplied images and GeoJSON files of this imaging event. Must be either "WGS84/UTM" or "Pixels". If "WGS84/UTM" is used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system AND the GeoJSON files must be of the same coordinate system. If "Pixels" is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs, AND the GeoJSON files must describe the pixel positions of the plot-polygons relative to the provided images.</li>
+                            <li><b>Coordinate System</b>: (required) The coordinate system for the supplied images and GeoJSON files of this imaging event. Must be either "Pixels", "UTM", or "WGS84". If "UTM" or "WGS84" are used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system AND the GeoJSON files must be of the same coordinate system. If "Pixels" is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs, AND the GeoJSON files must describe the pixel positions of the plot-polygons relative to the provided images.</li>
                             <li><b>Rotation Angle</b>: (optional) The clock-wise angle of rotation to apply to the uploaded imagery in degrees (0-360). Default is a 0 degree rotation. If a value is provided, the plot-polygon images are expected to be straight after rotation. If no value is provided or 0 is provided, then the plot-polgyon images will include only pixels that lie within the polygons; however, this is more computationally intensive.</li>
                             <li><b>Base Date</b>: (optional) The date and time to reference the imaging event in YYYY/MM/DD hh:mm:ss format (e.g. 2021/03/02 12:00:00). This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment, and they are not capturing images at precisely the same time.</li>
                             <li><b>Camera Rig</b>: (optional) Free-text description of the camera rig. This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment.</li>
@@ -2565,7 +2565,7 @@
                         <p>Do not upload duplicate spectral types for the same imaging event.</p>
                         <p>Images should be perfectly super-imposable for different spectra in the same imaging event.</p>
                         <p>The same image can be used for several imaging events.</p>
-                        <p>If the coordinate system of the imaging event is "WGS84/UTM", then the orthophoto images must be GeoTIFFs (.tiff) containing the coordinate system. If the coordinate system is "Pixels", then the orthophoto images are simple raster images (.tiff, .jpeg, .png).</p>
+                        <p>If the coordinate system of the imaging event is "WGS84" or "UTM", then the orthophoto images must be GeoTIFFs (.tiff) containing the coordinate system. If the coordinate system is "Pixels", then the orthophoto images are simple raster images (.tiff, .jpeg, .png).</p>
 
                         <br/>
                         <div class="well well-sm">
@@ -2589,6 +2589,8 @@
                         <p>The spreadsheets should be named in accordance with the "GeoJSON Filenames" defined in the previous step.</p>
                         <p>The coordinate system (e.g. WGS84, UTM) of the orthophotos should be the same as the coordinate system defining the GeoJSON files. If the coordinate system is "Pixels", then the GeoJSON files should define the pixel positions of the plot-polygons relative to the uploaded images.</p>
                         <p>The same GeoJSON file can be used for several imaging events.</p>
+                        <p>The GeoJSON UTM coordinates should be <b>Northing</b> followed by <b>Easting</b> (e.g. [312295.7451,1567250.9971]).</p>
+                        <p>Only UTM and Pixel GeoJSON coordinate systems are currently suppoerted. In the future, WGS84 will be supported (e.g. [121.260723987719, 14.1701625191025]) as Longitude followed by Latitude</p>
 
                         <p>The GeoJSON should be the following format:
                         <br/>

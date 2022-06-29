@@ -5735,6 +5735,8 @@ sub _perform_plot_polygon_assign {
             $iteration_count++;
         }
 
+        close($F);
+
         my $cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageCropping/CropToPolygonBulk.py --inputfile_path '$bulk_input_temp_file'";
         print STDERR Dumper $cmd;
         my $status = system($cmd);
