@@ -3639,10 +3639,10 @@ sub upload_drone_imagery_geocoordinate_param : Path("/drone_imagery/upload_drone
                 my $original_image_y_ratio = $y_pos_rotated/$original_image_length;
 
                 #convert proportion of pixels to gps extent frame
-                my $gps_x = ($gps_extent_x * $original_image_x_ratio) + $min_gps_x;
-                my $gps_y = ($gps_extent_y * $original_image_y_ratio) + $min_gps_y;
+                my $gps_x = ($gps_extent_x * $original_image_y_ratio) + $min_gps_x;
+                my $gps_y = ($gps_extent_y * $original_image_x_ratio) + $min_gps_y;
 
-                push @geojson_coords_original, [$gps_x, $gps_y];
+                push @geojson_coords_original, [$gps_y, $gps_x];
             }
             $geocoord_plot_polygons{$stock_name} = \@geojson_coords_original;
             # print STDERR Dumper \@geojson_coords_original;
