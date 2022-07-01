@@ -1,6 +1,6 @@
 {
   "name": "@solgenomics/cxgn_js",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "node package containing all importable CXGN/SGN JavaScript files.",
   "main": "webpack.config.js",
   "scripts": {
