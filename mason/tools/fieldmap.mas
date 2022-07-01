@@ -66,10 +66,12 @@ $trial_id => undef
         setupBrAPI();
 
         if (studyDbId){
+            jQuery('#working_modal').modal('show');
             fieldMap.load(studyDbId)
                 .then((value)=>{
                   if (!value) return setLocation(studyDbId);
                   else { jQuery("#select_trial_for_selection_index option[value="+studyDbId+"]").attr('selected', 'selected'); }
+                  jQuery('#working_modal').modal('hide');
                 });
             document.getElementById("formOptions").style.display="block";
         } else alert("Invalid trial!");
