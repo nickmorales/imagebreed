@@ -15,7 +15,6 @@ use CXGN::List::Transform;
 use Scalar::Util qw(looks_like_number);
 use JSON;
 
-
 extends 'CXGN::BrAPI::v2::Common';
 
 sub search {
@@ -115,6 +114,7 @@ sub search {
     }
 
     my $plot_geojson_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'plot_geo_json', 'stock_property')->cvterm_id();
+    my $additional_info_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'stock_additional_info', 'stock_property')->cvterm_id();
 
     foreach my $obs_unit (@$data){
         my @brapi_observations;
@@ -173,8 +173,7 @@ sub search {
             $geo_coordinates = decode_json $geo_coordinates_string;
         }
 
-        my $additional_info;
-        my $additional_info_type_id = SGN::Model::Cvterm->get_cvterm_row($self->bcs_schema, 'stock_additional_info', 'stock_property')->cvterm_id();
+        my $additional_info = {};
         my $rs = $self->bcs_schema->resultset("Stock::Stockprop")->search({ type_id => $additional_info_type_id, stock_id => $obs_unit->{observationunit_stock_id} });
         if ($rs->count() > 0){
             my $additional_info_json = $rs->first()->value();
@@ -255,8 +254,6 @@ sub search {
             observationLevelRelationships => \@observationLevelRelationships,
         );
 
-        my $brapi_observationUnitPosition = decode_json(encode_json \%observationUnitPosition);
-
         #Get external references
         my @references;
 
@@ -282,7 +279,7 @@ sub search {
         }
 
         push @data_window, {
-            additionalInfo => {},
+            additionalInfo => $additional_info,
             externalReferences => \@references,
             germplasmDbId => qq|$obs_unit->{germplasm_stock_id}|,
             germplasmName => $obs_unit->{germplasm_uniquename},
@@ -291,7 +288,7 @@ sub search {
             observationUnitDbId => qq|$obs_unit->{observationunit_stock_id}|,
             observations => \@brapi_observations,
             observationUnitName => $obs_unit->{observationunit_uniquename},
-            observationUnitPosition => $brapi_observationUnitPosition,
+            observationUnitPosition => \%observationUnitPosition,
             observationUnitPUI => $main_production_site_url . "/stock/" . $obs_unit->{observationunit_stock_id} . "/view",
             programName => $obs_unit->{breeding_program_name},
             programDbId => qq|$obs_unit->{breeding_program_id}|,

@@ -34,7 +34,7 @@
     "webpack-command": "^0.4.2"
   },
   "dependencies": {
-    "@solgenomics/brapijs": "github:solgenomics/brapi-js#develop",
+    "@solgenomics/brapijs": "github:solgenomics/brapi-js",
     "BrAPI-BoxPlotter": "git+https://github.com/solgenomics/BrAPI-BoxPlotter.git",
     "d3": "^7.3.0"
   },
