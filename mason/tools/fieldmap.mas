@@ -70,14 +70,17 @@ $trial_id => undef
             fieldMap.load(studyDbId)
                 .then((value)=>{
                   if (!value) return setLocation(studyDbId);
-                  else { jQuery("#select_trial_for_selection_index option[value="+studyDbId+"]").attr('selected', 'selected'); }
-                  jQuery('#working_modal').modal('hide');
+                  else {
+                    jQuery("#select_trial_for_selection_index option[value="+studyDbId+"]").attr('selected', 'selected');
+                    jQuery('#working_modal').modal('hide');
+                  }
                 });
             document.getElementById("formOptions").style.display="block";
         } else alert("Invalid trial!");
     }
 
     function setLocation(studyDbId) {
+        jQuery('#working_modal').modal('hide');
         jQuery("#select_trial_for_selection_index option[value="+studyDbId+"]").attr('selected', 'selected');
         fieldMap.setLocation(studyDbId).then(()=>alert("Please select an area over the field and click 'Load plots'."), ()=>alert("No geo reference for location in this trial!"));
     }
