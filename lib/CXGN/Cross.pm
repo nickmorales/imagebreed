@@ -1466,14 +1466,15 @@ sub get_all_cross_entries {
 
     if ($cross_properties_ref) {
         my @cross_properties = @$cross_properties_ref;
+        my %cross_properties_hash = map {$_ => 1} @cross_properties;
 
-        if ('First Pollination Date' ~~ @cross_properties) {
+        if (exists($cross_properties_hash{'First Pollination Date'})) {
             $pollination_date_key = 'First Pollination Date';
         } else {
             $pollination_date_key = 'Pollination Date';
         }
 
-        if ('Number of Seeds Extracted' ~~ @cross_properties) {
+        if (exists($cross_properties_hash{'Number of Seeds Extracted'})) {
             $number_of_seeds_key = 'Number of Seeds Extracted';
         } else {
             $number_of_seeds_key = 'Number of Seeds'
