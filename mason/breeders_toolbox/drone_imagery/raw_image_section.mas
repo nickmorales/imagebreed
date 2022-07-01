@@ -16,7 +16,7 @@ jQuery(document).ready(function(){
         'ajax': '/api/drone_imagery/raw_drone_imagery_top',
         'paging': false
     });
-    
+
     raw_drone_imagery_table.on( 'draw', function () {
         jQuery.ajax({
             url : '/api/drone_imagery/raw_drone_imagery_plot_image_count',
@@ -60,6 +60,11 @@ jQuery(document).ready(function(){
                 }
             });
         }
+    });
+
+    jQuery(document).on('click', 'button[name="drone_runs_trial_view_geo_layout"]', function () {
+        var trial_id = jQuery(this).data('field_trial_id');
+        window.open('/tools/fieldmap?trial_id=' + trial_id ,'_blank');
     });
 
 });

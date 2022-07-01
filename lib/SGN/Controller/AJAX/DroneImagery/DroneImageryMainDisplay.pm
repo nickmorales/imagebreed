@@ -169,7 +169,24 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
     foreach my $trial_name (sort keys %unique_drone_runs) {
         my %unique_drone_runs_k = %{$unique_drone_runs{$trial_name}};
 
-        my $drone_run_html = '<div class="panel-group" id="drone_runs_trial_accordion_table_wrapper_'.$trial_id_hash{$trial_name}.'" ><div class="panel panel-default"><div class="panel-heading"><div class="row"><div class="col-sm-10"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_runs_trial_accordion_table_wrapper_'.$trial_id_hash{$trial_name}.'" href="#drone_runs_trial_accordion_table_wrapper_one_'.$trial_id_hash{$trial_name}.'" >Field Trial: '.$trial_name.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.scalar(keys %unique_drone_runs_k).' Imaging Events)</a>';
+        my $has_geocoord_params = 0;
+        foreach my $epoch_seconds (sort keys %{$unique_drone_run_dates{$trial_name}}) {
+            my $k = $unique_drone_run_dates{$trial_name}->{$epoch_seconds};
+            my $v = $unique_drone_runs_k{$k};
+            my $drone_run_bands = $v->{bands};
+
+            foreach my $drone_run_band_project_id (sort keys %$drone_run_bands) {
+                my $d = $drone_run_bands->{$drone_run_band_project_id};
+                if ($d->{drone_run_band_geoparam_polygons}) {
+                    my $geocoords = decode_json $d->{drone_run_band_geoparam_polygons};
+                    if (scalar(keys %$geocoords) > 1) {
+                        $has_geocoord_params = 1;
+                    }
+                }
+            }
+        }
+
+        my $drone_run_html = '<div class="panel-group" id="drone_runs_trial_accordion_table_wrapper_'.$trial_id_hash{$trial_name}.'" ><div class="panel panel-default"><div class="panel-heading"><div class="row"><div class="col-sm-8"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_runs_trial_accordion_table_wrapper_'.$trial_id_hash{$trial_name}.'" href="#drone_runs_trial_accordion_table_wrapper_one_'.$trial_id_hash{$trial_name}.'" >Field Trial: '.$trial_name.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;('.scalar(keys %unique_drone_runs_k).' Imaging Events)</a>';
 
         if (exists($processing_field_trials_drone_runs_indicator{$trial_name})) {
             $drone_run_html .= '&nbsp;&nbsp;&nbsp;&nbsp;<small>(Processing: <b>'.scalar(keys %{$processing_field_trials_drone_runs_indicator{$trial_name}}).'</b><span class="glyphicon glyphicon-hourglass"></span>)</small>';
@@ -181,27 +198,19 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
             $drone_run_html .= '&nbsp;&nbsp;&nbsp;&nbsp;<small>(Running ODM: <b>'.scalar(keys %{$processing_odm_field_trials_drone_runs_indicator{$trial_name}}).'</b><span class="glyphicon glyphicon-hourglass"></span>)</small>';
         }
 
-        $drone_run_html .= '</h4></div><div class="col-sm-2"><button class="btn btn-sm btn-default" name="drone_runs_trial_view_timeseries" data-field_trial_name='.$trial_name.' data-field_trial_id='.$trial_id_hash{$trial_name}.'>View TimeSeries</button></div></div></div><div id="drone_runs_trial_accordion_table_wrapper_one_'.$trial_id_hash{$trial_name}.'" class="panel-collapse collapse"><div class="panel-body">';
+        $drone_run_html .= '</h4></div><div class="col-sm-2">&nbsp;';
+
+        if ($has_geocoord_params) {
+            $drone_run_html .= '<button class="btn btn-success btn-sm" name="drone_runs_trial_view_geo_layout" data-field_trial_id='.$trial_id_hash{$trial_name}.'>View Geo Layout</button>';
+        }
+
+        $drone_run_html .= '</div><div class="col-sm-2"><button class="btn btn-sm btn-default" name="drone_runs_trial_view_timeseries" data-field_trial_name='.$trial_name.' data-field_trial_id='.$trial_id_hash{$trial_name}.'>View TimeSeries</button></div></div></div><div id="drone_runs_trial_accordion_table_wrapper_one_'.$trial_id_hash{$trial_name}.'" class="panel-collapse collapse"><div class="panel-body">';
 
         foreach my $epoch_seconds (sort keys %{$unique_drone_run_dates{$trial_name}}) {
             my $k = $unique_drone_run_dates{$trial_name}->{$epoch_seconds};
             my $v = $unique_drone_runs_k{$k};
             my $drone_run_bands = $v->{bands};
             my $drone_run_date = $v->{drone_run_date};
-
-            my $missing_geocoord_params = 0;
-            foreach my $drone_run_band_project_id (sort keys %$drone_run_bands) {
-                my $d = $drone_run_bands->{$drone_run_band_project_id};
-                if ($d->{drone_run_band_geoparam_polygons}) {
-                    my $geocoords = decode_json $d->{drone_run_band_geoparam_polygons};
-                    if (scalar(keys %$geocoords) < 1) {
-                        $missing_geocoord_params = 1;
-                    }
-                }
-                else {
-                    $missing_geocoord_params = 1;
-                }
-            }
 
             $drone_run_html .= '<div class="panel-group" id="drone_run_band_accordion_drone_run_wrapper_'.$k.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_run_band_accordion_drone_run_wrapper_'.$k.'" href="#drone_run_band_accordion_drone_run_wrapper_one_'.$k.'" >'.$v->{drone_run_project_name}.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp'.$drone_run_date;
 
@@ -295,7 +304,7 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
 
                             $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_ground_control_points" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Save Ground Control Points</button><br/><br/>';
 
-                            # if ($missing_geocoord_params) {
+                            # if (!$has_geocoord_params) {
                                 $drone_run_html .= '<button class="btn btn-default btn-sm" name="drone_imagery_drone_run_band_add_geocoordinate_params" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Add GeoCoordinate Params</button><br/><br/>';
                             # }
 
