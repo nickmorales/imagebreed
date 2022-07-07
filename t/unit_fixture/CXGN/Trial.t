@@ -481,7 +481,8 @@ is_deeply(\@all_project_types, [
           'misc_trial',
           'phenotyping_trial',
           'pollinating_trial',
-          'storage_trial'
+          'storage_trial',
+          'Sensory Trial'
         ], "check get_all_project_types");
 
 

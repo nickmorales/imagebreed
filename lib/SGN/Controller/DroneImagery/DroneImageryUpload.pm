@@ -423,6 +423,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
     my $image_types_allowed = CXGN::DroneImagery::ImageTypes::get_all_drone_run_band_image_types()->{hash_ref};
     my %seen_image_types_upload;
 
+    my $original_uploaded_geotiff;
     if ($new_drone_run_band_stitching eq 'no') {
         my @new_drone_run_bands;
         if ($new_drone_run_band_numbers eq 'one_bw' || $new_drone_run_band_numbers eq 'one_rgb') {
@@ -464,6 +465,10 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 upload_file => $upload_file,
                 coordinate_system => $new_drone_run_band_coordinate_system
             };
+
+            if ($new_drone_run_band_coordinate_system ne 'Pixels') {
+                $original_uploaded_geotiff = $upload_file;
+            }
         } else {
             if ($new_drone_run_band_numbers == 5 && $new_drone_run_band_file_type eq 'ODM') {
                 my $upload_file = $c->req->upload('drone_run_band_stitched_ortho_image_odm');
@@ -472,6 +477,8 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                     $c->stash->{template} = 'generic_message.mas';
                     return;
                 }
+
+                $original_uploaded_geotiff = $upload_file;
 
                 my $new_drone_run_input_image = $upload_file->tempname;
 
@@ -607,9 +614,68 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         upload_file => $upload_file,
                         coordinate_system => $new_drone_run_band_coordinate_system
                     };
+
+                    if ($new_drone_run_band_coordinate_system ne 'Pixels') {
+                        $original_uploaded_geotiff = $upload_file;
+                    }
                 }
             }
         }
+
+        if ($original_uploaded_geotiff) {
+            my $drone_run_experiment_original_stitched_image_type_name = 'drone_run_experiment_original_stitched_image';
+
+            my $time = DateTime->now();
+            my $timestamp = $time->ymd()."_".$time->hms();
+
+            my $original_uploaded_geotiff_name = $original_uploaded_geotiff->filename();
+            my $original_uploaded_geotiff_tempfile = $original_uploaded_geotiff->tempname;
+
+            my $uploader_original_geotiff = CXGN::UploadFile->new({
+                tempfile => $original_uploaded_geotiff_tempfile,
+                subdirectory => $drone_run_experiment_original_stitched_image_type_name,
+                archive_path => $c->config->{archive_path},
+                archive_filename => $original_uploaded_geotiff_name,
+                timestamp => $timestamp,
+                user_id => $user_id,
+                user_role => $user_role
+            });
+            my $archived_filename_original_geotiff_with_path = $uploader_original_geotiff->archive();
+            my $md5_original_geotiff = $uploader_original_geotiff->get_md5($archived_filename_original_geotiff_with_path);
+            if (!$archived_filename_original_geotiff_with_path) {
+                $c->stash->{message} = "Could not save file $archived_filename_original_geotiff_with_path in archive.";
+                $c->stash->{template} = 'generic_message.mas';
+                return;
+            }
+            print STDERR "Archived Drone Image Original GeoTIFF File: $archived_filename_original_geotiff_with_path\n";
+
+            my $drone_run_experiment_original_stitched_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, $drone_run_experiment_original_stitched_image_type_name, 'experiment_type')->cvterm_id();
+            my $drone_run_experiment_original_stitched_image_experiment = $schema->resultset('NaturalDiversity::NdExperiment')->create({
+                nd_geolocation_id => $computation_location_id,
+                type_id => $drone_run_experiment_original_stitched_image_type_id,
+                nd_experiment_projects => \@nd_experiment_project_ids,
+            });
+            my $drone_run_experiment_original_stitched_image_nd_experiment_id = $drone_run_experiment_original_stitched_image_experiment->nd_experiment_id();
+
+            my $drone_run_experiment_original_stitched_image_md_row = $metadata_schema->resultset("MdMetadata")->create({create_person_id => $user_id});
+            my $drone_run_experiment_original_stitched_image_upload_file = CXGN::UploadFile->new();
+            my $drone_run_experiment_original_stitched_image_md5 = $drone_run_experiment_original_stitched_image_upload_file->get_md5($archived_filename_original_geotiff_with_path);
+            my $drone_run_experiment_original_stitched_image_md5checksum = $drone_run_experiment_original_stitched_image_md5->hexdigest();
+            my $drone_run_experiment_original_stitched_image_file_row = $metadata_schema->resultset("MdFiles")->create({
+                basename => basename($archived_filename_original_geotiff_with_path),
+                dirname => dirname($archived_filename_original_geotiff_with_path),
+                filetype => $drone_run_experiment_original_stitched_image_type_name,
+                md5checksum => $drone_run_experiment_original_stitched_image_md5checksum,
+                metadata_id => $drone_run_experiment_original_stitched_image_md_row->metadata_id(),
+            });
+            my $drone_run_experiment_original_stitched_image_file_id = $drone_run_experiment_original_stitched_image_file_row->file_id();
+
+            my $drone_run_experiment_original_stitched_image_experiment_files = $phenome_schema->resultset("NdExperimentMdFiles")->create({
+                nd_experiment_id => $drone_run_experiment_original_stitched_image_nd_experiment_id,
+                file_id => $drone_run_experiment_original_stitched_image_file_id,
+            });
+        }
+
         foreach (@new_drone_run_bands) {
             my $coordinate_system = $_->{coordinate_system};
             my $drone_run_band_description = $_->{description};
@@ -1120,6 +1186,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 print STDERR $odm_ply_cmd."\n";
                 my $odm_ply_status = system($odm_ply_cmd);
 
+                push @stitched_result_files, ['drone_run_experiment_original_stitched_image', $odm_final_orthophoto];
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_image', $odm_final_orthophoto];
 
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_dsm', $odm_dsm_png];
@@ -1233,6 +1300,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 print STDERR $odm_ply_cmd."\n";
                 my $odm_ply_status = system($odm_ply_cmd);
 
+                push @stitched_result_files, ['drone_run_experiment_original_stitched_image', $odm_rgb_orthophoto];
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_image', $odm_rgb_orthophoto];
 
                 push @stitched_result_files, ['drone_run_experiment_odm_stitched_dsm', $odm_dsm_png];
@@ -1510,6 +1578,7 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
     my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
     my $original_image_resize_ratio_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_original_image_resize_ratio', 'project_property')->cvterm_id();
     my $rotated_image_resize_ratio_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotated_image_resize_ratio', 'project_property')->cvterm_id();
+    my $drone_run_stitching_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_orthophoto_stitching_type', 'project_property')->cvterm_id();
     my $calendar_funcs = CXGN::Calendar->new({});
 
     my $upload_file = $c->req->upload('upload_drone_imagery_bulk_images_zipfile');
@@ -1647,9 +1716,10 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
         $worksheet->get_cell(0,8)->value() ne 'Field Trial Name' ||
         $worksheet->get_cell(0,9)->value() ne 'Image Filenames' ||
         $worksheet->get_cell(0,10)->value() ne 'Coordinate System' ||
-        $worksheet->get_cell(0,11)->value() ne 'Base Date' ||
-        $worksheet->get_cell(0,12)->value() ne 'Camera Rig') {
-            $c->stash->{message} = "The header row in the CSV spreadsheet must be 'Imaging Event Name,Company,Type,Description,Date,Vehicle Name,Vehicle Battery Set,Sensor,Field Trial Name,GeoJSON Filename,Image Filenames,Coordinate System,Base Date,Camera Rig'.";
+        $worksheet->get_cell(0,11)->value() ne 'Orthophoto Product Type' ||
+        $worksheet->get_cell(0,12)->value() ne 'Base Date' ||
+        $worksheet->get_cell(0,13)->value() ne 'Camera Rig') {
+            $c->stash->{message} = "The header row in the CSV spreadsheet must be 'Imaging Event Name,Company,Type,Description,Date,Vehicle Name,Vehicle Battery Set,Sensor,Field Trial Name,GeoJSON Filename,Image Filenames,Coordinate System,Orthophoto Product Type,Base Date,Camera Rig'.";
             $c->stash->{template} = 'generic_message.mas';
             return;
     }
@@ -1714,13 +1784,17 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
         if ($worksheet->get_cell($row,10)) {
             $coordinate_system = $worksheet->get_cell($row,10)->value();
         }
-        my $base_date;
+        my $ortho_product_type;
         if ($worksheet->get_cell($row,11)) {
-            $base_date = $worksheet->get_cell($row,11)->value();
+            $ortho_product_type = $worksheet->get_cell($row,11)->value();
+        }
+        my $base_date;
+        if ($worksheet->get_cell($row,12)) {
+            $base_date = $worksheet->get_cell($row,12)->value();
         }
         my $rig_desc;
-        if ($worksheet->get_cell($row,12)) {
-            $rig_desc = $worksheet->get_cell($row,12)->value();
+        if ($worksheet->get_cell($row,13)) {
+            $rig_desc = $worksheet->get_cell($row,13)->value();
         }
 
         if (!$imaging_event_name){
@@ -1771,13 +1845,17 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
             push @parse_csv_errors, "Please give a field trial name!";
         }
 
-        if ($coordinate_system ne 'UTM' && $coordinate_system ne 'WGS84' && $coordinate_system ne 'WGS84/UTM' && $coordinate_system ne 'Pixels') {
-            push @parse_csv_errors, "The given coordinate system $coordinate_system is not one of: UTM, WGS84, WGS84/UTM, or Pixels!";
+        if ($coordinate_system ne 'UTM' && $coordinate_system ne 'WGS84' && $coordinate_system ne 'Pixels') {
+            push @parse_csv_errors, "The given coordinate system $coordinate_system is not one of: UTM, WGS84, or Pixels! If WGS84 or UTM is used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system. If WGS84 or UTM are used then the images have either Longitude/Latitude (e.g. [121.260723987719, 14.1701625191025]) or Northing/Easting (e.g. [312295.7451,1567250.9971]) encoded in the GeoTIFF. If Pixels is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs.";
         }
         if ($coordinate_system ne 'Pixels') {
             $c->stash->{message} = "Only the Pixels coordinate system is currently supported for this upload. In the future GeoTIFFs will be supported, but for now please only upload simple raster images (.png, .tiff, .jpg).";
             $c->stash->{template} = 'generic_message.mas';
             return;
+        }
+
+        if ($ortho_product_type ne 'None' && $ortho_product_type ne 'Pix4D' && $ortho_product_type ne 'Agisoft' && $ortho_product_type ne 'ODM' && $ortho_product_type ne 'Other') {
+            push @parse_csv_errors, "The given orthophoto product type $ortho_product_type is not one of: None, Pix4D, Agisoft, ODM, or Other! If Pix4D, Agisoft, Other, or None then the images are assumed to be single band images. If ODM then the image is assumed to be a single MultiBand stack image.";
         }
 
         my $field_trial_rs = $schema->resultset("Project::Project")->search({name=>$field_trial_name});
@@ -1932,8 +2010,9 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
         my $field_trial_name = $worksheet->get_cell($row,8)->value();
         my $image_filenames = $worksheet->get_cell($row,9)->value();
         my $coordinate_system = $worksheet->get_cell($row,10)->value();
-        my $base_date = $worksheet->get_cell($row,11) ? $worksheet->get_cell($row,11)->value() : '';
-        my $rig_desc = $worksheet->get_cell($row,12) ? $worksheet->get_cell($row,12)->value() : '';
+        my $ortho_product_type = $worksheet->get_cell($row,11)->value();
+        my $base_date = $worksheet->get_cell($row,12) ? $worksheet->get_cell($row,12)->value() : '';
+        my $rig_desc = $worksheet->get_cell($row,13) ? $worksheet->get_cell($row,13)->value() : '';
 
         my $private_company_id = $company_name_lookup{$company_name};
         my $private_company_is_private = $company_name_is_private_lookup{$company_name};
@@ -2004,6 +2083,7 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
             {type_id => $project_start_date_type_id, value => $drone_run_event},
             {type_id => $design_cvterm_id, value => 'drone_run'},
             {type_id => $drone_run_camera_type_cvterm_id, value => $new_drone_run_camera_info},
+            {type_id => $drone_run_stitching_type_cvterm_id, value => $ortho_product_type},
             {type_id => $drone_run_related_cvterms_cvterm_id, value => encode_json \%related_cvterms}
         ];
         if ($base_date) {
@@ -2171,6 +2251,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
     my $original_image_resize_ratio_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_original_image_resize_ratio', 'project_property')->cvterm_id();
     my $rotated_image_resize_ratio_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_rotated_image_resize_ratio', 'project_property')->cvterm_id();
+    my $drone_run_stitching_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_orthophoto_stitching_type', 'project_property')->cvterm_id();
     my $stock_geo_json_cvterm = SGN::Model::Cvterm->get_cvterm_row($schema, 'plot_geo_json', 'stock_property');
     my $calendar_funcs = CXGN::Calendar->new({});
 
@@ -2426,10 +2507,11 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         $worksheet->get_cell(0,9)->value() ne 'GeoJSON Filename' ||
         $worksheet->get_cell(0,10)->value() ne 'Image Filenames' ||
         $worksheet->get_cell(0,11)->value() ne 'Coordinate System' ||
-        $worksheet->get_cell(0,12)->value() ne 'Rotation Angle' ||
-        $worksheet->get_cell(0,13)->value() ne 'Base Date' ||
-        $worksheet->get_cell(0,14)->value() ne 'Camera Rig') {
-            $c->stash->{message} = "The header row in the CSV spreadsheet must be 'Imaging Event Name,Company,Type,Description,Date,Vehicle Name,Vehicle Battery Set,Sensor,Field Trial Name,GeoJSON Filename,Image Filenames,Coordinate System,Rotation Angle,Base Date,Camera Rig'.";
+        $worksheet->get_cell(0,12)->value() ne 'Orthophoto Product Type' ||
+        $worksheet->get_cell(0,13)->value() ne 'Rotation Angle' ||
+        $worksheet->get_cell(0,14)->value() ne 'Base Date' ||
+        $worksheet->get_cell(0,15)->value() ne 'Camera Rig') {
+            $c->stash->{message} = "The header row in the CSV spreadsheet must be 'Imaging Event Name,Company,Type,Description,Date,Vehicle Name,Vehicle Battery Set,Sensor,Field Trial Name,GeoJSON Filename,Image Filenames,Coordinate System,Orthophoto Product Type,Rotation Angle,Base Date,Camera Rig'.";
             $c->stash->{template} = 'generic_message.mas';
             return;
     }
@@ -2484,17 +2566,21 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         if ($worksheet->get_cell($row,11)) {
             $coordinate_system = $worksheet->get_cell($row,11)->value();
         }
-        my $rotation_angle;
+        my $ortho_product_type;
         if ($worksheet->get_cell($row,12)) {
-            $rotation_angle = $worksheet->get_cell($row,12)->value();
+            $ortho_product_type = $worksheet->get_cell($row,12)->value();
+        }
+        my $rotation_angle;
+        if ($worksheet->get_cell($row,13)) {
+            $rotation_angle = $worksheet->get_cell($row,13)->value();
         }
         my $base_date;
-        if ($worksheet->get_cell($row,13)) {
-            $base_date = $worksheet->get_cell($row,13)->value();
+        if ($worksheet->get_cell($row,14)) {
+            $base_date = $worksheet->get_cell($row,14)->value();
         }
         my $rig_desc;
-        if ($worksheet->get_cell($row,14)) {
-            $rig_desc = $worksheet->get_cell($row,14)->value();
+        if ($worksheet->get_cell($row,15)) {
+            $rig_desc = $worksheet->get_cell($row,15)->value();
         }
 
         if (!$imaging_event_name){
@@ -2549,15 +2635,15 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         }
 
         if ($coordinate_system ne 'UTM' && $coordinate_system ne 'WGS84' && $coordinate_system ne 'Pixels') {
-            push @parse_csv_errors, "The given coordinate system $coordinate_system is not one of: UTM, WGS84, or Pixels!";
+            push @parse_csv_errors, "The given coordinate system $coordinate_system is not one of: UTM, WGS84, or Pixels! If UTM or WGS84 are used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system AND the GeoJSON files must be of the same coordinate system. If Pixels is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs, AND the GeoJSON files must describe the pixel positions of the plot-polygons relative to the provided images. If UTM is used, the provided GeoJSON is in Northing/Easting (e.g. [312295.7451,1567250.9971]). If WGS84 is used, the provided GeoJSON is in Longitude/Latitude (e.g. [121.260723987719, 14.1701625191025]).";
         }
-        # if ($coordinate_system ne 'Pixels') {
-        #     $c->stash->{rest} = {error => "Only the Pixels coordinate system is currently supported. In the future GeoTIFFs will be supported, but for now please only upload simple raster images (.png, .tiff, .jpg)." };
-        #     $c->detach;
-        # }
         if ($coordinate_system eq 'WGS84') {
             $c->stash->{rest} = {error => "Only the UTM and Pixels coordinate systems are currently supported. In the future WGS84 will be supported, but for now please use UTM if you have GeoTiffs with geo-coordinate GeoJSON or Pixels if you have simple rasters with pixel position GeoJSON." };
             $c->detach;
+        }
+
+        if ($ortho_product_type ne 'None' && $ortho_product_type ne 'Pix4D' && $ortho_product_type ne 'Agisoft' && $ortho_product_type ne 'ODM' && $ortho_product_type ne 'Other') {
+            push @parse_csv_errors, "The given orthophoto product type $ortho_product_type is not one of: None, Pix4D, Agisoft, ODM, or Other! If Pix4D, Agisoft, Other, or None then the images are assumed to be single band images. If ODM then the image is assumed to be a single MultiBand stack image.";
         }
 
         my $field_trial_rs = $schema->resultset("Project::Project")->search({name=>$field_trial_name});
@@ -2703,9 +2789,10 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         my $geojson_filename = $worksheet->get_cell($row,9)->value();
         my $image_filenames = $worksheet->get_cell($row,10)->value();
         my $coordinate_system = $worksheet->get_cell($row,11)->value();
-        my $rotation_angle = $worksheet->get_cell($row,12) ? $worksheet->get_cell($row,12)->value() : 0;
-        my $base_date = $worksheet->get_cell($row,13) ? $worksheet->get_cell($row,13)->value() : '';
-        my $rig_desc = $worksheet->get_cell($row,14) ? $worksheet->get_cell($row,14)->value() : '';
+        my $ortho_product_type = $worksheet->get_cell($row,12)->value();
+        my $rotation_angle = $worksheet->get_cell($row,13) ? $worksheet->get_cell($row,13)->value() : 0;
+        my $base_date = $worksheet->get_cell($row,14) ? $worksheet->get_cell($row,14)->value() : '';
+        my $rig_desc = $worksheet->get_cell($row,15) ? $worksheet->get_cell($row,15)->value() : '';
 
         my $private_company_id = $company_name_lookup{$company_name};
         my $private_company_is_private = $company_name_is_private_lookup{$company_name};
@@ -2776,6 +2863,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             {type_id => $project_start_date_type_id, value => $drone_run_event},
             {type_id => $design_cvterm_id, value => 'drone_run'},
             {type_id => $drone_run_camera_type_cvterm_id, value => $new_drone_run_camera_info},
+            {type_id => $drone_run_stitching_type_cvterm_id, value => $ortho_product_type},
             {type_id => $drone_run_related_cvterms_cvterm_id, value => encode_json \%related_cvterms}
         ];
         if ($base_date) {

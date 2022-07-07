@@ -7,7 +7,7 @@ calendar	Phenotyping Event				00052
 calendar	Planning Event				00052
 calendar	Planting Event				00052
 calendar	Presentation Event				00052
-experiment_type	pedigree experiment
+experiment_type	pedigree experiment				00052
 experiment_type	cross_experiment				00052
 experiment_type	field_layout				00052
 experiment_type	treatment_experiment				00081
@@ -22,6 +22,7 @@ experiment_type	analysis_model_experiment	For saving results in analysis models	
 experiment_type	analytics_protocol_experiment	For saving results of analytics protocols	01/22/2021	nm529	00136
 experiment_type	drone_run_experiment	For saving drone run experiment	07/20/2020	nm529	00126
 experiment_type	drone_run_experiment_stitched_report	For saving drone run experiment user uploaded stitched report	02/19/2022	nm529	00158
+experiment_type	drone_run_experiment_original_stitched_image	For saving originally uploaded stitched GeoTIFF image	07/03/2022	nm529	00158
 experiment_type	drone_run_experiment_odm_stitched_image	For saving drone run experiment ODM stitched image	02/19/2022	nm529	00158
 experiment_type	drone_run_experiment_odm_stitched_report	For saving drone run experiment ODM stitched report	02/19/2022	nm529	00158
 experiment_type	drone_run_experiment_odm_stitched_point_cloud	For saving drone run experiment ODM stitched point cloud (.ply)	02/19/2022	nm529	00158
@@ -37,9 +38,9 @@ experiment_type	drone_run_experiment_odm_stitched_dtm	For saving drone run exper
 experiment_type	drone_run_experiment_odm_stitched_dsm_minus_dtm	For saving drone run experiment ODM stitched reconstruction	02/19/2022	nm529	00158
 experiment_type	field_trial_drone_runs_in_same_orthophoto	For linking drone runs that are in the same imaging event 	01/11/22	nm529	00154
 experiment_type	sampling_layout	For saving sampling trials	11/25/2020	nm529	00132
-genotype_property	igd number
+genotype_property	igd number				00052
 genotype_property	infinium array					sgn database
-genotype_property	snp genotyping
+genotype_property	snp genotyping				00052
 genotype_property	vcf_snp_genotyping	JSON string encoding all VCF info	6/20/2018	nm529	00098
 geolocation_property	geolocation address				00052
 geolocation_property	geolocation year				00052
@@ -62,26 +63,26 @@ list_types	genotyping_trials		03/23/2018	nm529	00092
 list_types	tissue_samples		02/15/2018	nm529	00091
 list_types	seedlots		07/20/2017	nm529	00081
 list_types	subplots		08/23/2017	nm529	00084
-list_types	accessions
+list_types	accessions				00052
 list_types	crosses				00067
 list_types	dataset				00067
-list_types	locations
-list_types	locus_ids
+list_types	locations				00052
+list_types	locus_ids				00052
 list_types	numbers				00067
-list_types	plots
+list_types	plots				00052
 list_types	populations				00067
-list_types	traits
-list_types	trials
-list_types	unigene_ids
+list_types	traits				00052
+list_types	trials				00052
+list_types	unigene_ids				00052
 list_types	vector_constructs				00049
-list_types	years
-list_types  family_names            00111
-local	date
-local	months after planting
-local	operator
+list_types	years				00052
+list_types  family_names				00111
+local	date				00052
+local	months after planting				00052
+local	operator				00052
 local	organism_sequencing_metadata
 local	sp_person_id				00052
-local	time
+local	time				00052
 local	visible_to_role				00052
 nd_experiment_property	cross_name				00052
 nd_experiment_property	cross_type				00052
@@ -99,28 +100,28 @@ project_property	field_size		04/05/2018	nm529	00093
 project_property	field_trial_is_planned_to_be_genotyped		04/05/2018	nm529	00093
 project_property	field_trial_is_planned_to_cross		04/05/2018	nm529	00093
 project_property	breeding_program				00051
-project_property	data_agreement
-project_property	design
-project_property	genomic selection
+project_property	data_agreement				00052
+project_property	design				00052
+project_property	genomic selection				00052
 project_property	project_harvest_date				00080
-project_property	marker_count
+project_property	marker_count				00052
 project_property	project_planting_date				00080
 project_property	management_factor_date	For setting the date of a management factor	05/14/2019	nm529	00109
 project_property	management_factor_type	For setting whether a management factor was a fertilizer herbicide fungicide or weeding	05/14/2019	nm529	00109
-project_property	population type
-project_property	project fertilizer date
+project_property	population type				00052
+project_property	project fertilizer date				00052
 project_property	project first harvest date					sgn database
-project_property	project harvested plants
+project_property	project harvested plants				00052
 project_property	project last harvest date					sgn database
-project_property	project location
+project_property	project location				00052
 project_property	project sowing date					sgn database
-project_property	project sown plants
+project_property	project sown plants				00052
 project_property	project transplanting date					sgn database
-project_property	project year
+project_property	project year				00052
 project_property	project_has_plant_entries				00054
 project_property	project_has_subplot_entries				00084
 project_property	project_has_tissue_sample_entries				00089
-project_property	trial_folder
+project_property	trial_folder				00052
 project_property	folder_for_trials	For determining if a folder appears on manage trials page	12/6/16	nm529	00071
 project_property	folder_for_crosses	For determining if a folder appears on manage crosses page	12/6/16	nm529	00071
 project_property	folder_for_genotyping_trials	For determining if a folder appears on manage genotyping plate page	6/20/18	nm529	00098
@@ -183,10 +184,10 @@ project_property	drone_run_band_plot_polygons_phenotype_margins_json	This saves 
 project_property	drone_run_polygon_template_metadata	This saves the plot-polygons template metadata	02/08/2022	nm529	00156
 project_property	project_sp_person_id	For saving results in analysis trials	06/04/2020	lam87nm529	00119
 project_property	analysis_metadata_json	For saving results in analysis trials	06/04/2020	lam87nm529	00119
-project_property    product_profile_json    00131
+project_property    product_profile_json				00131
 project_property	sampling_facility	For saving the sampling facility of a sampling trial	11/25/2020	nm529	00132
 project_property	sampling_trial_sample_type	For saving the sample type of a sampling trial	11/25/2020	nm529	00132
-project_property    trial_status_json For recording trial activities tt15 00157
+project_property    trial_status_json	For recording trial activities		tt15	00157
 project_relationship	breeding_program_trial_relationship				00051
 project_relationship	trial_treatment_relationship				00081
 project_relationship	field_trial_from_field_trial	For linking field trials preceding other field trials	4/6/18	nm529	00093
@@ -206,25 +207,26 @@ project_table_type	analysis_project_table_type	Saving a crossing trial in projec
 project_table_type	treatment_project_table_type	Saving a crossing trial in project table 	04/01/22	nm529	00160
 project_table_type	drone_run_project_table_type	Saving a crossing trial in project table 	04/01/22	nm529	00160
 project_table_type	drone_run_band_project_table_type	Saving a crossing trial in project table 	04/01/22	nm529	00160
-project_type	Advanced Yield Trial
-project_type	Clonal Evaluation
-project_type	Preliminary Yield Trial
-project_type	Regional Trials
-project_type	Seed Multiplication
-project_type	Seedling Nursery
+project_type	Advanced Yield Trial				00052
+project_type	Clonal Evaluation				00052
+project_type	Preliminary Yield Trial				00052
+project_type	Regional Trials				00052
+project_type	Seed Multiplication				00052
+project_type	Seedling Nursery				00052
 project_type	Uniform Yield Trial				00052
-project_type	Variety Release Trial
-project_type	crossing_trial	00079
-project_type	grafting_trial	00079
-project_type	pollinating_trial	00079
+project_type	Variety Release Trial				00052
+project_type	crossing_trial				00079
+project_type	grafting_trial				00079
+project_type	pollinating_trial				00079
 project_type	Heterosis				00082
-project_type	Genetic Gain 				00082
+project_type	Genetic Gain				00082
 project_type	Health Status				00082
 project_type	Storage				00082
-project_type	genotyping_trial		00087
-project_type	phenotyping_trial	00087
-project_type    crossing_block_trial    00098
-project_type	Specialty Trial    00116
+project_type	genotyping_trial				00087
+project_type	phenotyping_trial				00087
+project_type    crossing_block_trial				00098
+project_type	Specialty Trial				00116
+project_type	Sensory Trial Sensory trial trials involving sensory panel traits usually measured by multiple panelists	07/05/2022	nm429	00052
 stock_property	block				00052
 stock_property	col_number				00052
 stock_property	igd_synonym				00052
@@ -243,9 +245,9 @@ stock_property	stock_synonym				00046
 stock_property	T1				00052
 stock_property	T2				00052
 stock_property	transgenic				00052
-stock_property	variety	Found in editable_stock_props
-stock_property	notes	Found in editable_stock_props
-stock_property	state	Found in editable_stock_props
+stock_property	variety	Found in editable_stock_props				00052
+stock_property	notes	Found in editable_stock_props				00052
+stock_property	state	Found in editable_stock_props				00052
 stock_property	accession number	From BrAPI	03/27/2017	nm529	00076
 stock_property	PUI	From BrAPI	03/27/2017	nm529	00076
 stock_property	donor	From BrAPI	03/27/2017	nm529	00076
@@ -261,7 +263,7 @@ stock_property	entry number	From BrAPI	03/27/2017	nm529	00076
 stock_property	acquisition date	From BrAPI	03/27/2017	nm529	00076
 stock_property	current_count	For keeping current count of seedlot	09/06/2017	nm529	00086
 stock_property	current_weight_gram	For keeping current count of seedlot	09/06/2017	nm529	00092
-stock_property  crossing_metadata_json    00087
+stock_property  crossing_metadata_json				00087
 stock_property	ploidy_level	For indicating ploidy level of accession	12/20/2017	nm529	00088
 stock_property	genome_structure	For indicating genome structure of accession	12/20/2017	nm529	00088
 stock_property	introgression_parent	For indicating introgression parent accession name	12/20/2017	nm529	00088
@@ -296,13 +298,13 @@ stock_relationship	collection_of				00077
 stock_relationship	seed transaction				00077
 stock_relationship	rootstock_of					00079
 stock_relationship	scion_of					00079
-stock_relationship  female_plot_of    00086
-stock_relationship  male_plot_of    00086
-stock_relationship  female_plant_of    00094
-stock_relationship  male_plant_of    00094
-stock_relationship  cross_member_of    00129
-stock_relationship  family_female_parent_of    00129
-stock_relationship  family_male_parent_of    00129
+stock_relationship  female_plot_of				00086
+stock_relationship  male_plot_of				00086
+stock_relationship  female_plant_of				00094
+stock_relationship  male_plant_of				00094
+stock_relationship  cross_member_of				00129
+stock_relationship  family_female_parent_of				00129
+stock_relationship  family_male_parent_of				00129
 stock_relationship	analysis_of	For saving results in analysis trials	06/04/2020	lam87nm529	00119
 stock_relatedness	genomic_relatedness_dosage	For saving relatedness in stock_relatedness	02/11/2022	nm529	00157
 stock_type	accession				00052
@@ -321,15 +323,15 @@ stock_type	vector_construct				00052
 stock_type	seedlot				00077
 stock_type	subplot				00084
 stock_type	grafted_accession		00079
-stock_type  family_name            00111
-trait_property	trait_categories
-trait_property	trait_default_value
-trait_property	trait_details
-trait_property	trait_format
-trait_property	trait_maximum
-trait_property	trait_minimum
-trial_type	genotyping_trial
-trial_type	phenotyping_trial
+stock_type  family_name				00111
+trait_property	trait_categories				00052
+trait_property	trait_default_value				00052
+trait_property	trait_details				00052
+trait_property	trait_format				00052
+trait_property	trait_maximum				00052
+trait_property	trait_minimum				00052
+trial_type	genotyping_trial				00052
+trial_type	phenotyping_trial				00052
 company_type	default_access	For securing data in private company table	02/02/2022	nm529	00155
 company_type	private_access	For securing data in private company table	03/03/2022	nm529	00158
 company_person_type	user_access	For securing data in private company table	02/02/2022	nm529	00155
@@ -339,7 +341,7 @@ company_cvterm_type	default_cvterm_access	For securing data in private company t
 cvterm_property	uri	From BrAPI	03/27/2017	nm529	00076
 cvterm_property	datatype	From BrAPI	03/27/2017	nm529	00076
 cvterm_property	code	From BrAPI	03/27/2017	nm529	00076
-cvterm_property	formula
+cvterm_property	formula				00052
 protocol_property	published date	From BrAPI	03/27/2017	nm529	00076
 protocol_property	protocol type	From BrAPI	03/27/2017	nm529	00076
 protocol_property	protocol unit	From BrAPI	03/27/2017	nm529	00076

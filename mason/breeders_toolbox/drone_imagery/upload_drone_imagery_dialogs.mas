@@ -234,9 +234,9 @@
                                 <select class="form-control" id="drone_run_upload_drone_run_band_image_type" name="drone_run_upload_drone_run_band_image_type">
                                     <option value="">Select One</option>
                                     <option value="None">None</option>
-                                    <option value="ODM">OpenDroneMap</option>
-                                    <option value="Pix4D">Pix4D</option>
-                                    <option value="Agisoft">Agisoft</option>
+                                    <option value="Pix4D">Pix4D (Individual Band Images)</option>
+                                    <option value="Agisoft">Agisoft (Individual Band Images)</option>
+                                    <option value="ODM">OpenDroneMap (MultiBand Stack Image)</option>
                                     <option value="Other">Other</option>
                                 </select>
                             </div>
@@ -2514,6 +2514,7 @@
                                     <th>GeoJSON Filename</th>
                                     <th>Image Filenames</th>
                                     <th>Coordinate System</th>
+                                    <th>Orthophoto Product Type</th>
                                     <th>Rotation Angle</th>
                                     <th>Base Date</th>
                                     <th>Camera Rig</th>
@@ -2533,7 +2534,8 @@
                             <li><b>Field Trial Name</b>: (required) The name of the field trial which was imaged. This must already exist in the database.</li>
                             <li><b>GeoJSON Filename</b>: (required) The name of the GeoJSON plot-polygon file that corresponds to this imaging event. This filename must exist in the uploaded GeoJSON zipfile. The same GeoJSON file can be used for multiple imaging events.</li>
                             <li><b>Image Filenames</b>: (required) Comma-separated list of image filenames that corresponds to this imaging event (e.g. Field1Ortho01012020__nir.tiff,Field1Ortho01012020__rgb.tiff,Field1Ortho01012020__bw.tiff). The image filenames must exist in the uploaded images zipfile. The same image file can be used for multiple imaging events.</li>
-                            <li><b>Coordinate System</b>: (required) The coordinate system for the supplied images and GeoJSON files of this imaging event. Must be either "Pixels", "UTM", or "WGS84". If "UTM" or "WGS84" are used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system AND the GeoJSON files must be of the same coordinate system. If "Pixels" is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs, AND the GeoJSON files must describe the pixel positions of the plot-polygons relative to the provided images.</li>
+                            <li><b>Coordinate System</b>: (required) The coordinate system for the supplied images and GeoJSON files of this imaging event. Must be either "Pixels", "UTM", or "WGS84". If "UTM" or "WGS84" are used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system AND the GeoJSON files must be of the same coordinate system. If "Pixels" is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs, AND the GeoJSON files must describe the pixel positions of the plot-polygons relative to the provided images. If "UTM" is used, the provided GeoJSON is in Northing/Easting (e.g. [312295.7451,1567250.9971]). If "WGS84" is used, the provided GeoJSON is in Longitude/Latitude (e.g. [121.260723987719, 14.1701625191025]). Currently only UTM is supported.</li>
+                            <li><b>Orthophoto Product Type</b>: (required) The type of orthophotomosaic image type, described by the software that produced it. Must be either "None", "Pix4D", "Agisoft", "Other", or "ODM". If Pix4D, Agisoft, Other, or None then the images are assumed to be single band images. If ODM then the image is assumed to be a single MultiBand stack image.</li>
                             <li><b>Rotation Angle</b>: (optional) The clock-wise angle of rotation to apply to the uploaded imagery in degrees (0-360). Default is a 0 degree rotation. If a value is provided, the plot-polygon images are expected to be straight after rotation. If no value is provided or 0 is provided, then the plot-polgyon images will include only pixels that lie within the polygons; however, this is more computationally intensive.</li>
                             <li><b>Base Date</b>: (optional) The date and time to reference the imaging event in YYYY/MM/DD hh:mm:ss format (e.g. 2021/03/02 12:00:00). This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment, and they are not capturing images at precisely the same time.</li>
                             <li><b>Camera Rig</b>: (optional) Free-text description of the camera rig. This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment.</li>
@@ -2707,6 +2709,7 @@
                                     <th>Field Trial Name</th>
                                     <th>Image Filenames</th>
                                     <th>Coordinate System</th>
+                                    <th>Orthophoto Product Type</th>
                                     <th>Base Date</th>
                                     <th>Camera Rig</th>
                                 </tr>
@@ -2724,7 +2727,8 @@
                             <li><b>Sensor</b>: (required) The type of camera sensor used. Must be either "MicaSense 5 Channel Camera", "CCD Color Camera", or "CMOS Color Camera".</li>
                             <li><b>Field Trial Name</b>: (required) The name of the field trial which was imaged. This must already exist in the database.</li>
                             <li><b>Image Filenames</b>: (required) Comma-separated list of image filenames that corresponds to this imaging event (e.g. Field1Ortho01012020__nir.tiff,Field1Ortho01012020__rgb.tiff,Field1Ortho01012020__bw.tiff). The image filenames must exist in the uploaded images zipfile. The same image file can be used for multiple imaging events.</li>
-                            <li><b>Coordinate System</b>: (required) The coordinate system for the supplied images and GeoJSON files of this imaging event. Must be either "WGS84/UTM" or "Pixels". If "WGS84/UTM" is used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system AND the GeoJSON files must be of the same coordinate system. If "Pixels" is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs, AND the GeoJSON files must describe the pixel positions of the plot-polygons relative to the provided images.</li>
+                            <li><b>Coordinate System</b>: (required) The coordinate system for the supplied images of this imaging event. Must be either "WGS84", "UTM", or "Pixels". If "WGS84" or "UTM" is used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system. If "WGS84" or "UTM" are used then the images have either Longitude/Latitude (e.g. [121.260723987719, 14.1701625191025]) or Northing/Easting (e.g. [312295.7451,1567250.9971]) encoded in the GeoTIFF. If "Pixels" is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs.</li>
+                            <li><b>Orthophoto Product Type</b>: (required) The type of orthophotomosaic image type, described by the software that produced it. Must be either "None", "Pix4D", "Agisoft", "Other", or "ODM". If Pix4D, Agisoft, Other, or None then the images are assumed to be single band images. If ODM then the image is assumed to be a single MultiBand stack image.</li>
                             <li><b>Base Date</b>: (optional) The date and time to reference the imaging event in YYYY/MM/DD hh:mm:ss format (e.g. 2021/03/02 12:00:00). This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment, and they are not capturing images at precisely the same time.</li>
                             <li><b>Camera Rig</b>: (optional) Free-text description of the camera rig. This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment.</li>
                         </ul>
