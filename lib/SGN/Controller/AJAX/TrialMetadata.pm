@@ -6723,7 +6723,17 @@ sub delete_soil_data_POST : Args(0) {
 
     my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 'curator', 'curator_access');
 
-    $c->stash->{rest} = {success => 1 };
+    my $soil_data_obj = CXGN::BreedersToolbox::SoilData->new({ bcs_schema => $schema, parent_id => $trial_id, prop_id => $prop_id });
+    my $error = $soil_data_obj->delete_soil_data();
+
+    print STDERR "ERROR = $error\n";
+
+    if ($error) {
+	    $c->stash->{rest} = { error_string => "An error occurred attempting to delete soil data."};
+	    return;
+    }
+
+    $c->stash->{rest} = { success => 1 };
 }
 
 sub _check_user_login_trial_metadata {
