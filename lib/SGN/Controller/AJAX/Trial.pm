@@ -1271,7 +1271,7 @@ sub upload_soil_data_POST : Args(0) {
     my $dbh = $c->dbc->dbh;
     my $trial_id = $c->req->param('soil_data_trial_id');
     my $description = $c->req->param('soil_data_description');
-    my $soil_data_year = $c->req->param('soil_data_year_select');
+    my $soil_data_date = $c->req->param('changed');
     my $soil_data_gps = $c->req->param('soil_data_gps');
     my $type_of_sampling = $c->req->param('type_of_sampling');
 
@@ -1358,7 +1358,7 @@ sub upload_soil_data_POST : Args(0) {
         my $soil_data = CXGN::BreedersToolbox::SoilData->new({ bcs_schema => $chado_schema });
         $soil_data->parent_id($trial_id);
         $soil_data->description($description);
-        $soil_data->year($soil_data_year);
+        $soil_data->date($soil_data_date);
         $soil_data->gps($soil_data_gps);
         $soil_data->type_of_sampling($type_of_sampling);
         $soil_data->data_type_order($data_type_order);
