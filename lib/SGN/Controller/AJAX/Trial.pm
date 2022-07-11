@@ -1277,12 +1277,6 @@ sub upload_soil_data_POST : Args(0) {
 
     my ($user_id, $user_name, $user_role) = _check_user_login_trial($c, 'submitter', 0, 0);
 
-    print STDERR "TRIAL ID =".Dumper($trial_id)."\n";
-    print STDERR "DESCRIPTION =".Dumper($description)."\n";
-    print STDERR "YEAR =".Dumper($soil_data_year)."\n";
-    print STDERR "GPS =".Dumper($soil_data_gps)."\n";
-    print STDERR "TYPE OF SAMPLING =".Dumper($type_of_sampling)."\n";
-
     my $upload = $c->req->upload('soil_data_upload_file');
     my $parser;
     my $parsed_data;
