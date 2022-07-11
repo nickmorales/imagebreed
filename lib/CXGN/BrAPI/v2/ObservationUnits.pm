@@ -43,6 +43,7 @@ sub search {
     my $levels_arrayref = $params->{observationLevels} || ();
     # externalReferenceID
     # externalReferenceSource
+    my $include_observations_bool = lc $include_observations eq 'true' ? 1 : 0;
 
     if ($levels_arrayref){
         $data_level = ();
@@ -88,6 +89,7 @@ sub search {
             plot_list=>$observation_unit_db_id,
             limit=>$limit,
             offset=>$offset,
+            include_observations=>$include_observations_bool
             # phenotype_min_value=>$phenotype_min_value,
             # phenotype_max_value=>$phenotype_max_value,
             # exclude_phenotype_outlier=>$exclude_phenotype_outlier
@@ -119,7 +121,7 @@ sub search {
     foreach my $obs_unit (@$data){
         my @brapi_observations;
 
-        if( lc $include_observations eq 'true') {
+        if ($include_observations_bool) {
 
             my $observations = $obs_unit->{observations};
             foreach (@$observations){
