@@ -37,6 +37,9 @@ sub search {
     my $level_code_arrayref = $params->{observationUnitLevelCode} || ($params->{observationUnitLevelCodes} || ());
     my $levels_relation_arrayref = $params->{observationLevelRelationships} || ();
     my $levels_arrayref = $params->{observationLevels} || ();
+    my $include_observations = $params->{includeObservations} || "false";
+
+    my $include_observations_bool = lc $include_observations eq 'true' ? 1 : 0;
 
     if ($levels_arrayref){
         $data_level = ();
@@ -76,6 +79,7 @@ sub search {
             program_list=>$program_ids_arrayref,
             limit=>$limit,
             offset=>$offset,
+            include_observations=>$include_observations_bool
             # phenotype_min_value=>$phenotype_min_value,
             # phenotype_max_value=>$phenotype_max_value,
             # exclude_phenotype_outlier=>$exclude_phenotype_outlier
@@ -102,28 +106,32 @@ sub search {
     my $total_count = 0;
     foreach my $obs_unit (@$data){
         my @brapi_observations;
-        my $observations = $obs_unit->{observations};
-        foreach (@$observations){
-            my $obs_timestamp = $_->{collect_date} ? $_->{collect_date} : $_->{timestamp};
-            if ( $start_time && $obs_timestamp < $start_time ) { next; } #skip observations before date range
-            if ( $end_time && $obs_timestamp > $end_time ) { next; } #skip observations after date range
 
-            my @season = {
-                year => $obs_unit->{year},
-                season => undef,
-                seasonDbId => undef
-            };
+        if ($include_observations_bool) {
+            my $observations = $obs_unit->{observations};
+            foreach (@$observations){
+                my $obs_timestamp = $_->{collect_date} ? $_->{collect_date} : $_->{timestamp};
+                if ( $start_time && $obs_timestamp < $start_time ) { next; } #skip observations before date range
+                if ( $end_time && $obs_timestamp > $end_time ) { next; } #skip observations after date range
 
-            push @brapi_observations, {
-                observationDbId => qq|$_->{phenotype_id}|,
-                observationVariableDbId => qq|$_->{trait_id}|,
-                observationVariableName => $_->{trait_name},
-                observationTimeStamp => $obs_timestamp,
-                season => \@season,
-                collector => $_->{operator},
-                value => qq|$_->{value}|,
-            };
+                my @season = {
+                    year => $obs_unit->{year},
+                    season => undef,
+                    seasonDbId => undef
+                };
+
+                push @brapi_observations, {
+                    observationDbId => qq|$_->{phenotype_id}|,
+                    observationVariableDbId => qq|$_->{trait_id}|,
+                    observationVariableName => $_->{trait_name},
+                    observationTimeStamp => $obs_timestamp,
+                    season => \@season,
+                    collector => $_->{operator},
+                    value => qq|$_->{value}|,
+                };
+            }
         }
+
         my @brapi_treatments;
         my $treatments = $obs_unit->{treatments};
         while (my ($factor, $modality) = each %$treatments){

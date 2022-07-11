@@ -122,7 +122,6 @@ sub search {
         my @brapi_observations;
 
         if ($include_observations_bool) {
-
             my $observations = $obs_unit->{observations};
             foreach (@$observations){
                 my $obs_timestamp = $_->{collect_date} ? $_->{collect_date} : $_->{timestamp};
