@@ -468,6 +468,7 @@ is_deeply(\@all_project_types, [
           'Screen House',
           'Seed Multiplication',
           'Seedling Nursery',
+          'Sensory Trial'
           'Specialty Trial',
           'Uniform Yield Trial',
           'Variety Release Trial',
@@ -482,7 +483,6 @@ is_deeply(\@all_project_types, [
           'phenotyping_trial',
           'pollinating_trial',
           'storage_trial',
-          'Sensory Trial'
         ], "check get_all_project_types");
 
 
