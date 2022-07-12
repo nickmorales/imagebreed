@@ -5182,6 +5182,12 @@ sub delete_empty_crossing_experiment {
         return 'Cannot delete crossing experiment with associated crosses.';
     }
 
+    my $project_owner_schema = CXGN::Phenome::Schema->connect( sub {$self->bcs_schema->storage->dbh()},{on_connect_do => ['SET search_path TO public,phenome;']});
+    my $project_owner_row = $project_owner_schema->resultset('ProjectOwner')->find( { project_id=> $self->get_trial_id() });
+    if ($project_owner_row) {
+        $project_owner_row->delete();
+    }
+
     eval {
         my $row = $self->bcs_schema->resultset("Project::Project")->find( { project_id=> $self->get_trial_id() });
         $row->delete();
