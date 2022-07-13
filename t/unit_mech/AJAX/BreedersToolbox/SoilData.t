@@ -20,7 +20,7 @@ my $mech = Test::WWW::Mechanize->new;
 $mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
 my $response = decode_json $mech->content;
 print STDERR Dumper $response;
-is($response->{'metadata'}->{'status'}->[2]->{'message'}, 'Login Successfull');
+is($response->{'metadata'}->{'status'}->[0]->{'message'}, 'Login Successfull');
 my $sgn_session_id = $response->{access_token};
 print STDERR $sgn_session_id."\n";
 
@@ -61,10 +61,8 @@ is($soil_data->{'type_of_sampling'},'Soil 0-30 cm deep');
 my $prop_id = $soil_data->{'prop_id'};
 
 #test deleting soil data
-$mech->post_ok("http://localhost:3010/ajax/breeders/trial/$trial_id/delete_soil_data", ['prop_id' => $prop_id]);
+$mech->post_ok("http://localhost:3010/ajax/breeders/trial/$trial_id/delete_soil_data", ['prop_id' => $prop_id, "sgn_session_id" => $sgn_session_id]);
 $response = decode_json $mech->content;
 is($response->{'success'}, '1');
-
-$f->clean_up_db();
 
 done_testing();

@@ -37,7 +37,7 @@ sub search {
     my $level_code_arrayref = $params->{observationUnitLevelCode} || ($params->{observationUnitLevelCodes} || ());
     my $levels_relation_arrayref = $params->{observationLevelRelationships} || ();
     my $levels_arrayref = $params->{observationLevels} || ();
-    my $include_observations = $params->{includeObservations} || "false";
+    my $include_observations = $params->{includeObservations} || "true";
 
     my $include_observations_bool = lc $include_observations eq 'true' ? 1 : 0;
 

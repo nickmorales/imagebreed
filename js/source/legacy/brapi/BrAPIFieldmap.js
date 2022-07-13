@@ -2414,7 +2414,8 @@
 	      brapi.search_observationunits({
 	        "studyDbIds":[studyDbId],
 	        'pageSize':this.opts.brapi_pageSize,
-	        'observationUnitLevelName' : 'plot'
+	        'observationUnitLevelName' : 'plot',
+            'includeObservations': 'false'
 	      })
 	        .each(ou=>{
 	          ou.X = parseFloat(ou.X);
