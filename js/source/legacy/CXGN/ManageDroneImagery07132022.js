@@ -2825,6 +2825,7 @@ jQuery(document).ready(function() {
 
     var manage_drone_imagery_download_phenotypes_field_trial_id = undefined;
     var manage_drone_imagery_download_phenotypes_trait_ids = [];
+    var manage_drone_imagery_download_phenotypes_image_type_ids = [];
 
     jQuery('#download_phenotypes_drone_imagery_link').click(function(){
         jQuery('#drone_imagery_download_phenotypes_dialog').modal('show');
@@ -2840,6 +2841,8 @@ jQuery(document).ready(function() {
             alert('Please select a field trial first!');
         } else {
             get_select_box('traits', 'drone_imagery_download_phenotypes_trait_select_div', { 'name' : 'drone_imagery_download_phenotypes_trait_id_select', 'id' : 'drone_imagery_download_phenotypes_trait_id_select', 'empty':0, 'multiple':1, 'size': 20, 'trial_ids':manage_drone_imagery_download_phenotypes_field_trial_id, 'stock_type':'plot' });
+
+            get_select_box('drone_imagery_plot_polygon_types', 'drone_imagery_download_phenotypes_image_type_select_div', { 'name' : 'drone_imagery_download_phenotypes_image_type_select_ids', 'id' : 'drone_imagery_download_phenotypes_image_type_select_ids', 'empty':0, 'multiple':1, 'size': 20 });
 
             Workflow.complete("#drone_imagery_download_phenotypes_field_trial_select_step");
             Workflow.focus('#drone_imagery_download_phenotypes_workflow', 1);
@@ -2862,6 +2865,21 @@ jQuery(document).ready(function() {
         return false;
     });
 
+    jQuery('#drone_imagery_download_phenotypes_image_type_select_step').click(function(){
+        manage_drone_imagery_download_phenotypes_image_type_ids = jQuery('#drone_imagery_download_phenotypes_image_type_select_ids').val();
+        if (manage_drone_imagery_download_phenotypes_image_type_ids == null || manage_drone_imagery_download_phenotypes_image_type_ids == undefined) {
+            alert('Please select at least one image type!');
+            return false;
+        }
+        if (manage_drone_imagery_download_phenotypes_image_type_ids.length < 1){
+            alert('Please select at least one image type!');
+        } else {
+            Workflow.complete("#drone_imagery_download_phenotypes_image_type_select_step");
+            Workflow.focus('#drone_imagery_download_phenotypes_workflow', 3);
+        }
+        return false;
+    });
+
     jQuery('#drone_imagery_download_phenotypes_confirm_step').click(function() {
         jQuery.ajax({
             type: 'POST',
@@ -2870,6 +2888,7 @@ jQuery(document).ready(function() {
             data: {
                 'observation_variable_id_list':JSON.stringify(manage_drone_imagery_download_phenotypes_trait_ids),
                 'field_trial_id_list':JSON.stringify([manage_drone_imagery_download_phenotypes_field_trial_id]),
+                'project_image_type_id_list':JSON.stringify(manage_drone_imagery_download_phenotypes_image_type_ids),
                 'format':'csv'
             },
             beforeSend: function (){

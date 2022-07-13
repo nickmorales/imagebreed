@@ -2,7 +2,7 @@
 <%args>
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch03152022', 'd3.d3v4Min.js', 'opencv.opencv', 'CXGN.ManageDroneImagery04042022' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch03152022', 'd3.d3v4Min.js', 'opencv.opencv', 'CXGN.ManageDroneImagery07132022' ] &>
 
 <style>
 .straightLine, .hrLine{
@@ -124,7 +124,7 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                             <option value="No">No</option>
                             <option value="Yes">Yes, and it has Ground Control Points (GCPs) defined.</option>
                             <option value="Yes_camera_rig">Yes, and the same fixed camera rig was used.</option>
-                            <!--option value="Yes_GeoTIFF_params">Yes, and it has GeoTIFF coordinates saved.</option-->
+                            <!--option value="Yes_GeoTIFF_params">Yes, and GeoTIFF coordinates are saved for both imaging events.</option-->
                         </select>
                     </div>
                 </div>
@@ -1433,6 +1433,21 @@ my $buttons_html = "<button class='btn btn-primary' style='margin:3px' id='uploa
                     </form>
                     <center>
                     <button class="btn btn-primary" id="drone_imagery_download_phenotypes_trait_select_step">Go to Next Step</button>
+                    </center>
+                </&>
+                <&| /util/workflow.mas:step, title=> "Image Types" &>
+                    <& /page/page_title.mas, title=>"Select the image type(s) you are interested in downloading" &>
+                    <br/><br/>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Plot Image Types in the Selected Field Trial: </label>
+                            <div class="col-sm-9" >
+                                <div id="drone_imagery_download_phenotypes_image_type_select_div"></div>
+                            </div>
+                        </div>
+                    </form>
+                    <center>
+                    <button class="btn btn-primary" id="drone_imagery_download_phenotypes_image_type_select_step">Go to Next Step</button>
                     </center>
                 </&>
                 <&| /util/workflow.mas:step, title=> "Download" &>
