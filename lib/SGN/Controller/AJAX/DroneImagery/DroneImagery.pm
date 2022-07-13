@@ -7414,6 +7414,14 @@ sub standard_process_apply_POST : Args(0) {
     my $drone_run_band_type_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
     my $drone_run_band_plot_polygons_phenotype_margins_json_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_plot_polygons_phenotype_margins_json', 'project_property')->cvterm_id();
     my $drone_run_polygon_template_metadata_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_polygon_template_metadata', 'project_property')->cvterm_id();
+    my $stock_geo_json_cvterm = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'plot_geo_json', 'stock_property');
+    my $geoparam_coordinates_plot_polygons_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_geoparam_coordinates_plot_polygons', 'project_property')->cvterm_id();
+    my $original_image_resize_ratio_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_original_image_resize_ratio', 'project_property')->cvterm_id();
+    my $rotated_image_resize_ratio_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_band_rotated_image_resize_ratio', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_extent_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_geoparam_coordinates_extent', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
+    my $rotated_stitched_drone_imagery_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'rotated_stitched_drone_imagery', 'project_md_image')->cvterm_id();
+    my $original_stitched_drone_imagery_type_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'stitched_drone_imagery', 'project_md_image')->cvterm_id();
 
     my $drone_run_process_in_progress_count = $bcs_schema->resultset('Project::Projectprop')->search({type_id=>$process_indicator_cvterm_id, value=>1})->count;
     print STDERR Dumper $drone_run_process_in_progress_count;
@@ -7548,18 +7556,142 @@ sub standard_process_apply_POST : Args(0) {
             $vegetative_indices_hash{$_}++;
         }
 
-        my $q = "SELECT rotate.value, plot_polygons.value, cropping.value, drone_run.project_id, drone_run.name
+        my $q = "SELECT rotate.value, plot_polygons.value, cropping.value, drone_run.project_id, drone_run.name, original_image_resize.value, rotated_image.image_id, original_image.image_id, rotated_image_resize.value, geocoord_extent.value, geocoord_type.value
             FROM project AS drone_run_band
             JOIN project_relationship ON(project_relationship.subject_project_id = drone_run_band.project_id AND project_relationship.type_id = $drone_run_drone_run_band_type_id)
             JOIN project AS drone_run ON(project_relationship.object_project_id = drone_run.project_id)
             JOIN projectprop AS rotate ON(drone_run_band.project_id = rotate.project_id AND rotate.type_id=$rotate_angle_type_id)
             JOIN projectprop AS plot_polygons ON(drone_run_band.project_id = plot_polygons.project_id AND plot_polygons.type_id=$plot_polygon_template_type_id)
             JOIN projectprop AS cropping ON(drone_run_band.project_id = cropping.project_id AND cropping.type_id=$cropping_polygon_type_id)
+            LEFT JOIN projectprop AS original_image_resize ON(drone_run_band.project_id=original_image_resize.project_id AND original_image_resize.type_id=$original_image_resize_ratio_cvterm_id)
+            LEFT JOIN projectprop AS rotated_image_resize ON(drone_run_band.project_id=rotated_image_resize.project_id AND rotated_image_resize.type_id=$rotated_image_resize_ratio_cvterm_id)
+            LEFT JOIN projectprop AS geocoord_extent ON(drone_run_band.project_id=geocoord_extent.project_id AND geocoord_extent.type_id=$geoparam_coordinates_extent_cvterm_id)
+            LEFT JOIN projectprop AS geocoord_type ON(drone_run_band.project_id=geocoord_type.project_id AND geocoord_type.type_id=$geoparam_coordinates_type_cvterm_id)
+            JOIN phenome.project_md_image AS rotated_image ON (drone_run_band.project_id=rotated_image.project_id AND rotated_image.type_id=$rotated_stitched_drone_imagery_type_id)
+            JOIN phenome.project_md_image AS original_image ON (drone_run_band.project_id=original_image.project_id AND original_image.type_id=$original_stitched_drone_imagery_type_id)
             WHERE drone_run_band.project_id = $drone_run_band_project_id;";
 
         my $h = $bcs_schema->storage->dbh()->prepare($q);
         $h->execute();
-        my ($rotate_value, $plot_polygons_value, $cropping_value, $drone_run_project_id, $drone_run_project_name) = $h->fetchrow_array();
+        my ($rotate_value, $plot_polygons_value, $cropping_value, $drone_run_project_id, $drone_run_project_name, $original_image_resize_json, $rotated_image_id, $original_image_id, $rotated_image_resize_json, $geoparam_extent_json, $geoparams_projection) = $h->fetchrow_array();
+
+        my $geoparams_extent = $geoparam_extent_json ? decode_json $geoparam_extent_json : undef;
+        if ($geoparams_extent) {
+            my $original_image = SGN::Image->new( $bcs_schema->storage->dbh, $original_image_id, $c );
+            my $original_image_fullpath = $original_image->get_filename('original_converted', 'full');
+            my ($original_image_width, $original_image_length) = imgsize($original_image_fullpath);
+
+            my $plot_polygon = decode_json $plot_polygons_value;
+
+            my $original_image_resize = $original_image_resize_json ? decode_json $original_image_resize_json : [1,1];
+            my $rotated_image_resize = $rotated_image_resize_json ? decode_json $rotated_image_resize_json : [1,1];
+
+            my $original_image_resize_x = $original_image_resize->[0];
+            my $original_image_resize_y = $original_image_resize->[1];
+            my $rotated_image_resize_x = $rotated_image_resize->[0];
+            my $rotated_image_resize_y = $rotated_image_resize->[1];
+
+            my $rotated_image = SGN::Image->new( $bcs_schema->storage->dbh, $rotated_image_id, $c );
+            my $rotated_image_fullpath = $rotated_image->get_filename('original_converted', 'full');
+
+            my @rotated_image_size = imgsize($rotated_image_fullpath);
+            my $rotated_image_width = $rotated_image_size[0];
+            my $rotated_image_length = $rotated_image_size[1];
+
+            my $x_center = $rotated_image_width/2;
+            my $y_center = $rotated_image_length/2;
+
+            my $cropped_polygon = decode_json $cropping_value;
+            my $cropping_x_offset = $cropped_polygon->[0]->[0]->{x};
+            my $cropping_y_offset = $cropped_polygon->[0]->[0]->{y};
+
+            my $max_gps_x = $geoparams_extent->[1]->[0] + 0;
+            my $max_gps_y = $geoparams_extent->[1]->[1] + 0;
+            my $min_gps_x = $geoparams_extent->[3]->[0] + 0;
+            my $min_gps_y = $geoparams_extent->[3]->[1] + 0;
+
+            my $gps_extent_x = $max_gps_x - $min_gps_x;
+            my $gps_extent_y = $max_gps_y - $min_gps_y;
+
+            my $rad_conversion = 0.0174533;
+
+            my $stock_q = "SELECT stock_id FROM stock WHERE uniquename = ?;";
+            my $stock_h = $bcs_schema->storage->dbh()->prepare($stock_q);
+
+            my %geocoord_plot_polygons;
+            while (my($stock_name, $polygon_arr) = each %$plot_polygon) {
+
+                $stock_h->execute($stock_name);
+                my ($stock_id) = $stock_h->fetchrow_array();
+
+                my $plot = $bcs_schema->resultset("Stock::Stock")->find({stock_id => $stock_id});
+
+                my @geojson_coords_original;
+                foreach my $poly (@$polygon_arr) {
+                    #original post-processed ref frame, pixel positions, adding cropping
+                    my $x_pos = $poly->{x} + $cropping_x_offset;
+                    my $y_pos = $poly->{y} + $cropping_y_offset;
+
+                    #undo post-rotation resizing
+                    $x_pos = $x_pos*$rotated_image_resize_x;
+                    $y_pos = $y_pos*$rotated_image_resize_y;
+
+                    #undo rotation around center of post-processed ref frame
+                    my $x_pos_rotated = round( ($x_pos - $x_center)*cos($rad_conversion*$rotate_value*-1) - ($y_pos - $y_center)*sin($rad_conversion*$rotate_value*-1) + $x_center );
+                    my $y_pos_rotated = round( ($y_pos - $y_center)*cos($rad_conversion*$rotate_value*-1) + ($x_pos - $x_center)*sin($rad_conversion*$rotate_value*-1) + $y_center );
+
+                    #undo post-upload resizing
+                    $x_pos_rotated = $x_pos_rotated*$original_image_resize_x;
+                    $y_pos_rotated = $y_pos_rotated*$original_image_resize_y;
+
+                    #get percent positions across original image
+                    my $original_image_x_ratio = $x_pos_rotated/$original_image_width;
+                    my $original_image_y_ratio = $y_pos_rotated/$original_image_length;
+
+                    #convert proportion of pixels to gps extent frame
+                    my $gps_x = ($gps_extent_x * $original_image_y_ratio) + $min_gps_x;
+                    my $gps_y = ($gps_extent_y * $original_image_x_ratio) + $min_gps_y;
+
+                    push @geojson_coords_original, [$gps_y, $gps_x];
+                }
+                $geocoord_plot_polygons{$stock_name} = \@geojson_coords_original;
+                # print STDERR Dumper \@geojson_coords_original;
+
+                my $first_geojson = $geojson_coords_original[0];
+                my @geojson_coords = ($first_geojson, @geojson_coords_original);
+
+                my $geo_json = {
+                    "type"=> "Feature",
+                    "geometry"=> {
+                        "type"=> "Polygon",
+                        "coordinates"=> [
+                            \@geojson_coords
+                        ]
+                    },
+                    "properties"=> {
+                        "format"=> $geoparams_projection,
+                    }
+                };
+                my $geno_json_string = encode_json $geo_json;
+                # print STDERR $geno_json_string."\n";
+
+                my $previous_plot_gps_rs = $bcs_schema->resultset("Stock::Stockprop")->search({stock_id=>$plot->stock_id, type_id=>$stock_geo_json_cvterm->cvterm_id});
+                $previous_plot_gps_rs->delete_all();
+                $plot->create_stockprops({$stock_geo_json_cvterm->name() => $geno_json_string});
+            }
+
+            foreach my $apply_drone_run_band_project_id (@$apply_drone_run_band_project_ids) {
+                my $drone_run_band_geoparam_coordinates_polygons_rs = $bcs_schema->resultset('Project::Projectprop')->update_or_create({
+                    type_id=>$geoparam_coordinates_plot_polygons_cvterm_id,
+                    project_id=>$apply_drone_run_band_project_id,
+                    rank=>0,
+                    value=> encode_json \%geocoord_plot_polygons
+                },
+                {
+                    key=>'projectprop_c1'
+                });
+            }
+        }
 
         my %selected_drone_run_band_types;
         my $q2 = "SELECT project_md_image.image_id, drone_run_band_type.value, drone_run_band.project_id
