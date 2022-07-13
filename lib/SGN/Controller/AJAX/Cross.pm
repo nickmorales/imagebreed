@@ -921,20 +921,6 @@ sub add_crossingtrial_POST :Args(0){
     my $project_description = $c->req->param('project_description');
     my ($user_id, $user_name, $user_role) = _check_user_login_cross($c, 'submitter', 0, 0);
 
-    if (!$c->user()){
-        print STDERR "User not logged in... not adding a crossing experiment.\n";
-        $c->stash->{rest} = {error => "You need to be logged in to add a crossing experiment."};
-        return;
-    }
-
-    if (!any { $_ eq "curator" || $_ eq "submitter" } ($c->user()->roles)){
-        print STDERR "User does not have sufficient privileges.\n";
-        $c->stash->{rest} = {error =>  "you have insufficient privileges to add a crossing experiment." };
-        return;
-    }
-
-    my $user_id = $c->user()->get_object()->get_sp_person_id();
-
     my $geolocation_lookup = CXGN::Location::LocationLookup->new(schema =>$schema);
     $geolocation_lookup->set_location_name($location);
     if(!$geolocation_lookup->get_geolocation()){
