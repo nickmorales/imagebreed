@@ -161,8 +161,12 @@ sub drone_imagery_analysis_query_POST : Args(0) {
         my $image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
         my $image_url = $image->get_image_url("original");
         my $image_fullpath = $image->get_filename('original_converted', 'full');
-        push @{$image_data_hash{$_->{stock_id}}->{$_->{drone_run_band_project_name}.$_->{project_image_type_name}}}, $main_production_site.$image_url;
-        $project_image_type_names{$_->{drone_run_band_project_name}.$_->{project_image_type_name}}++;
+
+        my $header_key = $_->{drone_run_band_project_name}.$_->{project_image_type_name};
+        $header_key =~ s/\,//;
+
+        push @{$image_data_hash{$_->{stock_id}}->{$header_key}}, $main_production_site.$image_url;
+        $project_image_type_names{$header_key}++;
     }
     my @project_image_names_list = sort keys %project_image_type_names;
 
@@ -186,7 +190,7 @@ sub drone_imagery_analysis_query_POST : Args(0) {
 
     while (my($stock_id, $image_info_hash) = each %image_data_hash) {
         foreach (@project_image_names_list) {
-            my $image_string = $image_info_hash->{$_} ? join ',', @{$image_info_hash->{$_}} : '';
+            my $image_string = $image_info_hash->{$_} ? join '|', @{$image_info_hash->{$_}} : '';
             push @{$data_hash{$stock_id}}, $image_string;
         }
     }
