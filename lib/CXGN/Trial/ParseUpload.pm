@@ -63,6 +63,13 @@ has 'trial_stock_type' => (
     default => 'accession'
 );
 
+has 'facility_identifiers_included' => (
+    isa => 'Bool',
+    is => 'ro',
+    default => 0,
+);
+
+
 sub parse {
   my $self = shift;
   my $args = shift;
