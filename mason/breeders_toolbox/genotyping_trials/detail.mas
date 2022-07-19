@@ -24,6 +24,7 @@ $genotyping_vendor_submission_id => undef
 $genotyping_plate_format => '96'
 $genotyping_plate_sample_type => undef
 $raw_data_link => undef
+$trial_owner => undef
 </%args>
 
 <div id="trialIDDiv" class="trialIDDivClass" style="display:none;"><% $trial_id %></div>
@@ -59,6 +60,8 @@ $raw_data_link => undef
                     <tr><td><b>Plate Format</b></td><td><% $genotyping_plate_format %></td></tr>
                     <tr><td><b>Plate Sample Type</b></td><td><% $genotyping_plate_sample_type %></td></tr>
                     <tr><td><b>Genotyping Facility</b></td><td><% $genotyping_facility %></td></tr>
+                    <tr><td><b>Description</b></td><td><% $trial_description %></td></tr>
+                    <tr><td><b>Created By</b></td><td><% $trial_owner %></td></tr>
                     <!-- <tr><td><b>Submitted to Genotyping Facility</b></td><td><% $genotyping_facility_submitted %></td></tr>
                     <tr><td><b>Genotyping Facility Status</b></td><td><% $genotyping_facility_status %></td></tr>
                     <tr><td><b>Raw Data Link</b></td><td><a href='<% $raw_data_link %>'><% $raw_data_link %></td></tr> -->
