@@ -15227,7 +15227,7 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
             }
         }
     }
-    # print STDERR Dumper \%drone_run_csv_info;
+    print STDERR Dumper \%drone_run_csv_info;
 
     my $images_zip = Archive::Zip->new();
     # my $dir_images_member = $images_zip->addDirectory( 'orthoimage_files/' );
