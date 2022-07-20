@@ -15195,7 +15195,7 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
             JOIN project AS field_trial ON(field_trial_rel.object_project_id = field_trial.project_id)
             WHERE drone_run.project_id = ? AND md_image.obsolete='f'
             ORDER BY drone_run_band.project_id;";
-        print STDERR Dumper $q;
+        #print STDERR Dumper $q;
         my $h = $schema->storage->dbh()->prepare($q);
         $h->execute($drone_run_project_id);
         while (my ($plot_polygons_value, $drone_run_project_id, $drone_run_project_name, $drone_run_description, $drone_run_band_project_id, $drone_run_band_project_name, $drone_run_band_description, $image_id, $project_image_type, $imaging_vehicle_name, $imaging_vehicle_id, $imaging_event_type, $camera, $imaging_event_calendar, $base_date_calendar, $camera_rig, $field_trial_name, $field_trial_id, $drone_run_band_type) = $h->fetchrow_array()) {
@@ -15227,7 +15227,7 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
             }
         }
     }
-    print STDERR Dumper \%drone_run_csv_info;
+    # print STDERR Dumper \%drone_run_csv_info;
 
     my $images_zip = Archive::Zip->new();
     # my $dir_images_member = $images_zip->addDirectory( 'orthoimage_files/' );
