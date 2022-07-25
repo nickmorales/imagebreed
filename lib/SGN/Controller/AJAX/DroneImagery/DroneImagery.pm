@@ -15138,6 +15138,7 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', 0, 0);
 
     my $plot_polygon_template_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_plot_polygons', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_plot_polygons_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_plot_polygons', 'project_property')->cvterm_id();
     my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
     my $original_denoised_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'denoised_stitched_drone_imagery', 'project_md_image')->cvterm_id();
     my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle', 'stock_type')->cvterm_id();
@@ -15173,11 +15174,12 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
 
     my %drone_run_csv_info;
     foreach my $drone_run_project_id (@$drone_run_project_ids) {
-        my $q = "SELECT plot_polygons.value, drone_run.project_id, drone_run.name, drone_run.description, drone_run_band.project_id, drone_run_band.name, drone_run_band.description, project_image.image_id, project_image_type.name, stock.uniquename, stock.stock_id, imaging_event_type.value, camera.value, imaging_event_date.value, base_date.value, camera_rig.value, field_trial.name, field_trial.project_id, drone_run_band_type.value
+        my $q = "SELECT plot_polygons.value, geo_plot_polygons.value, drone_run.project_id, drone_run.name, drone_run.description, drone_run_band.project_id, drone_run_band.name, drone_run_band.description, project_image.image_id, project_image_type.name, stock.uniquename, stock.stock_id, imaging_event_type.value, camera.value, imaging_event_date.value, base_date.value, camera_rig.value, field_trial.name, field_trial.project_id, drone_run_band_type.value
             FROM project AS drone_run_band
             JOIN project_relationship ON(project_relationship.subject_project_id = drone_run_band.project_id AND project_relationship.type_id = $drone_run_drone_run_band_type_id)
             JOIN project AS drone_run ON(project_relationship.object_project_id = drone_run.project_id)
             JOIN projectprop AS plot_polygons ON(drone_run_band.project_id = plot_polygons.project_id AND plot_polygons.type_id=$plot_polygon_template_type_id)
+            LEFT JOIN projectprop AS geo_plot_polygons ON(drone_run_band.project_id = geo_plot_polygons.project_id AND geo_plot_polygons.type_id=$geoparam_coordinates_plot_polygons_cvterm_id)
             JOIN projectprop AS drone_run_band_type ON(drone_run_band.project_id = drone_run_band_type.project_id AND drone_run_band_type.type_id=$drone_run_band_type_cvterm_id)
             JOIN phenome.project_md_image AS project_image ON(drone_run_band.project_id = project_image.project_id AND project_image.type_id=$original_denoised_image_type_id)
             JOIN metadata.md_image AS md_image ON(md_image.image_id = project_image.image_id)
@@ -15195,13 +15197,18 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
             JOIN project AS field_trial ON(field_trial_rel.object_project_id = field_trial.project_id)
             WHERE drone_run.project_id = ? AND md_image.obsolete='f'
             ORDER BY drone_run_band.project_id;";
-        #print STDERR Dumper $q;
+        # print STDERR Dumper $q;
         my $h = $schema->storage->dbh()->prepare($q);
         $h->execute($drone_run_project_id);
-        while (my ($plot_polygons_value, $drone_run_project_id, $drone_run_project_name, $drone_run_description, $drone_run_band_project_id, $drone_run_band_project_name, $drone_run_band_description, $image_id, $project_image_type, $imaging_vehicle_name, $imaging_vehicle_id, $imaging_event_type, $camera, $imaging_event_calendar, $base_date_calendar, $camera_rig, $field_trial_name, $field_trial_id, $drone_run_band_type) = $h->fetchrow_array()) {
+        while (my ($plot_polygons_value, $geo_plot_polygons_value, $drone_run_project_id, $drone_run_project_name, $drone_run_description, $drone_run_band_project_id, $drone_run_band_project_name, $drone_run_band_description, $image_id, $project_image_type, $imaging_vehicle_name, $imaging_vehicle_id, $imaging_event_type, $camera, $imaging_event_calendar, $base_date_calendar, $camera_rig, $field_trial_name, $field_trial_id, $drone_run_band_type) = $h->fetchrow_array()) {
             my $imaging_event_date = $imaging_event_calendar ? $calendar_funcs->display_start_date($imaging_event_calendar) : '';
             my $imaging_event_base_date = $base_date_calendar ? $calendar_funcs->display_start_date($base_date_calendar) : '';
             $drone_run_csv_info{$drone_run_project_id}->{plot_polygons_value} = $plot_polygons_value;
+
+            if ($geo_plot_polygons_value) {
+                $drone_run_csv_info{$drone_run_project_id}->{geo_plot_polygons_value} = $geo_plot_polygons_value;
+            }
+
             $drone_run_csv_info{$drone_run_project_id}->{imaging_event_date} = $imaging_event_date;
             $drone_run_csv_info{$drone_run_project_id}->{imaging_event_base_date} = $imaging_event_base_date;
             $drone_run_csv_info{$drone_run_project_id}->{drone_run_name} = $drone_run_project_name;
@@ -15247,10 +15254,12 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
         my $line_number = 1;
 
         my %geojson_hash;
+        my %geojson_gps_hash;
         foreach my $drone_run_project_id (sort keys %drone_run_csv_info) {
             my $drone_run_info = $drone_run_csv_info{$drone_run_project_id};
 
             my $plot_polygons_value = decode_json $drone_run_info->{plot_polygons_value};
+            my $geo_plot_polygons_value = $drone_run_info->{geo_plot_polygons_value} ? decode_json $drone_run_info->{geo_plot_polygons_value} : {};
             my $field_trial_id = $drone_run_info->{field_trial_id};
             my $field_trial_name = $drone_run_info->{field_trial_name};
             my $drone_run_name = $drone_run_info->{drone_run_name};
@@ -15297,9 +15306,22 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
             }
             my $geojson_filename = $drone_run_project_id.".geojson";
 
+            foreach my $stock_name (keys %$geo_plot_polygons_value) {
+                my $polygon = $geo_plot_polygons_value->{$stock_name};
+                my @coords;
+                foreach my $point (@$polygon) {
+                    my $x = $point->[0];
+                    my $y = $point->[1];
+                    push @coords, [$x, $y];
+                }
+                $geojson_gps_hash{$drone_run_project_id}->{$plot_name_lookup{$stock_name}} = \@coords;
+            }
+            my $geojson_gps_filename = $drone_run_project_id."_gps.geojson";
+
             my $orthoimage_filenames = join ',', @image_filenames;
             $drone_run_info->{orthoimage_files} = $orthoimage_filenames;
             $drone_run_info->{geojson_file} = $geojson_filename;
+            $drone_run_info->{geojson_gps_file} = $geojson_gps_filename;
 
             my $imaging_event_row = [$drone_run_name, $imaging_event_type, $drone_run_description, $imaging_event_date, $imaging_vehicle_name, '', $camera, $field_trial_name, $geojson_filename, $orthoimage_filenames, "Pixels", $imaging_event_base_date, $camera_rig];
             $worksheet->write_row($line_number, 0, $imaging_event_row);
@@ -15371,6 +15393,60 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
         $c->detach;
     }
 
+    my $geojson_gps_zip = Archive::Zip->new();
+    # my $dir_geojson_member = $geojson_zip->addDirectory( 'geojson_files/' );
+
+    my $output_geojson_gps_zipfile_dir = $c->tempfiles_subdir('/drone_imagery_export_image_geojson_gps_dir');
+
+    my @geojson_gps_file_names_return;
+    foreach my $drone_run_project_id (sort keys %geojson_gps_hash) {
+        my $plot_geo_gps = $geojson_gps_hash{$drone_run_project_id};
+
+        my @features_geojson_gps;
+        while (my($plot_number, $coords) = each %$plot_geo_gps) {
+            my $first_coord = $coords->[0];
+            push @$coords, $first_coord;
+            my %feature_geojson_gps = (
+                type => "Feature",
+                field_trial_name => $drone_run_csv_info{$drone_run_project_id}->{field_trial_name},
+                properties => {
+                    ID => $plot_number
+                },
+                geometry => {
+                    type => "Polygon",
+                    coordinates => [$coords]
+                }
+            );
+            push @features_geojson_gps, \%feature_geojson_gps;
+        }
+
+        my %geojson_gps = (
+            type => "FeatureCollection",
+            features => \@features_geojson_gps
+        );
+        my $geojson_gps_string = encode_json \%geojson_gps;
+
+        my $geojson_gps_file = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_imagery_export_image_geojson_gps_dir/geojsonXXXX');
+
+        open(my $fh_geojson_gps, '>', $geojson_gps_file) or die "Could not open file '$geojson_gps_file' $!";
+            print STDERR "Opened $geojson_gps_file\n";
+            print $fh_geojson_gps $geojson_gps_string;
+        close($fh_geojson_gps);
+
+        my $geojson_gps_filename_save = $drone_run_csv_info{$drone_run_project_id}->{geojson_gps_file};
+        my $file_member = $geojson_gps_zip->addFile( $geojson_gps_file, $geojson_gps_filename_save );
+        push @geojson_gps_file_names_return, $geojson_gps_filename_save;
+    }
+
+    my $geojson_gps_zipfile = $c->tempfile( TEMPLATE => 'drone_imagery_export_image_zipfile_dir/geojsonzipfileXXXX');
+    $geojson_gps_zipfile .= ".zip";
+    my $geojson_gps_zipfile_file_path = $c->config->{basepath}."/".$geojson_gps_zipfile;
+
+    unless ( $geojson_gps_zip->writeToFileNamed($geojson_gps_zipfile_file_path) == AZ_OK ) {
+        $c->stash->{rest} = {error => "GeoJSON GPS zipfile could not be saved!"};
+        $c->detach;
+    }
+
     my $trial = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $field_trial_id });
     my $trial_layout = $trial->get_layout()->get_design();
     my $planting_date = $trial->get_planting_date();
@@ -15384,6 +15460,7 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
         success => 1,
         orthoimage_zipfile => $orthoimage_zipfile,
         geojson_zipfile => $geojson_zipfile,
+        geojson_gps_zipfile => $geojson_gps_zipfile,
         imaging_events_spreadsheet => $imaging_events_file,
         field_trial_id => $field_trial_id,
         planting_date => $planting_date,
@@ -15391,7 +15468,8 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
         drone_run_csv_info => \%drone_run_csv_info,
         imaging_events_spreadsheet_rows => \@imaging_events_spreadsheet_rows,
         images_file_names_return => \@images_file_names_return,
-        geojson_file_names_return => \@geojson_file_names_return
+        geojson_file_names_return => \@geojson_file_names_return,
+        geojson_gps_file_names_return => \@geojson_gps_file_names_return
     };
 }
 

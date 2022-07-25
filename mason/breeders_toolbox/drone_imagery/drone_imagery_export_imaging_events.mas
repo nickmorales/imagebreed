@@ -143,7 +143,7 @@ jQuery(document).ready(function() {
                     return false;
                 }
                 else {
-                    var html = '<a href="'+response.imaging_events_spreadsheet+'">Download Imaging Event Spreadsheet</a><hr><a href="'+response.orthoimage_zipfile+'">Download Orthoimage Zipfile</a><hr><a href="'+response.geojson_zipfile+'">Download GeoJSON Zipfile</a>';
+                    var html = '<a href="'+response.imaging_events_spreadsheet+'">Download Imaging Event Spreadsheet</a><hr><a href="'+response.orthoimage_zipfile+'">Download Orthoimage Zipfile</a><hr><a href="'+response.geojson_zipfile+'">Download GeoJSON Pixels Zipfile</a><hr><a href="'+response.geojson_gps_zipfile+'">Download GeoJSON GPS Zipfile</a>';
                     jQuery('#export_drone_imagery_submit_div').html(html);
                     return false;
                 }
