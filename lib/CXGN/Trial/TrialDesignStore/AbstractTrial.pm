@@ -11,6 +11,7 @@ use Moose;
 use MooseX::FollowPBP;
 use Try::Tiny;
 use Data::Dumper;
+use JSON::XS;
 
 =head1 ACCESSORS
 
@@ -599,7 +600,10 @@ sub store {
                 $ncbi_taxonomy_id = $design{$key}->{ncbi_taxonomy_id};
             }
 
-            my $additional_info = $design{$key}->{additional_info} ? encode_json $design{$key}->{additional_info} : undef;
+            my $additional_info;
+            if ($design{$key}->{additional_info}) {
+                $additional_info = encode_json $design{$key}->{additional_info}; 
+            }
 
             my $facility_identifier;
             if ($design{$key}->{facility_identifier}) {
