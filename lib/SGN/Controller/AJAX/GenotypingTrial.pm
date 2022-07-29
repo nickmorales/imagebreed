@@ -572,6 +572,51 @@ sub store_plate_order_POST : Args(0) {
 
 }
 
+sub add_genotyping_project : Path('/ajax/breeders/add_genotyping_project') : ActionClass('REST') {}
+
+sub add_genotyping_project_POST :Args(0){
+    my ($self, $c) = @_;
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $dbh = $c->dbc->dbh;
+    my $project_name = $c->req->param('project_name');
+    my $project_breeding_program = $c->req->param('project_breeding_program');
+    my $genotyping_facility = $c->req->param('project_facility');
+    my $project_year = $c->req->param('project_year');
+    my $project_description = $c->req->param('project_description');
+    my $project_location = $c->req->param('project_location');
+
+    my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', 0, 0);
+
+    my $error;
+    eval{
+        my $add_genotyping_project = CXGN::Genotype::GenotypingProject->new({
+            chado_schema => $schema,
+            dbh => $dbh,
+            project_name => $project_name,
+            breeding_program => $project_breeding_program,
+            year => $year,
+            project_description => $project_description,
+            owner_id => $user_id
+        });
+        my $store_return = $add_genotyping_project->store_genotyping_project();
+        if ($store_return->{error}){
+            $error = $store_return->{error};
+        }
+    };
+
+    if ($@) {
+        $c->stash->{rest} = {error => $@};
+        return;
+    };
+
+    if ($error){
+        $c->stash->{rest} = {error => $error};
+    } else {
+        $c->stash->{rest} = {success => 1};
+    }
+
+}
+
 sub _check_user_login_genotyping_trial {
     my $c = shift;
     my $check_priv = shift;
