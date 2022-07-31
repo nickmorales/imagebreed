@@ -123,12 +123,12 @@ has 'sp_person_id' => (
 );
 
 has 'sp_person_access_cvterm_id' => (
-    isa => 'Int',
+    isa => 'Int|Undef',
     is => 'rw',
 );
 
 has 'sp_person_access_cvterm_name' => (
-    isa => 'Str',
+    isa => 'Str|Undef',
     is => 'rw',
 );
 
