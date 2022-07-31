@@ -94,13 +94,18 @@ sub add_company_member_POST : Args(0) {
     my $private_company_id = $c->req->param('private_company_id');
     my ($user_id, $user_name, $user_role) = _check_user_login_company($c, 'submitter', $private_company_id, 'submitter_access');
 
+    my $q = "SELECT s.administrator FROM sgn_people.sp_person AS s WHERE s.sp_person_id=?;";
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute($user_id);
+    my ($person_administrator) = $h->fetchrow_array();
+
     my $private_company = CXGN::PrivateCompany->new({
         schema=> $schema,
         sp_person_id => $user_id,
         is_storing_or_editing => 1,
         private_company_id => $private_company_id,
     });
-    my $return = $private_company->add_private_company_member([$c->req->param('add_sp_person_id'), $c->req->param('company_person_access_type')]);
+    my $return = $private_company->add_private_company_member([$c->req->param('add_sp_person_id'), $c->req->param('company_person_access_type')], $person_administrator);
 
     $c->stash->{rest} = $return;
 }

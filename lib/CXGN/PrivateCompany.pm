@@ -475,6 +475,7 @@ sub edit_private_company {
 sub add_private_company_member {
     my $self = shift;
     my $new_member = shift;
+    my $person_administrator = shift || '';
     my $private_company_id = $self->private_company_id();
     my $new_member_sp_person_id = $new_member->[0];
     my $new_member_access_type_name = $new_member->[1];
@@ -486,7 +487,7 @@ sub add_private_company_member {
         return {error => "No member access type given!"};
     }
 
-    if ($self->sp_person_access_cvterm_name ne 'curator_access') {
+    if ($person_administrator ne 'site_admin' && $self->sp_person_access_cvterm_name ne 'curator_access') {
         return {error => "Curator access is required to add members to a company!"};
     }
 
