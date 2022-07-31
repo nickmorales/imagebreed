@@ -34,6 +34,11 @@ sub company_page :Path("/company") Args(1) {
         return;
     }
 
+    my $q = "SELECT s.administrator FROM sgn_people.sp_person AS s WHERE s.sp_person_id=?;";
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute($sp_person_id);
+    my ($person_administrator) = $h->fetchrow_array();
+
     my $description = $private_company->private_company_description();
     my $contact_email = $private_company->private_company_contact_email();
     my $contact_first_name = $private_company->private_company_contact_person_first_name();
@@ -52,6 +57,7 @@ sub company_page :Path("/company") Args(1) {
     my $sp_person_access_cvterm_name = $private_company->sp_person_access_cvterm_name();
     my $company_members = $private_company->private_company_members();
 
+    $c->stash->{administrator} = $person_administrator;
     $c->stash->{private_company_id} = $company_id;
     $c->stash->{name} = $name;
     $c->stash->{description} = $description;

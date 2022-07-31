@@ -1,5 +1,6 @@
 
 <%args>
+$administrator => ''
 $private_company_id
 $name
 $description
@@ -31,7 +32,7 @@ $company_members
 <& /page/detail_page_2_col_section.mas, info_section_collapsed => 0, info_section_title => "<h4 style='display:inline'>Company Info</h4>", info_section_subtitle => 'View and edit company information', buttons_html => $edit_button_html, icon_class => "glyphicon glyphicon-dashboard", info_section_id => "private_company_detail_page_info", company_id => $private_company_id, company_name => $name, company_description => $description, company_contact_email => $contact_email, company_contact_first_name => $contact_first_name, company_contact_last_name => $contact_last_name, company_contact_phone => $contact_phone, company_address_street => $address_street, company_address_street_2 => $address_street_2, company_address_state => $state, company_address_city => $city, company_address_zipcode => $zipcode, company_address_country => $country, company_create_date => $create_date, company_type_cvterm_id => $company_type_cvterm_id, company_type_cvterm_name => $company_type_cvterm_name, company_sp_person_access_cvterm_id => $company_sp_person_access_cvterm_id, company_sp_person_access_cvterm_name => $company_sp_person_access_cvterm_name &>
 
 %  my $members_button_html = '';
-%  if ($company_sp_person_access_cvterm_name eq 'curator_access') {
+%  if ($company_sp_person_access_cvterm_name eq 'curator_access' || $administrator eq 'site_admin') {
 %    $members_button_html = '<button class="btn btn-primary btn-sm" id="private_company_add_members" style="margin:3px">Add Members (Curators Only)</button>';
 %  }
 
@@ -190,7 +191,7 @@ $company_members
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" name="add_company_member_submit" id="add_company_member_submit">Continue</button>
+        <button type="button" class="btn btn-primary" name="add_company_member_submit" id="add_company_member_submit">Submit</button>
       </div>
     </div>
   </div>
