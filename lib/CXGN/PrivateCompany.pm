@@ -240,6 +240,7 @@ sub get_users_private_companies {
         WHERE private_company.private_company_id=? AND sp.is_private='f';";
     my $h2 = $self->schema->storage->dbh()->prepare($q2);
 
+    print STDERR $q."\n";
     my @private_companies;
     my @private_companies_ids;
     while (my ($private_company_id, $name, $description, $email, $first_name, $last_name, $phone, $address, $address2, $state, $city, $zipcode, $country, $create_date, $company_type_id, $company_type_name, $user_type_id, $user_type_name) = $h->fetchrow_array()){
