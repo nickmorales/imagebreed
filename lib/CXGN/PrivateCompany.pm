@@ -222,10 +222,10 @@ sub get_users_private_companies {
         if ($person_administrator && $person_administrator eq 'site_admin') {
             $q = "SELECT private_company.private_company_id, private_company.name, private_company.description, private_company.contact_email, private_company.contact_person_first_name, private_company.contact_person_last_name, private_company.contact_person_phone, private_company.address_street, private_company.address_street_2, private_company.address_state, private_company.city, private_company.address_zipcode, private_company.address_country, private_company.create_date, private_company_type.cvterm_id, private_company_type.name, user_type.cvterm_id, user_type.name
                 FROM sgn_people.private_company AS private_company
-                LEFT JOIN sgn_people.private_company_sp_person AS p ON(private_company.private_company_id=p.private_company_id)
+                LEFT JOIN sgn_people.private_company_sp_person AS p ON(private_company.private_company_id=p.private_company_id AND p.sp_person_id=? AND p.is_private='f')
                 JOIN cvterm AS private_company_type ON(private_company.type_id=private_company_type.cvterm_id)
                 LEFT JOIN cvterm AS user_type ON(p.type_id=user_type.cvterm_id)
-                WHERE p.sp_person_id=? AND p.is_private='f' AND private_company_type.cvterm_id IN(?,?);";
+                WHERE private_company_type.cvterm_id IN(?,?);";
             $h = $self->schema->storage->dbh()->prepare($q);
             $h->execute($sp_person_id,$default_company_type_id,$private_company_type_id);
         } else {
