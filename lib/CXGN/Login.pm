@@ -123,6 +123,9 @@ sub _check_user_login {
     my ($person_administrator) = $h->fetchrow_array();
 
     if ($person_administrator && $person_administrator eq 'site_admin') {
+        # Has maximum access
+    }
+    else {
 
         if ($check_priv) {
             if ($user_role eq 'user') {
