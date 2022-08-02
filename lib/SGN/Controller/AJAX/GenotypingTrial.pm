@@ -585,6 +585,7 @@ sub add_genotyping_project_POST :Args(0){
     my $project_year = $c->req->param('project_year');
     my $project_description = $c->req->param('project_description');
     my $project_location = $c->req->param('project_location');
+    my $data_type = $c->req->param('data_type');
 
     my ($user_id, $user_name, $user_role) = _check_user_login_genotyping_trial($c, 'submitter', 0, 0);
 
@@ -596,6 +597,7 @@ sub add_genotyping_project_POST :Args(0){
             project_name => $project_name,
             breeding_program_id => $project_breeding_program,
             project_facility => $project_facility,
+            data_type => $data_type,
             year => $project_year,
             project_description => $project_description,
             nd_geolocation_id => $project_location,
