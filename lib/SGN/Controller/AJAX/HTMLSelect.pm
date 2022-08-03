@@ -313,6 +313,7 @@ sub get_projects_select : Path('/ajax/html/select/projects') Args(0) {
     my $get_field_trials = $c->req->param("get_field_trials");
     my $get_crossing_trials = $c->req->param("get_crossing_trials");
     my $get_genotyping_trials = $c->req->param("get_genotyping_trials");
+    my $get_genotyping_projects = $c->req->param("get_genotyping_projects");
     my $include_analyses = $c->req->param("include_analyses");
     my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 0, 0, 0);
 
@@ -334,7 +335,7 @@ sub get_projects_select : Path('/ajax/html/select/projects') Args(0) {
 
     my @projects;
     foreach my $project (@$projects) {
-        my ($field_trials, $cross_trials, $genotyping_trials, $genotyping_data_projects, $field_management_factor_projects, $drone_run_projects, $drone_run_band_projects, $analyses_projects) = $p->get_trials_by_breeding_program($project->[0], $user_id, undef);
+        my ($field_trials, $cross_trials, $genotyping_trials, $genotyping_projects, $field_management_factor_projects, $drone_run_projects, $drone_run_band_projects, $analyses_projects) = $p->get_trials_by_breeding_program($project->[0], $user_id, undef);
         if ($get_field_trials){
             if ($field_trials && scalar(@$field_trials)>0){
                 my @trials = sort { $a->[1] cmp $b->[1] } @$field_trials;
@@ -359,12 +360,20 @@ sub get_projects_select : Path('/ajax/html/select/projects') Args(0) {
                 push @projects, @analyses;
             }
         }
+        if ($get_genotyping_projects){
+            if ($genotyping_projects && scalar(@$genotyping_projects)>0){
+                my @g_projects = sort { $a->[1] cmp $b->[1] } @$genotyping_projects;
+                push @projects, @g_projects;
+            }
+        }
     }
 
 #    if ($empty) { unshift @projects, [ "", "Please select a trial" ]; }
     if ($empty) {
         if ($get_crossing_trials) {
             unshift @projects, [ "", "Please select a crossing experiment" ];
+        } elsif ($get_genotyping_projects) {
+            unshift @projects, [ "", "Please select a genotyping project" ];
         } else {
             unshift @projects, [ "", "Please select a trial" ];
         }
