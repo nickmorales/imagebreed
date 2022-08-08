@@ -73,7 +73,7 @@ sub retrieve_plot_info {
     my $genotyping_project = $self->get_schema()->resultset("Project::Project")->find ({
         project_id => $genotyping_project_id
     });
-    my $genotyping_project_name = $genotyping_project->name();
+    $genotyping_project_name = $genotyping_project->name();
     print STDERR "GENOTYPING PROJECT NAME =".Dumper($genotyping_project_name)."\n";
 
      $design->{$plot_number}->{genotyping_user_id} = $genotyping_user_id;
