@@ -162,7 +162,7 @@ sub validate {
         $columns[18] ne "met_search_engine" ||
         $columns[19] ne "met_search_engine_score" ||
         $columns[20] ne "compound_name") {
-      $parse_result{'error'} = "Header row must be 'metabolite_name', 'inchi_key', 'compound_name'. Please, check your file.";
+      $parse_result{'error'} = "Header row must be 'metabolite_name', 'chebi_id', 'inchi_id', 'inchi_key', 'pubchem_id', 'smiles_id', 'chemical_formula', 'putative_metabolite_identification', 'putative_metabolite_identification_synonyms', 'mass_to_charge', 'retention_time', 'charge', 'fragmentation', 'modifications', 'metabolite_species', 'met_database', 'met_database_version', 'met_reliability', 'met_search_engine', 'met_search_engine_score', 'compound_name'. Please, check your file.";
       return \%parse_result;
     }
     while (my $line = <$fh>) {
@@ -383,12 +383,48 @@ sub parse {
             @fields = $csv->fields();
         }
         my $metabolite_name = $fields[0];
-        my $inchi_key = $fields[1];
-        my $compound_name = $fields[2];
+        my $chebi_id = $fields[1];
+        my $inchi_id = $fields[2];
+        my $inchi_key = $fields[3];
+        my $pubchem_id = $fields[4];
+        my $smiles_id = $fields[5];
+        my $chemical_formula = $fields[6];
+        my $putative_metabolite_identification = $fields[7];
+        my $putative_metabolite_identification_synonyms = $fields[8];
+        my $mass_to_charge = $fields[9];
+        my $retention_time = $fields[10];
+        my $charge = $fields[11];
+        my $fragmentation = $fields[12];
+        my $modifications = $fields[13];
+        my $metabolite_species = $fields[14];
+        my $met_database = $fields[15];
+        my $met_database_version = $fields[16];
+        my $met_reliability = $fields[17];
+        my $met_search_engine = $fields[18];
+        my $met_search_engine_score = $fields[19];
+        my $compound_name = $fields[20];
 
         $header_column_details{$metabolite_name} = {
+            chebi_id => $chebi_id,
+            inchi_id => $inchi_id,
             inchi_key => $inchi_key,
-            compound_name => $compound_name,
+            pubchem_id => $pubchem_id,
+            smiles_id => $smiles_id,
+            chemical_formula => $chemical_formula,
+            putative_metabolite_identification => $putative_metabolite_identification,
+            putative_metabolite_identification_synonyms => $putative_metabolite_identification_synonyms,
+            mass_to_charge => $mass_to_charge,
+            retention_time => $retention_time,
+            charge => $charge,
+            fragmentation => $fragmentation,
+            modifications => $modifications,
+            metabolite_species => $metabolite_species,
+            met_database => $met_database,
+            met_database_version => $met_database_version,
+            met_reliability => $met_reliability,
+            met_search_engine => $met_search_engine,
+            met_search_engine_score => $met_search_engine_score,
+            compound_name => $compound_name
         };
     }
     close $fh;
