@@ -13,6 +13,7 @@
             <thead>
               <tr>
                   <th>Genotyping Data Project Name</th>
+                  <th>Data Type</th>
                   <th>Description</th>
                   <th>Company</th>
                   <th>Breeding program</th>
