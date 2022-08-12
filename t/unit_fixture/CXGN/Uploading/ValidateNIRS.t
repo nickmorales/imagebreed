@@ -21,7 +21,7 @@ my $people_schema = $f->people_schema;
 
 my $mech = Test::WWW::Mechanize->new;
 
-sleep(5);
+sleep(10);
 $mech->post_ok('http://localhost:3010/brapi/v1/token', [ "username"=> "janedoe", "password"=> "secretpw", "grant_type"=> "password" ]);
 my $response = decode_json $mech->content;
 print STDERR Dumper $response;
