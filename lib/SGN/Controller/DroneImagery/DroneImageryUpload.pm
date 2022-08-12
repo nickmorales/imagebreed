@@ -3404,12 +3404,12 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             my @denoised_background_threshold_removed_imagery_types = @{$term_map->{$drone_run_band_type}->{imagery_types}->{threshold_background}};
             my @denoised_background_threshold_removed_plot_polygon_types = @{$term_map->{$drone_run_band_type}->{observation_unit_plot_polygon_types}->{threshold_background}};
 
-            my $polygon_type = '';
-            if ($rotate_value != 0) {
-                $polygon_type = 'rectangular_square';
-            } else {
-                $polygon_type = 'rectangular_polygon';
-            }
+            my $polygon_type = 'rectangular_polygon';
+            # if ($rotate_value != 0) {
+            #     $polygon_type = 'rectangular_square';
+            # } else {
+            #     $polygon_type = 'rectangular_polygon';
+            # }
 
             foreach (@denoised_plot_polygon_type) {
                 my $plot_polygon_original_denoised_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_plot_polygon_assign($c, $schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, [], $plot_polygons_value, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, $polygon_type, 0, 0, $private_company_id, $private_company_is_private);
@@ -4217,12 +4217,12 @@ sub upload_drone_imagery_standard_process_previous_geotiff : Path("/drone_imager
         my @denoised_background_threshold_removed_imagery_types = @{$term_map->{$drone_run_band_type}->{imagery_types}->{threshold_background}};
         my @denoised_background_threshold_removed_plot_polygon_types = @{$term_map->{$drone_run_band_type}->{observation_unit_plot_polygon_types}->{threshold_background}};
 
-        my $polygon_type = '';
-        if ($rotate_value != 0) {
-            $polygon_type = 'rectangular_square';
-        } else {
-            $polygon_type = 'rectangular_polygon';
-        }
+        my $polygon_type = 'rectangular_polygon';
+        # if ($rotate_value != 0) {
+        #     $polygon_type = 'rectangular_square';
+        # } else {
+        #     $polygon_type = 'rectangular_polygon';
+        # }
 
         foreach (@denoised_plot_polygon_type) {
             my $plot_polygon_original_denoised_return = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_plot_polygon_assign($c, $schema, $metadata_schema, $denoised_image_id, $drone_run_band_project_id, [], $plot_polygons_value, $_, $user_id, $user_name, $user_role, 0, 0, $apply_image_width_ratio, $apply_image_height_ratio, $polygon_type, 0, 0);
