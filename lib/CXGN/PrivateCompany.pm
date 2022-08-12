@@ -237,7 +237,7 @@ sub get_users_private_companies {
                 WHERE p.sp_person_id=? AND p.is_private='f' AND private_company_type.cvterm_id IN(?,?);";
             $h = $self->schema->storage->dbh()->prepare($q);
             $h->execute($sp_person_id,$default_company_type_id,$private_company_type_id);
-    }
+        }
     }
     else {
         $q = "SELECT private_company.private_company_id, private_company.name, private_company.description, private_company.contact_email, private_company.contact_person_first_name, private_company.contact_person_last_name, private_company.contact_person_phone, private_company.address_street, private_company.address_street_2, private_company.address_state, private_company.city, private_company.address_zipcode, private_company.address_country, private_company.create_date, private_company_type.cvterm_id, private_company_type.name
@@ -257,7 +257,7 @@ sub get_users_private_companies {
         WHERE private_company.private_company_id=? AND sp.is_private='f';";
     my $h2 = $self->schema->storage->dbh()->prepare($q2);
 
-    print STDERR $q."\n";
+    #print STDERR $q."\n";
     my @private_companies;
     my @private_companies_ids;
     while (my ($private_company_id, $name, $description, $email, $first_name, $last_name, $phone, $address, $address2, $state, $city, $zipcode, $country, $create_date, $company_type_id, $company_type_name, $user_type_id, $user_type_name) = $h->fetchrow_array()){
