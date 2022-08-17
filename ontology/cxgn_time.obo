@@ -3365,3 +3365,9 @@ name: after harvest
 synonym: "AftHvt" EXACT []
 def: "" []
 is_a: TIME:0000477
+
+[Term]
+id: TIME:0000481
+name: at termination
+def: "End of life" []
+is_a: TIME:0000477 ! Event relations
