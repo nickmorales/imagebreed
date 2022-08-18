@@ -1025,7 +1025,7 @@ sub get_phenotypes_by_stock_and_trial :Chained('/stock/get_stock') PathPart('dat
     my $self = shift;
     my $c = shift;
     my $trial_id = shift;
-    my $stock_type = $c->stash->{stock}->type()->name();
+    my $stock_type = $c->stash->{stock}->type();
     my ($user_id, $user_name, $user_role) = _check_user_login_stock($c, 0, 0, 0);
 
     my $q;
@@ -1053,7 +1053,8 @@ sub get_phenotypes_by_stock_and_trial :Chained('/stock/get_stock') PathPart('dat
 
     my @phenotypes;
     while (my ($stock_id, $stock_name, $cvterm_id, $cvterm_name, $avg, $stddev, $count) = $h->fetchrow_array()) {
-	push @phenotypes, [ "<a href=\"/cvterm/$cvterm_id/view\">$cvterm_name</a>", sprintf("%.2f", $avg), sprintf("%.2f", $stddev), $count ];
+        $stddev = $stddev || 0;
+        push @phenotypes, [ "<a href=\"/cvterm/$cvterm_id/view\">$cvterm_name</a>", sprintf("%.2f", $avg), sprintf("%.2f", $stddev), $count ];
     }
     $c->stash->{rest} = { data => \@phenotypes };
 }
