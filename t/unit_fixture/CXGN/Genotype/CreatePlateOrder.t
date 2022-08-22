@@ -166,6 +166,11 @@ is_deeply($geno_design, {
         }, 'check genotyping plate design');
 
 my $genotyping_trial_create;
+
+my $trial_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'genotyping_trial', 'project_type')->cvterm_id();
+
+my $field_trial_id = $schema->resultset('Project::Project')->find({name => 'test_trial'})->project_id();
+
 ok($genotyping_trial_create = CXGN::Trial::TrialCreate->new({
     chado_schema => $schema,
     dbh => $dbh,
@@ -178,13 +183,15 @@ ok($genotyping_trial_create = CXGN::Trial::TrialCreate->new({
     design_type => 'genotyping_plate',
     design => $geno_design,
     trial_name => $plate_info->{name},
+    trial_type => $trial_type_cvterm_id,
     is_genotyping => 1,
     genotyping_user_id => 41,
-    genotyping_project_name => $plate_info->{project_name},
+    genotyping_project_id => $plate_info->{genotyping_project_id},
     genotyping_facility_submitted => $plate_info->{genotyping_facility_submit},
     genotyping_facility => $plate_info->{genotyping_facility},
     genotyping_plate_format => $plate_info->{plate_format},
     genotyping_plate_sample_type => $plate_info->{sample_type},
+    genotyping_trial_from_field_trial=> [$field_trial_id],
 }), "create genotyping plate");
 
 my $save = $genotyping_trial_create->save_trial();
@@ -198,6 +205,11 @@ ok(my $genotyping_trial = $genotyping_trial_lookup->get_trial(), "retrieve genot
 ok(my $genotyping_trial_id = $genotyping_trial->project_id(), "retrive genotyping plate id");
 print STDERR Dumper \$genotyping_trial_id;
 
+# Delete geno project linkage
+ok(my $g_trial = CXGN::Trial->new({bcs_schema => $chado_schema, trial_id => $genotyping_trial_id}),"get plate by id");
+
+ok(my $success = $g_trial->delete_genotyping_plate_from_field_trial_linkage($field_trial_id, 'curator'),'delete linkage');
+ok( $success->{success});
 
 my $client_id = 'client_id1';
 my $service_id_list = [1,2];
@@ -224,9 +236,5 @@ my $expected_order = {'serviceIds' => [1,2],'sampleType' => 'DNA','clientId' => 
 is_deeply($order->{plates}[0]->{clientPlateBarcode},$expected_order->{plates}[0]->{clientPlateBarcode}, 'test create plate order');
 
 is_deeply(scalar(@{$order->{plates}[0]->{samples}}),scalar(@{$expected_order->{plates}[0]->{samples}}), 'test create plate order samples');
-
-# print STDERR "Rolling back...\n";
-
-# $schema->txn_rollback();
 
 done_testing();
