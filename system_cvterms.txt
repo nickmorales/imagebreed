@@ -198,6 +198,7 @@ project_relationship	crossing_trial_from_field_trial	For linking crossing trials
 project_relationship	drone_run_on_field_trial	For linking drone image runs to field trials 	9/18/18	nm529	00103
 project_relationship	drone_run_band_on_drone_run	For linking drone image runs bands to drone runs 	10/5/18	nm529	00103
 project_relationship	sampling_trial_from_field_trial	For linking sampling trial to field trials 	11/25/20	nm529	00132
+project_relationship	genotyping_project_and_plate_relationship	For linking genotyping project and genotyping plates 	08/22/22	tt15	00162
 project_table_type	field_trial_project_table_type	Saving a field trial in project table 	04/01/22	nm529	00160
 project_table_type	folder_project_table_type	Saving a folder in project table 	04/01/22	nm529	00160
 project_table_type	genotyping_plate_project_table_type	Saving a genotyping plate trial in project table 	04/01/22	nm529	00160
@@ -228,7 +229,8 @@ project_type	genotyping_trial				00087
 project_type	phenotyping_trial				00087
 project_type    crossing_block_trial				00098
 project_type	Specialty Trial				00116
-project_type	Sensory Trial Sensory trial trials involving sensory panel traits usually measured by multiple panelists	07/05/2022	nm429	00052
+project_type	Sensory Trial	Sensory trial trials involving sensory panel traits usually measured by multiple panelists	07/05/2022	nm429	00052
+project_type	genotyping_project	For grouping genotyping plates and genotyping data	08/22/2022	tt15	00162
 stock_property	block				00052
 stock_property	col_number				00052
 stock_property	igd_synonym				00052
