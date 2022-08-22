@@ -127,48 +127,8 @@ $is_from_grm => undef
                                     </thead>
                                 </table>
 
-                                <center>
-                                <button class="btn btn-primary" id="upload_genotyping_data_project_missing_button">My project is not here. Create a new one.</button>
-                                </center>
-                                <br/>
-
                                 <!-- If genotyping project is selected above, the project_id is passed to controller, negating need to create new project -->
                                 <input id="upload_genotype_project_id" name="upload_genotype_project_id" type="hidden" />
-
-                                <div id="upload_genotyping_data_project_details" style="display:none">
-                                    <div class="well">
-                                        <div class="form-group">
-                                            <label class="col-sm-5 control-label">Genotyping Project Name: <br/><small>Should match Vendor Project if you have one</small></label>
-                                            <div class="col-sm-7">
-                                                <input class="form-control" id="upload_genotype_vcf_project_namexxx" name="upload_genotype_vcf_project_namexxx" type="text" placeholder="e.g. NextGenCassava"/>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="col-sm-5 control-label">Genotyping Facility: </label>
-                                            <div class="col-sm-7">
-                                                <div id="upload_genotype_vcf_facility_select_div"></div>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="col-sm-5 control-label">Breeding Program: </label>
-                                            <div class="col-sm-7">
-                                                <span id="upload_genotype_breeding_program_select_divxxxx"></span>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="col-sm-5 control-label">Year: </label>
-                                            <div class="col-sm-7">
-                                                <span id="upload_genotype_year_select_divxxx"></span>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="col-sm-5 control-label">Description: </label>
-                                            <div class="col-sm-7">
-                                                <textarea class="form-control" id="upload_genotype_vcf_project_descriptionxxx" name="upload_genotype_vcf_project_descriptionxxx" maxlength="250"></textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
 
                                 <br/>
                                 <center>
@@ -1093,11 +1053,6 @@ jQuery(document).ready(function(){
         },
     });
 
-    jQuery('#upload_genotyping_data_project_missing_button').click(function(){
-        jQuery('#upload_genotyping_data_project_details').show();
-        return false;
-    });
-
     jQuery('#upload_genotyping_data_project_check_button').click(function(){
         selected = [];
         jQuery('input[name="upload_genotyping_data_project_select"]:checked').each(function() {
@@ -1106,24 +1061,12 @@ jQuery(document).ready(function(){
         if (selected.length > 1){
             alert('Only select one genotyping project!');
         } else {
-            if (selected.length == 0 && jQuery('#upload_genotype_vcf_project_name').val() == ''){
+            if (selected.length == 0){
                 alert('Select a genotyping project or create a new one!');
-            } else if (selected.length == 1 && jQuery('#upload_genotype_vcf_project_name').val() != ''){
-                alert('If you selected a project, do not try to make a new one at the same time!');
-            } else if (selected.length == 1 && jQuery('#upload_genotype_vcf_project_name').val() == ''){
+            } else if (selected.length == 1){
                 jQuery('#upload_genotype_project_id').val(selected[0]);
                 Workflow.complete('#upload_genotyping_data_project_check_button');
                 Workflow.focus('#upload_genotypes_workflow', 3);
-            } else if (selected.length == 0 && jQuery('#upload_genotype_vcf_project_name').val() != '') {
-                if (jQuery('#upload_genotype_year_select').val() == ''){
-                    alert('Please give a year');
-                } else if (jQuery('#upload_genotype_vcf_project_description').val() == ''){
-                    alert('Please give a description.');
-                } else {
-                    jQuery('#upload_genotype_project_id').val(undefined);
-                    Workflow.complete('#upload_genotyping_data_project_check_button');
-                    Workflow.focus('#upload_genotypes_workflow', 3);
-                }
             }
         }
         return false;

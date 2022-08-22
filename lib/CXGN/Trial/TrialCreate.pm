@@ -61,7 +61,7 @@ Will do the following:
         trial_name => $trial_name,
         is_genotyping => 1,
         genotyping_user_id => $user_id,
-        genotyping_project_name => $project_name,
+        genotyping_project_id => $project_id,
         genotyping_facility_submit => $plate_info->{genotyping_facility_submit},
         genotyping_facility => $plate_info->{genotyping_facility},
         genotyping_plate_format => $plate_info->{plate_format},
@@ -366,13 +366,13 @@ sub save_trial {
             $genotyping_plate_sample_type_cvterm->name() => $self->get_genotyping_plate_sample_type()
         });
 
-		my $genotyping_project_relationship_cvterm = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'genotyping_project_and_plate_relationship', 'project_relationship');
-		my $relationship_row = $chado_schema->resultset("Project::ProjectRelationship")->create ({
-			object_project_id => $self->get_genotyping_project_id(),
-			subject_project_id => $project->project_id(),
-			type_id => $genotyping_project_relationship_cvterm->cvterm_id()
-		});
-		$relationship_row->insert();
+        my $genotyping_project_relationship_cvterm = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'genotyping_project_and_plate_relationship', 'project_relationship');
+        my $relationship_row = $chado_schema->resultset("Project::ProjectRelationship")->create({
+            object_project_id => $self->get_genotyping_project_id(),
+            subject_project_id => $project->project_id(),
+            type_id => $genotyping_project_relationship_cvterm->cvterm_id()
+        });
+        $relationship_row->insert();
 
         my $source_field_trial_ids = $t->set_source_field_trials_for_genotyping_trial($self->get_genotyping_trial_from_field_trial);
     }

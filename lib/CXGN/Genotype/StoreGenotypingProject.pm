@@ -68,7 +68,6 @@ has 'owner_id' => (isa => 'Int',
 
 
 sub store_genotyping_project {
-    print STDERR "Check 4.1:".localtime();
     my $self = shift;
     my $schema = $self->get_chado_schema();
 
@@ -109,9 +108,12 @@ sub store_genotyping_project {
     $project->set_year($self->get_year());
     $project->set_breeding_program($self->get_breeding_program_id);
     $project->set_trial_owner($self->get_owner_id);
-    print STDERR "GENOTYPING PROJECT ID =".Dumper($genotyping_project_id);
-    return {success=>1, trial_id=>$genotyping_project_id};
+    # print STDERR "GENOTYPING PROJECT ID =".Dumper($genotyping_project_id);
 
+    return {
+        success=>1,
+        trial_id=>$genotyping_project_id
+    };
 }
 
 

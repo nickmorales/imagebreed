@@ -631,7 +631,7 @@ sub store {
     }
 
     if (!$stock) { #Trying to create a new stock
-        print STDERR "Storing Stock ".localtime."\n";
+        # print STDERR "Storing Stock ".localtime."\n";
         if (!$exists) {
 
             my $q = "INSERT INTO stock (name, uniquename, description, type_id, organism_id, is_obsolete, private_company_id, is_private) VALUES (?,?,?,?,?,?,?,?);";
@@ -673,7 +673,7 @@ sub store {
         }
     }
     else {
-        print STDERR "Updating Stock ".localtime."\n";
+        # print STDERR "Updating Stock ".localtime."\n";
         if (!$self->name && $self->uniquename){
             $self->name($self->uniquename);
         }
@@ -689,7 +689,7 @@ sub store {
             $self->_update_stockprop('organization', $self->organization_name());
         }
         if ($self->population_name){
-            print STDERR "**STOCK.PM This stock has population name " . $self->population_name . "\n\n";
+            # print STDERR "**STOCK.PM This stock has population name " . $self->population_name . "\n\n";
             #DO NOT INSERT POPULATION RELATIONSHIP FROM THE STOCK STORE FUNCTION
             $self->_update_population_relationship();
         }
@@ -1034,8 +1034,11 @@ sub associate_owner {
           $self->stock_id,
           $owner_id
         );
-    if ($ids) { warn "Owner $owner_id is already linked with stock " . $self->stock_id ; }
-#store the owner_id - stock_id link
+    if ($ids) {
+        # warn "Owner $owner_id is already linked with stock " . $self->stock_id ;
+    }
+
+    #store the owner_id - stock_id link
     my $q = "INSERT INTO phenome.stock_owner (stock_id, sp_person_id, metadata_id) VALUES (?,?,?) RETURNING stock_owner_id";
     my $sth  = $self->schema()->storage()->dbh()->prepare($q);
     $sth->execute($self->stock_id, $owner_id, $metadata_id);

@@ -4429,7 +4429,8 @@ sub image_content_store_PUT {
 	my ($auth_success, $user_id, $user_type, $user_pref, $expired) = _authenticate_user($c, $force_authenticate);
 
     my $clean_inputs = $c->stash->{clean_inputs};
-    print STDERR Dumper($clean_inputs);print Dumper $c->req->body();
+    # print STDERR Dumper($clean_inputs);
+    # print Dumper $c->req->body();
     my $brapi = $self->brapi_module;
     my $brapi_module = $brapi->brapi_wrapper('Images');
     my $image_dir = File::Spec->catfile($c->config->{static_datasets_path}, $c->config->{image_dir});

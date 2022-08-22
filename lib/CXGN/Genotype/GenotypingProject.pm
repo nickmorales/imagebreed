@@ -40,7 +40,11 @@ has 'genotyping_plate_list' => (
     is => 'rw',
 );
 
-
+has 'subscription_model' => (
+    isa => 'Bool',
+    is => 'rw',
+    required => 1
+);
 
 sub BUILD {
 
@@ -77,7 +81,8 @@ sub get_plate_info {
         my $trial_search = CXGN::Trial::Search->new({
             bcs_schema => $schema,
             trial_design_list => ['genotyping_plate'],
-            trial_id_list => $plate_list
+            trial_id_list => $plate_list,
+            subscription_model => $self->subscription_model()
         });
         ($data, $total_count) = $trial_search->search();
     }

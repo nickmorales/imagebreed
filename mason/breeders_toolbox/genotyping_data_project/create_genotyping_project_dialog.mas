@@ -3,7 +3,7 @@ $facilities
 </%args>
 
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.BreedersToolbox.GenotypingTrial' ] &>
+<& /util/import_javascript.mas, classes => [ 'CXGN.BreedersToolbox.GenotypingTrial04102022' ] &>
 
 <div class="modal fade" id="create_genotyping_project_dialog" name="create_genotyping_project_dialog" tabindex="-1" role="dialog" aria-labelledby="createGenotypingProjectdialog">
     <div class="modal-dialog modal-lg" role="document">

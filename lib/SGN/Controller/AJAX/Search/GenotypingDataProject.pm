@@ -86,7 +86,8 @@ sub genotyping_project_plates_GET : Args(0) {
 
     my $plate_info = CXGN::Genotype::GenotypingProject->new({
         bcs_schema => $bcs_schema,
-        project_id => $genotyping_project_id
+        project_id => $genotyping_project_id,
+        subscription_model => $c->config->{subscription_model}
     });
     my ($data, $total_count) = $plate_info->get_plate_info();
     my @result;

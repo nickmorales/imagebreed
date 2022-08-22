@@ -8,6 +8,8 @@ use SGN::Test::Fixture;
 use CXGN::Genotype;
 use CXGN::Genotype::CreatePlateOrder;
 use CXGN::Dataset;
+use SGN::Model::Cvterm;
+use CXGN::Genotype::StoreGenotypingProject;
 local $Data::Dumper::Indent = 0;
 
 BEGIN {use_ok('CXGN::Trial::TrialCreate');}
@@ -22,34 +24,52 @@ $schema->txn_begin();
 my $dbh = $schema->storage->dbh();
 
 # create stocks for the trial
-ok(my $accession_cvterm = $schema->resultset("Cv::Cvterm")
-   ->create_with({
-       name   => 'accession',
-       cv     => 'stock_type',
-    }));
+my $accession_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'accession', 'stock_type')->cvterm_id();
 
 my @genotyping_stock_names;
 for (my $i = 1; $i <= 10; $i++) {
     push(@genotyping_stock_names, "test_stock_for_genotyping_trial".$i);
 }
 
-ok(my $organism = $schema->resultset("Organism::Organism")
-   ->find_or_create( {
-       genus => 'Test_genus',
-       species => 'Test_genus test_species',
-             }, ));
-
+ok(my $organism = $schema->resultset("Organism::Organism")->find_or_create({
+    genus => 'Test_genus',
+    species => 'Test_genus test_species',
+    })
+);
 
 # create some genotyping test stocks
 foreach my $stock_name (@genotyping_stock_names) {
-    my $accession_stock = $schema->resultset('Stock::Stock')
-    ->create({
+    my $accession_stock = $schema->resultset('Stock::Stock')->create({
         organism_id => $organism->organism_id,
         name       => $stock_name,
         uniquename => $stock_name,
-        type_id     => $accession_cvterm->cvterm_id,
-         });
+        type_id     => $accession_cvterm_id
+    });
 };
+
+my $breeding_program_name = "test";
+my $breeding_program_id = $schema->resultset('Project::Project')->find({name => $breeding_program_name})->project_id();
+
+my $location_name = "test_location";
+my $location_id = $schema->resultset('NaturalDiversity::NdGeolocation')->find({description => $location_name})->nd_geolocation_id();
+
+# Create genotyping data project
+my $add_genotyping_project = CXGN::Genotype::StoreGenotypingProject->new({
+    chado_schema => $schema,
+    dbh => $dbh,
+    project_name => "genotyping data project test 1",
+    breeding_program_id => $breeding_program_id,
+    project_facility => "IGD",
+    data_type => "SNP",
+    year => "2015",
+    project_description => "Genotpying data project can collect plates and data together",
+    nd_geolocation_id => $location_id,
+    owner_id => 41
+});
+my $store_return_genotyping_project = $add_genotyping_project->store_genotyping_project();
+my $genotyping_project_id = $store_return_genotyping_project->{trial_id};
+ok($genotyping_project_id);
+
 
 my $plate_info = {
     elements => \@genotyping_stock_names,
@@ -61,7 +81,8 @@ my $plate_info = {
     project_name => 'NextGenCassava',
     genotyping_facility_submit => 'no',
     genotyping_facility => 'igd',
-    sample_type => 'DNA'
+    sample_type => 'DNA',
+    genotyping_project_id => $genotyping_project_id
 };
 
 my $gd = CXGN::Trial::TrialDesign->new( { schema => $schema } );
@@ -167,15 +188,15 @@ is_deeply($geno_design, {
 
 my $genotyping_trial_create;
 
-my $trial_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($chado_schema, 'genotyping_trial', 'project_type')->cvterm_id();
+my $trial_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'genotyping_trial', 'project_type')->cvterm_id();
 
 my $field_trial_id = $schema->resultset('Project::Project')->find({name => 'test_trial'})->project_id();
 
 ok($genotyping_trial_create = CXGN::Trial::TrialCreate->new({
     chado_schema => $schema,
     dbh => $dbh,
-    program => "test",
-    trial_location => "test_location",
+    program => $breeding_program_name,
+    trial_location => $location_name,
     operator => "janedoe",
     owner_id => 41,
     trial_year => $plate_info->{year},
@@ -206,7 +227,7 @@ ok(my $genotyping_trial_id = $genotyping_trial->project_id(), "retrive genotypin
 print STDERR Dumper \$genotyping_trial_id;
 
 # Delete geno project linkage
-ok(my $g_trial = CXGN::Trial->new({bcs_schema => $chado_schema, trial_id => $genotyping_trial_id}),"get plate by id");
+ok(my $g_trial = CXGN::Trial->new({bcs_schema => $schema, trial_id => $genotyping_trial_id}),"get plate by id");
 
 ok(my $success = $g_trial->delete_genotyping_plate_from_field_trial_linkage($field_trial_id, 'curator'),'delete linkage');
 ok( $success->{success});

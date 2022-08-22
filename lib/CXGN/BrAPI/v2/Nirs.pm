@@ -83,7 +83,7 @@ sub search {
 
 		};
 	}
-	print STDERR Dumper @data;
+	# print STDERR Dumper @data;
 
 	my %result = (data => \@data);
 	my $pagination = CXGN::BrAPI::Pagination->pagination_response($total_count,$page_size,$page);

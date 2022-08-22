@@ -306,28 +306,28 @@ sub _get_design_from_trial {
     my $design = decode_json $trial_layout_json->value if ($trial_layout_json);
 
     if (keys(%$design)) {
-        print STDERR "WE HAVE TRIAL LAYOUT JSON!\n";
-	    print STDERR "TRIAL LAYOUT JSON IS: ".$trial_layout_json->value()."\n";
+        # print STDERR "WE HAVE TRIAL LAYOUT JSON!\n";
+        # print STDERR "TRIAL LAYOUT JSON IS: ".$trial_layout_json->value()."\n";
 
-	    #Plant index number needs to be in the cached layout of trials that have plants. this serves a check to assure this.
-	    if ($trial_has_plants){
-		my @plot_values = values %$design;
-		if (!exists($plot_values[0]->{plant_index_numbers})) {
-		    print STDERR "Regenerating cache to include plants...\n";
-		    $self->generate_and_cache_layout();
-		} else {
-		    print STDERR "TrialLayout from cache ".localtime."\n";
-		    return $design;
-		}
-	    } else {
+        #Plant index number needs to be in the cached layout of trials that have plants. this serves a check to assure this.
+        if ($trial_has_plants){
+            my @plot_values = values %$design;
+            if (!exists($plot_values[0]->{plant_index_numbers})) {
+                print STDERR "Regenerating cache to include plants...\n";
+                $self->generate_and_cache_layout();
+            } else {
+                print STDERR "TrialLayout from cache ".localtime."\n";
+                return $design;
+            }
+        } else {
             print STDERR "TrialLayout from cache ".localtime."\n";
             return $design;
-	    }
-	} else {
-	print STDERR "Regenerating cache...\n";
+        }
+    } else {
+        print STDERR "Regenerating cache...\n";
         my $design = $self->generate_and_cache_layout();
-	#print STDERR "Generated DESIGN (and cached) : ".Dumper($design);
-	return $design;
+        #print STDERR "Generated DESIGN (and cached) : ".Dumper($design);
+        return $design;
     }
 }
 
@@ -348,24 +348,6 @@ sub generate_and_cache_layout {
       return { error => "Something went wrong retrieving plots for this trial. This should not happen, so please contact us." };
   }
 #print STDERR "Check 2.3.4.2: ".localtime()."\n";
-
-    # my $genotyping_user_id;
-    # my $genotyping_project_name;
-    # if ($self->get_experiment_type eq 'genotyping_trial'){
-    #     my $genotyping_user_id_row = $project
-    #         ->search_related("nd_experiment_projects")
-    #         ->search_related("nd_experiment")
-    #         ->search_related("nd_experimentprops")
-    #         ->find({ 'type.name' => 'genotyping_user_id' }, {join => 'type' });
-    #     $genotyping_user_id = $genotyping_user_id_row->get_column("value") || "unknown";
-
-    #     my $genotyping_project_name_row = $project
-    #         ->search_related("nd_experiment_projects")
-    #         ->search_related("nd_experiment")
-    #         ->search_related("nd_experimentprops")
-    #         ->find({ 'type.name' => 'genotyping_project_name' }, {join => 'type' });
-    #     $genotyping_project_name = $genotyping_project_name_row->get_column("value") || "unknown";
-    # }
 
     @plots = @{$plots_ref};
 
@@ -407,12 +389,6 @@ sub retrieve_plot_info {
 
     my $json = JSON->new();
 
-    # if ($self->get_experiment_type eq 'genotyping_trial'){
-    #     $design_info{genotyping_user_id} = $genotyping_user_id;
-    #     #print STDERR "RETRIEVED: genotyping_user_id: $design{genotyping_user_id}\n";
-    #     $design_info{genotyping_project_name} = $genotyping_project_name;
-    #     #print STDERR "RETRIEVED: genotyping_project_name: $design{genotyping_project_name}\n";
-    # }
     my $plot_name = $plot->uniquename;
     my $plot_id = $plot->stock_id;
     my $plot_properties = $plot->search_related('stockprops');
@@ -932,21 +908,6 @@ sub _build_cvterm_hash {
 #}
 
 
-# sub _get_genotyping_experiment_metadata {
-#     my $self = shift;
-
-#     my $project = $self->get_project();
-#     if (!$project) {
-# 	return;
-#     }
-#     my $metadata = $project
-# 	->search_related("nd_experiment_projects")
-# 	->search_related("nd_experiment")
-# 	->search_related("nd_experimentprop")
-#    	->search({ 'type.name' => ['genotyping_user_id', 'genotyping_project_name']}, {join => 'type' });
-#     return $metadata_rs;
-
-# }
 
 __PACKAGE__->meta->make_immutable;
 

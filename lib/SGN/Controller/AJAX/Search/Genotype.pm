@@ -44,6 +44,7 @@ sub genotyping_data_search_GET : Args(0) {
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $people_schema = $c->dbic_schema("CXGN::People::Schema");
     my $clean_inputs = _clean_inputs($c->req->params);
+    # print STDERR Dumper $clean_inputs;
 
     my $limit = $c->req->param('length');
     my $offset = $c->req->param('start');

@@ -385,7 +385,7 @@ sub _retrieve_introgression_end_position_bp {
 sub store {
     my $self = shift;
 
-    print STDERR "storing: UNIQUENAME=".$self->uniquename()."\n";
+    # print STDERR "storing: UNIQUENAME=".$self->uniquename()."\n";
 
     my $new_stock = $self->SUPER::store();
     my $id = $new_stock->{stock_id};
@@ -499,7 +499,7 @@ sub store {
         }
     }
 
-    print STDERR "Saving returned ID $id.\n";
+    # print STDERR "Saving returned ID $id.\n";
     $self->stock_id($id);
 
     return $self->stock_id();

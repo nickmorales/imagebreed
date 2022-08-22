@@ -374,7 +374,7 @@ sub _update_private_company {
     my $nd_geolocation_id = shift;
 
     my $q = "UPDATE nd_geolocation SET private_company_id=?, is_private=? WHERE nd_geolocation.nd_geolocation_id=?;";
-    print STDERR Dumper [$private_company_id, $private_company_location_is_private, $nd_geolocation_id];
+    # print STDERR Dumper [$private_company_id, $private_company_location_is_private, $nd_geolocation_id];
     my $h = $self->bcs_schema->storage->dbh()->prepare($q);
     $h->execute($private_company_id, $private_company_location_is_private, $nd_geolocation_id);
     $h = undef;

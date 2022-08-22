@@ -10,9 +10,8 @@ Lukas Mueller <lam87@cornell.edu>
 */
 
 
-var $j = jQuery.noConflict();
 
-jQuery(document).ready(function ($) {
+jQuery(document).ready(function() {
 
     get_select_box("private_companies", "company_select_div", {'name': 'select_private_company_id', 'id': 'select_private_company_id'});
     get_select_box("locations", "location_select_div", {'private_company_id':1});
@@ -26,9 +25,6 @@ jQuery(document).ready(function ($) {
 
     get_select_box("locations", "upload_genotype_location_select_div", {'id': 'upload_genotype_location_select', 'name': 'upload_genotype_location_select'});
     get_select_box("locations", "upload_genotype_is_from_grm_location_select_div", {'id': 'upload_genotype_is_from_grm_location_select', 'name': 'upload_genotype_is_from_grm_location_select'});
-    get_select_box("genotyping_facilities", "upload_genotype_vcf_facility_select_div", {'id': 'upload_genotype_vcf_facility_selectxxx', 'name': 'upload_genotype_vcf_facility_selectxxx', 'empty':1});
-    get_select_box("breeding_programs", "upload_genotype_breeding_program_select_div", {'id': 'upload_genotype_breeding_program_select', 'name': 'upload_genotype_breeding_program_select'});
-    get_select_box("years", "upload_genotype_year_select_div", {'auto_generate': 1, 'id': 'upload_genotype_year_select', 'name': 'upload_genotype_year_select'});
 
     jQuery("#upload_genotypes_species_name_input").autocomplete({
         source: '/organism/autocomplete'
@@ -60,11 +56,7 @@ jQuery(document).ready(function ($) {
     jQuery('#add_geno_trial_submit').click(function () {
         plate_data = new Object();
         plate_data.private_company_id = jQuery('#select_private_company_id').val();
-//        plate_data.breeding_program = jQuery('#breeding_program_select').val();
-//        plate_data.year = jQuery('#year_select').val();
-//        plate_data.location = jQuery('#location_select').val();
         plate_data.description = jQuery('#genotyping_trial_description').val();
-//        plate_data.project_name = jQuery('#genotyping_project_name').val();
         plate_data.genotyping_project_id = jQuery('#plate_genotyping_project_id').val();
         plate_data.name = jQuery('#genotyping_trial_name').val();
         plate_data.plate_format = jQuery('#genotyping_trial_plate_format').val();
@@ -78,7 +70,6 @@ jQuery(document).ready(function ($) {
         plate_data.well_volume = jQuery('#genotyping_well_volume').val();
         plate_data.well_tissue = jQuery('#genotyping_well_tissue').val();
         plate_data.well_notes = jQuery('#genotyping_well_notes').val();
-//        plate_data.genotyping_facility = jQuery('#genotyping_trial_facility_select').val();
         plate_data.genotyping_facility_submit = jQuery('#genotyping_trial_facility_submit_select').val();
         plate_data.include_facility_identifiers = jQuery('#upload_genotype_plate_include_facility_identifiers').val();
 
@@ -145,7 +136,7 @@ jQuery(document).ready(function ($) {
 
     function genotyping_facility_login(auth_data) {
         var access_token;
-        $.ajax({
+        jQuery.ajax({
             url: auth_data.host+'/brapi/v1/token',
             method: 'POST',
             async: false,
@@ -191,7 +182,7 @@ jQuery(document).ready(function ($) {
 
             alert("Sending genotyping experiment entry to genotyping facility...");
 
-            $.ajax( {
+            jQuery.ajax( {
                 url: auth_data.host+'/brapi/v2/plate-register',
                 method: 'POST',
                 data: {
@@ -214,7 +205,7 @@ jQuery(document).ready(function ($) {
     }
 
     function load_genotyping_status_info(auth_data, plate_id) {
-        $.ajax({
+        jQuery.ajax({
             url: auth_data.host+'/brapi/v1/plate/'+plate_id,
             success: function(response) {
 
@@ -223,7 +214,7 @@ jQuery(document).ready(function ($) {
     }
 
     function shipping_label_pdfs(plate_ids) {
-        $.ajax({
+        jQuery.ajax({
             url: '/brapi/v2/plate_pdf',
             data: { 'plate_ids' : plate_ids },
             success: function(response) {
@@ -231,7 +222,7 @@ jQuery(document).ready(function ($) {
                     alert(response.metadata.status);
                 }
                 else {
-                    $('#download_trial_pdf').html(response.results.url)
+                    jQuery('#download_trial_pdf').html(response.results.url)
                 }
             },
             error: function(response) {
@@ -242,7 +233,7 @@ jQuery(document).ready(function ($) {
 
     function generate_plate(plate_data) {
         console.log('generating genotype tirial plate');
-        $.ajax({
+        jQuery.ajax({
             url: '/ajax/breeders/generategenotypetrial',
             method: 'POST',
             beforeSend: function(){
@@ -371,7 +362,7 @@ jQuery(document).ready(function ($) {
         }
     });
 
-    $('#delete_layout_data_by_trial_id').click(function() {
+    jQuery('#delete_layout_data_by_trial_id').click(function() {
         var trial_id = get_trial_id();
         var yes = confirm("Are you sure you want to delete this experiment with id "+trial_id+" ? This action cannot be undone.");
         if (yes) {
@@ -406,18 +397,18 @@ jQuery(document).ready(function ($) {
     });
 
     jQuery('#geno_trial_accession_barcode').click(function () {
-        $('#generate_genotyping_trial_barcode_button_dialog').modal("hide");
-        $('#generate_genotrial_barcode_dialog').modal("show");
+        jQuery('#generate_genotyping_trial_barcode_button_dialog').modal("hide");
+        jQuery('#generate_genotrial_barcode_dialog').modal("show");
     });
 
     jQuery('#trial_tissue_sample_barcode').click(function () {
-        $('#generate_genotyping_trial_barcode_button_dialog').modal("hide");
-        $('#generate_genotrial_barcode_dialog').modal("show");
+        jQuery('#generate_genotyping_trial_barcode_button_dialog').modal("hide");
+        jQuery('#generate_genotrial_barcode_dialog').modal("show");
     });
 
     jQuery('#trial_plateID_barcode').click(function () {
-        $('#generate_genotyping_trial_barcode_button_dialog').modal("hide");
-        $('#genotrial_barcode_dialog').modal("show");
+        jQuery('#generate_genotyping_trial_barcode_button_dialog').modal("hide");
+        jQuery('#genotrial_barcode_dialog').modal("show");
     });
 
     jQuery('button[name="manage_tissue_samples_create_field_trial_samples"]').click(function(){
@@ -492,8 +483,9 @@ jQuery(document).ready(function ($) {
         }
     });
 
-    jQuery('[name="create_genotyping_project_link"]').click(function() {
+    jQuery('button[name="create_genotyping_project_link"]').click(function() {
         jQuery('#create_genotyping_project_dialog').modal("show");
+        return false;
     });
 
 

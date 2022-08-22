@@ -51,17 +51,36 @@ sub retrieve {
         }
     }
     push @output, \@header;
+    my $trial_id = $trial->get_trial_id ? $trial->get_trial_id : '';
     my $trial_name = $trial->get_name ? $trial->get_name : '';
     my $location_name = $trial->get_location ? $trial->get_location->[1] : '';
     my $trial_year = $trial->get_year ? $trial->get_year : '';
     my $genotyping_facility_cvterm_id = $schema->resultset("Cv::Cvterm")->search({name=> 'genotyping_facility' })->first->cvterm_id();
     my $geno_project_name_cvterm_id = $schema->resultset("Cv::Cvterm")->search({name=> 'genotyping_project_name' })->first->cvterm_id();
     my $genotyping_facility = $schema->resultset("Project::Projectprop")->search({ project_id => $trial->get_trial_id(), type_id => $genotyping_facility_cvterm_id } )->first->value();
-    my $genotyping_project_name = $schema->resultset("NaturalDiversity::NdExperimentProject")->search({
+
+    my $genotyping_project_relationship_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'genotyping_project_and_plate_relationship', 'project_relationship')->cvterm_id();
+
+    my $genotyping_project_name;
+    my $genotyping_project_name_rs = $schema->resultset("NaturalDiversity::NdExperimentProject")->search({
             project_id => $trial->get_trial_id()
         })->search_related('nd_experiment')->search_related('nd_experimentprops',{
             'nd_experimentprops.type_id' => $geno_project_name_cvterm_id
-        })->first->value();
+        });
+    if ($genotyping_project_name_rs->count() > 0) {
+        $genotyping_project_name = $genotyping_project_name_rs->first->value();
+    }
+    else {
+        my $relationship_row_rs = $schema->resultset("Project::ProjectRelationship")->search({
+            subject_project_id => $trial_id,
+            type_id => $genotyping_project_relationship_cvterm_id
+        });
+        if ($relationship_row_rs->count() > 0) {
+            $genotyping_project_name = $schema->resultset("Project::Project")->find({project_id => $relationship_row_rs->first->object_project_id})->name();
+        }
+    }
+    # print STDERR Dumper $genotyping_project_name;
+
     my $pedigree_strings = $self->_get_all_pedigrees(\%design);
 
     foreach my $key (sort { $a cmp $b} keys %design) {
