@@ -7,7 +7,7 @@ $facilities
 
 <& /page/page_title.mas, title=>"<b>Quality Control Genotyping using the Intertek QC KASP marker sets of 20 or 40</b>" &>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.GenotypingTrial04102022' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.GenotypingTrial08232022' ] &>
 
 <div>
 <p>

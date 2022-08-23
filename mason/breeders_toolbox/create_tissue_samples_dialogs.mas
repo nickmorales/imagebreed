@@ -1,7 +1,7 @@
 <%args>
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'CXGN.BreedersToolbox.GenotypingTrial04102022' ] &>
+<& /util/import_javascript.mas, classes => [ 'CXGN.BreedersToolbox.GenotypingTrial08232022' ] &>
 
 <div class="modal fade" id="field_trial_tissue_sample_dialog" name="field_trial_tissue_sample_dialog" tabindex="-1" role="dialog" aria-labelledby="addFieldTrialTissueSampleDialog">
     <div class="modal-dialog modal-xl" role="document">

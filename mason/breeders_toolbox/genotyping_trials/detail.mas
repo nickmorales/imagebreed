@@ -30,7 +30,7 @@ $genotyping_project_link => undef
 
 <div id="trialIDDiv" class="trialIDDivClass" style="display:none;"><% $trial_id %></div>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.Trial03152022', 'CXGN.BreedersToolbox.GenotypingTrial04102022', 'CXGN.BreedersToolbox.GenotypingSubmission03152022' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.Trial03152022', 'CXGN.BreedersToolbox.GenotypingTrial08232022', 'CXGN.BreedersToolbox.GenotypingSubmission03152022' ] &>
 
 <& /page/page_title.mas, title=>"Genotyping plate $trial_name" &>
 

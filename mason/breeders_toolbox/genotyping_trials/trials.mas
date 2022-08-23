@@ -9,7 +9,7 @@ $facilities => ()
 
 % print STDERR "Rendering trials page...\n";
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.AddTrial03152022', 'CXGN.BreedersToolbox.UploadTrial03152022', 'CXGN.BreedersToolbox.GenotypingTrial04102022'] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.AddTrial03152022', 'CXGN.BreedersToolbox.UploadTrial03152022', 'CXGN.BreedersToolbox.GenotypingTrial08232022'] &>
 
 
 <& /breeders_toolbox/genotyping_trials/upload_genotyping_data_dialogs.mas &>

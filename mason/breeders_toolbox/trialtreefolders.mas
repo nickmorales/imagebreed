@@ -10,7 +10,7 @@ $management_factor_types => ()
 $design_types => ()
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jstree.dist.jstree', 'jquery.iframe-post-form',  'CXGN.BreedersToolbox.AddTrial03152022', 'CXGN.BreedersToolbox.UploadTrial03152022', 'CXGN.BreedersToolbox.Trial03152022', 'CXGN.Trial03152022', 'CXGN.BreedersToolbox.GenotypingTrial04102022', 'CXGN.BreedersToolbox.Accessions03152022', 'CXGN.BreedersToolbox.Crosses03152022', 'CXGN.BreedersToolbox.FieldBook03152022', 'CXGN.BreedersToolbox.UploadPhenotype03152022', 'CXGN.TrialTreeFolders03152022' ] &>
+<& /util/import_javascript.mas, classes => [ 'jstree.dist.jstree', 'jquery.iframe-post-form',  'CXGN.BreedersToolbox.AddTrial03152022', 'CXGN.BreedersToolbox.UploadTrial03152022', 'CXGN.BreedersToolbox.Trial03152022', 'CXGN.Trial03152022', 'CXGN.BreedersToolbox.GenotypingTrial08232022', 'CXGN.BreedersToolbox.Accessions03152022', 'CXGN.BreedersToolbox.Crosses03152022', 'CXGN.BreedersToolbox.FieldBook03152022', 'CXGN.BreedersToolbox.UploadPhenotype03152022', 'CXGN.TrialTreeFolders03152022' ] &>
 
 <& /util/import_css.mas, paths => ['/static/documents/inc/jstree_theme/jstree-bstheme-min.css'] &>
 

@@ -4,7 +4,7 @@ $facilities => ()
 $sampling_facilities => ()
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.GenotypingTrial04102022' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreedersToolbox.GenotypingTrial08232022' ] &>
 
 <& /page/page_title.mas, title=>"Manage Tissue Samples" &>
 
