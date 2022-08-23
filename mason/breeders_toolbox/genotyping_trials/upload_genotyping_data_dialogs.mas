@@ -111,7 +111,7 @@ $is_from_grm => undef
                             </&>
 
                             <&| /util/workflow.mas:step, title=> "Genotyping Project" &>
-                                <& /page/page_title.mas, title=>"Select the genotyping project or create a new one. A genotyping project is a specific genotyping event. You can have many genotyping projects under the same genotyping protocol to indicate that those genotyping events used the same markers." &>
+                                <& /page/page_title.mas, title=>"Select the genotyping project or create a new one." &>
 
                                 <table id="upload_genotyping_data_project_search_results" width="100%" class="table table-hover table-striped">
                                     <thead>
@@ -132,6 +132,7 @@ $is_from_grm => undef
 
                                 <br/>
                                 <center>
+                                <button class="btn btn-info" name="create_genotyping_project_link">If you need to create a genotyping project, click here</button><br/><br/>
                                 <button class="btn btn-primary" id="upload_genotyping_data_project_check_button">Go to Next Step</button>
                                 </center>
                             </&>
@@ -1041,10 +1042,9 @@ jQuery(document).ready(function(){
         return false;
     });
 
-    var upload_genotyping_data_trial_table = jQuery('#upload_genotyping_data_project_search_results').DataTable( {
-        'ajax': {
-            'url':'/ajax/genotyping_data/projects?select_checkbox_name=upload_genotyping_data_project_select',
-        },
+    var upload_genotyping_data_trial_table = jQuery('#upload_genotyping_data_project_search_results').DataTable({
+        'destroy': true,
+        'ajax':'/ajax/genotyping_data/projects?select_checkbox_name=upload_genotyping_data_project_select'
     });
 
     var upload_genotyping_data_protocol_table = jQuery('#upload_genotyping_data_protocol_search_results').DataTable( {
