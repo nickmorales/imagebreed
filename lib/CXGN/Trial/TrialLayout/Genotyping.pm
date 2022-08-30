@@ -64,7 +64,7 @@ sub retrieve_plot_info {
         project_id => $genotyping_project_id
     });
     my $genotyping_project_name = $genotyping_project->name();
-    print STDERR "GENOTYPING PROJECT NAME =".Dumper($genotyping_project_name)."\n";
+    # print STDERR "GENOTYPING PROJECT NAME =".Dumper($genotyping_project_name)."\n";
 
     $design->{$plot_number}->{genotyping_user_id} = $genotyping_user_id;
     # print STDERR "RETRIEVED: genotyping_user_id: $design->{genotyping_user_id}\n";
