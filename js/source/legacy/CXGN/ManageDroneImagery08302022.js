@@ -7619,7 +7619,7 @@ jQuery(document).ready(function() {
                     alert(response.error);
                 }
                 else {
-                    //location.reload();
+                    location.reload();
                 }
             },
             error: function(response){
