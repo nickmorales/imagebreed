@@ -98,6 +98,7 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
         JOIN project_relationship AS field_trial_rel ON (drone_run_project.project_id = field_trial_rel.subject_project_id AND field_trial_rel.type_id=$drone_run_field_trial_project_relationship_type_id_cvterm_id)
         JOIN project AS field_trial ON (field_trial_rel.object_project_id = field_trial.project_id)
         WHERE company.private_company_id IN($private_company_ids_sql) AND is_rover.value IS NULL;";
+    # print STDERR $drone_run_q."\n";
     my $h = $schema->storage->dbh()->prepare($drone_run_q);
     $h->execute();
 
@@ -292,10 +293,10 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
                     }
 
                     # if ($v->{drone_run_processed} && !$v->{drone_run_ground_control_points}) {
-                    if ($v->{drone_run_processed}) {
 
-                        $drone_run_html .= '<div class="panel-group" id="project_drone_imagery_buttons_sections_'.$k.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#project_drone_imagery_buttons_sections_'.$k.'" href="#project_drone_imagery_buttons_sections_accordian_'.$k.'" >Additional Options</a></h4></div><div id="project_drone_imagery_buttons_sections_accordian_'.$k.'" class="panel-collapse collapse"><div class="panel-body">';
+                    $drone_run_html .= '<div class="panel-group" id="project_drone_imagery_buttons_sections_'.$k.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#project_drone_imagery_buttons_sections_'.$k.'" href="#project_drone_imagery_buttons_sections_accordian_'.$k.'" >Additional Options</a></h4></div><div id="project_drone_imagery_buttons_sections_accordian_'.$k.'" class="panel-collapse collapse"><div class="panel-body">';
 
+                        if ($v->{drone_run_processed}) {
                             $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_stadard_process_raw_images_add_images" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Save/Download Raw Images Captures</button><br/><br/>';
 
                             $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_phenotype_run" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Calculate Phenotypes Again</button><br/><br/>';
@@ -309,11 +310,14 @@ sub raw_drone_imagery_summary_top_GET : Args(0) {
                             # }
 
                             $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_quality_control_check" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Quality Control Plot Images</button><br/><br/>';
+                        }
+                        else {
+                            $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_multiple_field_trial_check" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" >Associated Field Trials</button><br/><br/>';
+                        }
 
-                            $drone_run_html .= '<button class="btn btn-danger btn-sm" name="project_drone_imagery_delete_drone_run" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" >Delete Imaging Event</button>';
+                        $drone_run_html .= '<button class="btn btn-danger btn-sm" name="project_drone_imagery_delete_drone_run" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" >Delete Imaging Event</button>';
 
-                        $drone_run_html .= '</div></div></div></div>';
-                    }
+                    $drone_run_html .= '</div></div></div></div>';
                 # }
             }
 

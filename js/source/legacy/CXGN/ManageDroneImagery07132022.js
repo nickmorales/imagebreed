@@ -7530,6 +7530,105 @@ jQuery(document).ready(function() {
         });
     });
 
+    //
+    // Associated Field Trials
+    //
+
+    var manage_drone_imagery_multiple_field_trial_drone_run_project_id;
+    var manage_drone_imagery_multiple_field_trial_field_trial_id;
+    var manage_drone_imagery_multiple_field_trial_field_trial_name;
+    var manage_drone_imagery_multiple_field_trial_add_field_trial_ids = [];
+    var manage_drone_imagery_multiple_field_trial_add_field_trial_ids_string;
+
+    jQuery(document).on('click', 'button[name="project_drone_imagery_multiple_field_trial_check"]', function(){
+        manage_drone_imagery_multiple_field_trial_drone_run_project_id = jQuery(this).data('drone_run_project_id');
+        manage_drone_imagery_multiple_field_trial_field_trial_id = jQuery(this).data('field_trial_id');
+        manage_drone_imagery_multiple_field_trial_field_trial_name = jQuery(this).data('field_trial_name');
+
+        jQuery.ajax({
+            url: '/api/drone_imagery/check_associated_field_trials?drone_run_project_id='+manage_drone_imagery_multiple_field_trial_drone_run_project_id,
+            beforeSend: function(){
+                jQuery('#working_modal').modal('show');
+            },
+            success: function(response){
+                console.log(response);
+                jQuery('#working_modal').modal('hide');
+
+                if (response.error) {
+                    alert(response.error);
+                }
+                else {
+                    var html = '<div class="form-horizontal">';
+
+                    html = html + '<div class="form-group"><label class="col-sm-5 control-label">Associated Field Trials: </label><div class="col-sm-7">';
+
+                    html = html + '<ul><li>'+manage_drone_imagery_multiple_field_trial_field_trial_name+'</li>';
+
+                    for (var i=0; i<response.associated_field_trial_ids.length; i++) {
+                        html = html + '<li>'+response.associated_field_trial_names[i]+'</li>'
+                    }
+
+                    html = html + '</ul>';
+
+                    html = html + '</div></div><hr>';
+
+                    html = html + '<div class="form-group"><label class="col-sm-5 control-label">Associate Another Field Trial(s): </label><div class="col-sm-7">';
+                    html = html + '<div id="drone_imagery_associated_field_trials_dropdown"></div>'
+                    html = html + '</div></div>';
+
+                    html = html + '</div>';
+                    jQuery('#drone_imagery_associated_field_trials_div').html(html);
+
+                    get_select_box('trials', 'drone_imagery_associated_field_trials_dropdown', { 'name' : 'drone_imagery_associated_field_trials_field_trial_id', 'id' : 'drone_imagery_associated_field_trials_field_trial_id', 'empty':1, 'multiple':1 });
+
+                    jQuery('#drone_imagery_associated_field_trials_dialog').modal('show');
+                }
+            },
+            error: function(response){
+                jQuery('#working_modal').modal('hide');
+                alert('Error getting associated field trials!');
+            }
+        });
+    });
+
+    jQuery(document).on('change', '#drone_imagery_associated_field_trials_field_trial_id', function() {
+        manage_drone_imagery_multiple_field_trial_add_field_trial_ids = jQuery(this).val();
+        manage_drone_imagery_multiple_field_trial_add_field_trial_ids_string = manage_drone_imagery_multiple_field_trial_add_field_trial_ids.join();
+    });
+
+    jQuery('#drone_imagery_associated_field_trials_select_submit').click(function() {
+        if (manage_drone_imagery_multiple_field_trial_add_field_trial_ids.length < 1) {
+            alert('First select another field trial to associate to the imaging event.');
+            return false;
+        }
+        if (manage_drone_imagery_multiple_field_trial_add_field_trial_ids[0] == '') {
+            alert('First select another field trial to associate to the imaging event.');
+            return false;
+        }
+
+        jQuery.ajax({
+            url: '/api/drone_imagery/save_associated_field_trials?field_trial_id='+manage_drone_imagery_multiple_field_trial_field_trial_id+'&drone_run_project_id='+manage_drone_imagery_multiple_field_trial_drone_run_project_id+'&other_field_trial_ids='+manage_drone_imagery_multiple_field_trial_add_field_trial_ids_string,
+            beforeSend: function(){
+                jQuery('#working_modal').modal('show');
+            },
+            success: function(response){
+                console.log(response);
+                jQuery('#working_modal').modal('hide');
+
+                if (response.error) {
+                    alert(response.error);
+                }
+                else {
+                    //location.reload();
+                }
+            },
+            error: function(response){
+                jQuery('#working_modal').modal('hide');
+                alert('Error associating other field trials to imaging event!');
+            }
+        });
+    });
+
     function showManageDroneImagerySection(section_div_id) {
         console.log(section_div_id);
         if (section_div_id == 'manage_drone_imagery_top_div'){

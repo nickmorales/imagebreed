@@ -388,11 +388,23 @@ sub set_project_table_type_id {
 }
 
 
-=head2 accessors set_private_company()
+=head2 accessors get_private_company_id, set_private_company()
 
 setter for the private company
 
 =cut
+
+sub get_private_company_id {
+    my $self = shift;
+
+    my $q = "SELECT private_company_id FROM project WHERE project_id=?;";
+    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($self->get_trial_id());
+    my ($private_company_id) = $h->fetchrow_array();
+    $h = undef;
+
+    return $private_company_id;
+}
 
 sub set_private_company {
     my $self = shift;
@@ -416,6 +428,24 @@ sub set_private_company {
     $h2 = undef;
 
     $self->private_company_project_is_private($project_is_private);
+}
+
+=head2 accessors get_private_company_project_is_private, set_private_company_project_is_private()
+
+setter for the private company
+
+=cut
+
+sub get_private_company_project_is_private {
+    my $self = shift;
+
+    my $q = "SELECT is_private FROM project WHERE project_id = ?;";
+    my $h = $self->bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($self->project_id);
+    my ($is_private) = $h->fetchrow_array();
+    $h = undef;
+
+    return $is_private;
 }
 
 sub set_private_company_project_is_private {

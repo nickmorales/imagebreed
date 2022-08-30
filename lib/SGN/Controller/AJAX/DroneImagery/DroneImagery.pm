@@ -11521,6 +11521,300 @@ sub drone_imagery_check_available_applicable_vi_GET : Args(0) {
     $c->stash->{rest} = {success => 1, vi => \%vi_hash};
 }
 
+sub drone_imagery_check_associated_field_trials : Path('/api/drone_imagery/check_associated_field_trials') : ActionClass('REST') { }
+sub drone_imagery_check_associated_field_trials_GET : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+    my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
+    my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+    my $drone_run_project_id = $c->req->param('drone_run_project_id');
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 0, 0, 0);
+
+    my $project = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $drone_run_project_id });
+    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
+
+    $c->stash->{rest} = {
+        success => 1,
+        associated_field_trial_ids => $field_trial_ids_in_same_orthophoto,
+        associated_field_trial_names => $field_trial_names_in_same_orthophoto
+    };
+}
+
+sub drone_imagery_save_associated_field_trials : Path('/api/drone_imagery/save_associated_field_trials') : ActionClass('REST') { }
+sub drone_imagery_save_associated_field_trials_GET : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+    my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
+    my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+    my $field_trial_id = $c->req->param('field_trial_id');
+    my $drone_run_project_id = $c->req->param('drone_run_project_id');
+    my @other_field_trial_ids = split ',', $c->req->param('other_field_trial_ids');
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 0, 0, 0);
+    my $calendar_funcs = CXGN::Calendar->new({});
+
+    my $project = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $drone_run_project_id });
+    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
+    my $drone_run_description = $project->get_description();
+    my $drone_run_company_id = $project->get_private_company_id();
+    my $drone_run_company_is_private = $project->get_private_company_project_is_private();
+    my $drone_run_date = $project->get_drone_run_date();
+    my $drone_run_base_date = $project->get_drone_run_base_date();
+    my $drone_run_event = $calendar_funcs->check_value_format($drone_run_date);
+    my $drone_run_type = $project->get_drone_run_type();
+    my $drone_run_camera_info = $project->get_drone_run_camera();
+    my $drone_run_stitching_type = $project->get_drone_run_stitching_type();
+    my $drone_run_rig_desc = $project->get_drone_run_rig_description();
+    my $drone_run_is_raw_images = $project->get_drone_run_is_raw_images();
+    my $field_trial_drone_runs_in_same_orthophoto_nd_experiment_id = $project->get_drone_runs_in_same_orthophoto_nd_experiment_id();
+
+    my $image_band_projects = $project->get_associated_image_band_projects();
+    my $image_band_projects_details = $project->get_associated_image_band_project_details();
+    # print STDERR Dumper $image_band_projects;
+    # print STDERR Dumper $image_band_projects_details;
+
+    my %already_linked_field_trial_ids_map = ($field_trial_id => 1);
+    foreach (@$field_trial_ids_in_same_orthophoto) {
+        $already_linked_field_trial_ids_map{$_} = 1;
+    }
+
+    my @new_field_trial_ids;
+    foreach (@other_field_trial_ids) {
+        if (!exists($already_linked_field_trial_ids_map{$_})) {
+            push @new_field_trial_ids, $_;
+        }
+    }
+
+    if (scalar(@new_field_trial_ids) == 0) {
+        $c->stash->{rest} = {error => "The selected field trials were already associated!"};
+        $c->detach();
+    }
+
+    my $computation_location_id = $schema->resultset("NaturalDiversity::NdGeolocation")->search({description=>'[Computation]'})->first->nd_geolocation_id();
+
+    my $drone_run_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_experiment', 'experiment_type')->cvterm_id();
+    my $project_start_date_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'project_start_date', 'project_property')->cvterm_id();
+    my $field_trial_drone_runs_in_same_orthophoto_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'field_trial_drone_runs_in_same_orthophoto', 'experiment_type')->cvterm_id();
+    my $drone_run_base_date_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_base_date', 'project_property')->cvterm_id();
+    my $drone_run_related_cvterms_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_related_time_cvterms_json', 'project_property')->cvterm_id();
+    my $drone_run_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_project_type', 'project_property')->cvterm_id();
+    my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
+    my $drone_run_camera_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_type', 'project_property')->cvterm_id();
+    my $drone_run_stitching_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_orthophoto_stitching_type', 'project_property')->cvterm_id();
+    my $drone_run_rig_desc_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_rig_description', 'project_property')->cvterm_id();
+    my $drone_run_is_raw_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_raw_images', 'project_property')->cvterm_id();
+    my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
+    my $drone_run_band_project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
+
+    my $linking_table_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'stitched_drone_imagery', 'project_md_image')->cvterm_id();
+    my $drone_run_band_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_extent_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_extent', 'project_property')->cvterm_id();
+    my $geoparam_coordinates_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_geoparam_coordinates_type', 'project_property')->cvterm_id();
+    my $original_image_resize_ratio_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_original_image_resize_ratio', 'project_property')->cvterm_id();
+
+    my $q_priv = "UPDATE project SET private_company_id=?, is_private=? WHERE project_id=?;";
+    my $h_priv = $schema->storage->dbh()->prepare($q_priv);
+
+    my $iterator = 0;
+    my @selected_drone_run_infos;
+    my @selected_drone_run_ids;
+    foreach my $selected_trial_id (@new_field_trial_ids) {
+        my $trial = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $selected_trial_id });
+        my $trial_name = $trial->get_name();
+        my $trial_description = $trial->get_description();
+        my $trial_location_id = $trial->get_location()->[0];
+        my $planting_date = $trial->get_planting_date();
+
+        print STDERR Dumper [$planting_date, $drone_run_date, $drone_run_base_date];
+        my $planting_date_time_object = Time::Piece->strptime($planting_date, "%Y-%B-%d");
+        my $drone_run_date_time_object = Time::Piece->strptime($drone_run_date, "%Y-%B-%d");
+        my $drone_run_date_short = $drone_run_date_time_object->strftime("%Y%m%d %H:%M:%S");
+        my $time_diff;
+        my $base_date_event;
+        if ($drone_run_base_date) {
+            my $imaging_event_base_date_time_object = Time::Piece->strptime($drone_run_base_date, "%Y/%m/%d %H:%M:%S");
+            $time_diff = $drone_run_date_time_object - $imaging_event_base_date_time_object;
+            $base_date_event = $calendar_funcs->check_value_format($drone_run_base_date);
+        }
+        else {
+            $time_diff = $drone_run_date_time_object - $planting_date_time_object;
+        }
+        my $time_diff_weeks = $time_diff->weeks;
+        my $time_diff_days = $time_diff->days;
+        my $time_diff_hours = $time_diff->hours;
+        my $rounded_time_diff_weeks = round($time_diff_weeks);
+        if ($rounded_time_diff_weeks == 0) {
+            $rounded_time_diff_weeks = 1;
+        }
+
+        my $week_term_string = "week $rounded_time_diff_weeks";
+        my $q = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
+        my $h = $schema->storage->dbh()->prepare($q);
+        $h->execute($week_term_string, 'cxgn_time_ontology');
+        my ($week_cvterm_id) = $h->fetchrow_array();
+
+        if (!$week_cvterm_id) {
+            my $new_week_term = $schema->resultset("Cv::Cvterm")->create_with({
+               name => $week_term_string,
+               cv => 'cxgn_time_ontology'
+            });
+            $week_cvterm_id = $new_week_term->cvterm_id();
+        }
+
+        my $day_term_string = "day $time_diff_days";
+        $h->execute($day_term_string, 'cxgn_time_ontology');
+        my ($day_cvterm_id) = $h->fetchrow_array();
+        $h = undef;
+
+        if (!$day_cvterm_id) {
+            my $new_day_term = $schema->resultset("Cv::Cvterm")->create_with({
+               name => $day_term_string,
+               cv => 'cxgn_time_ontology'
+            });
+            $day_cvterm_id = $new_day_term->cvterm_id();
+        }
+
+        my $week_term = SGN::Model::Cvterm::get_trait_from_cvterm_id($schema, $week_cvterm_id, 'extended');
+        my $day_term = SGN::Model::Cvterm::get_trait_from_cvterm_id($schema, $day_cvterm_id, 'extended');
+
+        my %related_cvterms = (
+            week => $week_term,
+            day => $day_term
+        );
+
+        my $drone_run_projectprops = [
+            {type_id => $drone_run_type_cvterm_id, value => $drone_run_type},
+            {type_id => $project_start_date_type_id, value => $drone_run_event},
+            {type_id => $design_cvterm_id, value => 'drone_run'},
+            {type_id => $drone_run_camera_type_cvterm_id, value => $drone_run_camera_info},
+            {type_id => $drone_run_related_cvterms_cvterm_id, value => encode_json \%related_cvterms},
+            {type_id => $drone_run_stitching_type_cvterm_id, value => $drone_run_stitching_type}
+        ];
+
+        if ($drone_run_is_raw_images) {
+            push @$drone_run_projectprops, {type_id => $drone_run_is_raw_cvterm_id, value => 1};
+        }
+        if ($base_date_event) {
+            push @$drone_run_projectprops, {type_id => $drone_run_base_date_type_id, value => $base_date_event};
+        }
+        if ($drone_run_rig_desc) {
+            push @$drone_run_projectprops, {type_id => $drone_run_rig_desc_type_id, value => $drone_run_rig_desc};
+        }
+
+        my $nd_experiment_rs = $schema->resultset("NaturalDiversity::NdExperiment")->create({
+            nd_geolocation_id => $trial_location_id,
+            type_id => $drone_run_experiment_type_id
+        });
+        my $drone_run_nd_experiment_id = $nd_experiment_rs->nd_experiment_id();
+
+        my @drone_run_nd_experiment_projects = ({nd_experiment_id => $drone_run_nd_experiment_id});
+
+        if (!$field_trial_drone_runs_in_same_orthophoto_nd_experiment_id) {
+            if ($iterator == 0) {
+                my $nd_experiment_rs = $schema->resultset("NaturalDiversity::NdExperiment")->create({
+                    nd_geolocation_id => $trial_location_id,
+                    type_id => $field_trial_drone_runs_in_same_orthophoto_type_id,
+                    nd_experiment_projects => [{project_id => $drone_run_project_id}]
+                });
+                $field_trial_drone_runs_in_same_orthophoto_nd_experiment_id = $nd_experiment_rs->nd_experiment_id();
+            }
+        }
+        push @drone_run_nd_experiment_projects, {nd_experiment_id => $field_trial_drone_runs_in_same_orthophoto_nd_experiment_id};
+
+        my $new_drone_run_name = $trial_name."_".$drone_run_date_short;
+        $new_drone_run_name =~ s/ /_/g;
+        $new_drone_run_name =~ s/,/_/g;
+
+        my $project_rs = $schema->resultset("Project::Project")->create({
+            name => $new_drone_run_name,
+            description => $drone_run_description,
+            projectprops => $drone_run_projectprops,
+            project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $selected_trial_id}],
+            nd_experiment_projects => \@drone_run_nd_experiment_projects
+        });
+        my $selected_drone_run_id = $project_rs->project_id();
+
+        $h_priv->execute($drone_run_company_id, $drone_run_company_is_private, $selected_drone_run_id);
+
+        push @selected_drone_run_infos, {
+            drone_run_name => $new_drone_run_name,
+            drone_run_id => $selected_drone_run_id,
+            field_trial_id => $selected_trial_id,
+            trial_location_id => $trial_location_id
+        };
+        push @selected_drone_run_ids, $selected_drone_run_id;
+
+        $iterator++;
+    }
+    print STDERR Dumper \@selected_drone_run_infos;
+
+    my @return_drone_run_band_image_ids;
+    my @return_drone_run_band_image_urls;
+    my @return_drone_run_band_project_ids;
+    foreach (@$image_band_projects_details) {
+        my $drone_run_band_description = $_->{drone_run_band_desc};
+        my $drone_run_band_type = $_->{drone_run_band_type};
+        my $new_drone_run_geoparam_coords = $_->{drone_run_band_geoparam_coordinates};
+        my $new_drone_run_geoparam_proj = $_->{drone_run_band_geoparam_coordinates_type};
+        my $new_drone_run_geoparam_extent = $_->{drone_run_band_geoparam_extent};
+        my $new_drone_run_original_image_resize_ratio = $_->{drone_run_band_original_image_resize_ratio};
+        my $drone_run_band_stitched_image_id = $_->{drone_run_band_stitched_image_id};
+
+        my @drone_run_band_projectprops = (
+            {type_id => $drone_run_band_type_cvterm_id, value => $drone_run_band_type},
+            {type_id => $design_cvterm_id, value => 'drone_run_band'},
+            {type_id => $geoparam_coordinates_type_cvterm_id, value => $new_drone_run_geoparam_proj},
+        );
+
+        if ($new_drone_run_geoparam_coords) {
+            push @drone_run_band_projectprops, {type_id => $geoparam_coordinates_cvterm_id, value => encode_json $new_drone_run_geoparam_coords};
+        }
+        if ($new_drone_run_geoparam_extent) {
+            push @drone_run_band_projectprops, {type_id => $geoparam_coordinates_extent_type_cvterm_id, value => encode_json $new_drone_run_geoparam_extent};
+        }
+        if ($new_drone_run_original_image_resize_ratio) {
+            push @drone_run_band_projectprops, {type_id => $original_image_resize_ratio_cvterm_id, value => encode_json $new_drone_run_original_image_resize_ratio};
+        }
+
+        my $image = SGN::Image->new( $schema->storage->dbh, $drone_run_band_stitched_image_id, $c );
+
+        foreach my $selected_drone_run_obj (@selected_drone_run_infos) {
+            my $drone_run_name = $selected_drone_run_obj->{drone_run_name};
+            my $drone_run_id = $selected_drone_run_obj->{drone_run_id};
+            my $field_trial_id = $selected_drone_run_obj->{field_trial_id};
+            my $trial_location_id = $selected_drone_run_obj->{trial_location_id};
+
+            my $drone_run_band_name = $drone_run_name."_".$drone_run_band_type;
+
+            my $project_rs = $schema->resultset("Project::Project")->create({
+                name => $drone_run_band_name,
+                description => $drone_run_band_description,
+                projectprops => \@drone_run_band_projectprops,
+                project_relationship_subject_projects => [{type_id => $drone_run_band_project_relationship_type_id, object_project_id => $drone_run_id}]
+            });
+            my $selected_drone_run_band_id = $project_rs->project_id();
+
+            $h_priv->execute($drone_run_company_id, $drone_run_company_is_private, $selected_drone_run_band_id);
+
+            my $ret = $image->associate_project($selected_drone_run_band_id, $linking_table_type_id);
+
+            push @return_drone_run_band_image_urls, $image->get_image_url('original');
+            push @return_drone_run_band_image_ids, $image->get_image_id();
+            push @return_drone_run_band_project_ids, $selected_drone_run_band_id;
+        }
+    }
+
+    print STDERR Dumper [\@return_drone_run_band_project_ids, \@return_drone_run_band_image_ids];
+
+    $c->stash->{rest} = {
+        success => 1,
+        drone_run_band_project_ids => \@return_drone_run_band_project_ids,
+        drone_run_band_image_ids => \@return_drone_run_band_image_ids
+    };
+}
+
 sub drone_imagery_apply_other_selected_vi : Path('/api/drone_imagery/apply_other_selected_vi') : ActionClass('REST') { }
 sub drone_imagery_apply_other_selected_vi_POST : Args(0) {
     my $self = shift;
