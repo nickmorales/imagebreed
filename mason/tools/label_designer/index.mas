@@ -1,7 +1,7 @@
 
 
 
-<& '/util/import_javascript.mas', classes => [ 'jquery', 'jqueryui', 'popup', 'd3.d3Min.js', 'tools.LabelDesigner', 'CXGN.BreederSearch03152022', 'bootstrap-select_min'] &>
+<& '/util/import_javascript.mas', classes => [ 'jquery', 'jqueryui', 'popup', 'd3.d3Min.js', 'tools.LabelDesigner08302022', 'CXGN.BreederSearch03152022', 'bootstrap-select_min'] &>
 <& /page/page_title.mas, title=>"Label Designer" &>
 
 <&| /util/workflow.mas , id=> "label_designer_workflow"&>
