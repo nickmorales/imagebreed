@@ -29,7 +29,8 @@ my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
     offset=>$offset,
     average_repeat_measurements=>0,
     return_only_first_measurement=>1,
-    include_accession_entry_numbers=>0
+    include_accession_entry_numbers=>0,
+    include_observation_units_with_no_observations=>0
 );
 my @data = $phenotypes_search->get_phenotype_matrix();
 
@@ -155,6 +156,12 @@ has 'include_accession_entry_numbers' => (
     default => 0
 );
 
+has 'include_observation_units_with_no_observations' => (
+    isa => 'Bool|Undef',
+    is => 'ro',
+    default => 0
+);
+
 has 'trait_contains' => (
     isa => 'ArrayRef[Str]|Undef',
     is => 'rw'
@@ -188,6 +195,7 @@ sub get_phenotype_matrix {
     my $average_repeat_measurements = $self->average_repeat_measurements;
     my $return_only_first_measurement = $self->return_only_first_measurement;
     my $include_accession_entry_numbers = $self->include_accession_entry_numbers;
+    my $include_observation_units_with_no_observations = $self->include_observation_units_with_no_observations;
 
     if ($return_only_first_measurement) {
         $average_repeat_measurements = 0;
@@ -237,6 +245,46 @@ sub get_phenotype_matrix {
 
         print STDERR "No of lines retrieved: ".scalar(@$data)."\n";
         print STDERR "Construct Pheno Matrix Start:".localtime."\n";
+
+        if ($include_observation_units_with_no_observations) {
+            my %include_observation_units_with_no_observations_check;
+            foreach (@$data) {
+                $include_observation_units_with_no_observations_check{$_->{observationunit_stock_id}} = $_;
+            }
+
+            my $phenotypes_search_no_traits_specified = CXGN::Phenotypes::SearchFactory->instantiate(
+                $self->search_type,
+                {
+                    bcs_schema=>$schema,
+                    data_level=>$self->data_level,
+                    trial_list=>$self->trial_list,
+                    program_list=>$self->program_list,
+                    folder_list=>$self->folder_list,
+                    year_list=>$self->year_list,
+                    location_list=>$self->location_list,
+                    accession_list=>$self->accession_list,
+                    plot_list=>$self->plot_list,
+                    plant_list=>$self->plant_list,
+                    subplot_list=>$self->subplot_list,
+                    include_timestamp=>$include_timestamp,
+                    exclude_phenotype_outlier=>$self->exclude_phenotype_outlier,
+                    trait_contains=>$self->trait_contains,
+                    phenotype_min_value=>$self->phenotype_min_value,
+                    phenotype_max_value=>$self->phenotype_max_value,
+                    limit=>$self->limit,
+                    offset=>$self->offset,
+                    include_observations=>0
+                }
+            );
+            my ($data_no_traits_specified, $unique_traits_no_traits_specified) = $phenotypes_search_no_traits_specified->search();
+
+            foreach (@$data_no_traits_specified) {
+                my $stock_id = $_->{observationunit_stock_id};
+                if (!exists($include_observation_units_with_no_observations_check{$stock_id})) {
+                    push @$data, $_;
+                }
+            }
+        }
 
         my @line = @metadata_headers;
         push @line, ('plantedSeedlotStockDbId', 'plantedSeedlotStockUniquename', 'plantedSeedlotCurrentCount', 'plantedSeedlotCurrentWeightGram', 'plantedSeedlotBoxName', 'plantedSeedlotTransactionCount', 'plantedSeedlotTransactionWeight', 'plantedSeedlotTransactionDescription', 'availableGermplasmSeedlotUniquenames');

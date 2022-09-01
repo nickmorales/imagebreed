@@ -179,6 +179,7 @@ sub drone_imagery_analysis_query_POST : Args(0) {
         trial_list=>$trial_id_list,
         include_timestamp=>0,
         exclude_phenotype_outlier=>0,
+        include_observation_units_with_no_observations=>1
     );
     my @data = $phenotypes_search->get_phenotype_matrix();
 
