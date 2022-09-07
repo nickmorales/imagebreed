@@ -2122,6 +2122,7 @@
 	const DEFAULT_OPTS = {
 	  brapi_auth: null,
 	  brapi_pageSize: 1000,
+      brapi_levelName: 'plot',
 	  defaultPos: [0, 0],
 	  defaultZoom: 2,
 	  normalZoom: 16,
@@ -2414,7 +2415,7 @@
 	      brapi.search_observationunits({
 	        "studyDbIds":[studyDbId],
 	        'pageSize':this.opts.brapi_pageSize,
-	        'observationUnitLevelName' : 'plot',
+	        'observationLevels' : [{ "levelName" : this.opts.brapi_levelName }],
             'includeObservations': 'false'
 	      })
 	        .each(ou=>{
@@ -2741,7 +2742,7 @@
 	    let nodes = [];
 	    this.plots.features.forEach((plot)=>{
 	      let params = {
-	        observationUnitPosition: {geoCoordinates: plot},
+	        observationUnitPosition: {geoCoordinates: plot, observationLevel:{levelName: this.opts.brapi_levelName }},
 	        observationUnitDbId: plot.properties.observationUnitDbId
 	      };
 	      // XXX Using internal brapijs method for now

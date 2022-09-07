@@ -46,12 +46,12 @@ sub search {
     my $include_observations_bool = lc $include_observations eq 'true' ? 1 : 0;
 
     if ($levels_arrayref){
-        $data_level = ();
-        foreach ( @{$levels_arrayref} ){
+        $data_level = [];
+        foreach ( @{$levels_arrayref} ) {
             push @$level_code_arrayref, $_->{levelCode} if ($_->{levelCode});
-            push @{$data_level}, $_->{levelName} if ($_->{levelName});
+            push @$data_level, $_->{levelName} if ($_->{levelName});
         }
-        if (! $data_level) {
+        if (!$data_level) {
             $data_level = ['all'];
         }
     }
