@@ -118,7 +118,7 @@ jQuery(document).ready(function() {
 
                     var plot_polygons_layout = field_trial_layout_response_current.output;
                     for (var i=1; i<plot_polygons_layout.length; i++) {
-                        var plot_polygons_plot_number = parseInt(plot_polygons_layout[i][2]);
+                        var plot_polygons_plot_number = Number(plot_polygons_layout[i][2]);
                         var plot_polygons_plot_name = plot_polygons_layout[i][0];
 
                         plot_polygons_plot_names_colors[plot_polygons_plot_name] = randomColor;
@@ -1117,7 +1117,7 @@ jQuery(document).ready(function() {
 
                         var plot_polygons_layout = field_trial_layout_response_current.output;
                         for (var i=1; i<plot_polygons_layout.length; i++) {
-                            var plot_polygons_plot_number = parseInt(plot_polygons_layout[i][2]);
+                            var plot_polygons_plot_number = Number(plot_polygons_layout[i][2]);
                             var plot_polygons_plot_name = plot_polygons_layout[i][0];
 
                             plot_polygons_plot_names_colors[plot_polygons_plot_name] = randomColor;
@@ -4052,7 +4052,7 @@ jQuery(document).ready(function() {
 
                     var plot_polygons_layout = field_trial_layout_response_current.output;
                     for (var i=1; i<plot_polygons_layout.length; i++) {
-                        var plot_polygons_plot_number = parseInt(plot_polygons_layout[i][2]);
+                        var plot_polygons_plot_number = Number(plot_polygons_layout[i][2]);
                         var plot_polygons_plot_name = plot_polygons_layout[i][0];
 
                         plot_polygons_plot_names_colors[plot_polygons_plot_name] = randomColor;
@@ -5760,7 +5760,7 @@ jQuery(document).ready(function() {
         var plot_polygons_plot_numbers = [];
         var plot_polygons_plot_numbers_plot_names = {};
         for (var i=1; i<plot_polygons_layout.length; i++) {
-            var plot_polygons_plot_number = parseInt(plot_polygons_layout[i][2]);
+            var plot_polygons_plot_number = Number(plot_polygons_layout[i][2]);
             plot_polygons_plot_numbers.push(plot_polygons_plot_number);
             plot_polygons_plot_numbers_plot_names[plot_polygons_plot_number] = plot_polygons_layout[i][0];
         }
@@ -5801,7 +5801,7 @@ jQuery(document).ready(function() {
             var field_trial_layout_response_current = field_trial_layout_responses[plot_polygons_field_trial_names_order_current];
             var plot_polygons_layout = field_trial_layout_response_current.output;
             for (var i=1; i<plot_polygons_layout.length; i++) {
-                var plot_polygons_plot_number = parseInt(plot_polygons_layout[i][2]);
+                var plot_polygons_plot_number = Number(plot_polygons_layout[i][2]);
                 plot_polygons_plot_numbers.push(plot_polygons_plot_number);
                 plot_polygons_plot_numbers_plot_names[plot_polygons_field_trial_names_order_current][plot_polygons_plot_number] = plot_polygons_layout[i][0];
             }
@@ -5862,7 +5862,7 @@ jQuery(document).ready(function() {
 
             var plot_polygons_layout = field_trial_layout_response_current.output;
             for (var i=1; i<plot_polygons_layout.length; i++) {
-                var plot_polygons_plot_number = parseInt(plot_polygons_layout[i][2]);
+                var plot_polygons_plot_number = Number(plot_polygons_layout[i][2]);
                 var plot_polygons_plot_name = plot_polygons_layout[i][0];
 
                 plot_polygons_plot_names_colors[plot_polygons_plot_name] = randomColor;
@@ -5908,7 +5908,7 @@ jQuery(document).ready(function() {
             var plot_polygons_plot_numbers_field_trial_current = [];
             var plot_polygons_plot_numbers_current = [];
             for (var i=1; i<plot_polygons_layout.length; i++) {
-                var plot_polygons_plot_number = parseInt(plot_polygons_layout[i][2]);
+                var plot_polygons_plot_number = Number(plot_polygons_layout[i][2]);
                 var plot_polygons_plot_name = plot_polygons_layout[i][0];
 
                 plot_polygons_plot_numbers_current.push(plot_polygons_plot_number);

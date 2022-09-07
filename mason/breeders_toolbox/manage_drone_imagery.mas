@@ -2,7 +2,7 @@
 <%args>
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch03152022', 'd3.d3v4Min.js', 'opencv.opencv', 'CXGN.ManageDroneImagery08302022' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch03152022', 'd3.d3v4Min.js', 'opencv.opencv', 'CXGN.ManageDroneImagery09072022' ] &>
 
 <style>
 .straightLine, .hrLine{

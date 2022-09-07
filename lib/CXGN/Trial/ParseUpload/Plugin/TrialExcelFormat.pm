@@ -259,7 +259,7 @@ sub _validate_with_plugin {
         push @error_messages, "Cell C$row_name: plot number missing";
     }
     #plot number must be a positive integer
-    if (!($plot_number =~ /^\d+?$/)) {
+    if (!($plot_number =~ /^\d*\.?\d*$/)) {
         push @error_messages, "Cell C$row_name: plot number is not a positive integer: $plot_number";
     }
     #plot number must be unique in file
