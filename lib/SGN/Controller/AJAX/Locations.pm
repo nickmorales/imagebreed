@@ -291,8 +291,12 @@ sub noaa_ncdc_analysis :Path("/ajax/location/noaa_ncdc_analysis") Args(0) {
     my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
     my $tmp_stats_dir = $shared_cluster_dir_config."/tmp_noaa_ncdc_weather";
     mkdir $tmp_stats_dir if ! -d $tmp_stats_dir;
-    my ($stats_tempfile_temp_fh, $stats_tempfile_temp) = tempfile("weather_XXXXX", DIR=> $tmp_stats_dir);
-    my ($stats_tempfile_prcp_fh, $stats_tempfile_prcp) = tempfile("weather_XXXXX", DIR=> $tmp_stats_dir);
+    my $stats_tempfile_temp_string = $c->tempfile( TEMPLATE => 'tmp_noaa_ncdc_weather/figureXXXX');
+    $stats_tempfile_temp_string .= '.csv';
+    my $stats_tempfile_temp = $c->config->{basepath}."/".$stats_tempfile_temp_string;
+    my $stats_tempfile_prcp_string = $c->tempfile( TEMPLATE => 'tmp_noaa_ncdc_weather/figureXXXX');
+    $stats_tempfile_prcp_string .= '.csv';
+    my $stats_tempfile_prcp = $c->config->{basepath}."/".$stats_tempfile_prcp_string;
     my $stats_tempfile_plot_string = $c->tempfile( TEMPLATE => 'tmp_noaa_ncdc_weather/figureXXXX');
     $stats_tempfile_plot_string .= '.png';
     my $stats_tempfile_plot = $c->config->{basepath}."/".$stats_tempfile_plot_string;
@@ -455,7 +459,13 @@ sub noaa_ncdc_analysis :Path("/ajax/location/noaa_ncdc_analysis") Args(0) {
         my $status2 = system($cmd2);
     }
 
-    $c->stash->{rest} = { noaa_station_id => $station_id, plot => $stats_tempfile_plot_string, plot2 => $stats_tempfile_plot_string2 };
+    $c->stash->{rest} = {
+        noaa_station_id => $station_id,
+        plot => $stats_tempfile_plot_string,
+        plot2 => $stats_tempfile_plot_string2,
+        tempfile_temperature => $stats_tempfile_temp_string,
+        tempfile_precip => $stats_tempfile_prcp_string
+    };
 }
 
 sub _check_user_login_location {

@@ -240,7 +240,11 @@ jQuery(document).ready(function() {
                     alert(response.error);
                 }
                 else if (response.noaa_station_id) {
-                    var html = '<hr><img src="'+response.plot+'"><hr><img src="'+response.plot2+'">';
+                    var html = '<hr><center><h2>Results</h2></center><hr>';
+                    html = html + '<center><a href="'+response.tempfile_temperature+'"><button class="btn btn-default">Download Temperature CSV</button></a>';
+                    html = html + '<a href="'+response.tempfile_precip+'"><button class="btn btn-default">Download Precipitation CSV</button></a></center>';
+                    html = html + '<hr>';
+                    html = html + '<img src="'+response.plot+'"><hr><img src="'+response.plot2+'">';
                     jQuery('#noaa_ndcd_analysis_result').html(html);
                 }
                 else {
