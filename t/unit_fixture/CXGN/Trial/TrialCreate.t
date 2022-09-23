@@ -463,7 +463,8 @@ my @genotyping_plate_ids = ($genotyping_trial_id);
 my $genotyping_project_obj = CXGN::Genotype::GenotypingProject->new({
     bcs_schema => $chado_schema,
     project_id => $genotyping_project_id_2,
-    new_genotyping_plate_list => \@genotyping_plate_ids
+    new_genotyping_plate_list => \@genotyping_plate_ids,
+    subscription_model => 0
 });
 
 ok(my $new_associated_project =$genotyping_project_obj->set_project_for_genotyping_plate(), "move plate to new project");

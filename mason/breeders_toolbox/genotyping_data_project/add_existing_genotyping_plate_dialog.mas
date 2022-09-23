@@ -8,7 +8,7 @@ $genotyping_plate_ids => undef
 
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.Trial' , 'jstree/dist/jstree', 'CXGN.BreedersToolbox.HTMLSelect', 'moment_min', 'daterangepicker' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.Trial03152022' , 'jstree/dist/jstree', 'CXGN.BreedersToolbox.HTMLSelect03152022', 'moment_min', 'daterangepicker' ] &>
 
 <div class="modal fade" id="add_existing_plate_to_project_dialog" name="add_existing_plate_to_project_dialog" tabindex="-1" role="dialog" aria-labelledby="addPlatesToProjectDialog">
     <div class="modal-dialog" role="document">

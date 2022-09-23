@@ -323,11 +323,13 @@ sub get_projects_select : Path('/ajax/html/select/projects') Args(0) {
     if ($excluded_plates_in_project_id) {
         my $plate_info = CXGN::Genotype::GenotypingProject->new({
             bcs_schema => $schema,
-            project_id => $excluded_plates_in_project_id
+            project_id => $excluded_plates_in_project_id,
+            subscription_model => $c->config->{subscription_model}
         });
         my $genotyping_plates = $plate_info->get_genotyping_plate_ids();
         @genotyping_plate_ids = @$genotyping_plates;
     }
+    my %genotyping_plate_ids_hash = map {$_ => 1} @genotyping_plate_ids;
 
     my $projects;
     if (!$breeding_program_id && !$breeding_program_name) {
@@ -369,7 +371,7 @@ sub get_projects_select : Path('/ajax/html/select/projects') Args(0) {
             if ($excluded_plates_in_project_id && scalar(@genotyping_plate_ids)>0) {
                 print STDERR "SUBSTRACTING..."."\n";
                 foreach my $project (@all_projects) {
-                    next if ($project->[0] ~~ @genotyping_plate_ids);
+                    next if (exists($genotyping_plate_ids_hash{$project->[0]}));
                     push @projects, $project;
                 }
             } else {

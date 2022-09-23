@@ -612,7 +612,8 @@ sub set_project_for_genotyping_plate_POST : Args(0) {
     my $genotyping_project_obj = CXGN::Genotype::GenotypingProject->new({
         bcs_schema => $schema,
         project_id => $genotyping_project_id,
-        new_genotyping_plate_list => $genotyping_plate_ids
+        new_genotyping_plate_list => $genotyping_plate_ids,
+        subscription_model => $c->config->{subscription_model}
     });
 
     my $errors = $genotyping_project_obj->validate_relationship();
