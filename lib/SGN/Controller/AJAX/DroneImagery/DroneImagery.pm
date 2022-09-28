@@ -14756,6 +14756,120 @@ sub _perform_autoencoder_keras_cnn_vi {
     return { success => 1 };
 }
 
+sub drone_imagery_change_date_drone_run : Path('/api/drone_imagery/change_date_drone_run') : ActionClass('REST') { }
+sub drone_imagery_change_date_drone_run_GET : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    # print STDERR Dumper $c->req->params();
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+    my $metadata_schema = $c->dbic_schema("CXGN::Metadata::Schema");
+    my $phenome_schema = $c->dbic_schema("CXGN::Phenome::Schema");
+    my $drone_run_project_id = $c->req->param('drone_run_project_id');
+    my $field_trial_id = $c->req->param('field_trial_id');
+    my $new_drone_run_date = $c->req->param('date'); #'2022/09/01 00:00:00'
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'curator', 0, 0);
+
+    my $drone_run_field_trial_project_relationship_type_id_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
+    my $drone_run_band_drone_run_project_relationship_type_id_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
+    my $project_start_date_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'project_start_date', 'project_property')->cvterm_id();
+    my $drone_run_base_date_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_base_date', 'project_property')->cvterm_id();
+    my $drone_run_related_cvterms_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_related_time_cvterms_json', 'project_property')->cvterm_id();
+
+    my $calendar_funcs = CXGN::Calendar->new({});
+
+    my %seen_field_trial_drone_run_dates;
+    my $drone_run_date_q = "SELECT drone_run_date.value
+        FROM project AS drone_run_band_project
+        JOIN project_relationship AS drone_run_band_rel ON (drone_run_band_rel.subject_project_id = drone_run_band_project.project_id AND drone_run_band_rel.type_id = $drone_run_band_drone_run_project_relationship_type_id_cvterm_id)
+        JOIN project AS drone_run_project ON (drone_run_band_rel.object_project_id = drone_run_project.project_id)
+        JOIN projectprop AS drone_run_date ON(drone_run_project.project_id=drone_run_date.project_id AND drone_run_date.type_id=$project_start_date_type_id)
+        JOIN project_relationship AS field_trial_rel ON (drone_run_project.project_id = field_trial_rel.subject_project_id AND field_trial_rel.type_id=$drone_run_field_trial_project_relationship_type_id_cvterm_id)
+        JOIN project AS field_trial ON (field_trial_rel.object_project_id = field_trial.project_id)
+        WHERE field_trial.project_id IN ($field_trial_id);";
+    my $drone_run_date_h = $schema->storage->dbh()->prepare($drone_run_date_q);
+    $drone_run_date_h->execute();
+    while( my ($drone_run_date) = $drone_run_date_h->fetchrow_array()) {
+        my $drone_run_date_formatted = $drone_run_date ? $calendar_funcs->display_start_date($drone_run_date) : '';
+        if ($drone_run_date_formatted) {
+            my $date_obj = Time::Piece->strptime($drone_run_date_formatted, "%Y-%B-%d %H:%M:%S");
+            my $epoch_seconds = $date_obj->epoch;
+            $seen_field_trial_drone_run_dates{$epoch_seconds}++;
+        }
+    }
+    $drone_run_date_h = undef;
+
+    my $drone_run_date_obj = Time::Piece->strptime($new_drone_run_date, "%Y/%m/%d %H:%M:%S");
+    if (exists($seen_field_trial_drone_run_dates{$drone_run_date_obj->epoch})) {
+        $c->stash->{rest} = { error => "An imaging event has already occured on this field trial at the same date and time! Please give a unique date/time for each imaging event on a field trial!" };
+        $c->detach();
+    }
+
+    my $imaging_event_project = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $drone_run_project_id });
+    my $drone_run_base_date = $imaging_event_project->get_drone_run_base_date();
+
+    my $trial = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $field_trial_id });
+    my $planting_date = $trial->get_planting_date();
+    my $planting_date_time_object = Time::Piece->strptime($planting_date, "%Y-%B-%d");
+    my $drone_run_date_time_object = Time::Piece->strptime($new_drone_run_date, "%Y/%m/%d %H:%M:%S");
+    my $time_diff;
+    if ($drone_run_base_date) {
+        my $imaging_event_base_date_time_object = Time::Piece->strptime($drone_run_base_date, "%Y-%B-%d %H:%M:%S");
+        $time_diff = $drone_run_date_time_object - $imaging_event_base_date_time_object;
+    }
+    else {
+        $time_diff = $drone_run_date_time_object - $planting_date_time_object;
+    }
+    my $time_diff_weeks = $time_diff->weeks;
+    my $time_diff_days = $time_diff->days;
+    my $time_diff_hours = $time_diff->hours;
+    my $rounded_time_diff_weeks = round($time_diff_weeks);
+    if ($rounded_time_diff_weeks == 0) {
+        $rounded_time_diff_weeks = 1;
+    }
+
+    my $week_term_string = "week $rounded_time_diff_weeks";
+    my $q = "SELECT t.cvterm_id FROM cvterm as t JOIN cv ON(t.cv_id=cv.cv_id) WHERE t.name=? and cv.name=?;";
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute($week_term_string, 'cxgn_time_ontology');
+    my ($week_cvterm_id) = $h->fetchrow_array();
+
+    if (!$week_cvterm_id) {
+        my $new_week_term = $schema->resultset("Cv::Cvterm")->create_with({
+           name => $week_term_string,
+           cv => 'cxgn_time_ontology'
+        });
+        $week_cvterm_id = $new_week_term->cvterm_id();
+    }
+
+    my $day_term_string = "day $time_diff_days";
+    $h->execute($day_term_string, 'cxgn_time_ontology');
+    my ($day_cvterm_id) = $h->fetchrow_array();
+    $h = undef;
+
+    if (!$day_cvterm_id) {
+        my $new_day_term = $schema->resultset("Cv::Cvterm")->create_with({
+           name => $day_term_string,
+           cv => 'cxgn_time_ontology'
+        });
+        $day_cvterm_id = $new_day_term->cvterm_id();
+    }
+
+    my $week_term = SGN::Model::Cvterm::get_trait_from_cvterm_id($schema, $week_cvterm_id, 'extended');
+    my $day_term = SGN::Model::Cvterm::get_trait_from_cvterm_id($schema, $day_cvterm_id, 'extended');
+
+    my %related_cvterms = (
+        week => $week_term,
+        day => $day_term
+    );
+
+    $imaging_event_project->set_drone_run_date($new_drone_run_date);
+    $imaging_event_project->set_drone_run_related_time_cvterms(\%related_cvterms);
+
+    # Check for phtnoypes and Change phenotype trait
+
+    $c->stash->{rest} = {success => 1};
+}
+
 sub drone_imagery_delete_drone_run : Path('/api/drone_imagery/delete_drone_run') : ActionClass('REST') { }
 sub drone_imagery_delete_drone_run_GET : Args(0) {
     my $self = shift;

@@ -217,8 +217,9 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
 
         my $drone_run_date_obj = Time::Piece->strptime($new_drone_run_date, "%Y/%m/%d %H:%M:%S");
         if (exists($seen_field_trial_drone_run_dates{$drone_run_date_obj->epoch})) {
-            $c->stash->{rest} = { error => "An imaging event has already occured on these field trial(s) at the same date and time! Please give a unique date/time for each imaging event on a field trial!" };
-            $c->detach();
+            $c->stash->{message} = "An imaging event has already occured on these field trial(s) at the same date and time! Please give a unique date/time for each imaging event on a field trial!";
+            $c->stash->{template} = 'generic_message.mas';
+            return;
         }
 
         my $drone_run_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_experiment', 'experiment_type')->cvterm_id();

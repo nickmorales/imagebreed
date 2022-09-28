@@ -7436,6 +7436,95 @@ jQuery(document).ready(function() {
     });
 
     //
+    // Change date imaging event
+    //
+
+    var manage_drone_imagery_change_date_drone_run_project_id;
+    var manage_drone_imagery_change_date_drone_run_field_trial_id;
+    var manage_drone_imagery_change_date_drone_run_can_proceed = 0;
+    var manage_drone_imagery_change_date_drone_run_date = 0;
+    jQuery(document).on('click', 'button[name="project_drone_imagery_change_date_drone_run"]', function(){
+        manage_drone_imagery_change_date_drone_run_project_id = jQuery(this).data('drone_run_project_id');
+        manage_drone_imagery_change_date_drone_run_field_trial_id = jQuery(this).data('field_trial_id');
+
+        jQuery.ajax({
+            url : '/api/drone_imagery/check_field_trial_ids?field_trial_ids='+manage_drone_imagery_change_date_drone_run_field_trial_id,
+            success: function(response){
+                console.log(response);
+                if (response.html) {
+                    jQuery('#change_date_drone_image_field_trial_info').html(response.html);
+                    jQuery('#drone_imagery_change_date_drone_run_dialog').modal('show');
+                }
+                if (response.can_proceed == 1) {
+                    manage_drone_imagery_change_date_drone_run_can_proceed = 1;
+                }
+                else {
+                    manage_drone_imagery_change_date_drone_run_can_proceed = 0;
+                }
+            },
+            error: function(response){
+                alert('Error checking field trial details to change imaging event date!');
+            }
+        });
+
+        var drone_run_change_date_element = jQuery("#drone_run_change_date");
+        set_daterangepicker_default (drone_run_change_date_element);
+        jQuery('input[title="drone_run_change_date"]').daterangepicker(
+            {
+                "singleDatePicker": true,
+                "showDropdowns": true,
+                "autoUpdateInput": false,
+                "timePicker": true,
+                "timePicker24Hour": true,
+            },
+            function(start){
+                drone_run_change_date_element.val(start.format('YYYY/MM/DD HH:mm:ss'));
+            }
+        );
+
+    });
+
+    jQuery('#drone_imagery_change_date_drone_run_confirm').click(function() {
+        if (manage_drone_imagery_change_date_drone_run_can_proceed == 1) {
+            manage_drone_imagery_change_date_drone_run_date = jQuery('#drone_run_change_date').val();
+
+            if (manage_drone_imagery_change_date_drone_run_date != '') {
+                jQuery.ajax({
+                    type: 'GET',
+                    url: '/api/drone_imagery/change_date_drone_run?drone_run_project_id='+manage_drone_imagery_change_date_drone_run_project_id+'&field_trial_id='+manage_drone_imagery_change_date_drone_run_field_trial_id+'&date='+manage_drone_imagery_change_date_drone_run_date,
+                    beforeSend: function() {
+                        jQuery("#working_modal").modal("show");
+                    },
+                    success: function(response){
+                        console.log(response);
+                        jQuery("#working_modal").modal("hide");
+
+                        if(response.error) {
+                            alert(response.error);
+                        }
+                        if(response.success) {
+                            alert('Imaging event date changed successfully!');
+                        }
+                        location.reload();
+                    },
+                    error: function(response){
+                        jQuery("#working_modal").modal("hide");
+                        alert('Error changing date of imaging event!')
+                    }
+                });
+            }
+            else {
+                alert('Please select a new date first!');
+                return false;
+            }
+        }
+        else {
+            alert('Cannot proceed with changing imaging event name! Something wrong with planting date!');
+            return false;
+        }
+    });
+
+    //
     // Delete imaging event
     //
 
