@@ -173,8 +173,9 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
     }
 
     # if ($selected_drone_run_id && ($new_drone_run_band_stitching eq 'yes' || $new_drone_run_band_stitching eq 'yes_raw' || $new_drone_run_band_stitching eq 'yes_automated')) {
-    #     $c->stash->{rest} = { error => "Please create a new drone run if you are uploading a zipfile of raw images!" };
-    #     $c->detach();
+    #     $c->stash->{message} = "Please create a new drone run if you are uploading a zipfile of raw images!";
+    #     $c->stash->{template} = 'generic_message.mas';
+    #     return;
     # }
 
     my $log_file_path = '';
@@ -1102,7 +1103,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_radiometric_calibration = $new_drone_run_band_stitching_odm_radiocalibration ? '--radiometric-calibration camera' : '';
                 my $odm_radiometric_calibration_open = $new_drone_run_band_stitching_odm_radiocalibration ? '--odm_radiocalibrated True' : '';
 
-                my $odm_command = 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v '.$image_path_remaining_host.':/datasets/code opendronemap/odm --project-path /datasets --orthophoto-resolution 1 --dsm --dtm '.$odm_radiometric_calibration.' > '.$temp_file_docker_log;
+                my $odm_command = 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v '.$image_path_remaining_host.':/datasets/code opendronemap/odm --project-path /datasets --orthophoto-resolution 1 --dsm --dtm --feature-quality ultra --min-num-features 50000 '.$odm_radiometric_calibration.' > '.$temp_file_docker_log;
                 print STDERR $odm_command."\n";
                 my $odm_status = system($odm_command);
 
@@ -1119,7 +1120,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 my $odm_final_report_shots = "$image_path_remaining/odm_report/shots.geojson";
                 my $odm_final_sfm_reconstruction = "$image_path_remaining/opensfm/reconstruction.json";
 
-                my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImage.py --image_path $odm_final_orthophoto --outfile_path_b1 $odm_b1 --outfile_path_b2 $odm_b2 --outfile_path_b3 $odm_b3 --outfile_path_b4 $odm_b4 --outfile_path_b5 $odm_b5 $odm_radiometric_calibration_open";
+                my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImage5band.py --image_path $odm_final_orthophoto --outfile_path_b1 $odm_b1 --outfile_path_b2 $odm_b2 --outfile_path_b3 $odm_b3 --outfile_path_b4 $odm_b4 --outfile_path_b5 $odm_b5 $odm_radiometric_calibration_open";
                 print STDERR $odm_cmd."\n";
                 my $odm_open_status = system($odm_cmd);
 
@@ -1257,7 +1258,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 );
             }
             elsif ($new_drone_run_camera_info eq 'ccd_color' || $new_drone_run_camera_info eq 'cmos_color') {
-                my $odm_command = 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v '.$image_path_remaining_host.':/datasets/code opendronemap/odm --project-path /datasets --orthophoto-resolution 1 --dsm --dtm > '.$temp_file_docker_log;
+                my $odm_command = 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v '.$image_path_remaining_host.':/datasets/code opendronemap/odm --project-path /datasets --orthophoto-resolution 1 --dsm --dtm --feature-quality ultra --min-num-features 50000 > '.$temp_file_docker_log;
                 print STDERR $odm_command."\n";
                 my $odm_status = system($odm_command);
 
@@ -2152,8 +2153,9 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
             my $archived_filename_with_path = $uploader->archive();
             my $md5 = $uploader->get_md5($archived_filename_with_path);
             if (!$archived_filename_with_path) {
-                $c->stash->{rest} = { error => "Could not save file $upload_original_name in archive." };
-                $c->detach();
+                $c->stash->{message} = "Could not save file $upload_original_name in archive.";
+                $c->stash->{template} = 'generic_message.mas';
+                return;
             }
             unlink $upload_tempfile;
             print STDERR "Archived Bulk Orthophoto File: $archived_filename_with_path\n";
@@ -2316,8 +2318,9 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     my $archived_filename_with_path = $uploader->archive();
     my $md5 = $uploader->get_md5($archived_filename_with_path);
     if (!$archived_filename_with_path) {
-        $c->stash->{rest} = { error => "Could not save file $upload_original_name in archive." };
-        $c->detach();
+        $c->stash->{message} = "Could not save file $upload_original_name in archive.";
+        $c->stash->{template} = 'generic_message.mas';
+        return;
     }
     unlink $upload_tempfile;
     print STDERR "Archived Drone Image Bulk Previous Orthophoto Zip File: $archived_filename_with_path\n";
@@ -2639,8 +2642,9 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             push @parse_csv_errors, "The given coordinate system $coordinate_system is not one of: UTM, WGS84, or Pixels! If UTM or WGS84 are used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system AND the GeoJSON files must be of the same coordinate system. If Pixels is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs, AND the GeoJSON files must describe the pixel positions of the plot-polygons relative to the provided images. If UTM is used, the provided GeoJSON is in Northing/Easting (e.g. [312295.7451,1567250.9971]). If WGS84 is used, the provided GeoJSON is in Longitude/Latitude (e.g. [121.260723987719, 14.1701625191025]).";
         }
         if ($coordinate_system eq 'WGS84') {
-            $c->stash->{rest} = {error => "Only the UTM and Pixels coordinate systems are currently supported. In the future WGS84 will be supported, but for now please use UTM if you have GeoTiffs with geo-coordinate GeoJSON or Pixels if you have simple rasters with pixel position GeoJSON." };
-            $c->detach;
+            $c->stash->{message} = "Only the UTM and Pixels coordinate systems are currently supported. In the future WGS84 will be supported, but for now please use UTM if you have GeoTiffs with geo-coordinate GeoJSON or Pixels if you have simple rasters with pixel position GeoJSON.";
+            $c->stash->{template} = 'generic_message.mas';
+            return;
         }
 
         if ($ortho_product_type ne 'None' && $ortho_product_type ne 'Pix4D' && $ortho_product_type ne 'Agisoft' && $ortho_product_type ne 'ODM' && $ortho_product_type ne 'Other') {
@@ -3125,8 +3129,9 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
             my $archived_filename_with_path = $uploader->archive();
             my $md5 = $uploader->get_md5($archived_filename_with_path);
             if (!$archived_filename_with_path) {
-                $c->stash->{rest} = { error => "Could not save file $upload_original_name in archive." };
-                $c->detach();
+                $c->stash->{message} = "Could not save file $upload_original_name in archive.";
+                $c->stash->{template} = 'generic_message.mas';
+                return;
             }
             unlink $upload_tempfile;
             print STDERR "Archived Bulk Orthophoto File: $archived_filename_with_path\n";
@@ -4369,8 +4374,9 @@ sub upload_drone_imagery_additional_raw_images : Path("/drone_imagery/upload_dro
     my $archived_filename_with_path = $uploader->archive();
     my $md5 = $uploader->get_md5($archived_filename_with_path);
     if (!$archived_filename_with_path) {
-        $c->stash->{rest} = {error => "Could not save file $upload_original_name in archive",};
-        $c->detach();
+        $c->stash->{message} = "Could not save file $upload_original_name in archive";
+        $c->stash->{template} = 'generic_message.mas';
+        return;
     }
     unlink $upload_tempfile;
     my $md5checksum = $md5->hexdigest();
@@ -4390,8 +4396,9 @@ sub _check_user_login_drone_imagery_upload {
 
     my $login_check_return = CXGN::Login::_check_user_login($c, $check_priv, $original_private_company_id, $user_access);
     if ($login_check_return->{error}) {
-        $c->stash->{rest} = $login_check_return;
-        $c->detach();
+        $c->stash->{message} = $login_check_return;
+        $c->stash->{template} = 'generic_message.mas';
+        return;
     }
     my ($user_id, $user_name, $user_role) = @{$login_check_return->{info}};
 

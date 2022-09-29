@@ -188,9 +188,13 @@ sub store {
 		my $name = $params->{programName} || undef;
 		my $desc = $params->{objective} || 'N/A'; # needs an objective due to db constraints
 
-		my $p = CXGN::BreedersToolbox::Projects->new({ schema => $schema });
-
-		my $new_program = $p->new_breeding_program($name, $desc, 1);
+        my $p = CXGN::BreedersToolbox::Projects->new({
+            schema => $schema,
+            name => $name,
+            description => $desc,
+            private_company_id => 1
+        });
+        my $new_program = $p->store_breeding_program();
 
 		if ($new_program->{'error'}) {
 			return CXGN::BrAPI::JSONResponse->return_error($self->status, sprintf('Program %s was not stored.', $name));

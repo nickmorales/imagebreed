@@ -25,9 +25,10 @@ __PACKAGE__->config(
     map       => { 'application/json' => 'JSON' },
 );
 
-sub new_breeding_program :Path('/breeders/program/new') Args(0) {
+sub store_breeding_program :Path('/breeders/program/store') Args(0) {
     my $self = shift;
     my $c = shift;
+    my $id = $c->req->param("id") || undef;
     my $name = $c->req->param("name");
     my $desc = $c->req->param("desc");
     my $private_company_id = $c->req->param("private_company_id");
@@ -35,9 +36,15 @@ sub new_breeding_program :Path('/breeders/program/new') Args(0) {
 
     my ($user_id, $user_name, $user_role) = _check_user_login_breeders_toolbox($c, 'submitter', 0, 0);
 
-    my $p = CXGN::BreedersToolbox::Projects->new( { schema => $schema });
-    my $new_program = $p->new_breeding_program($name, $desc, $private_company_id);
-    print STDERR "New program is ".Dumper($new_program)."\n";
+    my $p = CXGN::BreedersToolbox::Projects->new({
+        schema => $schema,
+        id => $id,
+        name => $name,
+        description => $desc,
+        private_company_id => $private_company_id
+    });
+    my $new_program = $p->store_breeding_program();
+    # print STDERR "New program is ".Dumper($new_program)."\n";
 
     $c->stash->{rest} = $new_program;
 }
@@ -328,7 +335,7 @@ sub _get_private_company_from_project_id {
     $h->execute($project_id);
     my ($private_company_id) = $h->fetchrow_array();
     $h = undef;
-    
+
     return $private_company_id;
 }
 

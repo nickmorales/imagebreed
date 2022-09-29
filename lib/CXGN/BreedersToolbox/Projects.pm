@@ -11,10 +11,29 @@ use CXGN::PrivateCompany;
 use CXGN::Genotype::Protocol;
 
 has 'schema' => (
-    is       => 'rw',
-    isa      => 'DBIx::Class::Schema',
+    is => 'rw',
+    isa => 'DBIx::Class::Schema',
 );
 
+has 'id' => (
+    isa => 'Maybe[Int]',
+    is => 'rw',
+);
+
+has 'name' => (
+    isa => 'Maybe[Str]',
+    is => 'rw',
+);
+
+has 'description' => (
+    isa => 'Maybe[Str]',
+    is => 'rw',
+);
+
+has 'private_company_id' => (
+    isa => 'Maybe[Int]',
+    is => 'rw',
+);
 
 sub trial_exists {
     my $self = shift;
@@ -54,7 +73,8 @@ sub get_breeding_programs {
         FROM project
         JOIN projectprop ON(project.project_id=projectprop.project_id AND projectprop.type_id=$breeding_program_cvterm_id)
         JOIN sgn_people.private_company AS p ON(project.private_company_id=p.private_company_id)
-        WHERE $is_new_user_sql project.private_company_id IN ($company_ids_sql);";
+        WHERE $is_new_user_sql project.private_company_id IN ($company_ids_sql)
+        ORDER BY project.name ASC;";
     my $h = $self->schema->storage->dbh()->prepare($q);
     $h->execute();
     my @projects;
@@ -523,48 +543,85 @@ sub get_accessions_by_breeding_program {
 
 }
 
-sub new_breeding_program {
-    my $self= shift;
-    my $name = shift;
-    my $description = shift;
-    my $private_company_id = shift;
+sub store_breeding_program {
+    my $self = shift;
+    my $schema = $self->schema();
+    my $error;
+
+    my $id = $self->id();
+    my $name = $self->name();
+    my $description = $self->description();
+    my $private_company_id = $self->private_company_id();
 
     my $type_id = $self->get_breeding_program_cvterm_id();
 
-    my $rs = $self->schema()->resultset("Project::Project")->search({
-        name => $name,
-    });
-    if ($rs->count() > 0) {
+    if (!$name) {
+        return { error => "Cannot save a breeding program with an undefined name. A name is required." };
+    }
+
+    my $existing_name_rs = $schema->resultset("Project::Project")->search({ name => $name });
+    if (!$id && $existing_name_rs->count() > 0) {
         return { error => "A breeding program with name '$name' already exists." };
     }
-    my $project_id;
-    eval {
-        my $role = CXGN::People::Roles->new({bcs_schema=>$self->schema});
-        my $error = $role->add_sp_role($name);
-        if ($error){
-            die $error;
+
+    if (!$id) {
+        eval {
+            my $role = CXGN::People::Roles->new({bcs_schema=>$self->schema});
+            my $error = $role->add_sp_role($name);
+            if ($error){
+                die $error;
+            }
+
+            my $q = "INSERT INTO project (name, description, private_company_id) VALUES (?,?,?);";
+            my $h = $self->schema->storage->dbh()->prepare($q);
+            $h->execute($name, $description, $private_company_id);
+            $h = undef;
+
+            my $row = $self->schema()->resultset("Project::Project")->find({name => $name});
+            $id = $row->project_id();
+
+            my $prop_row = $self->schema()->resultset("Project::Projectprop")->create({
+                type_id => $type_id,
+                project_id => $row->project_id(),
+            });
+            $prop_row->insert();
+        };
+
+        if ($@) {
+            return { error => "An error occurred while generating a new breeding program. ($@)" };
+        } else {
+            print STDERR "The new breeding program $name was created with id $id\n";
+            return { success => "The new breeding program $name was created.", id => $id };
+        }
+    }
+    elsif ($id) {
+        my $old_program = $schema->resultset("Project::Project")->search({ project_id => $id });
+        my $old_name = $old_program->first->name();
+
+        if ($old_name ne $name && $existing_name_rs->count() > 0) {
+            return { error => "A breeding program with name '$name' already exists." };
         }
 
-        my $q = "INSERT INTO project (name, description, private_company_id) VALUES (?,?,?);";
-        my $h = $self->schema->storage->dbh()->prepare($q);
-        $h->execute($name, $description, $private_company_id);
-        $h = undef;
+        eval {
+            my $role = CXGN::People::Roles->new({bcs_schema=>$self->schema});
+            my $error = $role->update_sp_role($name, $old_name);
+            if ($error){
+                die $error;
+            }
 
-        my $row = $self->schema()->resultset("Project::Project")->find({name => $name});
-        $project_id = $row->project_id();
+            my $bp_update_q = "UPDATE project SET name=?, description=?, private_company_id=? WHERE project_id=?;";
+            my $bp_update_h = $self->schema->storage->dbh()->prepare($bp_update_q);
+            $bp_update_h->execute($name, $description, $private_company_id, $id);
+            $bp_update_h = undef;
+        };
 
-        my $prop_row = $self->schema()->resultset("Project::Projectprop")->create({
-            type_id => $type_id,
-            project_id => $row->project_id(),
-        });
-        $prop_row->insert();
-    };
-
-    if ($@) {
-        return { error => "An error occurred while generating a new breeding program. ($@)" };
-    } else {
-        print STDERR "The new breeding program $name was created with id $project_id\n";
-        return { success => "The new breeding program $name was created.", id => $project_id };
+        if ($@) {
+            print STDERR "Error editing breeding program $name. ($@)";
+            return { error => $error };
+        } else {
+            print STDERR "Breeding program $name was updated successfully with description $description and id $id\n";
+            return { success => "Breeding program $name was updated successfully with description $description\n", id => $id };
+        }
     }
 }
 

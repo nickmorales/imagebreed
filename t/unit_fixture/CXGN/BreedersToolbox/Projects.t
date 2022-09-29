@@ -256,9 +256,26 @@ is_deeply(\@all_years, [
           '2014'
         ], 'get all years');
 
-my $new_bp_error = $p->new_breeding_program('test_new_bp', 'test_new_bp_desc', 1);
-print STDERR Dumper $new_bp_error;
-ok($new_bp_error->{success});
+my $new_bp = CXGN::BreedersToolbox::Projects->new({
+    schema=>$schema,
+    name => 'test_new_bp',
+    description => 'test_new_bp_desc',
+    private_company_id => 1
+});
+my $new_bp_result = $new_bp->store_breeding_program();
+print STDERR Dumper $new_bp_result;
+ok($new_bp_result->{success});
+
+my $edit_bp = CXGN::BreedersToolbox::Projects->new({
+    schema=>$schema,
+    id => $new_bp_result->{id},
+    name => 'test_new_bp_edited',
+    description => 'test_new_bp_desc_edited',
+    private_company_id => 1
+});
+my $edit_bp_result = $edit_bp->store_breeding_program();
+print STDERR Dumper $edit_bp_result;
+ok($edit_bp_result->{success});
 
 my $bp_projects = $p->get_breeding_program_with_trial($trial_id);
 #print STDERR Dumper $bp_projects;
@@ -279,7 +296,7 @@ is_deeply($gt_protocols, [
           ]
         ], 'get gt protocols');
 
-my $trial_id = $schema->resultset('Project::Project')->find({name=>'test_new_bp'})->project_id();
+my $trial_id = $schema->resultset('Project::Project')->find({name=>'test_new_bp_edited'})->project_id();
 my $del_ret = $p->delete_breeding_program($trial_id);
 is_deeply($del_ret, {success=>1});
 

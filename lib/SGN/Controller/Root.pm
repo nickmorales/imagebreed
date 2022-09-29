@@ -9,7 +9,7 @@ use CXGN::Login;
 use CXGN::People::Person;
 use List::MoreUtils 'uniq';
 use JSON::XS;
-
+use Data::Dumper;
 
 BEGIN { extends 'Catalyst::Controller' }
 

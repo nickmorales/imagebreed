@@ -52,7 +52,7 @@ ok($response->{'nd_geolocation_id'});
 my $new_geolocation_id = $response->{'nd_geolocation_id'};
 
 # add new breeding program
-$mech->post_ok('http://localhost:3010/breeders/program/new', [
+$mech->post_ok('http://localhost:3010/breeders/program/store', [
     "name"=> 'test2',
     "desc"=> "added for Locations.t",
     "private_company_id" => 1

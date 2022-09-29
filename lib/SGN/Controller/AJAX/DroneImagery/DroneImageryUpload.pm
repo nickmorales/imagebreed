@@ -1270,7 +1270,7 @@ sub upload_drone_imagery_POST : Args(0) {
 
                 my $odm_radiometric_calibration = $new_drone_run_band_stitching_odm_radiocalibration ? '--radiometric-calibration camera' : '';
 
-                my $odm_command = 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v '.$image_path_remaining_host.':/datasets/code opendronemap/odm --project-path /datasets --rerun-all --dsm --dtm '.$odm_radiometric_calibration.' > '.$temp_file_docker_log;
+                my $odm_command = 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v '.$image_path_remaining_host.':/datasets/code opendronemap/odm --project-path /datasets --rerun-all --dsm --dtm --feature-quality ultra --min-num-features 50000 '.$odm_radiometric_calibration.' > '.$temp_file_docker_log;
                 print STDERR $odm_command."\n";
                 my $odm_status = system($odm_command);
 
@@ -1279,7 +1279,7 @@ sub upload_drone_imagery_POST : Args(0) {
                 my $odm_b3 = "$image_path_remaining/odm_orthophoto/b3.png";
                 my $odm_b4 = "$image_path_remaining/odm_orthophoto/b4.png";
                 my $odm_b5 = "$image_path_remaining/odm_orthophoto/b5.png";
-                my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImage.py --image_path $image_path_remaining/odm_orthophoto/odm_orthophoto.tif --outfile_path_b1 $odm_b1 --outfile_path_b2 $odm_b2 --outfile_path_b3 $odm_b3 --outfile_path_b4 $odm_b4 --outfile_path_b5 $odm_b5 --odm_radiocalibrated True";
+                my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/ODMOpenImage5band.py --image_path $image_path_remaining/odm_orthophoto/odm_orthophoto.tif --outfile_path_b1 $odm_b1 --outfile_path_b2 $odm_b2 --outfile_path_b3 $odm_b3 --outfile_path_b4 $odm_b4 --outfile_path_b5 $odm_b5 --odm_radiocalibrated True";
                 my $odm_open_status = system($odm_cmd);
 
                 my $odm_dsm_png = "$image_path_remaining/odm_dem/dsm.png";
@@ -1298,7 +1298,7 @@ sub upload_drone_imagery_POST : Args(0) {
                 );
             }
             elsif ($new_drone_run_camera_info eq 'ccd_color' || $new_drone_run_camera_info eq 'cmos_color') {
-                my $odm_command = 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v '.$image_path_remaining_host.':/datasets/code opendronemap/odm --project-path /datasets --rerun-all --dsm --dtm > '.$temp_file_docker_log;
+                my $odm_command = 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v '.$image_path_remaining_host.':/datasets/code opendronemap/odm --project-path /datasets --rerun-all --dsm --dtm --feature-quality ultra --min-num-features 50000 > '.$temp_file_docker_log;
                 print STDERR $odm_command."\n";
                 my $odm_status = system($odm_command);
 
