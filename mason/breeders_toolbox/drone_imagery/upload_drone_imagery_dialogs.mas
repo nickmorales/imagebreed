@@ -124,7 +124,7 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_image_upload_camera_info" name="drone_image_upload_camera_info">
                                         <option value="">Select One</option>
-                                        <option value="micasense_5">Micasense 5-Channel Camera</option>
+                                        <option value="micasense_5">Micasense 5-Channel (or 10-Channel) Camera</option>
                                         <option value="ccd_color">RGB Color Camera</option>
                                         <!--option value="cmos_color">CMOS Sensor Color Image</option-->
                                         <option value="interpolated_elevation">Interpolated Elevation Image</option>
@@ -180,7 +180,7 @@
                         <div class="well">
                             <center><h4>Uploading already stitched orthophotomosaics or complete images of experimental field</h4></center>
                             <ul>
-                                <li>You can choose to upload orthophotomosaic images (PNG, TIFF) created using external software (Pix4d, Agisoft, etc).</li>
+                                <li>You can choose to upload orthophotomosaic images (PNG, TIFF) created using external software (Pix4d, Agisoft, ODM, etc).</li>
                                 <li>You can upload any image (PNG, TIFF, JPEG) which covers the entire experimental field, for example, interpolated soil data for altitude or electrical conductance EC measurements. Another example is for images from a phenotyping facility, greenhouse, or growth chamber.</li>
                                 <li>Up to seven distinct spectral band images can be uploaded.</li>
                                 <li>Images should be perfectly super-imposable for all spectra in an imaging event.</li>
@@ -235,7 +235,7 @@
                                     <option value="">Select One</option>
                                     <option value="None">None</option>
                                     <option value="Pix4D">Pix4D (Individual Band Images)</option>
-                                    <option value="Agisoft">Agisoft (Individual Band Images)</option>
+                                    <option value="Agisoft">Agisoft (MultiBand Stack Image)</option>
                                     <option value="ODM">OpenDroneMap (MultiBand Stack Image)</option>
                                     <option value="Other">Other</option>
                                 </select>
@@ -1388,7 +1388,7 @@
 
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-6 control-label">ODM Orthophotomosaic: (.tif) <br/><small>Since you used ODM, look at "/odm_orthophoto/odm_orthophoto.tif"</small></label>
+                                <label class="col-sm-6 control-label">ODM Orthophotomosaic: (.tif) <br/><small>Since you used ODM, upload "/odm_orthophoto/odm_orthophoto.tif"</small></label>
                                 <div class="col-sm-6" >
                                     <input type="file" id="drone_run_band_stitched_ortho_image_five_odm" name="drone_run_band_stitched_ortho_image_odm" encoding="multipart/form-data" />
                                 </div>
@@ -1397,7 +1397,7 @@
 
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>Since you used ODM, look at "/odm_report/report.pdf"</small></label>
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>Since you used ODM, upload "/odm_report/report.pdf"</small></label>
                                 <div class="col-sm-6" >
                                     <input type="file" id="drone_run_band_stitched_ortho_report_five_odm" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
                                 </div>
@@ -1412,6 +1412,81 @@
                         <& /page/page_title.mas, title=>"Submit Imaging Event" &>
                         <center>
                             <button type="submit" class="btn btn-info" name="upload_drone_imagery_five_odm_submit" id="upload_drone_imagery_five_odm_submit">Submit. Click Once and Be Patient As This Can Take A Long Time.</button>
+                        </center>
+                    </&>
+                </&>
+            </form><br/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="upload_drone_imagery_dialog_five_band_agisoft" name="upload_drone_imagery_dialog_five_band_agisoft" tabindex="-1" role="dialog" aria-labelledby="uploadDroneImageryFiveBandAgisoftDialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="uploadDroneImageryFiveBandAgisoftDialog">Upload Agisoft Aerial Imagery</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <& /page/page_title.mas, title=>"Select Image(s) to Upload" &>
+
+            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_five_band_agisoft_form" name="upload_drone_imagery_five_band_agisoft_form" action="/drone_imagery/upload_drone_imagery" >
+                <input type="hidden" name="drone_run_field_trial_id" value="" >
+
+                <!-- If drone run is selected above, the drone_run_project_id is passed to controller, negating need to create new drone run -->
+                <input type="hidden" name="drone_run_id" value=""/>
+                <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
+
+                <input type="hidden" name="private_company_id" value="" />
+                <input type="hidden" name="drone_run_name" value="" />
+                <input type="hidden" name="drone_run_type" value="" />
+                <input type="hidden" name="drone_image_upload_camera_info" value="" />
+                <input type="hidden" name="drone_run_imaging_vehicle_id" value="" />
+                <input type="hidden" name="drone_run_imaging_vehicle_battery_name" value="" />
+                <input type="hidden" name="drone_run_description" value="" />
+                <input type="hidden" name="drone_run_date" value="" />
+                <input type="hidden" name="drone_run_camera_rig_description" value="" />
+                <input type="hidden" name="drone_run_base_date" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
+                <input type="hidden" name="drone_run_band_number" value="" />
+
+                <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_five_band_agisoft" &>
+                    <&| /util/workflow.mas:step, title=> "Select Images" &>
+                        <& /page/page_title.mas, title=>"Select Orthophoto ODM Raster Image" &>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Agisoft Orthophotomosaic: (.tif) <br/><small>Since you used Agisoft, upload a MultiBand image stack</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_five_agisoft" name="drone_run_band_stitched_ortho_image_agisoft" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional</label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_five_agisoft" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <center>
+                            <button class="btn btn-primary" name="upload_drone_imagery_select_images_five_agisoft" id="upload_drone_imagery_select_images_five_agisoft">Go To Next Step</button>
+                        </center>
+                    </&>
+                    <&| /util/workflow.mas:step, title=> "Submit" &>
+                        <& /page/page_title.mas, title=>"Submit Imaging Event" &>
+                        <center>
+                            <button type="submit" class="btn btn-info" name="upload_drone_imagery_five_agisoft_submit" id="upload_drone_imagery_five_agisoft_submit">Submit. Click Once and Be Patient As This Can Take A Long Time.</button>
                         </center>
                     </&>
                 </&>
@@ -2535,7 +2610,7 @@
                             <li><b>GeoJSON Filename</b>: (required) The name of the GeoJSON plot-polygon file that corresponds to this imaging event. This filename must exist in the uploaded GeoJSON zipfile. The same GeoJSON file can be used for multiple imaging events.</li>
                             <li><b>Image Filenames</b>: (required) Comma-separated list of image filenames that corresponds to this imaging event (e.g. Field1Ortho01012020__nir.tiff,Field1Ortho01012020__rgb.tiff,Field1Ortho01012020__bw.tiff). The image filenames must exist in the uploaded images zipfile. The same image file can be used for multiple imaging events.</li>
                             <li><b>Coordinate System</b>: (required) The coordinate system for the supplied images and GeoJSON files of this imaging event. Must be either "Pixels", "UTM", or "WGS84". If "UTM" or "WGS84" are used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system AND the GeoJSON files must be of the same coordinate system. If "Pixels" is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs, AND the GeoJSON files must describe the pixel positions of the plot-polygons relative to the provided images. If "UTM" is used, the provided GeoJSON is in Northing/Easting (e.g. [312295.7451,1567250.9971]). If "WGS84" is used, the provided GeoJSON is in Longitude/Latitude (e.g. [121.260723987719, 14.1701625191025]). Currently only UTM is supported.</li>
-                            <li><b>Orthophoto Product Type</b>: (required) The type of orthophotomosaic image type, described by the software that produced it. Must be either "None", "Pix4D", "Agisoft", "Other", or "ODM". If Pix4D, Agisoft, Other, or None then the images are assumed to be single band images. If ODM then the image is assumed to be a single MultiBand stack image.</li>
+                            <li><b>Orthophoto Product Type</b>: (required) The type of orthophotomosaic image type, described by the software that produced it. Must be either "None", "Pix4D", "Agisoft", "Other", or "ODM". If Pix4D, Other, or None then the images are assumed to be separated single band images. If Agisoft or ODM then the image is assumed to be a single MultiBand stack image.</li>
                             <li><b>Rotation Angle</b>: (optional) The clock-wise angle of rotation to apply to the uploaded imagery in degrees (0-360). Default is a 0 degree rotation. If a value is provided, the plot-polygon images are expected to be straight after rotation. If no value is provided or 0 is provided, then the plot-polgyon images will include only pixels that lie within the polygons; however, this is more computationally intensive.</li>
                             <li><b>Base Date</b>: (optional) The date and time to reference the imaging event in YYYY/MM/DD hh:mm:ss format (e.g. 2021/03/02 12:00:00). This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment, and they are not capturing images at precisely the same time.</li>
                             <li><b>Camera Rig</b>: (optional) Free-text description of the camera rig. This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment.</li>
@@ -2728,7 +2803,7 @@
                             <li><b>Field Trial Name</b>: (required) The name of the field trial which was imaged. This must already exist in the database.</li>
                             <li><b>Image Filenames</b>: (required) Comma-separated list of image filenames that corresponds to this imaging event (e.g. Field1Ortho01012020__nir.tiff,Field1Ortho01012020__rgb.tiff,Field1Ortho01012020__bw.tiff). The image filenames must exist in the uploaded images zipfile. The same image file can be used for multiple imaging events.</li>
                             <li><b>Coordinate System</b>: (required) The coordinate system for the supplied images of this imaging event. Must be either "WGS84", "UTM", or "Pixels". If "WGS84" or "UTM" is used, then the uploaded orthophoto images must be GeoTIFFs containing the coordinate system. If "WGS84" or "UTM" are used then the images have either Longitude/Latitude (e.g. [121.260723987719, 14.1701625191025]) or Northing/Easting (e.g. [312295.7451,1567250.9971]) encoded in the GeoTIFF. If "Pixels" is used, then the uploaded orthophoto images must be simple raster images (.tiff, .png., .jpeg) and not GeoTIFFs.</li>
-                            <li><b>Orthophoto Product Type</b>: (required) The type of orthophotomosaic image type, described by the software that produced it. Must be either "None", "Pix4D", "Agisoft", "Other", or "ODM". If Pix4D, Agisoft, Other, or None then the images are assumed to be single band images. If ODM then the image is assumed to be a single MultiBand stack image.</li>
+                            <li><b>Orthophoto Product Type</b>: (required) The type of orthophotomosaic image type, described by the software that produced it. Must be either "None", "Pix4D", "Agisoft", "Other", or "ODM". If Pix4D, Other, or None then the images are assumed to be separated single band images. If Agisoft or ODM then the image is assumed to be a single MultiBand stack image.</li>
                             <li><b>Base Date</b>: (optional) The date and time to reference the imaging event in YYYY/MM/DD hh:mm:ss format (e.g. 2021/03/02 12:00:00). This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment, and they are not capturing images at precisely the same time.</li>
                             <li><b>Camera Rig</b>: (optional) Free-text description of the camera rig. This is useful when separate, fixed, camera rigs are capturing different sections of the field experiment.</li>
                         </ul>
@@ -3254,11 +3329,14 @@ jQuery(document).ready(function() {
                 jQuery('#upload_drone_imagery_dialog_four_band').modal('show');
             }
             if (drone_run_band_number == 5) {
-                if (drone_run_band_image_type != 'ODM') {
-                    jQuery('#upload_drone_imagery_dialog_five_band').modal('show');
+                if (drone_run_band_image_type == 'ODM') {
+                    jQuery('#upload_drone_imagery_dialog_five_band_ODM').modal('show');
+                }
+                else if (drone_run_band_image_type == 'Agisoft') {
+                    jQuery('#upload_drone_imagery_dialog_five_band_agisoft').modal('show');
                 }
                 else {
-                    jQuery('#upload_drone_imagery_dialog_five_band_ODM').modal('show');
+                    jQuery('#upload_drone_imagery_dialog_five_band').modal('show');
                 }
             }
             if (drone_run_band_number == 6) {
@@ -3496,6 +3574,17 @@ jQuery(document).ready(function() {
         }
         Workflow.complete('#upload_drone_imagery_select_images_five_odm');
         Workflow.focus('#drone_imagery_upload_workflow_five_band_odm', 1);
+        return false;
+    });
+
+    jQuery('#upload_drone_imagery_select_images_five_agisoft').click(function(e){
+        e.preventDefault();
+        if (jQuery('#drone_run_band_stitched_ortho_image_five_agisoft').val() == '') {
+            alert('Please select an image');
+            return;
+        }
+        Workflow.complete('#upload_drone_imagery_select_images_five_agisoft');
+        Workflow.focus('#drone_imagery_upload_workflow_five_band_agisoft', 1);
         return false;
     });
 

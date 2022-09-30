@@ -159,17 +159,21 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
             return;
         }
 
+        my $odm_stitch_proceed = 0;
         my $q = "SELECT count(*) FROM projectprop WHERE type_id=$odm_process_running_cvterm_id AND value='1';";
         my $h = $schema->storage->dbh()->prepare($q);
-        $h->execute();
-        my ($odm_running_count) = $h->fetchrow_array();
-        $h = undef;
+        while (!$odm_stitch_proceed) {
+            $h->execute();
+            my ($odm_running_count) = $h->fetchrow_array();
 
-        if ($odm_running_count >= $c->config->{opendronemap_max_processes}) {
-            $c->stash->{message} = "There are already the maximum number of OpenDroneMap processes running on this machine! Please check back later when those processes are complete.";
-            $c->stash->{template} = 'generic_message.mas';
-            return;
+            if ($odm_running_count < $c->config->{opendronemap_max_processes}) {
+                $odm_stitch_proceed = 1;
+            }
+            else {
+                sleep(120);
+            }
         }
+        $h = undef;
     }
 
     # if ($selected_drone_run_id && ($new_drone_run_band_stitching eq 'yes' || $new_drone_run_band_stitching eq 'yes_raw' || $new_drone_run_band_stitching eq 'yes_automated')) {
@@ -472,12 +476,23 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                 $original_uploaded_geotiff = $upload_file;
             }
         } else {
-            if ($new_drone_run_band_numbers == 5 && $new_drone_run_band_file_type eq 'ODM') {
-                my $upload_file = $c->req->upload('drone_run_band_stitched_ortho_image_odm');
-                if (!$upload_file) {
-                    $c->stash->{message} = "Please provide an ODM file!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
+            if ($new_drone_run_band_numbers == 5 && ($new_drone_run_band_file_type eq 'ODM' || $new_drone_run_band_file_type eq 'Agisoft') ) {
+                my $upload_file;
+                if ($new_drone_run_band_file_type eq 'ODM') {
+                    $upload_file = $c->req->upload('drone_run_band_stitched_ortho_image_odm');
+                    if (!$upload_file) {
+                        $c->stash->{message} = "Please provide an ODM file!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                }
+                elsif ($new_drone_run_band_file_type eq 'Agisoft') {
+                    $upload_file = $c->req->upload('drone_run_band_stitched_ortho_image_agisoft');
+                    if (!$upload_file) {
+                        $c->stash->{message} = "Please provide an Agisoft file!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
                 }
 
                 $original_uploaded_geotiff = $upload_file;
@@ -1857,7 +1872,7 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
         }
 
         if ($ortho_product_type ne 'None' && $ortho_product_type ne 'Pix4D' && $ortho_product_type ne 'Agisoft' && $ortho_product_type ne 'ODM' && $ortho_product_type ne 'Other') {
-            push @parse_csv_errors, "The given orthophoto product type $ortho_product_type is not one of: None, Pix4D, Agisoft, ODM, or Other! If Pix4D, Agisoft, Other, or None then the images are assumed to be single band images. If ODM then the image is assumed to be a single MultiBand stack image.";
+            push @parse_csv_errors, "The given orthophoto product type $ortho_product_type is not one of: None, Pix4D, Agisoft, ODM, or Other! Regardless of product type, the images are assumed to be separated single band images";
         }
 
         my $field_trial_rs = $schema->resultset("Project::Project")->search({name=>$field_trial_name});
@@ -2648,7 +2663,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         }
 
         if ($ortho_product_type ne 'None' && $ortho_product_type ne 'Pix4D' && $ortho_product_type ne 'Agisoft' && $ortho_product_type ne 'ODM' && $ortho_product_type ne 'Other') {
-            push @parse_csv_errors, "The given orthophoto product type $ortho_product_type is not one of: None, Pix4D, Agisoft, ODM, or Other! If Pix4D, Agisoft, Other, or None then the images are assumed to be single band images. If ODM then the image is assumed to be a single MultiBand stack image.";
+            push @parse_csv_errors, "The given orthophoto product type $ortho_product_type is not one of: None, Pix4D, Agisoft, ODM, or Other! Regardless of product type, the images are assumed to be single band images.";
         }
 
         my $field_trial_rs = $schema->resultset("Project::Project")->search({name=>$field_trial_name});
