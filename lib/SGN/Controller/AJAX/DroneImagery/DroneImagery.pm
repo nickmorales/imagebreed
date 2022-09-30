@@ -14806,6 +14806,11 @@ sub drone_imagery_change_date_drone_run_GET : Args(0) {
 
     my $imaging_event_project = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $drone_run_project_id });
     my $drone_run_base_date = $imaging_event_project->get_drone_run_base_date();
+    my $image_band_projects = $imaging_event_project->get_associated_image_band_projects();
+    my %image_band_project_ids;
+    foreach (@$image_band_projects) {
+        $image_band_project_ids{$_->[0]}++;
+    }
 
     my $trial = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $field_trial_id });
     my $planting_date = $trial->get_planting_date();
@@ -14862,11 +14867,100 @@ sub drone_imagery_change_date_drone_run_GET : Args(0) {
         day => $day_term
     );
 
+    # Check for phtnoypes and Change phenotype trait
+    my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
+        'MaterializedViewTable',
+        {
+            bcs_schema=>$schema,
+            data_level=>'plot',
+            trial_list=>[$field_trial_id]
+        }
+    );
+    my ($pheno_data, $pheno_traits) = $phenotypes_search->search();
+    # print STDERR Dumper $pheno_data;
+
+    my $pheno_update_q = "UPDATE phenotype SET uniquename=?, observable_id=?, cvalue_id=? WHERE phenotype_id=?;";
+    my $pheno_update_h = $schema->storage->dbh()->prepare($pheno_update_q);
+
+    my @allowed_composed_cvs = split ',', $c->config->{composable_cvs};
+    my $composable_cvterm_delimiter = $c->config->{composable_cvterm_delimiter};
+    my $composable_cvterm_format = $c->config->{composable_cvterm_format};
+
+    my %trait_change_lookup;
+    my $phenotype_changed_count = 0;
+    foreach my $p (@$pheno_data) {
+        my $observations = $p->{observations};
+        foreach my $o (@$observations) {
+            my $time_term_json = $o->{associated_image_project_time_json};
+            my $image_project_id = $o->{associated_image_project_id};
+            if ($time_term_json && $image_project_id && $drone_run_project_id == $image_project_id ) {
+                my $phenotype_id = $o->{phenotype_id};
+                my $phenotype_uniquename = $o->{uniquename};
+                my $trait_id = $o->{trait_id};
+                my $trait_name = $o->{trait_name};
+
+                my $new_trait_id;
+                my $new_trait_name;
+                if (exists($trait_change_lookup{$trait_id})) {
+                    $new_trait_id = $trait_change_lookup{$trait_id}->{trait_id};
+                    $new_trait_name = $trait_change_lookup{$trait_id}->{trait_name};
+                }
+                else {
+                    my $trait_components = SGN::Model::Cvterm->get_components_from_trait($schema, $trait_id);
+                    my $trait_zonal_term = $trait_components->[0];
+                    my $trait_band_term = $trait_components->[1];
+                    my $trait_image_type_term = $trait_components->[2];
+                    my $trait_time_term = $trait_components->[3];
+
+                    my $traits = SGN::Model::Cvterm->get_traits_from_component_categories($schema, \@allowed_composed_cvs, $composable_cvterm_delimiter, $composable_cvterm_format, {
+                        object => [],
+                        attribute => [$trait_band_term],
+                        method => [],
+                        unit => [],
+                        trait => [$trait_zonal_term],
+                        tod => [$trait_image_type_term],
+                        toy => [$day_cvterm_id],
+                        gen => [],
+                    });
+                    my $existing_traits = $traits->{existing_traits};
+                    my $new_traits = $traits->{new_traits};
+                    #print STDERR Dumper $new_traits;
+                    #print STDERR Dumper $existing_traits;
+                    my %new_trait_names;
+                    foreach (@$new_traits) {
+                        my $components = $_->[0];
+                        $new_trait_names{$_->[1]} = join ',', @$components;
+                    }
+
+                    my $onto = CXGN::Onto->new( { schema => $schema } );
+                    my $new_terms = $onto->store_composed_term(\%new_trait_names);
+
+                    $new_trait_id = SGN::Model::Cvterm->get_trait_from_exact_components($schema, [$trait_zonal_term, $trait_band_term, $trait_image_type_term, $day_cvterm_id]);
+                    $new_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($schema, $new_trait_id, 'concise');
+
+                    $trait_change_lookup{$trait_id} = {
+                        trait_id => $new_trait_id,
+                        trait_name => $new_trait_name
+                    };
+                }
+
+                my ($phenotype_uniquename_p1, $phenotype_uniquename_p2) = split / trait: /, $phenotype_uniquename;
+                my ($phenotype_uniquename_p3, $phenotype_uniquename_p4) = split / date: /, $phenotype_uniquename_p2;
+                my $new_phenotype_uniquename = "$phenotype_uniquename_p1 trait: $new_trait_name date: $phenotype_uniquename_p4";
+
+                $pheno_update_h->execute($new_phenotype_uniquename, $new_trait_id, $new_trait_id, $phenotype_id);
+                $phenotype_changed_count++;
+            }
+        }
+    }
+    $pheno_update_h = undef;
+    print STDERR "Phenotypes changed: $phenotype_changed_count\n";
+
     $imaging_event_project->set_drone_run_date($new_drone_run_date);
     $imaging_event_project->set_drone_run_related_time_cvterms(\%related_cvterms);
 
-    # Check for phtnoypes and Change phenotype trait
-    
+    my $bs = CXGN::BreederSearch->new( { dbh=>$c->dbc->dbh, dbname=>$c->config->{dbname}, } );
+    my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
 
     $c->stash->{rest} = {success => 1};
 }
