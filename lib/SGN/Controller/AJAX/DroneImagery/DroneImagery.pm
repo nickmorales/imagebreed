@@ -9263,12 +9263,13 @@ sub drone_imagery_get_vehicle_GET : Args(0) {
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 0, 0, 0);
 
     my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'imaging_event_vehicle', 'stock_type')->cvterm_id();
+    my $imaging_vehicle_rover_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'imaging_event_vehicle_rover', 'stock_type')->cvterm_id();
     my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
 
     my $q = "SELECT stock.stock_id, stock.uniquename, stock.description, stockprop.value
         FROM stock
         JOIN stockprop ON(stock.stock_id=stockprop.stock_id AND stockprop.type_id=$imaging_vehicle_properties_cvterm_id)
-        WHERE stock.type_id=$imaging_vehicle_cvterm_id";
+        WHERE stock.type_id IN($imaging_vehicle_cvterm_id,$imaging_vehicle_rover_cvterm_id)";
     if ($vehicle_id) {
         $q .= " AND stock.stock_id=?"
     }

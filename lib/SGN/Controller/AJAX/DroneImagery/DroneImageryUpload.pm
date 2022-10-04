@@ -1427,6 +1427,60 @@ sub upload_drone_imagery_new_vehicle_POST : Args(0) {
     };
 }
 
+sub upload_drone_imagery_new_vehicle_rover : Path('/api/drone_imagery/new_imaging_vehicle_rover') : ActionClass('REST') { }
+sub upload_drone_imagery_new_vehicle_rover_POST : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    $c->response->headers->header( "Access-Control-Allow-Origin" => '*' );
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+    my $private_company_id = $c->req->param('private_company_id');
+    my $vehicle_name = $c->req->param('vehicle_name');
+    my $vehicle_desc = $c->req->param('vehicle_description');
+    my $battery_names_string = $c->req->param('battery_names');
+    my @battery_names = split ',', $battery_names_string;
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery_upload($c, 'submitter', $private_company_id, 'submitter_access');
+
+    my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+    my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
+    my $company_is_private = $private_company_access_is_private_hash->{$private_company_id} ? 1 : 0;
+
+    my $vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_rover', 'stock_type')->cvterm_id();
+    my $vehicle_prop_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
+
+    my $v_check = $schema->resultset("Stock::Stock")->find({uniquename => $vehicle_name});
+    if ($v_check) {
+        $c->stash->{rest} = {error => "Vehicle name $vehicle_name is already in use!"};
+        $c->detach();
+    }
+
+    my %vehicle_prop;
+    foreach (@battery_names) {
+        $vehicle_prop{batteries}->{$_} = {
+            usage => 0,
+            obsolete => 0
+        };
+    }
+
+    my $new_vehicle = $schema->resultset("Stock::Stock")->create({
+        uniquename => $vehicle_name,
+        name => $vehicle_name,
+        description => $vehicle_desc,
+        type_id => $vehicle_cvterm_id,
+        stockprops => [{type_id => $vehicle_prop_cvterm_id, value => encode_json \%vehicle_prop}]
+    });
+    my $new_vehicle_id = $new_vehicle->stock_id();
+
+    my $q_priv = "UPDATE stock SET private_company_id=?, is_private=? WHERE stock_id=?;";
+    my $h_priv = $schema->storage->dbh()->prepare($q_priv);
+    $h_priv->execute($private_company_id, $company_is_private, $new_vehicle_id);
+    $h_priv = undef;
+
+    $c->stash->{rest} = {
+        success => 1,
+        new_vehicle_id => $new_vehicle_id
+    };
+}
+
 sub _check_user_login_drone_imagery_upload {
     my $c = shift;
     my $check_priv = shift;

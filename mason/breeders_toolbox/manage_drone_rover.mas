@@ -61,7 +61,7 @@
 
                         <div id="upload_drone_rover_field_trial_select_date_continue_div" style="display:none">
                             <div class="form-group">
-                                <label class="col-sm-3 control-label">Imaging Event Date and Hour (Must be after the planting date):</label>
+                                <label class="col-sm-3 control-label">Rover Event Date and Hour (Must be after the planting date):</label>
                                 <div class="col-sm-9" >
                                     <input class="form-control" id="rover_run_date" name="rover_run_date" title="rover_run_date" type="text" />
                                 </div>
@@ -282,25 +282,25 @@ jQuery(document).ready(function() {
     get_select_box('private_companies', 'upload_drone_rover_company_select_div', { 'name' : 'rover_run_company_id', 'id' : 'rover_run_company_id' });
     get_select_box('trials', 'upload_drone_rover_trial_select_div', { 'name' : 'rover_run_field_trial_id', 'id' : 'rover_run_field_trial_id', 'empty':1, 'multiple':1, 'private_company_id':1 });
 
-    get_select_box('imaging_event_vehicles', 'drone_run_rover_vehicle_div', {'id':'rover_run_imaging_vehicle_id', 'name':'rover_run_imaging_vehicle_id', 'private_company_id':1});
+    get_select_box('imaging_event_vehicles_rovers', 'drone_run_rover_vehicle_div', {'id':'rover_run_imaging_vehicle_id', 'name':'rover_run_imaging_vehicle_id', 'private_company_id':1});
 
     var private_company_id;
     var upload_drone_rover_vehicle_id;
     jQuery(document).on('change', '#rover_run_company_id', function(){
         private_company_id = jQuery(this).val();
 
-        get_select_box('imaging_event_vehicles', 'drone_run_rover_vehicle_div', {'id':'rover_run_imaging_vehicle_id', 'name':'rover_run_imaging_vehicle_id', 'private_company_id':private_company_id});
+        get_select_box('imaging_event_vehicles_rovers', 'drone_run_rover_vehicle_div', {'id':'rover_run_imaging_vehicle_id', 'name':'rover_run_imaging_vehicle_id', 'private_company_id':private_company_id});
 
         get_select_box('trials', 'upload_drone_rover_trial_select_div', { 'name' : 'rover_run_field_trial_id', 'id' : 'rover_run_field_trial_id', 'empty':1, 'multiple':1, 'private_company_id':private_company_id });
     });
 
     jQuery('#upload_drone_rover_link').click(function(){
-        jQuery('#upload_drone_rover_dialog').modal('show');
-
         upload_drone_rover_vehicle_id = jQuery('#rover_run_imaging_vehicle_id').val();
         if (upload_drone_rover_vehicle_id) {
             _show_rover_vehicle_battery_select();
         }
+
+        jQuery('#upload_drone_rover_dialog').modal('show');
     });
 
     var upload_drone_rover_field_trial_ids_string = '';
@@ -471,7 +471,7 @@ jQuery(document).ready(function() {
         }
 
         jQuery.ajax({
-            url : '/api/drone_imagery/new_imaging_vehicle',
+            url : '/api/drone_imagery/new_imaging_vehicle_rover',
             type : 'POST',
             data : {
                 'vehicle_name': vehicle_name,
@@ -486,7 +486,7 @@ jQuery(document).ready(function() {
                 }
                 else if (response.success) {
                     alert('Vehicle added!');
-                    get_select_box('imaging_event_vehicles', 'drone_run_rover_vehicle_div', {'id':'rover_run_imaging_vehicle_id', 'name':'rover_run_imaging_vehicle_id', 'private_company_id':private_company_id});
+                    get_select_box('imaging_event_vehicles_rovers', 'drone_run_rover_vehicle_div', {'id':'rover_run_imaging_vehicle_id', 'name':'rover_run_imaging_vehicle_id', 'private_company_id':private_company_id});
                     upload_drone_rover_vehicle_id = response.new_vehicle_id;
                     _show_rover_vehicle_battery_select();
                 }

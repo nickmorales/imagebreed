@@ -1242,6 +1242,55 @@ sub get_imaging_event_vehicles : Path('/ajax/html/select/imaging_event_vehicles'
     $c->stash->{rest} = { select => $html };
 }
 
+sub get_imaging_event_vehicles_rovers : Path('/ajax/html/select/imaging_event_vehicles_rovers') Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+    my $private_company_id = $c->req->param('private_company_id');
+
+    my ($user_id, $user_name, $user_role) = _check_user_login_html_select($c, 'user', $private_company_id, 'user_access');
+
+    my $private_companies_sql = '';
+    if ($private_company_id) {
+        $private_companies_sql = $private_company_id;
+    }
+    else {
+        my $private_companies = CXGN::PrivateCompany->new( { schema=> $schema } );
+        my ($private_companies_array, $private_companies_ids, $allowed_private_company_ids_hash, $allowed_private_company_access_hash, $private_company_access_is_private_hash) = $private_companies->get_users_private_companies($user_id, 0);
+        $private_companies_sql = join ',', @$private_companies_ids;
+    }
+
+    my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_rover', 'stock_type')->cvterm_id();
+    my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
+
+    my $q = "SELECT stock.stock_id, stock.uniquename, stock.description, stockprop.value
+        FROM stock
+        JOIN stockprop ON(stock.stock_id=stockprop.stock_id AND stockprop.type_id=$imaging_vehicle_properties_cvterm_id)
+        WHERE stock.type_id=$imaging_vehicle_cvterm_id AND stock.private_company_id IN($private_companies_sql);";
+    # print STDERR Dumper $q;
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute();
+    my @imaging_vehicles;
+    while (my ($stock_id, $name, $description, $prop) = $h->fetchrow_array()) {
+        my $prop_hash = decode_json $prop;
+
+        push @imaging_vehicles, [$stock_id, $name];
+    }
+    $h = undef;
+
+    my $id = $c->req->param("id") || "html_imaging_vehicle_rover_select";
+    my $name = $c->req->param("name") || "html_imaging_vehicle_rover_select";
+
+    @imaging_vehicles = sort { $a->[1] cmp $b->[1] } @imaging_vehicles;
+
+    my $html = simple_selectbox_html(
+        name => $name,
+        id => $id,
+        choices => \@imaging_vehicles
+    );
+    $c->stash->{rest} = { select => $html };
+}
+
 sub get_traits_select : Path('/ajax/html/select/traits') Args(0) {
     my $self = shift;
     my $c = shift;
