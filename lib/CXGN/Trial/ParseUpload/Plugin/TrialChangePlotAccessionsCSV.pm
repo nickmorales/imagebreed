@@ -63,13 +63,11 @@ sub _validate_with_plugin {
         } else {
             push @error_messages, "Could not parse row $row."."<br>";
             print STDERR "Could not parse row $row.\n";
-            return;
         }
 
         if (scalar(@columns) != $num_cols){
             push @error_messages, "All lines must have same number of columns as header! Error on row: $row"."<br>";
             print STDERR "Line $row does not have complete columns.\n";
-            return;
         }
 
         $seen_plot_names{$columns[0]}++;
@@ -78,9 +76,10 @@ sub _validate_with_plugin {
             $seen_new_plot_names{$columns[2]}++;
         }
     }
-    if (@error_messages) {
+    if (scalar(@error_messages) >= 1) {
         $parse_errors{'error_messages'} = \@error_messages;
         $self->_set_parse_errors(\%parse_errors);
+        return;
     }
     close($fh);
 
@@ -113,7 +112,7 @@ sub _validate_with_plugin {
                     if ($current_name == $_) {
                         $validation = 1;
                     }
-                }  
+                }
                 if (!$validation) {
                     push @not_valid_names, $current_name;
                 }
@@ -124,7 +123,7 @@ sub _validate_with_plugin {
     if (@not_valid_names) {
         push @error_messages, "The following new plot names already exist in the database:<br>".join(", ", @not_valid_names)."<br>";
     }
-    
+
     my @plots_in_different_trial;
 
     my $q = "SELECT * FROM plotsxtrials WHERE trial_id = ?";
@@ -174,8 +173,6 @@ sub _validate_with_plugin {
         return;
     }
 
-
-
     return 1; #returns true if validation is passed
 }
 
@@ -208,7 +205,7 @@ sub _parse_with_plugin {
         $parsed_entries{$counter} = {
             plot_name => $plot_name,
             accession_name => $accession_name,
-            new_plot_name => $new_plot_name 
+            new_plot_name => $new_plot_name
         };
         $counter++;
     }

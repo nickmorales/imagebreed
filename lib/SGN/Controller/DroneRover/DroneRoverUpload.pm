@@ -67,6 +67,7 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
 
     my $selected_drone_run_id = $c->req->param('rover_run_id');
     my $new_drone_run_type = $c->req->param('rover_run_rover_type');
+    my $new_drone_run_data_type = $c->req->param('rover_run_rover_data_type');
     my $new_drone_run_camera_info = $c->req->param('rover_run_sensor_type');
     my $new_drone_run_date = $c->req->param('rover_run_date');
     my $new_drone_run_desc = $c->req->param('rover_run_description');
@@ -76,38 +77,53 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
     my $dir = $c->tempfiles_subdir('/upload_drone_rover');
 
     if (!$new_drone_run_vehicle_id) {
-        $c->stash->{message} = "Please give an imaging event vehicle id!";
+        $c->stash->{message} = "Please give a rover event vehicle id!";
         $c->stash->{template} = 'generic_message.mas';
         return;
     }
 
     if (!$selected_drone_run_id && !$new_drone_run_names_string) {
-        $c->stash->{message} = "Please select an imaging event or create a new imaging event!";
+        $c->stash->{message} = "Please select a rover event or create a new rover event!";
         $c->stash->{template} = 'generic_message.mas';
         return;
     }
     if ($new_drone_run_names_string && !$new_drone_run_type){
-        $c->stash->{message} = "Please give a new imaging event type!";
+        $c->stash->{message} = "Please give a new rover event type!";
+        $c->stash->{template} = 'generic_message.mas';
+        return;
+    }
+    if ($new_drone_run_names_string && !$new_drone_run_data_type){
+        $c->stash->{message} = "Please give a new rover event data type!";
         $c->stash->{template} = 'generic_message.mas';
         return;
     }
     if ($new_drone_run_names_string && !$new_drone_run_date){
-        $c->stash->{message} = "Please give a new imaging event date!";
+        $c->stash->{message} = "Please give a new rover event date!";
         $c->stash->{template} = 'generic_message.mas';
         return;
     }
     if ($new_drone_run_names_string && $new_drone_run_date !~ /^\d{4}\/\d{2}\/\d{2}\s\d\d:\d\d:\d\d$/){
-        $c->stash->{message} = "Please give a new imaging event date in the format YYYY/MM/DD HH:mm:ss!";
+        $c->stash->{message} = "Please give a new rover event date in the format YYYY/MM/DD HH:mm:ss!";
         $c->stash->{template} = 'generic_message.mas';
         return;
     }
     if ($new_drone_run_names_string && !$new_drone_run_desc){
-        $c->stash->{message} = "Please give a new imaging event description!";
+        $c->stash->{message} = "Please give a new rover event description!";
         $c->stash->{template} = 'generic_message.mas';
         return;
     }
     if (!$new_drone_run_camera_info) {
-        $c->stash->{message} = "Please indicate the type of camera!";
+        $c->stash->{message} = "Please indicate the type of sensor!";
+        $c->stash->{template} = 'generic_message.mas';
+        return;
+    }
+    if ($new_drone_run_data_type eq 'earthsense_plot_point_clouds' && $new_drone_run_camera_info ne 'earthsense_lidar') {
+        $c->stash->{message} = "If the rover data type is Separated Earthsense Plot Point Clouds then the sensor must be EarthSense Lidar!";
+        $c->stash->{template} = 'generic_message.mas';
+        return;
+    }
+    if ($new_drone_run_data_type eq 'earthsense_plot_point_clouds' && $new_drone_run_type ne 'earthsense') {
+        $c->stash->{message} = "If the rover data type is Separated Earthsense Plot Point Clouds then the rover must be EarthSense!";
         $c->stash->{template} = 'generic_message.mas';
         return;
     }
@@ -115,6 +131,14 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
     my $q_priv = "UPDATE project SET private_company_id=?, is_private=? WHERE project_id=?;";
     my $h_priv = $schema->storage->dbh()->prepare($q_priv);
 
+    my $drone_run_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_experiment', 'experiment_type')->cvterm_id();
+    my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
+    my $drone_run_camera_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_type', 'project_property')->cvterm_id();
+    my $drone_run_related_cvterms_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_related_time_cvterms_json', 'project_property')->cvterm_id();
+    my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
+    my $field_trial_drone_runs_in_same_orthophoto_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'field_trial_drone_runs_in_same_orthophoto', 'experiment_type')->cvterm_id();
+    my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_rover', 'stock_type')->cvterm_id();
+    my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
     my $drone_run_is_rover_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_rover', 'project_property')->cvterm_id();
 
     my @selected_drone_run_infos;
@@ -147,18 +171,10 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
 
         my $drone_run_date_obj = Time::Piece->strptime($new_drone_run_date, "%Y/%m/%d %H:%M:%S");
         if (exists($seen_field_trial_drone_run_dates{$drone_run_date_obj->epoch})) {
-            $c->stash->{rest} = { error => "A ground rover event has already occured on these field trial(s) at the same date and time! Please give a unique date/time for each ground rover event on a field trial!" };
-            $c->detach();
+            $c->stash->{message} = "A ground rover event has already occured on these field trial(s) at the same date and time! Please give a unique date/time for each ground rover event on a field trial!";
+            $c->stash->{template} = 'generic_message.mas';
+            return;
         }
-
-        my $drone_run_experiment_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_experiment', 'experiment_type')->cvterm_id();
-        my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
-        my $drone_run_camera_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_type', 'project_property')->cvterm_id();
-        my $drone_run_related_cvterms_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_related_time_cvterms_json', 'project_property')->cvterm_id();
-        my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
-        my $field_trial_drone_runs_in_same_orthophoto_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'field_trial_drone_runs_in_same_orthophoto', 'experiment_type')->cvterm_id();
-        my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle', 'stock_type')->cvterm_id();
-        my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
 
         my $iterator = 0;
         my $field_trial_drone_runs_in_same_orthophoto_nd_experiment_id;
@@ -305,59 +321,105 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
         push @nd_experiment_project_ids, {project_id => $_};
     }
 
-    my $upload_file = $c->req->upload('upload_drone_rover_zipfile_lidar');
+    if ($new_drone_run_data_type eq 'earthsense_plot_point_clouds') {
+        my $upload_file = $c->req->upload('upload_drone_rover_zipfile_lidar_earthsense_plot_txt');
+        my $upload_file_plot_names = $c->req->upload('upload_drone_rover_earthsense_txt_plot_names');
 
-    my $upload_original_name = $upload_file->filename();
-    my $upload_tempfile = $upload_file->tempname;
-    my $time = DateTime->now();
-    my $timestamp = $time->ymd()."_".$time->hms();
-    print STDERR Dumper [$upload_original_name, $upload_tempfile];
+        my $upload_original_name = $upload_file->filename();
+        my $upload_tempfile = $upload_file->tempname;
+        my $time = DateTime->now();
+        my $timestamp = $time->ymd()."_".$time->hms();
+        print STDERR Dumper [$upload_original_name, $upload_tempfile];
 
-    my $uploader = CXGN::UploadFile->new({
-        tempfile => $upload_tempfile,
-        subdirectory => "drone_imagery_upload_rover_zips",
-        second_subdirectory => "$selected_drone_run_id",
-        archive_path => $c->config->{archive_path},
-        archive_filename => $upload_original_name,
-        timestamp => $timestamp,
-        user_id => $user_id,
-        user_role => $user_role
-    });
-    my $archived_filename_with_path = $uploader->archive();
-    my $md5 = $uploader->get_md5($archived_filename_with_path);
-    if (!$archived_filename_with_path) {
-        $c->stash->{message} = "Could not save file $upload_original_name in archive.";
+        my $uploader = CXGN::UploadFile->new({
+            tempfile => $upload_tempfile,
+            subdirectory => "drone_imagery_upload_rover_zips",
+            second_subdirectory => "$selected_drone_run_id",
+            archive_path => $c->config->{archive_path},
+            archive_filename => $upload_original_name,
+            timestamp => $timestamp,
+            user_id => $user_id,
+            user_role => $user_role
+        });
+        my $archived_filename_with_path = $uploader->archive();
+        my $md5 = $uploader->get_md5($archived_filename_with_path);
+        if (!$archived_filename_with_path) {
+            $c->stash->{message} = "Could not save file $upload_original_name in archive.";
+            $c->stash->{template} = 'generic_message.mas';
+            return;
+        }
+        print STDERR "Archived Rover Zip File: $archived_filename_with_path\n";
+        unlink $upload_tempfile;
+
+        my $upload_plot_names_original_name = $upload_file_plot_names->filename();
+        my $upload_plot_names_tempfile = $upload_file_plot_names->tempname;
+        print STDERR Dumper [$upload_plot_names_original_name, $upload_plot_names_tempfile];
+
+        my $uploader_plot_names = CXGN::UploadFile->new({
+            tempfile => $upload_plot_names_tempfile,
+            subdirectory => "drone_imagery_upload_rover_zips",
+            second_subdirectory => "$selected_drone_run_id",
+            archive_path => $c->config->{archive_path},
+            archive_filename => $upload_plot_names_original_name,
+            timestamp => $timestamp,
+            user_id => $user_id,
+            user_role => $user_role
+        });
+        my $archived_plot_names_filename_with_path = $uploader_plot_names->archive();
+        my $md5_plot_names = $uploader_plot_names->get_md5($archived_plot_names_filename_with_path);
+        if (!$archived_plot_names_filename_with_path) {
+            $c->stash->{message} = "Could not save file $upload_plot_names_original_name in archive.";
+            $c->stash->{template} = 'generic_message.mas';
+            return;
+        }
+        print STDERR "Archived Rover Zip Plot Names File: $archived_plot_names_filename_with_path\n";
+        unlink $upload_plot_names_tempfile;
+
+        my $parser = CXGN::Trial::ParseUpload->new(chado_schema => $schema, filename => $archived_plot_names_filename_with_path);
+        $parser->load_plugin('EarthSenseTXTPointCloudsToPlotNamesCSV');
+        my $parsed_data = $parser->parse();
+        #print STDERR Dumper $parsed_data;
+
+        if (!$parsed_data) {
+            my $return_error = '';
+            my $parse_errors;
+            if (!$parser->has_parse_errors() ){
+                $c->stash->{message} = "Could not get parsing errors";
+                $c->stash->{template} = 'generic_message.mas';
+                return;
+            } else {
+                $parse_errors = $parser->get_parse_errors();
+                #print STDERR Dumper $parse_errors;
+
+                foreach my $error_string (@{$parse_errors->{'error_messages'}}){
+                    $return_error .= $error_string."<br>";
+                }
+            }
+            $c->stash->{message} = $return_error;
+            $c->stash->{template} = 'generic_message.mas';
+            return;
+        }
+
+        my $parsed_entries = $parsed_data->{data};
+
+        my $image = SGN::Image->new( $c->dbc->dbh, undef, $c );
+        my $zipfile_return = $image->upload_drone_imagery_zipfile($archived_filename_with_path, $user_id, $selected_drone_run_id);
+        # print STDERR Dumper $zipfile_return;
+        if ($zipfile_return->{error}) {
+            $c->stash->{message} = "Problem saving images!".$zipfile_return->{error};
+            $c->stash->{template} = 'generic_message.mas';
+            return;
+        }
+        my $image_paths = $zipfile_return->{image_files};
+
+        foreach my $i (@$image_paths) {
+
+        }
+
+        $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_rover'>Ground Rover Data</a>";
         $c->stash->{template} = 'generic_message.mas';
         return;
     }
-    print STDERR "Archived Rover Zip File: $archived_filename_with_path\n";
-
-    unlink $upload_tempfile;
-
-    my $image = SGN::Image->new( $c->dbc->dbh, undef, $c );
-    my $zipfile_return = $image->upload_drone_imagery_zipfile($archived_filename_with_path, $user_id, $selected_drone_run_id);
-    # print STDERR Dumper $zipfile_return;
-    if ($zipfile_return->{error}) {
-        $c->stash->{message} = "Problem saving images!".$zipfile_return->{error};
-        $c->stash->{template} = 'generic_message.mas';
-        return;
-    }
-    my $image_paths = $zipfile_return->{image_files};
-
-    foreach my $i (@$image_paths) {
-
-    }
-
-    my $current_odm_image_count = scalar(@$image_paths);
-    if ($current_odm_image_count < 25) {
-        $c->stash->{message} = "Upload more than $current_odm_image_count images! Atleast 25 are required for OpenDroneMap to stitch.";
-        $c->stash->{template} = 'generic_message.mas';
-        return;
-    }
-
-    $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_rover'>Ground Rover Data</a>";
-    $c->stash->{template} = 'generic_message.mas';
-    return;
 }
 
 sub _check_user_login_drone_rover_upload {

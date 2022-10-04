@@ -147,6 +147,16 @@
                             </div>
                         </div>
 
+                        <div class="form-group" id="drone_run_upload_rover_data_type_div">
+                            <label class="col-sm-3 control-label">Date Type:</label>
+                            <div class="col-sm-9" >
+                                <select class="form-control" id="drone_run_upload_rover_data_type" name="drone_run_upload_rover_data_type">
+                                    <option value="">Select One</option>
+                                    <option value="earthsense_plot_point_clouds">EarthSense Separated Plot Point Clouds</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <center>
                         <button class="btn btn-primary" id="drone_rover_upload_continue">Go to Next Step</button>
                         </center>
@@ -236,6 +246,7 @@
                 <input type="hidden" name="rover_run_date" value="" />
                 <input type="hidden" name="rover_run_sensor_type" value="" />
                 <input type="hidden" name="rover_run_rover_type" value="" />
+                <input type="hidden" name="rover_run_rover_data_type" value="" />
                 <input type="hidden" name="rover_run_vehicle_id" value="" />
                 <input type="hidden" name="rover_run_vehicle_battery_name" value="" />
 
@@ -245,12 +256,21 @@
 
                         <div class="well well-sm">
                             <div class="form-group">
-                                <label class="col-sm-6 control-label">Point Clouds (.ply) in ZipFile (.zip): </label>
+                                <label class="col-sm-6 control-label">Point Clouds (.txt) in ZipFile (.zip): </label>
                                 <div class="col-sm-6" >
-                                    <input type="file" id="upload_drone_rover_zipfile_lidar" name="upload_drone_rover_zipfile_lidar" encoding="multipart/form-data" />
+                                    <input type="file" id="upload_drone_rover_zipfile_lidar_earthsense_plot_txt" name="upload_drone_rover_zipfile_lidar_earthsense_plot_txt" encoding="multipart/form-data" />
                                 </div>
                             </div>
                         </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Mapping of Plot Names to Point Cloud Filenames (.csv): <br><small>Format is CSV and Header Line is: plot_name,point_cloud_filename</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="upload_drone_rover_earthsense_txt_plot_names" name="upload_drone_rover_earthsense_txt_plot_names" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
                         <center>
                             <button class="btn btn-primary" id="upload_drone_rover_select_point_clouds_lidar" name="upload_drone_rover_select_point_clouds_lidar">Go To Next Step</button>
                         </center>
@@ -556,6 +576,7 @@ jQuery(document).ready(function() {
         var drone_run_date = jQuery('#rover_run_date').val();
         var drone_run_sensor_type = jQuery('#drone_rover_upload_camera_info').val();
         var drone_run_rover_type = jQuery('#drone_run_upload_rover_type').val();
+        var drone_run_rover_data_type = jQuery('#drone_run_upload_rover_data_type').val();
         var drone_run_vehicle_id = jQuery('#rover_run_imaging_vehicle_id').val();
         var drone_run_vehicle_battery_name = jQuery('#drone_run_rover_vehicle_battery_name').val();
 
@@ -569,7 +590,19 @@ jQuery(document).ready(function() {
             return false;
         }
         if (drone_run_rover_type == '') {
-            alert('Please select the sensor type used.');
+            alert('Please select the sensor rover type used.');
+            return false;
+        }
+        if (drone_run_rover_data_type == '') {
+            alert('Please select the sensor data type used.');
+            return false;
+        }
+        if (drone_run_rover_data_type == 'earthsense_plot_point_clouds' && drone_run_rover_type != 'earthsense') {
+            alert('If the rover data type is Separated Earthsense Plot Point Clouds then the rover must be EarthSense!');
+            return false;
+        }
+        if (drone_run_rover_data_type == 'earthsense_plot_point_clouds' && drone_run_sensor_type != 'earthsense_lidar') {
+            alert('If the rover data type is Separated Earthsense Plot Point Clouds then the sensor must be EarthSense Lidar!');
             return false;
         }
 
@@ -581,13 +614,12 @@ jQuery(document).ready(function() {
         jQuery('input[name="rover_run_date"]').val(drone_run_date);
         jQuery('input[name="rover_run_sensor_type"]').val(drone_run_sensor_type);
         jQuery('input[name="rover_run_rover_type"]').val(drone_run_rover_type);
+        jQuery('input[name="rover_run_rover_data_type"]').val(drone_run_rover_data_type);
         jQuery('input[name="rover_run_vehicle_id"]').val(drone_run_vehicle_id);
         jQuery('input[name="rover_run_vehicle_battery_name"]').val(drone_run_vehicle_battery_name);
 
-        if (drone_run_sensor_type == 'earthsense_lidar') {
-            if (drone_run_rover_type == 'earthsense') {
-                jQuery('#upload_drone_rover_lidar_data_dialog').modal('show');
-            }
+        if (drone_run_rover_data_type == 'earthsense_plot_point_clouds') {
+            jQuery('#upload_drone_rover_lidar_data_dialog').modal('show');
         }
 
         return false;
@@ -595,12 +627,16 @@ jQuery(document).ready(function() {
 
     jQuery('#upload_drone_rover_select_point_clouds_lidar').click(function(e){
         e.preventDefault();
-        if (jQuery('#upload_drone_rover_zipfile_lidar').val() == ''){
+        if (jQuery('#upload_drone_rover_zipfile_lidar_earthsense_plot_txt').val() == ''){
             alert('Please select a zipfile of point clouds');
             return;
         }
+        if (jQuery('#upload_drone_rover_earthsense_txt_plot_names').val() == ''){
+            alert('Please select a spreadsheet (.csv) mapping plot names to point cloud filenames.');
+            return;
+        }
 
-        var file_input = document.getElementById('upload_drone_rover_zipfile_lidar');
+        var file_input = document.getElementById('upload_drone_rover_zipfile_lidar_earthsense_plot_txt');
         if (!file_input.files[0] || file_input.files.length > 1) {
             alert('Please select only a single zipfile.');
             return;

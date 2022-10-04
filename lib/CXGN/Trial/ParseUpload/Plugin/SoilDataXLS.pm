@@ -89,7 +89,6 @@ sub _validate_with_plugin {
     }
 
     return 1; #returns true if validation is passed
-
 }
 
 
