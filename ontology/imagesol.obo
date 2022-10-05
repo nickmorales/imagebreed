@@ -1504,31 +1504,271 @@ def: "" []
 relationship: is_a ISOL:0000101
 
 [Term]
-id: ISOL:0000339
+id: ISOL:0000015
 name: Coastal Blue (410-480nm)
 def: "A single channel image capturing the coastal blue spectrum between 410 to 480 nm. Used in MicaSense double camera 10-channel as channel 6." []
 relationship: is_a ISOL:0000001
 
 [Term]
-id: ISOL:0000340
+id: ISOL:0000016
 name: Green (510-550nm)
 def: "A single channel image capturing the green spectrum between 510 to 550 nm. Used in MicaSense double camera 10-channel as channel 7." []
 relationship: is_a ISOL:0000001
 
 [Term]
-id: ISOL:0000341
+id: ISOL:0000017
 name: Red (590-670nm)
 def: "A single channel image capturing the red spectrum between 590 to 670 nm. Used in MicaSense double camera 10-channel as channel 8." []
 relationship: is_a ISOL:0000001
 
 [Term]
-id: ISOL:0000342
+id: ISOL:0000018
 name: Red Edge (680-720nm)
 def: "A single channel image capturing the red edge spectrum between 680 to 720 nm. Used in MicaSense double camera 10-channel as channel 9." []
 relationship: is_a ISOL:0000001
 
 [Term]
-id: ISOL:0000343
+id: ISOL:0000019
 name: Red Edge (720-760nm)
 def: "A single channel image capturing the red edge spectrum between 720 to 760 nm. Used in MicaSense double camera 10-channel as channel 10." []
 relationship: is_a ISOL:0000001
+
+[Term]
+id: ISOL:0000339
+name: Coastal Blue Denoised Original Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000340
+name: Green2 Denoised Original Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000341
+name: Red2 Denoised Original Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000342
+name: RedEdge2 Denoised Original Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000343
+name: RedEdge3 Denoised Original Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000344
+name: Thresholded Coastal Blue Denoised Original Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000345
+name: Thresholded Green2 Denoised Original Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000346
+name: Thresholded Red2 Denoised Original Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000347
+name: Thresholded RedEdge2 Denoised Original Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000348
+name: Thresholded RedEdge3 Denoised Original Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000349
+name: Fourier Transform High Pass Filter 20 Coastal Blue Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000350
+name: Fourier Transform High Pass Filter 30 Coastal Blue Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000351
+name: Fourier Transform High Pass Filter 40 Coastal Blue Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000352
+name: Fourier Transform High Pass Filter 20 Green2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000353
+name: Fourier Transform High Pass Filter 30 Green2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000354
+name: Fourier Transform High Pass Filter 40 Green2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000355
+name: Fourier Transform High Pass Filter 20 Red2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000356
+name: Fourier Transform High Pass Filter 30 Red2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000357
+name: Fourier Transform High Pass Filter 40 Red2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000358
+name: Fourier Transform High Pass Filter 20 RedEdge2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000359
+name: Fourier Transform High Pass Filter 30 RedEdge2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000360
+name: Fourier Transform High Pass Filter 40 RedEdge2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000361
+name: Fourier Transform High Pass Filter 20 RedEdge3 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000362
+name: Fourier Transform High Pass Filter 30 RedEdge3 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000363
+name: Fourier Transform High Pass Filter 40 RedEdge3 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000364
+name: Fourier Transform High Pass Filter 20 Thresholded Coastal Blue Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000365
+name: Fourier Transform High Pass Filter 30 Thresholded Coastal Blue Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000366
+name: Fourier Transform High Pass Filter 40 Thresholded Coastal Blue Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000367
+name: Fourier Transform High Pass Filter 20 Thresholded Green2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000368
+name: Fourier Transform High Pass Filter 30 Thresholded Green2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000369
+name: Fourier Transform High Pass Filter 40 Thresholded Green2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000370
+name: Fourier Transform High Pass Filter 20 Thresholded Red2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000371
+name: Fourier Transform High Pass Filter 30 Thresholded Red2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000372
+name: Fourier Transform High Pass Filter 40 Thresholded Red2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000373
+name: Fourier Transform High Pass Filter 20 Thresholded RedEdge2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000374
+name: Fourier Transform High Pass Filter 30 Thresholded RedEdge2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000375
+name: Fourier Transform High Pass Filter 40 Thresholded RedEdge2 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000376
+name: Fourier Transform High Pass Filter 20 Thresholded RedEdge3 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000377
+name: Fourier Transform High Pass Filter 30 Thresholded RedEdge3 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000378
+name: Fourier Transform High Pass Filter 40 Thresholded RedEdge3 Denoised Image
+def: "" []
+relationship: is_a ISOL:0000101

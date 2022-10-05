@@ -36,6 +36,11 @@ sub get_all_drone_run_band_image_types {
         'Red (600-690nm)',
         'Red Edge (690-750nm)',
         'NIR (780-3000nm)',
+        'Coastal Blue (410-480nm)',
+        'Green (510-550nm)',
+        'Red (590-670nm)',
+        'Red Edge (680-720nm)',
+        'Red Edge (720-760nm)',
         'MIR (3000-50000nm)',
         'FIR (50000-1000000nm)',
         'Thermal IR (9000-14000nm)',
@@ -69,6 +74,11 @@ sub get_all_project_md_image_observation_unit_plot_polygon_types {
         red => 'Red (600-690nm)',
         red_edge => 'Red Edge (690-750nm)',
         nir => 'NIR (780-3000nm)',
+        coastal_blue => 'Coastal Blue (410-480nm)',
+        green2 => 'Green (510-550nm)',
+        red2 => 'Red (590-670nm)',
+        rededge2 => 'Red Edge (680-720nm)',
+        rededge3 => 'Red Edge (720-760nm)',
         mir => 'MIR (3000-50000nm)',
         fir => 'FIR (50000-1000000nm)',
         tir => 'Thermal IR (9000-14000nm)',
@@ -111,6 +121,21 @@ sub get_all_project_md_image_observation_unit_plot_polygon_types {
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_nir_imagery', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_nir_imagery', channels=>[0], corresponding_channel=>0, display_name=>'NIR Image(s)', ISOL_name=>'NIR Denoised Original Image|ISOL:0000111', drone_run_project_types=>[$project_type_lookup{nir}], standard_process=>['minimal']
         },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_coastal_blue_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_coastal_blue_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Coastal Blue Image(s)', ISOL_name=>'Coastal Blue Denoised Original Image|ISOL:0000339', drone_run_project_types=>[$project_type_lookup{coastal_blue}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_green2_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_green2_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Green2 Image(s)', ISOL_name=>'Green2 Denoised Original Image|ISOL:0000340', drone_run_project_types=>[$project_type_lookup{green2}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red2_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_red2_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Red2 Image(s)', ISOL_name=>'Red2 Denoised Original Image|ISOL:0000341', drone_run_project_types=>[$project_type_lookup{red2}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge2_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_red_edge2_imagery', channels=>[0], corresponding_channel=>0, display_name=>'RedEdge2 Image(s)', ISOL_name=>'RedEdge2 Denoised Original Image|ISOL:0000342', drone_run_project_types=>[$project_type_lookup{rededge2}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge3_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_red_edge3_imagery', channels=>[0], corresponding_channel=>0, display_name=>'RedEdge3 Image(s)', ISOL_name=>'RedEdge3 Denoised Original Image|ISOL:0000343', drone_run_project_types=>[$project_type_lookup{rededge3}], standard_process=>['minimal']
+        },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_mir_imagery', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_mir_imagery', channels=>[0], corresponding_channel=>0, display_name=>'MIR Image(s)', ISOL_name=>'MIR Denoised Original Image|ISOL:0000112', drone_run_project_types=>[$project_type_lookup{mir}], standard_process=>['minimal']
         },
@@ -149,6 +174,21 @@ sub get_all_project_md_image_observation_unit_plot_polygon_types {
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_nir_background_removed_threshold_imagery', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_nir_background_removed_threshold_imagery', channels=>[0], corresponding_channel=>0, display_name=>'NIR Image(s) with Background Removed via Threshold', ISOL_name=>'Thresholded NIR Denoised Original Image|ISOL:0000125', drone_run_project_types=>[$project_type_lookup{nir}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_coastal_blue_background_removed_threshold_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_coastal_blue_background_removed_threshold_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Coastal Blue Image(s) with Background Removed via Threshold', ISOL_name=>'Thresholded Coastal Blue Denoised Original Image|ISOL:0000344', drone_run_project_types=>[$project_type_lookup{coastal_blue}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_green2_background_removed_threshold_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_green2_background_removed_threshold_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Green2 Image(s) with Background Removed via Threshold', ISOL_name=>'Thresholded Green2 Denoised Original Image|ISOL:0000345', drone_run_project_types=>[$project_type_lookup{green2}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red2_background_removed_threshold_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_red2_background_removed_threshold_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Red2 Image(s) with Background Removed via Threshold', ISOL_name=>'Thresholded Red2 Denoised Original Image|ISOL:0000346', drone_run_project_types=>[$project_type_lookup{red2}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge2_background_removed_threshold_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_red_edge2_background_removed_threshold_imagery', channels=>[0], corresponding_channel=>0, display_name=>'RedEdge2 Image(s) with Background Removed via Threshold', ISOL_name=>'Thresholded RedEdge2 Denoised Original Image|ISOL:0000347', drone_run_project_types=>[$project_type_lookup{rededge2}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge3_background_removed_threshold_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_red_edge3_background_removed_threshold_imagery', channels=>[0], corresponding_channel=>0, display_name=>'RedEdge3 Image(s) with Background Removed via Threshold', ISOL_name=>'Thresholded RedEdge3 Denoised Original Image|ISOL:0000348', drone_run_project_types=>[$project_type_lookup{rededge3}], standard_process=>['minimal']
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_mir_background_removed_threshold_imagery', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_mir_background_removed_threshold_imagery', channels=>[0], corresponding_channel=>0, display_name=>'MIR Image(s) with Background Removed via Threshold', ISOL_name=>'Thresholded MIR Denoised Original Image|ISOL:0000126', drone_run_project_types=>[$project_type_lookup{mir}], standard_process=>['minimal']
@@ -320,6 +360,51 @@ sub get_all_project_md_image_observation_unit_plot_polygon_types {
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf40_nir_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_fourier_transform_hpf40_nir_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF40 NIR Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 40 NIR Denoised Image|ISOL:0000179', drone_run_project_types=>[$project_type_lookup{nir}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf20_coastal_blue_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf20_coastal_blue_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF20 Coastal Blue Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 20 Coastal Blue Denoised Image|ISOL:0000349', drone_run_project_types=>[$project_type_lookup{coastal_blue}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf30_coastal_blue_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf30_coastal_blue_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF30 Coastal Blue Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 30 Coastal Blue Denoised Image|ISOL:0000350', drone_run_project_types=>[$project_type_lookup{coastal_blue}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf40_coastal_blue_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf40_coastal_blue_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF40 Coastal Blue Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 40 Coastal Blue Denoised Image|ISOL:0000351', drone_run_project_types=>[$project_type_lookup{coastal_blue}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf20_green2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf20_green2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF20 Green2 Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 20 Green2 Denoised Image|ISOL:0000352', drone_run_project_types=>[$project_type_lookup{green2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf30_green2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf30_green2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF30 Green2 Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 30 Green2 Denoised Image|ISOL:0000353', drone_run_project_types=>[$project_type_lookup{green2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf40_green2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf40_green2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF40 Green2 Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 40 Green2 Denoised Image|ISOL:0000354', drone_run_project_types=>[$project_type_lookup{green2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf20_red2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf20_red2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF20 Red2 Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 20 Red2 Denoised Image|ISOL:0000355', drone_run_project_types=>[$project_type_lookup{red2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf30_red2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf30_red2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF30 Red2 Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 30 Red2 Denoised Image|ISOL:0000356', drone_run_project_types=>[$project_type_lookup{red2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf40_red2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf40_red2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF40 Red2 Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 40 Red2 Denoised Image|ISOL:0000357', drone_run_project_types=>[$project_type_lookup{red2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf20_red_edge2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf20_red_edge2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF20 RedEdge2 Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 20 RedEdge2 Denoised Image|ISOL:0000358', drone_run_project_types=>[$project_type_lookup{rededge2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf30_red_edge2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf30_red_edge2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF30 RedEdge2 Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 30 RedEdge2 Denoised Image|ISOL:0000359', drone_run_project_types=>[$project_type_lookup{rededge2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf40_red_edge2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf40_red_edge2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF40 RedEdge2 Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 40 RedEdge2 Denoised Image|ISOL:0000360', drone_run_project_types=>[$project_type_lookup{rededge2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf20_red_edge3_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf20_red_edge3_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF20 RedEdge3 Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 20 RedEdge3 Denoised Image|ISOL:0000361', drone_run_project_types=>[$project_type_lookup{rededge3}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf30_red_edge3_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf30_red_edge3_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF30 RedEdge3 Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 30 RedEdge3 Denoised Image|ISOL:0000362', drone_run_project_types=>[$project_type_lookup{rededge3}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf40_red_edge3_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf40_red_edge3_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF40 RedEdge3 Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 40 RedEdge3 Denoised Image|ISOL:0000363', drone_run_project_types=>[$project_type_lookup{rededge3}], standard_process=>['extended']
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf20_mir_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_fourier_transform_hpf20_mir_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF20 MIR Image(s)', ISOL_name=>'Fourier Transform High Pass Filter 20 MIR Denoised Image|ISOL:0000180', drone_run_project_types=>[$project_type_lookup{mir}], standard_process=>['extended']
@@ -500,6 +585,51 @@ sub get_all_project_md_image_observation_unit_plot_polygon_types {
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf40_nir_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_fourier_transform_hpf40_nir_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF40 NIR Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 40 Thresholded NIR Denoised Image|ISOL:0000239', drone_run_project_types=>[$project_type_lookup{nir}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf20_coastal_blue_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf20_coastal_blue_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF20 Coastal Blue Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 20 Thresholded Coastal Blue Denoised Image|ISOL:0000364', drone_run_project_types=>[$project_type_lookup{coastal_blue}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf30_coastal_blue_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf30_coastal_blue_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF30 Coastal Blue Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 30 Thresholded Coastal Blue Denoised Image|ISOL:0000365', drone_run_project_types=>[$project_type_lookup{coastal_blue}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf40_coastal_blue_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf40_coastal_blue_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF40 Coastal Blue Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 40 Thresholded Coastal Blue Denoised Image|ISOL:0000366', drone_run_project_types=>[$project_type_lookup{coastal_blue}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf20_green2_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf20_green2_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF20 Green2 Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 20 Thresholded Green2 Denoised Image|ISOL:0000367', drone_run_project_types=>[$project_type_lookup{green2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf30_green2_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf30_green2_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF30 Green2 Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 30 Thresholded Green2 Denoised Image|ISOL:0000368', drone_run_project_types=>[$project_type_lookup{green2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf40_green2_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf40_green2_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF40 Green2 Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 40 Thresholded Green2 Denoised Image|ISOL:0000369', drone_run_project_types=>[$project_type_lookup{green2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf20_red2_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf20_red2_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF20 Red2 Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 20 Thresholded Red2 Denoised Image|ISOL:0000370', drone_run_project_types=>[$project_type_lookup{red2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf30_red2_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf30_red2_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF30 Red2 Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 30 Thresholded Red2 Denoised Image|ISOL:0000371', drone_run_project_types=>[$project_type_lookup{red2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf40_red2_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf40_red2_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF40 Red2 Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 40 Thresholded Red2 Denoised Image|ISOL:0000372', drone_run_project_types=>[$project_type_lookup{red2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf20_red_edge2_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf20_red_edge2_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF20 RedEdge2 Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 20 Thresholded RedEdge2 Denoised Image|ISOL:0000373', drone_run_project_types=>[$project_type_lookup{rededge2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf30_red_edge2_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf30_red_edge2_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF30 RedEdge2 Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 30 Thresholded RedEdge2 Denoised Image|ISOL:0000374', drone_run_project_types=>[$project_type_lookup{rededge2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf40_red_edge2_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf40_red_edge2_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF40 RedEdge2 Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 40 Thresholded RedEdge2 Denoised Image|ISOL:0000375', drone_run_project_types=>[$project_type_lookup{rededge2}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf20_red_edge3_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf20_red_edge3_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF20 RedEdge3 Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 20 Thresholded RedEdge3 Denoised Image|ISOL:0000376', drone_run_project_types=>[$project_type_lookup{rededge3}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf30_red_edge3_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf30_red_edge3_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF30 RedEdge3 Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 30 Thresholded RedEdge3 Denoised Image|ISOL:0000377', drone_run_project_types=>[$project_type_lookup{rededge3}], standard_process=>['extended']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf40_red_edge3_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_fourier_transform_hpf40_red_edge3_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF40 RedEdge3 Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 40 Thresholded RedEdge3 Denoised Image|ISOL:0000378', drone_run_project_types=>[$project_type_lookup{rededge3}], standard_process=>['extended']
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_fourier_transform_hpf20_mir_denoised_background_threshold_removed_image_channel_1', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_fourier_transform_hpf20_mir_denoised_background_threshold_removed_image_channel_1', channels=>[0], corresponding_channel=>0, display_name=>'Fourier Transform HPF20 MIR Image(s) with Background Removed via Threshold', ISOL_name=>'Fourier Transform High Pass Filter 20 Thresholded MIR Denoised Image|ISOL:0000240', drone_run_project_types=>[$project_type_lookup{mir}], standard_process=>['extended']
@@ -760,6 +890,11 @@ sub get_exported_project_md_image_observation_unit_plot_polygon_types {
         red => 'Red (600-690nm)',
         red_edge => 'Red Edge (690-750nm)',
         nir => 'NIR (780-3000nm)',
+        coastal_blue => 'Coastal Blue (410-480nm)',
+        green2 => 'Green (510-550nm)',
+        red2 => 'Red (590-670nm)',
+        rededge2 => 'Red Edge (680-720nm)',
+        rededge3 => 'Red Edge (720-760nm)',
         mir => 'MIR (3000-50000nm)',
         fir => 'FIR (50000-1000000nm)',
         tir => 'Thermal IR (9000-14000nm)',
@@ -786,6 +921,21 @@ sub get_exported_project_md_image_observation_unit_plot_polygon_types {
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_nir_imagery', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_nir_imagery', channels=>[0], corresponding_channel=>0, display_name=>'NIR Image(s)', ISOL_name=>'NIR Denoised Original Image|ISOL:0000111', drone_run_project_types=>[$project_type_lookup{nir}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_coastal_blue_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_coastal_blue_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Coastal Blue Image(s)', ISOL_name=>'Coastal Blue Denoised Original Image|ISOL:0000339', drone_run_project_types=>[$project_type_lookup{coastal_blue}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_green2_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_green2_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Green2 Image(s)', ISOL_name=>'Green2 Denoised Original Image|ISOL:0000340', drone_run_project_types=>[$project_type_lookup{green2}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red2_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_red2_imagery', channels=>[0], corresponding_channel=>0, display_name=>'Red2 Image(s)', ISOL_name=>'Red2 Denoised Original Image|ISOL:0000341', drone_run_project_types=>[$project_type_lookup{red2}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge2_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_red_edge2_imagery', channels=>[0], corresponding_channel=>0, display_name=>'RedEdge2 Image(s)', ISOL_name=>'RedEdge2 Denoised Original Image|ISOL:0000342', drone_run_project_types=>[$project_type_lookup{rededge2}], standard_process=>['minimal']
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge3_imagery', 'project_md_image')->cvterm_id() => {
+            name=>'observation_unit_polygon_red_edge3_imagery', channels=>[0], corresponding_channel=>0, display_name=>'RedEdge3 Image(s)', ISOL_name=>'RedEdge3 Denoised Original Image|ISOL:0000343', drone_run_project_types=>[$project_type_lookup{rededge3}], standard_process=>['minimal']
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_mir_imagery', 'project_md_image')->cvterm_id() => {
             name=>'observation_unit_polygon_mir_imagery', channels=>[0], corresponding_channel=>0, display_name=>'MIR Image(s)', ISOL_name=>'MIR Denoised Original Image|ISOL:0000112', drone_run_project_types=>[$project_type_lookup{mir}], standard_process=>['minimal']
@@ -926,6 +1076,131 @@ sub get_base_imagery_observation_unit_plot_polygon_term_map {
                     '30_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf30_nir_denoised_background_threshold_removed_image_channel_1'],
                     40 => ['observation_unit_polygon_fourier_transform_hpf40_nir_denoised_stitched_image_channel_1'],
                     '40_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf40_nir_denoised_background_threshold_removed_image_channel_1']
+                }
+            }
+        },
+        'Coastal Blue (410-480nm)' => {
+            imagery_types => {
+                threshold_background => ['threshold_background_removed_stitched_drone_imagery_coastal_blue'],
+                ft_hpf => {
+                    20 => ['calculate_fourier_transform_hpf20_coastal_blue_denoised_stitched_image_channel_1'],
+                    '20_threshold_background' => ['calculate_fourier_transform_hpf20_coastal_blue_threshold_background_removed_stitched_drone_imagery_channel_1'],
+                    30 => ['calculate_fourier_transform_hpf30_coastal_blue_denoised_stitched_image_channel_1'],
+                    '30_threshold_background' => ['calculate_fourier_transform_hpf30_coastal_blue_threshold_background_removed_stitched_drone_imagery_channel_1'],
+                    40 => ['calculate_fourier_transform_hpf40_coastal_blue_denoised_stitched_image_channel_1'],
+                    '40_threshold_background' => ['calculate_fourier_transform_hpf40_coastal_blue_threshold_background_removed_stitched_drone_imagery_channel_1']
+                }
+            },
+            observation_unit_plot_polygon_types => {
+                base => ['observation_unit_polygon_coastal_blue_imagery'],
+                threshold_background => ['observation_unit_polygon_coastal_blue_background_removed_threshold_imagery'],
+                ft_hpf => {
+                    20 => ['observation_unit_polygon_fourier_transform_hpf20_coastal_blue_denoised_stitched_image_channel_1'],
+                    '20_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf20_coastal_blue_denoised_background_threshold_removed_image_channel_1'],
+                    30 => ['observation_unit_polygon_fourier_transform_hpf30_coastal_blue_denoised_stitched_image_channel_1'],
+                    '30_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf30_coastal_blue_denoised_background_threshold_removed_image_channel_1'],
+                    40 => ['observation_unit_polygon_fourier_transform_hpf40_coastal_blue_denoised_stitched_image_channel_1'],
+                    '40_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf40_coastal_blue_denoised_background_threshold_removed_image_channel_1']
+                }
+            }
+        },
+        'Green (510-550nm)' => {
+            imagery_types => {
+                threshold_background => ['threshold_background_removed_stitched_drone_imagery_green2'],
+                ft_hpf => {
+                    20 => ['calculate_fourier_transform_hpf20_green2_denoised_stitched_image_channel_1'],
+                    '20_threshold_background' => ['calculate_fourier_transform_hpf20_green2_threshold_background_removed_stitched_drone_imagery_channel_1'],
+                    30 => ['calculate_fourier_transform_hpf30_green2_denoised_stitched_image_channel_1'],
+                    '30_threshold_background' => ['calculate_fourier_transform_hpf30_green2_threshold_background_removed_stitched_drone_imagery_channel_1'],
+                    40 => ['calculate_fourier_transform_hpf40_green2_denoised_stitched_image_channel_1'],
+                    '40_threshold_background' => ['calculate_fourier_transform_hpf40_green2_threshold_background_removed_stitched_drone_imagery_channel_1']
+                }
+            },
+            observation_unit_plot_polygon_types => {
+                base => ['observation_unit_polygon_green2_imagery'],
+                threshold_background => ['observation_unit_polygon_green2_background_removed_threshold_imagery'],
+                ft_hpf => {
+                    20 => ['observation_unit_polygon_fourier_transform_hpf20_green2_denoised_stitched_image_channel_1'],
+                    '20_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf20_green2_denoised_background_threshold_removed_image_channel_1'],
+                    30 => ['observation_unit_polygon_fourier_transform_hpf30_green2_denoised_stitched_image_channel_1'],
+                    '30_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf30_green2_denoised_background_threshold_removed_image_channel_1'],
+                    40 => ['observation_unit_polygon_fourier_transform_hpf40_green2_denoised_stitched_image_channel_1'],
+                    '40_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf40_green2_denoised_background_threshold_removed_image_channel_1']
+                }
+            }
+        },
+        'Red (590-670nm)' => {
+            imagery_types => {
+                threshold_background => ['threshold_background_removed_stitched_drone_imagery_red2'],
+                ft_hpf => {
+                    20 => ['calculate_fourier_transform_hpf20_red2_denoised_stitched_image_channel_1'],
+                    '20_threshold_background' => ['calculate_fourier_transform_hpf20_red2_threshold_background_removed_stitched_drone_imagery_channel_1'],
+                    30 => ['calculate_fourier_transform_hpf30_red2_denoised_stitched_image_channel_1'],
+                    '30_threshold_background' => ['calculate_fourier_transform_hpf30_red2_threshold_background_removed_stitched_drone_imagery_channel_1'],
+                    40 => ['calculate_fourier_transform_hpf40_red2_denoised_stitched_image_channel_1'],
+                    '40_threshold_background' => ['calculate_fourier_transform_hpf40_red2_threshold_background_removed_stitched_drone_imagery_channel_1']
+                }
+            },
+            observation_unit_plot_polygon_types => {
+                base => ['observation_unit_polygon_red2_imagery'],
+                threshold_background => ['observation_unit_polygon_red2_background_removed_threshold_imagery'],
+                ft_hpf => {
+                    20 => ['observation_unit_polygon_fourier_transform_hpf20_red2_denoised_stitched_image_channel_1'],
+                    '20_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf20_red2_denoised_background_threshold_removed_image_channel_1'],
+                    30 => ['observation_unit_polygon_fourier_transform_hpf30_red2_denoised_stitched_image_channel_1'],
+                    '30_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf30_red2_denoised_background_threshold_removed_image_channel_1'],
+                    40 => ['observation_unit_polygon_fourier_transform_hpf40_red2_denoised_stitched_image_channel_1'],
+                    '40_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf40_red2_denoised_background_threshold_removed_image_channel_1']
+                }
+            }
+        },
+        'Red Edge (680-720nm)' => {
+            imagery_types => {
+                threshold_background => ['threshold_background_removed_stitched_drone_imagery_red_edge2'],
+                ft_hpf => {
+                    20 => ['calculate_fourier_transform_hpf20_red_edge2_denoised_stitched_image_channel_1'],
+                    '20_threshold_background' => ['calculate_fourier_transform_hpf20_red_edge2_threshold_background_removed_stitched_drone_imagery_channel_1'],
+                    30 => ['calculate_fourier_transform_hpf30_red_edge2_denoised_stitched_image_channel_1'],
+                    '30_threshold_background' => ['calculate_fourier_transform_hpf30_red_edge2_threshold_background_removed_stitched_drone_imagery_channel_1'],
+                    40 => ['calculate_fourier_transform_hpf40_red_edge2_denoised_stitched_image_channel_1'],
+                    '40_threshold_background' => ['calculate_fourier_transform_hpf40_red_edge2_threshold_background_removed_stitched_drone_imagery_channel_1']
+                }
+            },
+            observation_unit_plot_polygon_types => {
+                base => ['observation_unit_polygon_red_edge2_imagery'],
+                threshold_background => ['observation_unit_polygon_red_edge2_background_removed_threshold_imagery'],
+                ft_hpf => {
+                    20 => ['observation_unit_polygon_fourier_transform_hpf20_red_edge2_denoised_stitched_image_channel_1'],
+                    '20_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf20_red_edge2_denoised_background_threshold_removed_image_channel_1'],
+                    30 => ['observation_unit_polygon_fourier_transform_hpf30_red_edge2_denoised_stitched_image_channel_1'],
+                    '30_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf30_red_edge2_denoised_background_threshold_removed_image_channel_1'],
+                    40 => ['observation_unit_polygon_fourier_transform_hpf40_red_edge2_denoised_stitched_image_channel_1'],
+                    '40_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf40_red_edge2_denoised_background_threshold_removed_image_channel_1']
+                }
+            }
+        },
+        'Red Edge (720-760nm)' => {
+            imagery_types => {
+                threshold_background => ['threshold_background_removed_stitched_drone_imagery_red_edge3'],
+                ft_hpf => {
+                    20 => ['calculate_fourier_transform_hpf20_red_edge3_denoised_stitched_image_channel_1'],
+                    '20_threshold_background' => ['calculate_fourier_transform_hpf20_red_edge3_threshold_background_removed_stitched_drone_imagery_channel_1'],
+                    30 => ['calculate_fourier_transform_hpf30_red_edge3_denoised_stitched_image_channel_1'],
+                    '30_threshold_background' => ['calculate_fourier_transform_hpf30_red_edge3_threshold_background_removed_stitched_drone_imagery_channel_1'],
+                    40 => ['calculate_fourier_transform_hpf40_red_edge3_denoised_stitched_image_channel_1'],
+                    '40_threshold_background' => ['calculate_fourier_transform_hpf40_red_edge3_threshold_background_removed_stitched_drone_imagery_channel_1']
+                }
+            },
+            observation_unit_plot_polygon_types => {
+                base => ['observation_unit_polygon_red_edge3_imagery'],
+                threshold_background => ['observation_unit_polygon_red_edge3_background_removed_threshold_imagery'],
+                ft_hpf => {
+                    20 => ['observation_unit_polygon_fourier_transform_hpf20_red_edge3_denoised_stitched_image_channel_1'],
+                    '20_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf20_red_edge3_denoised_background_threshold_removed_image_channel_1'],
+                    30 => ['observation_unit_polygon_fourier_transform_hpf30_red_edge3_denoised_stitched_image_channel_1'],
+                    '30_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf30_red_edge3_denoised_background_threshold_removed_image_channel_1'],
+                    40 => ['observation_unit_polygon_fourier_transform_hpf40_red_edge3_denoised_stitched_image_channel_1'],
+                    '40_threshold_background' => ['observation_unit_polygon_fourier_transform_hpf40_red_edge3_denoised_background_threshold_removed_image_channel_1']
                 }
             }
         },
@@ -1703,6 +1978,21 @@ sub get_all_project_md_image_types_whole_images {
         SGN::Model::Cvterm->get_cvterm_row($schema, 'threshold_background_removed_stitched_drone_imagery_nir', 'project_md_image')->cvterm_id() => {
             name=>'threshold_background_removed_stitched_drone_imagery_nir', channels=>[0], corresponding_channel=>0
         },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'threshold_background_removed_stitched_drone_imagery_coastal_blue', 'project_md_image')->cvterm_id() => {
+            name=>'threshold_background_removed_stitched_drone_imagery_coastal_blue', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'threshold_background_removed_stitched_drone_imagery_green2', 'project_md_image')->cvterm_id() => {
+            name=>'threshold_background_removed_stitched_drone_imagery_green2', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'threshold_background_removed_stitched_drone_imagery_red2', 'project_md_image')->cvterm_id() => {
+            name=>'threshold_background_removed_stitched_drone_imagery_red2', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'threshold_background_removed_stitched_drone_imagery_red_edge2', 'project_md_image')->cvterm_id() => {
+            name=>'threshold_background_removed_stitched_drone_imagery_red_edge2', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'threshold_background_removed_stitched_drone_imagery_red_edge3', 'project_md_image')->cvterm_id() => {
+            name=>'threshold_background_removed_stitched_drone_imagery_red_edge3', channels=>[0], corresponding_channel=>0
+        },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'threshold_background_removed_stitched_drone_imagery_mir', 'project_md_image')->cvterm_id() => {
             name=>'threshold_background_removed_stitched_drone_imagery_mir', channels=>[0], corresponding_channel=>0
         },
@@ -1807,6 +2097,51 @@ sub get_all_project_md_image_types_whole_images {
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf40_nir_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
             name=>'calculate_fourier_transform_hpf40_nir_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf20_coastal_blue_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf20_coastal_blue_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf30_coastal_blue_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf30_coastal_blue_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf40_coastal_blue_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf40_coastal_blue_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf20_green2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf20_green2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf30_green2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf30_green2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf40_green2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf40_green2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf20_red2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf20_red2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf30_red2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf30_red2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf40_red2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf40_red2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf20_red_edge2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf20_red_edge2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf30_red_edge2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf30_red_edge2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf40_red_edge2_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf40_red_edge2_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf20_red_edge3_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf20_red_edge3_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf30_red_edge3_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf30_red_edge3_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf40_red_edge3_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf40_red_edge3_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf20_mir_denoised_stitched_image_channel_1', 'project_md_image')->cvterm_id() => {
             name=>'calculate_fourier_transform_hpf20_mir_denoised_stitched_image_channel_1', channels=>[0], corresponding_channel=>0
@@ -1915,6 +2250,51 @@ sub get_all_project_md_image_types_whole_images {
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf40_nir_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
             name=>'calculate_fourier_transform_hpf40_nir_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf20_coastal_blue_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf20_coastal_blue_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf30_coastal_blue_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf30_coastal_blue_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf40_coastal_blue_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf40_coastal_blue_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf20_green2_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf20_green2_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf30_green2_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf30_green2_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf40_green2_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf40_green2_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf20_red2_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf20_red2_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf30_red2_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf30_red2_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf40_red2_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf40_red2_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf20_red_edge2_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf20_red_edge2_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf30_red_edge2_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf30_red_edge2_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf40_red_edge2_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf40_red_edge2_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf20_red_edge3_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf20_red_edge3_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf30_red_edge3_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf30_red_edge3_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
+        },
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf40_red_edge3_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
+            name=>'calculate_fourier_transform_hpf40_red_edge3_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
         },
         SGN::Model::Cvterm->get_cvterm_row($schema, 'calculate_fourier_transform_hpf20_mir_threshold_background_removed_stitched_drone_imagery_channel_1', 'project_md_image')->cvterm_id() => {
             name=>'calculate_fourier_transform_hpf20_mir_threshold_background_removed_stitched_drone_imagery_channel_1', channels=>[0], corresponding_channel=>0
@@ -2268,6 +2648,31 @@ sub get_imagery_attribute_map {
             name => 'threshold',
             key => 'drone_run_band_background_removed_threshold',
             observation_unit_plot_polygon_type => 'observation_unit_polygon_nir_background_removed_threshold_imagery'
+        },
+        'threshold_background_removed_stitched_drone_imagery_coastal_blue' => {
+            name => 'threshold',
+            key => 'drone_run_band_background_removed_threshold',
+            observation_unit_plot_polygon_type => 'observation_unit_polygon_coastal_blue_background_removed_threshold_imagery'
+        },
+        'threshold_background_removed_stitched_drone_imagery_green2' => {
+            name => 'threshold',
+            key => 'drone_run_band_background_removed_threshold',
+            observation_unit_plot_polygon_type => 'observation_unit_polygon_green2_background_removed_threshold_imagery'
+        },
+        'threshold_background_removed_stitched_drone_imagery_red2' => {
+            name => 'threshold',
+            key => 'drone_run_band_background_removed_threshold',
+            observation_unit_plot_polygon_type => 'observation_unit_polygon_red2_background_removed_threshold_imagery'
+        },
+        'threshold_background_removed_stitched_drone_imagery_red_edge2' => {
+            name => 'threshold',
+            key => 'drone_run_band_background_removed_threshold',
+            observation_unit_plot_polygon_type => 'observation_unit_polygon_red_edge2_background_removed_threshold_imagery'
+        },
+        'threshold_background_removed_stitched_drone_imagery_red_edge3' => {
+            name => 'threshold',
+            key => 'drone_run_band_background_removed_threshold',
+            observation_unit_plot_polygon_type => 'observation_unit_polygon_red_edge3_background_removed_threshold_imagery'
         },
         'threshold_background_removed_stitched_drone_imagery_mir' => {
             name => 'threshold',

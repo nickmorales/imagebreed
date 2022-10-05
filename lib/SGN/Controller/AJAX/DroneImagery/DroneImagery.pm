@@ -5976,6 +5976,11 @@ sub drone_imagery_manual_assign_plot_polygon_POST : Args(0) {
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_green_imagery', 'project_md_image')->cvterm_id(),
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_imagery', 'project_md_image')->cvterm_id(),
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_nir_imagery', 'project_md_image')->cvterm_id(),
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_coastal_blue_imagery', 'project_md_image')->cvterm_id(),
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_green2_imagery', 'project_md_image')->cvterm_id(),
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red2_imagery', 'project_md_image')->cvterm_id(),
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge2_imagery', 'project_md_image')->cvterm_id(),
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge3_imagery', 'project_md_image')->cvterm_id(),
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge_imagery', 'project_md_image')->cvterm_id()
     );
     my @plot_polygon_type_objects;
@@ -7095,6 +7100,21 @@ sub get_drone_run_band_projects_GET : Args(0) {
             }
             elsif ($drone_run_band_type eq 'NIR (780-3000nm)') {
                 $background_removed_threshold_type = 'threshold_background_removed_stitched_drone_imagery_nir';
+            }
+            elsif ($drone_run_band_type eq 'Coastal Blue (410-480nm)') {
+                $background_removed_threshold_type = 'threshold_background_removed_stitched_drone_imagery_coastal_blue';
+            }
+            elsif ($drone_run_band_type eq 'Green (510-550nm)') {
+                $background_removed_threshold_type = 'threshold_background_removed_stitched_drone_imagery_green2';
+            }
+            elsif ($drone_run_band_type eq 'Red (590-670nm)') {
+                $background_removed_threshold_type = 'threshold_background_removed_stitched_drone_imagery_red2';
+            }
+            elsif ($drone_run_band_type eq 'Red Edge (680-720nm)') {
+                $background_removed_threshold_type = 'threshold_background_removed_stitched_drone_imagery_red_edge2';
+            }
+            elsif ($drone_run_band_type eq 'Red Edge (720-760nm)') {
+                $background_removed_threshold_type = 'threshold_background_removed_stitched_drone_imagery_red_edge3';
             }
             elsif ($drone_run_band_type eq 'MIR (3000-50000nm)') {
                 $background_removed_threshold_type = 'threshold_background_removed_stitched_drone_imagery_mir';
@@ -9099,6 +9119,11 @@ sub standard_process_apply_raw_images_interactive_POST : Args(0) {
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_green_imagery', 'project_md_image')->cvterm_id(),
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_imagery', 'project_md_image')->cvterm_id(),
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_nir_imagery', 'project_md_image')->cvterm_id(),
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_coastal_blue_imagery', 'project_md_image')->cvterm_id(),
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_green2_imagery', 'project_md_image')->cvterm_id(),
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red2_imagery', 'project_md_image')->cvterm_id(),
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge2_imagery', 'project_md_image')->cvterm_id(),
+        SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge3_imagery', 'project_md_image')->cvterm_id(),
         SGN::Model::Cvterm->get_cvterm_row($schema, 'observation_unit_polygon_red_edge_imagery', 'project_md_image')->cvterm_id()
     );
     my @plot_polygon_type_objects;
@@ -9503,6 +9528,11 @@ sub drone_imagery_save_single_plot_image_POST : Args(0) {
         'observation_unit_polygon_green_imagery' => 1,
         'observation_unit_polygon_red_imagery' => 1,
         'observation_unit_polygon_nir_imagery' => 1,
+        'observation_unit_polygon_coastal_blue_imagery' => 1,
+        'observation_unit_polygon_green2_imagery' => 1,
+        'observation_unit_polygon_red2_imagery' => 1,
+        'observation_unit_polygon_red_edge2_imagery' => 1,
+        'observation_unit_polygon_red_edge3_imagery' => 1,
         'observation_unit_polygon_red_edge_imagery' => 1
     );
 
