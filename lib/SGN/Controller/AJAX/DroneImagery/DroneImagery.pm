@@ -12529,6 +12529,21 @@ sub _perform_phenotype_calculation {
     elsif ($drone_run_band_project_type eq 'NIR (780-3000nm)') {
         $drone_run_band_project_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($schema, 'NIR (780-3000nm)|ISOL:0000008')->cvterm_id;
     }
+    elsif ($drone_run_band_project_type eq 'Coastal Blue (410-480nm)') {
+        $drone_run_band_project_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($schema, 'Coastal Blue (410-480nm)|ISOL:0000015')->cvterm_id;
+    }
+    elsif ($drone_run_band_project_type eq 'Green (510-550nm)') {
+        $drone_run_band_project_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($schema, 'Green (510-550nm)|ISOL:0000016')->cvterm_id;
+    }
+    elsif ($drone_run_band_project_type eq 'Red (590-670nm)') {
+        $drone_run_band_project_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($schema, 'Red (590-670nm)|ISOL:0000017')->cvterm_id;
+    }
+    elsif ($drone_run_band_project_type eq 'Red Edge (680-720nm)') {
+        $drone_run_band_project_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($schema, 'Red Edge (680-720nm)|ISOL:0000018')->cvterm_id;
+    }
+    elsif ($drone_run_band_project_type eq 'Red Edge (720-760nm)') {
+        $drone_run_band_project_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($schema, 'Red Edge (720-760nm)|ISOL:0000019')->cvterm_id;
+    }
     elsif ($drone_run_band_project_type eq 'MIR (3000-50000nm)') {
         $drone_run_band_project_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($schema, 'MIR (3000-50000nm)|ISOL:0000009')->cvterm_id;
     }
@@ -15694,6 +15709,11 @@ sub drone_imagery_export_drone_runs_GET : Args(0) {
         "Red (600-690nm)" => "red",
         "Red Edge (690-750nm)" => "rededge",
         "NIR (780-3000nm)" => "nir",
+        "Coastal Blue (410-480nm)" => "coastal_blue",
+        "Green (510-550nm)" => "green2",
+        "Red (590-670nm)" => "red2",
+        "Red Edge (680-720nm)" => "rededge2",
+        "Red Edge (720-760nm)" => "rededge3",
         "MIR (3000-50000nm)" => "mir",
         "FIR (50000-1000000nm)" => "fir",
         "Thermal IR (9000-14000nm)" => "thir",
