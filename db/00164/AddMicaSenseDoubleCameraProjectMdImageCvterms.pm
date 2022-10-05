@@ -36,6 +36,7 @@ use Bio::Chado::Schema;
 use Try::Tiny;
 use SGN::Model::Cvterm;
 use JSON;
+use Data::Dumper;
 extends 'CXGN::Metadata::Dbpatch';
 
 
@@ -135,7 +136,7 @@ sub patch {
             'observation_unit_polygon_fourier_transform_hpf40_red_edge2_denoised_background_threshold_removed_image_channel_1',
             'observation_unit_polygon_fourier_transform_hpf20_red_edge3_denoised_background_threshold_removed_image_channel_1',
             'observation_unit_polygon_fourier_transform_hpf30_red_edge3_denoised_background_threshold_removed_image_channel_1',
-            'observation_unit_polygon_fourier_transform_hpf40_red_edge3_denoised_background_threshold_removed_image_channel_1',
+            'observation_unit_polygon_fourier_transform_hpf40_red_edge3_denoised_background_threshold_removed_image_channel_1'
         ]
     };
 
@@ -148,6 +149,7 @@ sub patch {
         }
     }
 
+    print "You're done!\n";
 }
 
 
