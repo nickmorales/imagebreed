@@ -719,6 +719,178 @@ my $message_raster = $response_raster->decoded_content;
 print STDERR Dumper $message_raster;
 ok($message_raster =~ /Successfully uploaded!/);
 
+#Testing upload of Agisoft Micasense RedEdge 10 band multistack tif.
+my $file_micasense10channel_image_agisoft = "/home/production/public/static_content/imagebreed/AgisoftMicasense10ChannelGrapesOrthomosaic.tif";
+$ua = LWP::UserAgent->new;
+$ua->timeout(3600);
+my $response_micasense_agisoft_10channel = $ua->post(
+        'http://localhost:3010/drone_imagery/upload_drone_imagery',
+        Content_Type => 'form-data',
+        Content => [
+            "sgn_session_id"=>$sgn_session_id,
+            drone_run_band_stitched_ortho_image_agisoft => [ $file_micasense10channel_image_agisoft, 'drone_run_band_stitched_ortho_image_agisoft' ],
+            "drone_run_field_trial_id"=>$field_trial_id,
+            "private_company_id"=>1,
+            "drone_run_name"=>"NewMicasense10ChannelDroneRunProject",
+            "drone_run_type"=>"Aerial Medium to High Res",
+            "drone_run_date"=>"2019/01/04 12:12:12",
+            "drone_run_description"=>"test new drone run 10 channel",
+            "drone_image_upload_camera_info"=>"micasense_10",
+            "drone_run_imaging_vehicle_id"=>$new_vehicle_id,
+            "drone_run_imaging_vehicle_battery_name"=>"blue",
+            "drone_image_upload_drone_run_band_stitching"=>"no",
+            "drone_image_upload_drone_run_band_type"=>"Agisoft",
+            "drone_run_band_number"=>10,
+        ]
+    );
+
+ok($response_micasense_agisoft_10channel->is_success);
+my $message_micasense_agisoft_10channel = $response_micasense_agisoft_10channel->decoded_content;
+print STDERR Dumper $message_micasense_agisoft_10channel;
+ok($message_micasense_agisoft_10channel =~ /Successfully uploaded!/);
+
+my $NewMicasense10ChannelDroneRunProject_project_id = $schema->resultset("Project::Project")->find({name=>"NewMicasense10ChannelDroneRunProject"})->project_id();
+my $images_search_agisoft_10channel = CXGN::DroneImagery::ImagesSearch->new({
+    bcs_schema=>$schema,
+    drone_run_project_id_list=>[$NewMicasense10ChannelDroneRunProject_project_id],
+});
+my ($result_agisoft_10channel, $total_count_agisoft_10channel) = $images_search_agisoft_10channel->search();
+print STDERR Dumper $result_agisoft_10channel;
+print STDERR Dumper $total_count_agisoft_10channel;
+is($total_count_agisoft_10channel, 10);
+my @result_agisoft_10channel_drone_run_band_project_ids;
+foreach (@$result_agisoft_10channel) {
+    push @result_agisoft_10channel_drone_run_band_project_ids, $_->{drone_run_band_project_id};
+}
+
+my $result_agisoft_10channel_drone_run_project_id = $result_agisoft_10channel->[0]->{drone_run_project_id};
+my $result_agisoft_10channel_drone_run_band_project_id = $result_agisoft_10channel->[0]->{drone_run_band_project_id};
+my $result_agisoft_10channel_image_id = $result_agisoft_10channel->[0]->{image_id};
+
+$ua = LWP::UserAgent->new;
+my $response_denoised_micasense_10channel = $ua->post('http://localhost:3010/api/drone_imagery/denoise?sgn_session_id='.$sgn_session_id.'&image_id='.$result_agisoft_10channel_image_id.'&drone_run_band_project_id='.$result_agisoft_10channel_drone_run_band_project_id);
+ok($response_denoised_micasense_10channel->is_success);
+my $message_denoised_micasense_10channel = $response_denoised_micasense_10channel->decoded_content;
+my $message_hash_denoised_micasense_10channel = decode_json $message_denoised_micasense_10channel;
+print STDERR Dumper $message_hash_denoised_micasense_10channel;
+ok($message_hash_denoised_micasense_10channel->{denoised_image_id});
+ok($message_hash_denoised_micasense_10channel->{denoised_image_url});
+
+my $sp_rotate_angle_micasense_10channel = "20.1";
+my $sp_rotate_angle_rad_micasense_10channel = $sp_rotate_angle_micasense_10channel*0.0174533;
+
+$ua = LWP::UserAgent->new;
+my $response_rotate_micasense_10channel = $ua->post('http://localhost:3010/api/drone_imagery/rotate_image?sgn_session_id='.$sgn_session_id.'&image_id='.$message_hash_denoised_micasense_10channel->{denoised_image_id}.'&drone_run_band_project_id='.$result_agisoft_10channel_drone_run_band_project_id.'&angle='.$sp_rotate_angle_micasense_10channel.'&view_only=0');
+ok($response_rotate_micasense_10channel->is_success);
+my $message_rotate_micasense_10channel = $response_rotate_micasense_10channel->decoded_content;
+my $message_hash_rotate_micasense_10channel = decode_json $message_rotate_micasense_10channel;
+print STDERR Dumper $message_hash_rotate_micasense_10channel;
+ok($message_hash_rotate_micasense_10channel->{rotated_image_id});
+ok($message_hash_rotate_micasense_10channel->{rotated_image_url});
+
+my $crop_polygon_micasense_10channel = [{'x'=>100, 'y'=>100}, {'x'=>120, 'y'=>100}, {'x'=>120, 'y'=>80}, {'x'=>100, 'y'=>70}];
+my $polygon_crop_micasense_10channel = encode_json $crop_polygon_micasense_10channel;
+$ua = LWP::UserAgent->new;
+my $response_crop_micasense_10channel = $ua->post('http://localhost:3010/api/drone_imagery/crop_image?sgn_session_id='.$sgn_session_id.'&image_id='.$message_hash_rotate_micasense_10channel->{rotated_image_id}.'&drone_run_band_project_id='.$result_agisoft_10channel_drone_run_band_project_id.'&polygon='.$polygon_crop_micasense_10channel);
+ok($response_crop_micasense_10channel->is_success);
+my $message_crop_micasense_10channel = $response_crop_micasense_10channel->decoded_content;
+my $message_hash_crop_micasense_10channel = decode_json $message_crop_micasense_10channel;
+print STDERR Dumper $message_hash_crop_micasense_10channel;
+ok($message_hash_crop_micasense_10channel->{cropped_image_id});
+ok($message_hash_crop_micasense_10channel->{cropped_image_url});
+
+$ua = LWP::UserAgent->new;
+my $response_background_removed_micasense_10channel = $ua->post('http://localhost:3010/api/drone_imagery/remove_background_save?sgn_session_id='.$sgn_session_id.'&image_id='.$message_hash_crop_micasense_10channel->{cropped_image_id}.'&image_type=threshold_background_removed_stitched_drone_imagery_blue&lower_threshold=20&upper_threshold=180&drone_run_band_project_id='.$result_agisoft_10channel_drone_run_band_project_id);
+ok($response_background_removed_micasense_10channel->is_success);
+my $message_background_removed_micasense_10channel = $response_background_removed_micasense_10channel->decoded_content;
+my $message_hash_background_removed_micasense_10channel = decode_json $message_background_removed_micasense_10channel;
+print STDERR Dumper $message_hash_background_removed_micasense_10channel;
+ok($message_hash_background_removed_micasense_10channel->{removed_background_image_id});
+ok($message_hash_background_removed_micasense_10channel->{removed_background_image_url});
+
+$ua = LWP::UserAgent->new;
+my $response_background_removed_percentage_micasense_10channel = $ua->post('http://localhost:3010/api/drone_imagery/remove_background_percentage_save?sgn_session_id='.$sgn_session_id.'&image_id='.$message_hash_crop_micasense_10channel->{cropped_image_id}.'&image_type_list=threshold_background_removed_stitched_drone_imagery_blue&lower_threshold_percentage=20&upper_threshold_percentage=20&drone_run_band_project_id='.$result_agisoft_10channel_drone_run_band_project_id);
+ok($response_background_removed_percentage_micasense_10channel->is_success);
+my $message_background_removed_percentage_micasense_10channel = $response_background_removed_percentage_micasense_10channel->decoded_content;
+my $message_hash_background_removed_percentage_micasense_10channel = decode_json $message_background_removed_percentage_micasense_10channel;
+print STDERR Dumper $message_hash_background_removed_percentage_micasense_10channel;
+ok($message_hash_background_removed_percentage_micasense_10channel->[0]->{removed_background_image_id});
+ok($message_hash_background_removed_percentage_micasense_10channel->[0]->{removed_background_image_url});
+
+my %stock_polygons_micasense_10channel = ('test_trial21' => [{'x'=>1, 'y'=>1}, {'x'=>12, 'y'=>1}, {'x'=>12, 'y'=>8}, {'x'=>1, 'y'=>7}, {'x'=>1, 'y'=>1}]);
+my $stock_polygon_json_micasense_10channel = encode_json \%stock_polygons_micasense_10channel;
+
+$ua = LWP::UserAgent->new;
+my $response_save_template_micasense_10channel = $ua->post('http://localhost:3010/api/drone_imagery/save_plot_polygons_template?sgn_session_id='.$sgn_session_id.'&drone_run_band_project_id='.$result_agisoft_10channel_drone_run_band_project_id.'&stock_polygons='.$stock_polygon_json_micasense_10channel);
+ok($response_save_template_micasense_10channel->is_success);
+my $message_save_template_micasense_10channel = $response_save_template_micasense_10channel->decoded_content;
+my $message_hash_save_template_micasense_10channel = decode_json $message_save_template_micasense_10channel;
+print STDERR Dumper $message_hash_save_template_micasense_10channel;
+ok($message_hash_save_template_micasense_10channel->{success});
+ok($message_hash_save_template_micasense_10channel->{drone_run_band_template_id});
+
+$ua = LWP::UserAgent->new;
+my $response_assign_plot_polygons_micasense_10channel = $ua->post('http://localhost:3010/api/drone_imagery/assign_plot_polygons?sgn_session_id='.$sgn_session_id.'&image_id='.$message_hash_crop_micasense_10channel->{cropped_image_id}.'&drone_run_band_project_id='.$result_agisoft_10channel_drone_run_band_project_id.'&stock_polygons='.$stock_polygon_json_micasense_10channel.'&assign_plot_polygons_type=observation_unit_polygon_blue_imagery');
+ok($response_assign_plot_polygons_micasense_10channel->is_success);
+my $message_assign_plot_polygons_micasense_10channel = $response_assign_plot_polygons_micasense_10channel->decoded_content;
+my $message_hash_assign_plot_polygons_micasense_10channel = decode_json $message_assign_plot_polygons_micasense_10channel;
+print STDERR Dumper $message_hash_assign_plot_polygons_micasense_10channel;
+ok($message_hash_assign_plot_polygons_micasense_10channel->{success});
+ok($message_hash_assign_plot_polygons_micasense_10channel->{drone_run_band_template_ids});
+
+$ua = LWP::UserAgent->new;
+my $response_drone_run_bands_micasense_10channel = $ua->get('http://localhost:3010/api/drone_imagery/drone_run_bands?sgn_session_id='.$sgn_session_id.'&select_checkbox_name=drone_test_checkbox&field_trial_id='.$field_trial_id.'&drone_run_project_id='.$result_agisoft_10channel_drone_run_project_id);
+ok($response_drone_run_bands_micasense_10channel->is_success);
+my $message_drone_run_bands_micasense_10channel = $response_drone_run_bands_micasense_10channel->decoded_content;
+my $message_hash_drone_run_bands_micasense_10channel = decode_json $message_drone_run_bands_micasense_10channel;
+print STDERR Dumper $message_hash_drone_run_bands_micasense_10channel;
+is(scalar(@{$message_hash_drone_run_bands_micasense_10channel->{data}}), 10);
+
+$ua = LWP::UserAgent->new;
+my $response_weeks_after_planting_micasense_10channel = $ua->get('http://localhost:3010/api/drone_imagery/get_weeks_after_planting_date?sgn_session_id='.$sgn_session_id.'&select_checkbox_name=drone_test_checkbox&field_trial_id='.$field_trial_id.'&drone_run_project_id='.$result_agisoft_10channel_drone_run_project_id);
+ok($response_weeks_after_planting_micasense_10channel->is_success);
+my $message_weeks_after_planting_micasense_10channel = $response_weeks_after_planting_micasense_10channel->decoded_content;
+my $message_hash_weeks_after_planting_micasense_10channel = decode_json $message_weeks_after_planting_micasense_10channel;
+print STDERR Dumper $message_hash_weeks_after_planting_micasense_10channel;
+my $message_hash_days_time_cvterm_id_micasense_10channel = $message_hash_weeks_after_planting_micasense_10channel->{time_ontology_day_cvterm_id};
+ok($message_hash_days_time_cvterm_id_micasense_10channel);
+ok($message_hash_weeks_after_planting_micasense_10channel->{drone_run_date});
+is($message_hash_weeks_after_planting_micasense_10channel->{rounded_time_difference_weeks}, 79);
+
+$ua = LWP::UserAgent->new;
+$ua->timeout(1200);
+my $apply_drone_run_band_project_ids_micasense_10channel = encode_json \@result_agisoft_10channel_drone_run_band_project_ids;
+my $vegetative_indices_micasense_10channel = encode_json ['TGI','VARI','NDVI','NDRE','CCC'];
+my $response_standard_process_micasense_10channel = $ua->post('http://localhost:3010/api/drone_imagery/standard_process_apply?sgn_session_id='.$sgn_session_id.'&apply_drone_run_band_project_ids='.$apply_drone_run_band_project_ids_micasense_10channel.'&drone_run_band_project_id='.$result_agisoft_10channel_drone_run_band_project_id.'&drone_run_project_id='.$result_agisoft_10channel_drone_run_project_id.'&vegetative_indices='.$vegetative_indices_micasense_10channel.'&field_trial_id='.$field_trial_id.'&private_company_id=1');
+ok($response_standard_process_micasense_10channel->is_success);
+my $message_standard_process_micasense_10channel = $response_standard_process_micasense_10channel->decoded_content;
+my $message_hash_standard_process_micasense_10channel = decode_json $message_standard_process_micasense_10channel;
+print STDERR Dumper $message_hash_standard_process_micasense_10channel;
+ok($message_hash_standard_process_micasense_10channel->{success});
+
+$ua = LWP::UserAgent->new;
+my $response_check_vi_micasense_10channel = $ua->get('http://localhost:3010/api/drone_imagery/check_available_applicable_vi?sgn_session_id='.$sgn_session_id.'&drone_run_project_id='.$result_agisoft_10channel_drone_run_project_id.'&field_trial_id='.$field_trial_id.'&atleast_one_image=1');
+ok($response_check_vi_micasense_10channel->is_success);
+my $message_check_vi_micasense_10channel = $response_check_vi_micasense_10channel->decoded_content;
+my $message_hash_check_vi_micasense_10channel = decode_json $message_check_vi_micasense_10channel;
+print STDERR Dumper $message_hash_check_vi_micasense_10channel;
+ok($message_hash_check_vi_micasense_10channel->{success});
+is($message_hash_check_vi_micasense_10channel->{vi}->{NDVI}, 1);
+is($message_hash_check_vi_micasense_10channel->{vi}->{NDRE}, 1);
+is($message_hash_check_vi_micasense_10channel->{vi}->{TGI}, 1);
+is($message_hash_check_vi_micasense_10channel->{vi}->{VARI}, 1);
+is($message_hash_check_vi_micasense_10channel->{vi}->{CCC}, 1);
+
+$ua = LWP::UserAgent->new;
+my $response_check_plot_images_micasense_10channel = $ua->get('http://localhost:3010/api/drone_imagery/raw_drone_imagery_plot_image_count?sgn_session_id='.$sgn_session_id);
+ok($response_check_plot_images_micasense_10channel->is_success);
+my $message_check_plot_images_micasense_10channel = $response_check_plot_images_micasense_10channel->decoded_content;
+my $message_hash_check_plot_images_micasense_10channel = decode_json $message_check_plot_images_micasense_10channel;
+print STDERR Dumper $message_hash_check_plot_images_micasense_10channel;
+ok($message_hash_check_plot_images_micasense_10channel->{data});
+is($message_hash_check_plot_images_micasense_10channel->{data}->{$result_agisoft_10channel_drone_run_project_id}->{total_plot_image_count}, 28);
+is($message_hash_check_plot_images_micasense_10channel->{data}->{$result_agisoft_10channel_drone_run_project_id}->{'NIR Image(s)'}, 1);
+is($message_hash_check_plot_images_micasense_10channel->{data}->{$result_agisoft_10channel_drone_run_project_id}->{'Coastal Blue Image(s) with Background Removed via Threshold'}, 1);
 
 #####################################################
 #Checking Sommer 2DSpl
