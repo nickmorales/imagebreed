@@ -1502,3 +1502,33 @@ id: ISOL:0000338
 name: Thresholded CCC Vegetative Index Image
 def: "" []
 relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0000339
+name: Coastal Blue (410-480nm)
+def: "A single channel image capturing the coastal blue spectrum between 410 to 480 nm. Used in MicaSense double camera 10-channel as channel 6." []
+relationship: is_a ISOL:0000001
+
+[Term]
+id: ISOL:0000340
+name: Green (510-550nm)
+def: "A single channel image capturing the green spectrum between 510 to 550 nm. Used in MicaSense double camera 10-channel as channel 7." []
+relationship: is_a ISOL:0000001
+
+[Term]
+id: ISOL:0000341
+name: Red (590-670nm)
+def: "A single channel image capturing the red spectrum between 590 to 670 nm. Used in MicaSense double camera 10-channel as channel 8." []
+relationship: is_a ISOL:0000001
+
+[Term]
+id: ISOL:0000342
+name: Red Edge (680-720nm)
+def: "A single channel image capturing the red edge spectrum between 680 to 720 nm. Used in MicaSense double camera 10-channel as channel 9." []
+relationship: is_a ISOL:0000001
+
+[Term]
+id: ISOL:0000343
+name: Red Edge (720-760nm)
+def: "A single channel image capturing the red edge spectrum between 720 to 760 nm. Used in MicaSense double camera 10-channel as channel 10." []
+relationship: is_a ISOL:0000001

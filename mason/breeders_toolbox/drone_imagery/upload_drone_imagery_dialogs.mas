@@ -124,7 +124,8 @@
                                 <div class="col-sm-9" >
                                     <select class="form-control" id="drone_image_upload_camera_info" name="drone_image_upload_camera_info">
                                         <option value="">Select One</option>
-                                        <option value="micasense_5">Micasense 5-Channel (or 10-Channel) Camera</option>
+                                        <option value="micasense_5">Micasense 5-Channel Camera</option>
+                                        <option value="micasense_10">Micasense 10-Channel Camera</option>
                                         <option value="ccd_color">RGB Color Camera</option>
                                         <!--option value="cmos_color">CMOS Sensor Color Image</option-->
                                         <option value="interpolated_elevation">Interpolated Elevation Image</option>
@@ -225,6 +226,9 @@
                                     <option value="6">Six Separate Spectral Bands and/or DSM raster</option>
                                     <option value="7">Seven Separate Spectral Bands and/or DSM raster</option>
                                     <option value="8">Eight Separate Spectral Bands and/or DSM raster</option>
+                                    <option value="9">Nine Separate Spectral Bands and/or DSM raster</option>
+                                    <option value="10">Ten Separate Spectral Bands and/or DSM raster</option>
+                                    <option value="11">Eleven Separate Spectral Bands and/or DSM raster</option>
                                 </select>
                             </div>
                         </div>
@@ -1425,18 +1429,18 @@
   </div>
 </div>
 
-<div class="modal fade" id="upload_drone_imagery_dialog_five_band_agisoft" name="upload_drone_imagery_dialog_five_band_agisoft" tabindex="-1" role="dialog" aria-labelledby="uploadDroneImageryFiveBandAgisoftDialog">
+<div class="modal fade" id="upload_drone_imagery_dialog_five_or_ten_band_agisoft" name="upload_drone_imagery_dialog_five_or_ten_band_agisoft" tabindex="-1" role="dialog" aria-labelledby="uploadDroneImageryFiveOrTenBandAgisoftDialog">
   <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="uploadDroneImageryFiveBandAgisoftDialog">Upload Agisoft Aerial Imagery</h4>
+        <h4 class="modal-title" id="uploadDroneImageryFiveOrTenBandAgisoftDialog">Upload Agisoft Aerial Imagery</h4>
       </div>
       <div class="modal-body">
         <div class="container-fluid">
             <& /page/page_title.mas, title=>"Select Image(s) to Upload" &>
 
-            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_five_band_agisoft_form" name="upload_drone_imagery_five_band_agisoft_form" action="/drone_imagery/upload_drone_imagery" >
+            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_five_or_ten_band_agisoft_form" name="upload_drone_imagery_five_or_ten_band_agisoft_form" action="/drone_imagery/upload_drone_imagery" >
                 <input type="hidden" name="drone_run_field_trial_id" value="" >
 
                 <!-- If drone run is selected above, the drone_run_project_id is passed to controller, negating need to create new drone run -->
@@ -1457,7 +1461,7 @@
                 <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
                 <input type="hidden" name="drone_run_band_number" value="" />
 
-                <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_five_band_agisoft" &>
+                <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_five_or_ten_band_agisoft" &>
                     <&| /util/workflow.mas:step, title=> "Select Images" &>
                         <& /page/page_title.mas, title=>"Select Orthophoto ODM Raster Image" &>
 
@@ -1465,7 +1469,7 @@
                             <div class="form-group">
                                 <label class="col-sm-6 control-label">Agisoft Orthophotomosaic: (.tif) <br/><small>Since you used Agisoft, upload a MultiBand image stack</small></label>
                                 <div class="col-sm-6" >
-                                    <input type="file" id="drone_run_band_stitched_ortho_image_five_agisoft" name="drone_run_band_stitched_ortho_image_agisoft" encoding="multipart/form-data" />
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_five_or_ten_agisoft" name="drone_run_band_stitched_ortho_image_agisoft" encoding="multipart/form-data" />
                                 </div>
                             </div>
                         </div>
@@ -1474,19 +1478,19 @@
                             <div class="form-group">
                                 <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional</label>
                                 <div class="col-sm-6" >
-                                    <input type="file" id="drone_run_band_stitched_ortho_report_five_agisoft" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_five_or_ten_agisoft" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
                                 </div>
                             </div>
                         </div>
 
                         <center>
-                            <button class="btn btn-primary" name="upload_drone_imagery_select_images_five_agisoft" id="upload_drone_imagery_select_images_five_agisoft">Go To Next Step</button>
+                            <button class="btn btn-primary" name="upload_drone_imagery_select_images_five_or_ten_agisoft" id="upload_drone_imagery_select_images_five_or_ten_agisoft">Go To Next Step</button>
                         </center>
                     </&>
                     <&| /util/workflow.mas:step, title=> "Submit" &>
                         <& /page/page_title.mas, title=>"Submit Imaging Event" &>
                         <center>
-                            <button type="submit" class="btn btn-info" name="upload_drone_imagery_five_agisoft_submit" id="upload_drone_imagery_five_agisoft_submit">Submit. Click Once and Be Patient As This Can Take A Long Time.</button>
+                            <button type="submit" class="btn btn-info" name="upload_drone_imagery_five_or_ten_agisoft_submit" id="upload_drone_imagery_five_or_ten_agisoft_submit">Submit. Click Once and Be Patient As This Can Take A Long Time.</button>
                         </center>
                     </&>
                 </&>
@@ -1558,10 +1562,15 @@
                                     <select class="form-control" id="drone_run_band_type_six_1" name="drone_run_band_type_1">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -1598,10 +1607,15 @@
                                     <select class="form-control" id="drone_run_band_type_six_2" name="drone_run_band_type_2">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -1638,10 +1652,15 @@
                                     <select class="form-control" id="drone_run_band_type_six_3" name="drone_run_band_type_3">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -1678,10 +1697,15 @@
                                     <select class="form-control" id="drone_run_band_type_six_4" name="drone_run_band_type_4">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -1718,10 +1742,15 @@
                                     <select class="form-control" id="drone_run_band_type_six_5" name="drone_run_band_type_5">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -1758,10 +1787,15 @@
                                     <select class="form-control" id="drone_run_band_type_six_6" name="drone_run_band_type_6">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -1865,10 +1899,15 @@
                                     <select class="form-control" id="drone_run_band_type_seven_1" name="drone_run_band_type_1">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -1905,10 +1944,15 @@
                                     <select class="form-control" id="drone_run_band_type_seven_2" name="drone_run_band_type_2">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -1945,10 +1989,15 @@
                                     <select class="form-control" id="drone_run_band_type_seven_3" name="drone_run_band_type_3">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -1985,10 +2034,15 @@
                                     <select class="form-control" id="drone_run_band_type_seven_4" name="drone_run_band_type_4">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -2025,10 +2079,15 @@
                                     <select class="form-control" id="drone_run_band_type_seven_5" name="drone_run_band_type_5">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -2065,10 +2124,15 @@
                                     <select class="form-control" id="drone_run_band_type_seven_6" name="drone_run_band_type_6">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -2105,10 +2169,15 @@
                                     <select class="form-control" id="drone_run_band_type_seven_7" name="drone_run_band_type_7">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -2212,10 +2281,15 @@
                                     <select class="form-control" id="drone_run_band_type_eight_1" name="drone_run_band_type_1">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -2252,10 +2326,15 @@
                                     <select class="form-control" id="drone_run_band_type_eight_2" name="drone_run_band_type_2">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -2292,10 +2371,15 @@
                                     <select class="form-control" id="drone_run_band_type_eight_3" name="drone_run_band_type_3">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -2332,10 +2416,15 @@
                                     <select class="form-control" id="drone_run_band_type_eight_4" name="drone_run_band_type_4">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -2372,10 +2461,15 @@
                                     <select class="form-control" id="drone_run_band_type_eight_5" name="drone_run_band_type_5">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -2412,10 +2506,15 @@
                                     <select class="form-control" id="drone_run_band_type_eight_6" name="drone_run_band_type_6">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -2452,10 +2551,15 @@
                                     <select class="form-control" id="drone_run_band_type_eight_7" name="drone_run_band_type_7">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -2492,10 +2596,15 @@
                                     <select class="form-control" id="drone_run_band_type_eight_8" name="drone_run_band_type_8">
                                         <option value="Black and White Image">Black and White Image</option>
                                         <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
                                         <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
                                         <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
                                         <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
                                         <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
                                         <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
                                         <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
                                         <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
@@ -2528,6 +2637,1557 @@
                         <& /page/page_title.mas, title=>"Submit Imaging Event" &>
                         <center>
                             <button type="submit" class="btn btn-info" name="upload_drone_imagery_eight_submit" id="upload_drone_imagery_eight_submit">Submit. Click Once and Be Patient As This Can Take A Long Time.</button>
+                        </center>
+                    </&>
+                </&>
+            </form><br/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="upload_drone_imagery_dialog_nine_band" name="upload_drone_imagery_dialog_nine_band" tabindex="-1" role="dialog" aria-labelledby="uploadDroneImageryNineBandDialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="uploadDroneImageryNineBandDialog">Upload Aerial Imagery</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <& /page/page_title.mas, title=>"Select Image(s) to Upload" &>
+
+            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_nine_band_form" name="upload_drone_imagery_nine_band_form" action="/drone_imagery/upload_drone_imagery" >
+                <input type="hidden" name="drone_run_field_trial_id" value="" >
+
+                <!-- If drone run is selected above, the drone_run_project_id is passed to controller, negating need to create new drone run -->
+                <input type="hidden" name="drone_run_id" value=""/>
+                <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
+
+                <input type="hidden" name="private_company_id" value="" />
+                <input type="hidden" name="drone_run_name" value="" />
+                <input type="hidden" name="drone_run_type" value="" />
+                <input type="hidden" name="drone_image_upload_camera_info" value="" />
+                <input type="hidden" name="drone_run_imaging_vehicle_id" value="" />
+                <input type="hidden" name="drone_run_imaging_vehicle_battery_name" value="" />
+                <input type="hidden" name="drone_run_description" value="" />
+                <input type="hidden" name="drone_run_date" value="" />
+                <input type="hidden" name="drone_run_camera_rig_description" value="" />
+                <input type="hidden" name="drone_run_base_date" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
+                <input type="hidden" name="drone_run_band_number" value="" />
+
+                <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_nine_band" &>
+                    <&| /util/workflow.mas:step, title=> "Select Images" &>
+                        <& /page/page_title.mas, title=>"Select Orthophoto Raster Images" &>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_nine_1" name="drone_run_band_coordinate_system_1">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_nine_1" name="drone_run_band_description_1" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_nine_1" name="drone_run_band_type_1">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_nine_1" name="drone_run_band_stitched_ortho_image_1" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_nine_2" name="drone_run_band_coordinate_system_2">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_nine_2" name="drone_run_band_description_2" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_nine_2" name="drone_run_band_type_2">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_nine_2" name="drone_run_band_stitched_ortho_image_2" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_nine_3" name="drone_run_band_coordinate_system_3">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_nine_3" name="drone_run_band_description_3" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_nine_3" name="drone_run_band_type_3">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_nine_3" name="drone_run_band_stitched_ortho_image_3" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_nine_4" name="drone_run_band_coordinate_system_4">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_nine_4" name="drone_run_band_description_4" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_nine_4" name="drone_run_band_type_4">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_nine_4" name="drone_run_band_stitched_ortho_image_4" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_nine_5" name="drone_run_band_coordinate_system_5">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_nine_5" name="drone_run_band_description_5" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_nine_5" name="drone_run_band_type_5">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_nine_5" name="drone_run_band_stitched_ortho_image_5" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_nine_6" name="drone_run_band_coordinate_system_6">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_nine_6" name="drone_run_band_description_6" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_nine_6" name="drone_run_band_type_6">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_nine_6" name="drone_run_band_stitched_ortho_image_6" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_nine_7" name="drone_run_band_coordinate_system_7">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_nine_7" name="drone_run_band_description_7" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_nine_7" name="drone_run_band_type_7">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_nine_7" name="drone_run_band_stitched_ortho_image_7" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_nine_8" name="drone_run_band_coordinate_system_8">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_nine_8" name="drone_run_band_description_8" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_nine_8" name="drone_run_band_type_8">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_nine_8" name="drone_run_band_stitched_ortho_image_8" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_nine_9" name="drone_run_band_coordinate_system_9">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_nine_9" name="drone_run_band_description_9" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_nine_9" name="drone_run_band_type_9">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_nine_9" name="drone_run_band_stitched_ortho_image_9" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>If you used Pix4d, look into "/1_initial/report/report.pdf".<br/>If you used ODM, look into "/odm_report/report.pdf"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_nine" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <center>
+                            <button class="btn btn-primary" name="upload_drone_imagery_select_images_nine" id="upload_drone_imagery_select_images_nine">Go To Next Step</button>
+                        </center>
+                    </&>
+                    <&| /util/workflow.mas:step, title=> "Submit" &>
+                        <& /page/page_title.mas, title=>"Submit Imaging Event" &>
+                        <center>
+                            <button type="submit" class="btn btn-info" name="upload_drone_imagery_nine_submit" id="upload_drone_imagery_nine_submit">Submit. Click Once and Be Patient As This Can Take A Long Time.</button>
+                        </center>
+                    </&>
+                </&>
+            </form><br/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="upload_drone_imagery_dialog_ten_band" name="upload_drone_imagery_dialog_ten_band" tabindex="-1" role="dialog" aria-labelledby="uploadDroneImageryTenBandDialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="uploadDroneImageryTenBandDialog">Upload Aerial Imagery</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <& /page/page_title.mas, title=>"Select Image(s) to Upload" &>
+
+            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_ten_band_form" name="upload_drone_imagery_ten_band_form" action="/drone_imagery/upload_drone_imagery" >
+                <input type="hidden" name="drone_run_field_trial_id" value="" >
+
+                <!-- If drone run is selected above, the drone_run_project_id is passed to controller, negating need to create new drone run -->
+                <input type="hidden" name="drone_run_id" value=""/>
+                <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
+
+                <input type="hidden" name="private_company_id" value="" />
+                <input type="hidden" name="drone_run_name" value="" />
+                <input type="hidden" name="drone_run_type" value="" />
+                <input type="hidden" name="drone_image_upload_camera_info" value="" />
+                <input type="hidden" name="drone_run_imaging_vehicle_id" value="" />
+                <input type="hidden" name="drone_run_imaging_vehicle_battery_name" value="" />
+                <input type="hidden" name="drone_run_description" value="" />
+                <input type="hidden" name="drone_run_date" value="" />
+                <input type="hidden" name="drone_run_camera_rig_description" value="" />
+                <input type="hidden" name="drone_run_base_date" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
+                <input type="hidden" name="drone_run_band_number" value="" />
+
+                <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_ten_band" &>
+                    <&| /util/workflow.mas:step, title=> "Select Images" &>
+                        <& /page/page_title.mas, title=>"Select Orthophoto Raster Images" &>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_ten_1" name="drone_run_band_coordinate_system_1">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_ten_1" name="drone_run_band_description_1" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_ten_1" name="drone_run_band_type_1">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_ten_1" name="drone_run_band_stitched_ortho_image_1" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_ten_2" name="drone_run_band_coordinate_system_2">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_ten_2" name="drone_run_band_description_2" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_ten_2" name="drone_run_band_type_2">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_ten_2" name="drone_run_band_stitched_ortho_image_2" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_ten_3" name="drone_run_band_coordinate_system_3">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_ten_3" name="drone_run_band_description_3" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_ten_3" name="drone_run_band_type_3">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_ten_3" name="drone_run_band_stitched_ortho_image_3" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_ten_4" name="drone_run_band_coordinate_system_4">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_ten_4" name="drone_run_band_description_4" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_ten_4" name="drone_run_band_type_4">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_ten_4" name="drone_run_band_stitched_ortho_image_4" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_ten_5" name="drone_run_band_coordinate_system_5">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_ten_5" name="drone_run_band_description_5" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_ten_5" name="drone_run_band_type_5">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_ten_5" name="drone_run_band_stitched_ortho_image_5" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_ten_6" name="drone_run_band_coordinate_system_6">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_ten_6" name="drone_run_band_description_6" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_ten_6" name="drone_run_band_type_6">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_ten_6" name="drone_run_band_stitched_ortho_image_6" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_ten_7" name="drone_run_band_coordinate_system_7">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_ten_7" name="drone_run_band_description_7" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_ten_7" name="drone_run_band_type_7">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_ten_7" name="drone_run_band_stitched_ortho_image_7" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_ten_8" name="drone_run_band_coordinate_system_8">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_ten_8" name="drone_run_band_description_8" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_ten_8" name="drone_run_band_type_8">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_ten_8" name="drone_run_band_stitched_ortho_image_8" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_ten_9" name="drone_run_band_coordinate_system_9">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_ten_9" name="drone_run_band_description_9" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_ten_9" name="drone_run_band_type_9">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_ten_9" name="drone_run_band_stitched_ortho_image_9" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_ten_10" name="drone_run_band_coordinate_system_10">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_ten_10" name="drone_run_band_description_10" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_ten_10" name="drone_run_band_type_10">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_ten_10" name="drone_run_band_stitched_ortho_image_10" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>If you used Pix4d, look into "/1_initial/report/report.pdf".<br/>If you used ODM, look into "/odm_report/report.pdf"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_ten" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <center>
+                            <button class="btn btn-primary" name="upload_drone_imagery_select_images_ten" id="upload_drone_imagery_select_images_ten">Go To Next Step</button>
+                        </center>
+                    </&>
+                    <&| /util/workflow.mas:step, title=> "Submit" &>
+                        <& /page/page_title.mas, title=>"Submit Imaging Event" &>
+                        <center>
+                            <button type="submit" class="btn btn-info" name="upload_drone_imagery_ten_submit" id="upload_drone_imagery_ten_submit">Submit. Click Once and Be Patient As This Can Take A Long Time.</button>
+                        </center>
+                    </&>
+                </&>
+            </form><br/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="upload_drone_imagery_dialog_eleven_band" name="upload_drone_imagery_dialog_eleven_band" tabindex="-1" role="dialog" aria-labelledby="uploadDroneImageryElevenBandDialog">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="uploadDroneImageryElevenBandDialog">Upload Aerial Imagery</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <& /page/page_title.mas, title=>"Select Image(s) to Upload" &>
+
+            <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_imagery_eleven_band_form" name="upload_drone_imagery_eleven_band_form" action="/drone_imagery/upload_drone_imagery" >
+                <input type="hidden" name="drone_run_field_trial_id" value="" >
+
+                <!-- If drone run is selected above, the drone_run_project_id is passed to controller, negating need to create new drone run -->
+                <input type="hidden" name="drone_run_id" value=""/>
+                <input type="hidden" name="drone_image_upload_drone_run_band_stitching_odm_image_count" value=""/>
+
+                <input type="hidden" name="private_company_id" value="" />
+                <input type="hidden" name="drone_run_name" value="" />
+                <input type="hidden" name="drone_run_type" value="" />
+                <input type="hidden" name="drone_image_upload_camera_info" value="" />
+                <input type="hidden" name="drone_run_imaging_vehicle_id" value="" />
+                <input type="hidden" name="drone_run_imaging_vehicle_battery_name" value="" />
+                <input type="hidden" name="drone_run_description" value="" />
+                <input type="hidden" name="drone_run_date" value="" />
+                <input type="hidden" name="drone_run_camera_rig_description" value="" />
+                <input type="hidden" name="drone_run_base_date" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_stitching" value="" />
+                <input type="hidden" name="drone_image_upload_drone_run_band_type" value="" />
+                <input type="hidden" name="drone_run_band_number" value="" />
+
+                <&| /util/workflow.mas, id=> "drone_imagery_upload_workflow_eleven_band" &>
+                    <&| /util/workflow.mas:step, title=> "Select Images" &>
+                        <& /page/page_title.mas, title=>"Select Orthophoto Raster Images" &>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_eleven_1" name="drone_run_band_coordinate_system_1">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eleven_1" name="drone_run_band_description_1" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_eleven_1" name="drone_run_band_type_1">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_eleven_1" name="drone_run_band_stitched_ortho_image_1" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_eleven_2" name="drone_run_band_coordinate_system_2">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eleven_2" name="drone_run_band_description_2" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_eleven_2" name="drone_run_band_type_2">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_eleven_2" name="drone_run_band_stitched_ortho_image_2" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_eleven_3" name="drone_run_band_coordinate_system_3">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eleven_3" name="drone_run_band_description_3" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_eleven_3" name="drone_run_band_type_3">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_eleven_3" name="drone_run_band_stitched_ortho_image_3" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_eleven_4" name="drone_run_band_coordinate_system_4">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eleven_4" name="drone_run_band_description_4" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_eleven_4" name="drone_run_band_type_4">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_eleven_4" name="drone_run_band_stitched_ortho_image_4" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_eleven_5" name="drone_run_band_coordinate_system_5">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eleven_5" name="drone_run_band_description_5" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_eleven_5" name="drone_run_band_type_5">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_eleven_5" name="drone_run_band_stitched_ortho_image_5" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_eleven_6" name="drone_run_band_coordinate_system_6">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eleven_6" name="drone_run_band_description_6" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_eleven_6" name="drone_run_band_type_6">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_eleven_6" name="drone_run_band_stitched_ortho_image_6" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_eleven_7" name="drone_run_band_coordinate_system_7">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eleven_7" name="drone_run_band_description_7" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_eleven_7" name="drone_run_band_type_7">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_eleven_7" name="drone_run_band_stitched_ortho_image_7" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_eleven_8" name="drone_run_band_coordinate_system_8">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eleven_8" name="drone_run_band_description_8" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_eleven_8" name="drone_run_band_type_8">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_eleven_8" name="drone_run_band_stitched_ortho_image_8" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_eleven_9" name="drone_run_band_coordinate_system_9">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eleven_9" name="drone_run_band_description_9" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_eleven_9" name="drone_run_band_type_9">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_eleven_9" name="drone_run_band_stitched_ortho_image_9" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_eleven_10" name="drone_run_band_coordinate_system_10">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eleven_10" name="drone_run_band_description_10" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_eleven_10" name="drone_run_band_type_10">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_eleven_10" name="drone_run_band_stitched_ortho_image_10" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Coordinate System:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_coordinate_system_eleven_11" name="drone_run_band_coordinate_system_11">
+                                        <option value="Pixels">Pixels (Raster Image .PNG, .JPG, .TIFF)</option>
+                                        <option value="WGS84/UTM">WGS84/UTM (GeoTIFF Image .tif)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Description: </label>
+                                <div class="col-sm-9" >
+                                    <input class="form-control" id="drone_run_band_description_eleven_11" name="drone_run_band_description_11" type="text" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Imaging Event Band Type:</label>
+                                <div class="col-sm-9" >
+                                    <select class="form-control" id="drone_run_band_type_eleven_11" name="drone_run_band_type_11">
+                                        <option value="Black and White Image">Black and White Image</option>
+                                        <option value="RGB Color Image">RGB Color Image</option>
+                                        <option value="Coastal Blue (410-480nm)">Coastal Blue (410-480nm)</option>
+                                        <option value="Blue (450-520nm)">Blue (450-520nm)</option>
+                                        <option value="Green (510-550nm)">Green (510-550nm)</option>
+                                        <option value="Green (515-600nm)">Green (515-600nm)</option>
+                                        <option value="Red (590-670nm)">Red (590-670nm)</option>
+                                        <option value="Red (600-690nm)">Red (600-690nm)</option>
+                                        <option value="Red Edge (680-720nm)">Red Edge (680-720nm)</option>
+                                        <option value="Red Edge (690-750nm)">Red Edge (690-750nm)</option>
+                                        <option value="Red Edge (720-760nm)">Red Edge (720-760nm)</option>
+                                        <option value="NIR (780-3000nm)">NIR (780-3000nm)</option>
+                                        <option value="MIR (3000-50000nm)">MIR (3000-50000nm)</option>
+                                        <option value="FIR (50000-1000000nm)">FIR (50000-1000000nm)</option>
+                                        <option value="Thermal IR (9000-14000nm)">Thermal IR (9000-14000nm)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Image: (.jpeg, .png, .tif)</label>
+                                <div class="col-sm-9" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_image_eleven_11" name="drone_run_band_stitched_ortho_image_11" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="well well-sm">
+                            <div class="form-group">
+                                <label class="col-sm-6 control-label">Orthomosaic Report: (.pdf) Optional <br/><small>If you used Pix4d, look into "/1_initial/report/report.pdf".<br/>If you used ODM, look into "/odm_report/report.pdf"</small></label>
+                                <div class="col-sm-6" >
+                                    <input type="file" id="drone_run_band_stitched_ortho_report_eleven" name="drone_run_band_stitched_ortho_report" encoding="multipart/form-data" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <center>
+                            <button class="btn btn-primary" name="upload_drone_imagery_select_images_eleven" id="upload_drone_imagery_select_images_eleven">Go To Next Step</button>
+                        </center>
+                    </&>
+                    <&| /util/workflow.mas:step, title=> "Submit" &>
+                        <& /page/page_title.mas, title=>"Submit Imaging Event" &>
+                        <center>
+                            <button type="submit" class="btn btn-info" name="upload_drone_imagery_eleven_submit" id="upload_drone_imagery_eleven_submit">Submit. Click Once and Be Patient As This Can Take A Long Time.</button>
                         </center>
                     </&>
                 </&>
@@ -3314,6 +4974,18 @@ jQuery(document).ready(function() {
                     jQuery('select[name="drone_run_band_type_4"] option[value="NIR (780-3000nm)"]').attr('selected','selected');
                     jQuery('select[name="drone_run_band_type_5"] option[value="Red Edge (690-750nm)"]').attr('selected','selected');
                 }
+                else if (drone_run_band_number == 10 && drone_run_camera_info == 'micasense_10'){
+                    jQuery('select[name="drone_run_band_type_1"] option[value="Blue (450-520nm)"]').attr('selected','selected');
+                    jQuery('select[name="drone_run_band_type_2"] option[value="Green (515-600nm)"]').attr('selected','selected');
+                    jQuery('select[name="drone_run_band_type_3"] option[value="Red (600-690nm)"]').attr('selected','selected');
+                    jQuery('select[name="drone_run_band_type_4"] option[value="NIR (780-3000nm)"]').attr('selected','selected');
+                    jQuery('select[name="drone_run_band_type_5"] option[value="Red Edge (690-750nm)"]').attr('selected','selected');
+                    jQuery('select[name="drone_run_band_type_6"] option[value="Coastal Blue (410-480nm)"]').attr('selected','selected');
+                    jQuery('select[name="drone_run_band_type_7"] option[value="Green (510-550nm)"]').attr('selected','selected');
+                    jQuery('select[name="drone_run_band_type_8"] option[value="Red (590-670nm)"]').attr('selected','selected');
+                    jQuery('select[name="drone_run_band_type_9"] option[value="Red Edge (680-720nm)"]').attr('selected','selected');
+                    jQuery('select[name="drone_run_band_type_10"] option[value="Red Edge (720-760nm)"]').attr('selected','selected');
+                }
             }
 
             if (drone_run_band_number == 1 || drone_run_band_number == 'one_bw' || drone_run_band_number == 'one_rgb') {
@@ -3333,7 +5005,7 @@ jQuery(document).ready(function() {
                     jQuery('#upload_drone_imagery_dialog_five_band_ODM').modal('show');
                 }
                 else if (drone_run_band_image_type == 'Agisoft') {
-                    jQuery('#upload_drone_imagery_dialog_five_band_agisoft').modal('show');
+                    jQuery('#upload_drone_imagery_dialog_five_or_ten_band_agisoft').modal('show');
                 }
                 else {
                     jQuery('#upload_drone_imagery_dialog_five_band').modal('show');
@@ -3348,13 +5020,30 @@ jQuery(document).ready(function() {
             if (drone_run_band_number == 8) {
                 jQuery('#upload_drone_imagery_dialog_eight_band').modal('show');
             }
+            if (drone_run_band_number == 9) {
+                jQuery('#upload_drone_imagery_dialog_nine_band').modal('show');
+            }
+            if (drone_run_band_number == 10) {
+                if (drone_run_band_image_type == 'Agisoft') {
+                    jQuery('#upload_drone_imagery_dialog_five_or_ten_band_agisoft').modal('show');
+                }
+                else {
+                    jQuery('#upload_drone_imagery_dialog_ten_band').modal('show');
+                }
+            }
+            if (drone_run_band_number == 11) {
+                jQuery('#upload_drone_imagery_dialog_eleven_band').modal('show');
+            }
         }
         else if (drone_run_band_unstitched == 'yes_open_data_map_stitch') {
             if (drone_run_camera_info == 'micasense_5') {
                 jQuery('#upload_drone_imagery_dialog_odm_micasense').modal('show');
             }
-            else {
+            else if (drone_run_camera_info == 'ccd_color') {
                 jQuery('#upload_drone_imagery_dialog_odm').modal('show');
+            }
+            else {
+                alert('ODM can only stitch MicaSense 5-channel Images or RGB Color Images. Please only select one of those camera sensors to use ODM.');
             }
         }
 
@@ -3577,14 +5266,14 @@ jQuery(document).ready(function() {
         return false;
     });
 
-    jQuery('#upload_drone_imagery_select_images_five_agisoft').click(function(e){
+    jQuery('#upload_drone_imagery_select_images_five_or_ten_agisoft').click(function(e){
         e.preventDefault();
-        if (jQuery('#drone_run_band_stitched_ortho_image_five_agisoft').val() == '') {
+        if (jQuery('#drone_run_band_stitched_ortho_image_five_or_ten_agisoft').val() == '') {
             alert('Please select an image');
             return;
         }
-        Workflow.complete('#upload_drone_imagery_select_images_five_agisoft');
-        Workflow.focus('#drone_imagery_upload_workflow_five_band_agisoft', 1);
+        Workflow.complete('#upload_drone_imagery_select_images_five_or_ten_agisoft');
+        Workflow.focus('#drone_imagery_upload_workflow_five_or_ten_band_agisoft', 1);
         return false;
     });
 

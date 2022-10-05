@@ -591,6 +591,160 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                     }
                 );
             }
+            elsif ($new_drone_run_band_numbers == 10 && $new_drone_run_band_file_type eq 'Agisoft') {
+                my $upload_file = $c->req->upload('drone_run_band_stitched_ortho_image_agisoft');
+                if (!$upload_file) {
+                    $c->stash->{message} = "Please provide an Agisoft file!";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+
+                $original_uploaded_geotiff = $upload_file;
+
+                my $new_drone_run_input_image = $upload_file->tempname;
+
+                my $dir = $c->tempfiles_subdir('/upload_drone_imagery_agisoft_stitched_ortho');
+                my $odm_b1 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".png";
+                my $odm_b2 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".png";
+                my $odm_b3 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".png";
+                my $odm_b4 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".png";
+                my $odm_b5 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".png";
+                my $odm_b6 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".png";
+                my $odm_b7 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".png";
+                my $odm_b8 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".png";
+                my $odm_b9 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".png";
+                my $odm_b10 = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".png";
+                my $odm_geoparam = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".csv";
+                my $odm_geoparam_proj = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".csv";
+                my $odm_geoparam_extent = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'upload_drone_imagery_agisoft_stitched_ortho/fileXXXX').".csv";
+
+                my $odm_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/ImageProcess/GDALOpenImage10ChannelGeoTiff.py --image_path $new_drone_run_input_image --outfile_path_image_1 $odm_b1 --outfile_path_image_2 $odm_b2 --outfile_path_image_3 $odm_b3 --outfile_path_image_4 $odm_b4 --outfile_path_image_5 $odm_b5 --outfile_path_image_6 $odm_b6 --outfile_path_image_7 $odm_b7 --outfile_path_image_8 $odm_b8 --outfile_path_image_9 $odm_b9 --outfile_path_image_10 $odm_b10--outfile_path_geo_params $odm_geoparam --outfile_path_geo_projection $odm_geoparam_proj --outfile_path_geo_extent $odm_geoparam_extent";
+                print STDERR $odm_cmd."\n";
+                my $odm_open_status = system($odm_cmd);
+
+                open(my $fh_geoparams, '<', $odm_geoparam) or die "Could not open file '".$odm_geoparam."' $!";
+                    print STDERR "Opened ".$odm_geoparam."\n";
+                    my $geoparams = <$fh_geoparams>;
+                    chomp $geoparams;
+                    my @geoparams_coordinates = split ',', $geoparams;
+                    print STDERR Dumper [$geoparams, \@geoparams_coordinates];
+                close($fh_geoparams);
+
+                open(my $fh_geoparam_proj, '<', $odm_geoparam_proj) or die "Could not open file '".$odm_geoparam_proj."' $!";
+                    print STDERR "Opened ".$odm_geoparam_proj."\n";
+                    my $geoparams_proj = <$fh_geoparam_proj>;
+                    chomp $geoparams_proj;
+                    $geoparams_proj =~ s/,//g;
+                    my @geoparams_proj_arr = split "\"\"\"\"", $geoparams_proj;
+                    my $geoparams_projection = $geoparams_proj_arr[3];
+                    $geoparams_projection =~ s/\s//g;
+                    print STDERR Dumper [$geoparams_proj, $geoparams_projection];
+                close($fh_geoparam_proj);
+
+                my @geoparams_extent;
+                open(my $fh_geoparams_extent, '<', $odm_geoparam_extent) or die "Could not open file '".$odm_geoparam_extent."' $!";
+                    print STDERR "Opened ".$odm_geoparam_extent."\n";
+                    while (my $geoparams_extent = <$fh_geoparams_extent>) {
+                        chomp $geoparams_extent;
+                        my @geoparams_extent_coordinates = split ',', $geoparams_extent;
+                        push @geoparams_extent, \@geoparams_extent_coordinates;
+                    }
+                    print STDERR Dumper \@geoparams_extent;
+                close($fh_geoparams);
+
+                push @new_drone_run_bands, (
+                    {
+                        description => "ODM orthophotomosaic Blue (450-520nm)",
+                        type => "Blue (450-520nm)",
+                        upload_file_name => $odm_b1,
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
+                    },
+                    {
+                        description => "ODM orthophotomosaic Green (515-600nm)",
+                        type => "Green (515-600nm)",
+                        upload_file_name => $odm_b2,
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
+                    },
+                    {
+                        description => "ODM orthophotomosaic Red (600-690nm)",
+                        type => "Red (600-690nm)",
+                        upload_file_name => $odm_b3,
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
+                    },
+                    {
+                        description => "ODM orthophotomosaic NIR (780-3000nm)",
+                        type => "NIR (780-3000nm)",
+                        upload_file_name => $odm_b4,
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
+                    },
+                    {
+                        description => "ODM orthophotomosaic Red Edge (690-750nm)",
+                        type => "Red Edge (690-750nm)",
+                        upload_file_name => $odm_b5,
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
+                    },
+                    {
+                        description => "ODM orthophotomosaic Coastal Blue (410-480nm)",
+                        type => "Coastal Blue (410-480nm)",
+                        upload_file_name => $odm_b6,
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
+                    },
+                    {
+                        description => "ODM orthophotomosaic Green (510-550nm)",
+                        type => "Green (510-550nm)",
+                        upload_file_name => $odm_b7,
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
+                    },
+                    {
+                        description => "ODM orthophotomosaic Red (590-670nm)",
+                        type => "Red (590-670nm)",
+                        upload_file_name => $odm_b8,
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
+                    },
+                    {
+                        description => "ODM orthophotomosaic Red Edge (680-720nm)",
+                        type => "Red Edge (680-720nm)",
+                        upload_file_name => $odm_b9,
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
+                    },
+                    {
+                        description => "ODM orthophotomosaic Red Edge (720-760nm)",
+                        type => "Red Edge (720-760nm)",
+                        upload_file_name => $odm_b10,
+                        coordinate_system => "Pixels",
+                        geoparam_coords => \@geoparams_coordinates,
+                        geoparam_proj => $geoparams_projection,
+                        geoparam_extent => \@geoparams_extent
+                    }
+                );
+            }
             else {
                 foreach (1..$new_drone_run_band_numbers) {
                     my $new_drone_run_band_desc = $c->req->param('drone_run_band_description_'.$_);
@@ -1649,6 +1803,7 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
 
     my %sensor_map = (
         "MicaSense 5 Channel Camera" => "micasense_5",
+        "MicaSense 10 Channel Camera" => "micasense_10",
         "CCD Color Camera" => "ccd_color",
         "CMOS Color Camera" => "cmos_color"
     );
@@ -2305,6 +2460,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
 
     my %sensor_map = (
         "MicaSense 5 Channel Camera" => "micasense_5",
+        "MicaSense 10 Channel Camera" => "micasense_10",
         "CCD Color Camera" => "ccd_color",
         "CMOS Color Camera" => "cmos_color"
     );
