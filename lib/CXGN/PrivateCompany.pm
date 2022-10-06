@@ -132,6 +132,11 @@ has 'sp_person_access_cvterm_name' => (
     is => 'rw',
 );
 
+has 'sp_person_administrator_type' => (
+    isa => 'Str|Undef',
+    is => 'rw',
+);
+
 sub BUILD {
     my $self = shift;
 
@@ -475,7 +480,7 @@ sub edit_private_company {
 sub add_private_company_member {
     my $self = shift;
     my $new_member = shift;
-    my $person_administrator = shift || '';
+    my $person_administrator = $self->sp_person_administrator_type() || '';
     my $private_company_id = $self->private_company_id();
     my $new_member_sp_person_id = $new_member->[0];
     my $new_member_access_type_name = $new_member->[1];
@@ -542,7 +547,9 @@ sub remove_private_company_member {
     my ($user_access_type_id, $user_access_type_name) = $h0->fetchrow_array();
     $h0 = undef;
 
-    if ($user_access_type_name eq 'curator_access') {
+    my $sp_person_administrator_type = $self->sp_person_administrator_type() || '';
+
+    if ($sp_person_administrator_type ne 'site_admin' && $user_access_type_name eq 'curator_access') {
         return {error => "Cannot remove curators from a company!"};
     }
 
@@ -580,7 +587,9 @@ sub edit_private_company_member {
     my ($private_company_sp_person_id, $user_access_type_id, $user_access_type_name) = $h0->fetchrow_array();
     $h0 = undef;
 
-    if ($user_access_type_name eq 'curator_access') {
+    my $sp_person_administrator_type = $self->sp_person_administrator_type() || '';
+
+    if ($sp_person_administrator_type ne 'site_admin' && $user_access_type_name eq 'curator_access') {
         return {error => "Cannot edit curators access to a company!"};
     }
 

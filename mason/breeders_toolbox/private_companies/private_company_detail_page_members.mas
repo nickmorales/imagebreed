@@ -128,7 +128,7 @@ jQuery(document).ready(function() {
                         alert(response.error);
                     }
                     else {
-                        alert("Successfully removed company member");
+                        alert("Successfully changed company member access");
                         location.reload();
                     }
                 },
