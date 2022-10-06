@@ -68,7 +68,7 @@ $company_sp_person_access_cvterm_name
 
 jQuery(document).ready(function() {
 
-    jQuery('#private_company_members_table').DataTable();
+    //jQuery('#private_company_members_table').DataTable();
 
     jQuery('span[name="private_company_member_remove_sp_person_id"]').click(function(){
         var sp_person_id = jQuery(this).data('sp_person_id');
