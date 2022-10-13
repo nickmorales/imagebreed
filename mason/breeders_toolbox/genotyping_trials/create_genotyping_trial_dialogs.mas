@@ -24,7 +24,7 @@ $facilities => ();
                                 <p>Each plate has a globally unique Plate ID.</p>
                                 <p>Each well in the plate has a globally unique tissue sample ID.</p>
                                 <p>The "contents" of each well can be either a tissue sample, plant name, plot name, or accession name. This "source" name must be in the database already. This is useful if you provide a field trial entity (such as a plot or plant or tissue sample name), so that phenotypes and genotypes can be directly compared.</p>
-                                <p>If you choose to submit your genotyping plate to a genotyping facility (Cornell IGD, Intertek, BGI, etc) we can generate the files they require for you. Please be aware of their requirements, such as blank well positions and concentrations.</p>
+                                <p>If you choose to submit your genotyping plate to a genotyping facility (Cornell IGD, Intertek, etc) we can generate the files they require for you. Please be aware of their requirements, such as blank well positions and concentrations.</p>
                                 <p>In addition to sample ID, you have an option to include facility identifier for each well. </p>
                                 <br/><br/>
                                 <center>

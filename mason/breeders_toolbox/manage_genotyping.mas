@@ -19,7 +19,7 @@ $facilities => ();
                     <li>Genotyping plates represent 96 or 384 well plates.</li>
                     <li>Each well in the plate has a unique tissue sample ID.</li>
                     <li>The "contents" of each well can be either a tissue sample, plant name, plot name, or accession name. This "source" name must be in the database already.</li>
-                    <li>If you choose to submit your genotyping plate to a genotyping facility (Cornell IGD, Intertek, BGI, etc) we can generate the files they require for you. Please be aware of their requirements, such as blank well positions and concentrations.</li>
+                    <li>If you choose to submit your genotyping plate to a genotyping facility (Cornell IGD, Intertek, etc) we can generate the files they require for you. Please be aware of their requirements, such as blank well positions and concentrations.</li>
                     </ul>
 
                     <b><p>How do I record a genotyping plate?</p></b>
