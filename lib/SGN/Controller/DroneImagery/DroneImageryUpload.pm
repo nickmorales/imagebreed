@@ -1757,9 +1757,28 @@ sub upload_drone_imagery_bulk : Path("/drone_imagery/upload_drone_imagery_bulk")
 
     my $upload_original_name = $upload_file->filename();
     my $upload_tempfile = $upload_file->tempname;
+    my $upload_imaging_events_name = $imaging_events_file->filename();
     my $upload_imaging_events_file = $imaging_events_file->tempname;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
+
+    my $uploader_imaging_event = CXGN::UploadFile->new({
+        tempfile => $upload_imaging_events_file,
+        subdirectory => "drone_imagery_upload_bulk_imaging_events",
+        archive_path => $c->config->{archive_path},
+        archive_filename => $upload_imaging_events_name,
+        timestamp => $timestamp,
+        user_id => $user_id,
+        user_role => $user_role
+    });
+    my $archived_imaging_events_filename_with_path = $uploader_imaging_event->archive();
+    my $md5_imaging_events = $uploader_imaging_event->get_md5($archived_imaging_events_filename_with_path);
+    if (!$archived_imaging_events_filename_with_path) {
+        $c->stash->{message} = "Could not save file $upload_imaging_events_name in archive.";
+        $c->stash->{template} = 'generic_message.mas';
+        return;
+    }
+    print STDERR "Archived Drone Image Bulk Imaging Events: $archived_imaging_events_filename_with_path\n";
 
     my $uploader = CXGN::UploadFile->new({
         tempfile => $upload_tempfile,
@@ -2483,9 +2502,28 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
     my $upload_tempfile = $upload_file->tempname;
     my $upload_geojson_original_name = $upload_geojson_file->filename();
     my $upload_geojson_tempfile = $upload_geojson_file->tempname;
+    my $upload_imaging_events_name = $imaging_events_file->filename();
     my $upload_imaging_events_file = $imaging_events_file->tempname;
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
+
+    my $uploader_imaging_event = CXGN::UploadFile->new({
+        tempfile => $upload_imaging_events_file,
+        subdirectory => "drone_imagery_upload_bulk_previous_orthophoto_imaging_events",
+        archive_path => $c->config->{archive_path},
+        archive_filename => $upload_imaging_events_name,
+        timestamp => $timestamp,
+        user_id => $user_id,
+        user_role => $user_role
+    });
+    my $archived_imaging_events_filename_with_path = $uploader_imaging_event->archive();
+    my $md5_imaging_events = $uploader_imaging_event->get_md5($archived_imaging_events_filename_with_path);
+    if (!$archived_imaging_events_filename_with_path) {
+        $c->stash->{message} = "Could not save file $upload_imaging_events_name in archive.";
+        $c->stash->{template} = 'generic_message.mas';
+        return;
+    }
+    print STDERR "Archived Drone Image Bulk Previous Orthophoto Zip File: $archived_imaging_events_filename_with_path\n";
 
     my $uploader = CXGN::UploadFile->new({
         tempfile => $upload_tempfile,
