@@ -3308,7 +3308,7 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
 
                         my $geojson_coords_original = $plot_geocoords_conversion{$stock_name};
 
-                        print STDERR Dumper $geojson_coords_original;
+                        # print STDERR Dumper $geojson_coords_original;
 
                         my $geo_json = {
                             "type"=> "Feature",
