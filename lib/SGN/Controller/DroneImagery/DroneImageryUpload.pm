@@ -2640,7 +2640,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
 
         open(my $fh_geojson_check, '<', $temp_file) or die "Could not open file '$temp_file' $!";
             print STDERR "Opened $temp_file\n";
-            my $geojson_value_check = decode_json <$fh_geojson_check>;
+            my $geojson_file_content = do { local $/; <$fh_geojson_check> };
+            my $geojson_value_check = decode_json $geojson_file_content;
             # print STDERR Dumper $geojson_value_check;
             if (!$geojson_value_check->{features}) {
                 $c->stash->{message} = 'The GeoJSON file '.$filename.' does not have a \'features\' key in it. Make sure the GeoJSON is formatted correctly.';
