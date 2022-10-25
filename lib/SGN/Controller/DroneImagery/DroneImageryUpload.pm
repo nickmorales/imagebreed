@@ -2970,7 +2970,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
         }
         open(my $fh_geojson_check, '<', $filename_imaging_event_geojson_lookup{$geojson_filename}) or die "Could not open file '".$filename_imaging_event_geojson_lookup{$geojson_filename}."' $!";
             print STDERR "Opened ".$filename_imaging_event_geojson_lookup{$geojson_filename}."\n";
-            my $geojson_value_check = decode_json <$fh_geojson_check>;
+            my $geojson_file_content = do { local $/; <$fh_geojson_check> };
+            my $geojson_value_check = decode_json $geojson_file_content;
             foreach (@{$geojson_value_check->{features}}) {
                 my $plot_number = $_->{properties}->{ID};
                 if (!exists($trial_layout->{$plot_number})) {
@@ -3145,7 +3146,8 @@ sub upload_drone_imagery_bulk_previous : Path("/drone_imagery/upload_drone_image
 
         open(my $fh_geojson, '<', $geojson_temp_filename) or die "Could not open file '$geojson_temp_filename' $!";
             print STDERR "Opened $geojson_temp_filename\n";
-            my $geojson_value = decode_json <$fh_geojson>;
+            my $geojson_file_content = do { local $/; <$fh_geojson> };
+            my $geojson_value = decode_json $geojson_file_content;
         close($fh_geojson);
 
         my $trial_lookup = $field_trial_layout_lookup{$selected_trial_id};
