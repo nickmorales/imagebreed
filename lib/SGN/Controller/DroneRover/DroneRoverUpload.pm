@@ -19,6 +19,7 @@ use Time::Piece;
 use Time::Seconds;
 use SGN::Image;
 use CXGN::DroneImagery::ImagesSearch;
+use File::Path 'make_path';
 use File::Basename qw | basename dirname|;
 use URI::Encode qw(uri_encode uri_decode);
 use CXGN::Calendar;
@@ -117,12 +118,12 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
         $c->stash->{template} = 'generic_message.mas';
         return;
     }
-    if ($new_drone_run_data_type eq 'earthsense_plot_point_clouds' && $new_drone_run_camera_info ne 'earthsense_lidar') {
+    if ($new_drone_run_data_type eq 'earthsense_raw_collections_point_clouds' && $new_drone_run_camera_info ne 'earthsense_lidar') {
         $c->stash->{message} = "If the rover data type is Separated Earthsense Plot Point Clouds then the sensor must be EarthSense Lidar!";
         $c->stash->{template} = 'generic_message.mas';
         return;
     }
-    if ($new_drone_run_data_type eq 'earthsense_plot_point_clouds' && $new_drone_run_type ne 'earthsense') {
+    if ($new_drone_run_data_type eq 'earthsense_raw_collections_point_clouds' && $new_drone_run_type ne 'earthsense') {
         $c->stash->{message} = "If the rover data type is Separated Earthsense Plot Point Clouds then the rover must be EarthSense!";
         $c->stash->{template} = 'generic_message.mas';
         return;
@@ -140,6 +141,7 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
     my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_rover', 'stock_type')->cvterm_id();
     my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
     my $drone_run_is_rover_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_rover', 'project_property')->cvterm_id();
+    my $earthsense_collections_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'earthsense_ground_rover_collections_archived', 'project_property')->cvterm_id();
 
     my @selected_drone_run_infos;
     my @selected_drone_run_ids;
@@ -321,9 +323,8 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
         push @nd_experiment_project_ids, {project_id => $_};
     }
 
-    if ($new_drone_run_data_type eq 'earthsense_plot_point_clouds') {
-        my $upload_file = $c->req->upload('upload_drone_rover_zipfile_lidar_earthsense_plot_txt');
-        my $upload_file_plot_names = $c->req->upload('upload_drone_rover_earthsense_txt_plot_names');
+    if ($new_drone_run_data_type eq 'earthsense_raw_collections_point_clouds') {
+        my $upload_file = $c->req->upload('upload_drone_rover_zipfile_lidar_earthsense_collections');
 
         my $upload_original_name = $upload_file->filename();
         my $upload_tempfile = $upload_file->tempname;
@@ -333,7 +334,7 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
 
         my $uploader = CXGN::UploadFile->new({
             tempfile => $upload_tempfile,
-            subdirectory => "drone_imagery_upload_rover_zips",
+            subdirectory => "earthsense_rover_zips",
             second_subdirectory => "$selected_drone_run_id",
             archive_path => $c->config->{archive_path},
             archive_filename => $upload_original_name,
@@ -351,69 +352,97 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
         print STDERR "Archived Rover Zip File: $archived_filename_with_path\n";
         unlink $upload_tempfile;
 
-        my $upload_plot_names_original_name = $upload_file_plot_names->filename();
-        my $upload_plot_names_tempfile = $upload_file_plot_names->tempname;
-        print STDERR Dumper [$upload_plot_names_original_name, $upload_plot_names_tempfile];
-
-        my $uploader_plot_names = CXGN::UploadFile->new({
-            tempfile => $upload_plot_names_tempfile,
-            subdirectory => "drone_imagery_upload_rover_zips",
-            second_subdirectory => "$selected_drone_run_id",
-            archive_path => $c->config->{archive_path},
-            archive_filename => $upload_plot_names_original_name,
-            timestamp => $timestamp,
-            user_id => $user_id,
-            user_role => $user_role
-        });
-        my $archived_plot_names_filename_with_path = $uploader_plot_names->archive();
-        my $md5_plot_names = $uploader_plot_names->get_md5($archived_plot_names_filename_with_path);
-        if (!$archived_plot_names_filename_with_path) {
-            $c->stash->{message} = "Could not save file $upload_plot_names_original_name in archive.";
-            $c->stash->{template} = 'generic_message.mas';
-            return;
+        my $archived_zip = CXGN::ZipFile->new(archived_zipfile_path=>$archived_filename_with_path);
+        my $file_members = $archived_zip->file_members();
+        if (!$file_members){
+            return {error => 'Could not read your zipfile. Is it .zip format?</br></br>'};
         }
-        print STDERR "Archived Rover Zip Plot Names File: $archived_plot_names_filename_with_path\n";
-        unlink $upload_plot_names_tempfile;
 
-        my $parser = CXGN::Trial::ParseUpload->new(chado_schema => $schema, filename => $archived_plot_names_filename_with_path);
-        $parser->load_plugin('EarthSenseTXTPointCloudsToPlotNamesCSV');
-        my $parsed_data = $parser->parse();
-        #print STDERR Dumper $parsed_data;
+        foreach my $drone_run_id (@selected_drone_run_ids) {
+            my %seen_collection_files;
+            my %archived_collection_files;
+            my $top_level_dirname;
+            foreach my $file_member (@$file_members) {
+                my $filename = $file_member->fileName();
 
-        if (!$parsed_data) {
-            my $return_error = '';
-            my $parse_errors;
-            if (!$parser->has_parse_errors() ){
-                $c->stash->{message} = "Could not get parsing errors";
-                $c->stash->{template} = 'generic_message.mas';
-                return;
-            } else {
-                $parse_errors = $parser->get_parse_errors();
-                #print STDERR Dumper $parse_errors;
+                my $uploader_earthsense_dir = CXGN::UploadFile->new({
+                    subdirectory => "earthsense_rover_collections",
+                    second_subdirectory => "$drone_run_id",
+                    archive_path => $c->config->{archive_path},
+                    timestamp => $timestamp,
+                    user_id => $user_id,
+                    user_role => $user_role,
+                    include_timestamp => 0
+                });
+                my ($archived_filename_with_path_earthsense_collection, $earthsense_collection_file) = $uploader_earthsense_dir->archive_zipfile($file_member);
+                my $archived_filename_with_path_earthsense_collection_md5 = $uploader_earthsense_dir->get_md5($archived_filename_with_path_earthsense_collection);
+                if (!$archived_filename_with_path_earthsense_collection) {
+                    $c->stash->{message} = "Could not save file $filename in archive.";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                my ($top_level, $earthsense_collection_number, $collection_file) = split '/', $earthsense_collection_file;
+                if (!$top_level || !$earthsense_collection_number || !$collection_file) {
+                    $c->stash->{message} = "The uploaded file $earthsense_collection_file does not follow a pattern like TestEarthSenseCollections/0abb840a-9ab9-414c-b228-9e125810ebb0/secondary_lidar_log.csv";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                if (length($earthsense_collection_number) != 36) {
+                    $c->stash->{message} = "The collection number $earthsense_collection_number in the uploaded file $earthsense_collection_file does not have 36 characters!";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                my @earthsense_collection_split = split '-', $earthsense_collection_number;
+                if (length($earthsense_collection_split[0]) != 8 || length($earthsense_collection_split[1]) != 4 || length($earthsense_collection_split[2]) != 4 || length($earthsense_collection_split[3]) != 4 || length($earthsense_collection_split[4]) != 12) {
+                    $c->stash->{message} = "The collection number $earthsense_collection_number in the uploaded file $earthsense_collection_file does not follow a pattern like 0abb840a-9ab9-414c-b228-9e125810ebb0!";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
 
-                foreach my $error_string (@{$parse_errors->{'error_messages'}}){
-                    $return_error .= $error_string."<br>";
+                $seen_collection_files{$earthsense_collection_number}->{$collection_file}++;
+                push @{$archived_collection_files{$earthsense_collection_number}}, $collection_file;
+                $top_level_dirname = $top_level;
+            }
+
+            while (my ($collection_number, $collection_file) = each %seen_collection_files) {
+                if (!exists($collection_file->{'secondary_lidar_log.csv'})) {
+                    $c->stash->{message} = "The collection number $collection_number does not include the secondary_lidar_log.csv!";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                if (!exists($collection_file->{'system_log.csv'})) {
+                    $c->stash->{message} = "The collection number $collection_number does not include the system_log.csv!";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
                 }
             }
-            $c->stash->{message} = $return_error;
-            $c->stash->{template} = 'generic_message.mas';
-            return;
-        }
 
-        my $parsed_entries = $parsed_data->{data};
+            my $earthsense_collections_projectprop_rs = $schema->resultset("Project::Projectprop")->search({
+                project_id => $drone_run_id,
+                type_id => $earthsense_collections_cvterm_id
+            });
+            my $earthsense_collections = [];
+            if ($earthsense_collections_projectprop_rs->count > 0) {
+                if ($earthsense_collections_projectprop_rs->count > 1) {
+                    $c->stash->{message} = "There should not be more than one EarthSense collections projectprop!";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                $earthsense_collections = decode_json $earthsense_collections_projectprop_rs->first->value();
+            }
 
-        my $image = SGN::Image->new( $c->dbc->dbh, undef, $c );
-        my $zipfile_return = $image->upload_drone_imagery_zipfile($archived_filename_with_path, $user_id, $selected_drone_run_id);
-        # print STDERR Dumper $zipfile_return;
-        if ($zipfile_return->{error}) {
-            $c->stash->{message} = "Problem saving images!".$zipfile_return->{error};
-            $c->stash->{template} = 'generic_message.mas';
-            return;
-        }
-        my $image_paths = $zipfile_return->{image_files};
+            push @$earthsense_collections, {
+                top_level => $top_level_dirname,
+                collections => \%archived_collection_files
+            };
+            print STDERR Dumper $earthsense_collections;
 
-        foreach my $i (@$image_paths) {
-
+            my $earthsense_collections_prop = $schema->resultset("Project::Projectprop")->find_or_create({
+                project_id => $drone_run_id,
+                type_id => $earthsense_collections_cvterm_id
+            });
+            $earthsense_collections_prop->value(encode_json $earthsense_collections);
+            $earthsense_collections_prop->update();
         }
 
         $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_rover'>Ground Rover Data</a>";

@@ -41,47 +41,56 @@ use File::Basename qw | basename dirname|;
 use Digest::MD5;
 use Data::Dumper;
 
-has 'tempfile' => (isa => "Str",
+has 'tempfile' => (
+    isa => "Str",
     is => 'rw',
     required => 0
 );
 
-has 'subdirectory' => (isa => "Str",
+has 'subdirectory' => (
+    isa => "Str",
     is => 'rw',
     required => 0
 );
 
-has 'second_subdirectory' => (isa => "Str",
+has 'second_subdirectory' => (
+    isa => "Str",
     is => 'rw',
     required => 0
 );
 
-has 'third_subdirectory' => (isa => "Str",
+has 'third_subdirectory' => (
+    isa => "Str",
     is => 'rw',
     required => 0
 );
 
-has 'archive_path' => (isa => "Str",
+has 'archive_path' => (
+    isa => "Str",
     is => 'rw',
     required => 0
 );
 
-has 'archive_filename' => (isa => "Str",
+has 'archive_filename' => (
+    isa => "Str",
     is => 'rw',
     required => 0
 );
 
-has 'timestamp' => (isa => "Str",
+has 'timestamp' => (
+    isa => "Str",
     is => 'rw',
     required => 0
 );
 
-has 'user_id' => (isa => "Int",
+has 'user_id' => (
+    isa => "Int",
     is => 'rw',
     required => 0
 );
 
-has 'user_role' => (isa => "Str",
+has 'user_role' => (
+    isa => "Str",
     is => 'rw',
     required => 0
 );
@@ -172,6 +181,76 @@ sub archive {
     }
     print STDERR "ARCHIVED: $file_destination\n";
     return $file_destination;
+}
+
+sub archive_zipfile {
+    my $self = shift;
+    my $zipfile_member = shift;
+    my $subdirectory = $self->subdirectory;
+    my $second_subdirectory = $self->second_subdirectory;
+    my $third_subdirectory = $self->third_subdirectory;
+    my $archive_path = $self->archive_path;
+    my $user_id = $self->user_id;
+    my $file_destination;
+    my $error;
+
+    #    if (!$subdirectory || !$archive_path || !$user_id){
+    if (!$subdirectory || !$user_id){
+        die "To archive a tempfile you need to provide: subdirectory, archive_path, and user_id\n";
+    }
+
+    if (!any { $_ eq "curator" || $_ eq "submitter" || $_ eq "sequencer" } ($self->user_role)  ) {
+        die  "You have insufficient privileges to archive a file.\n". Dumper $self->user_role;
+    }
+    # if (!$subdirectory ) {
+    #     print STDERR "File archive failed: incomplete information to archive file.\n";
+    # 	die "File archive failed: incomplete information to archive file.\n";
+    # }
+
+    my $filename = $zipfile_member->fileName();
+    print STDERR "$filename\n";
+
+    $file_destination =  catfile($archive_path, $user_id, $subdirectory, $filename);
+
+    if ($second_subdirectory) {
+        $file_destination =  catfile($archive_path, $user_id, $subdirectory, $second_subdirectory, $filename);
+
+        if ($third_subdirectory) {
+            $file_destination =  catfile($archive_path, $user_id, $subdirectory, $second_subdirectory, $third_subdirectory, $filename);
+        }
+    }
+
+    try {
+        if (!-d $archive_path) {
+            mkdir $archive_path;
+        }
+        if (! -d catfile($archive_path, $user_id)) {
+            mkdir (catfile($archive_path, $user_id));
+        }
+        if (! -d catfile($archive_path, $user_id, $subdirectory)) {
+            mkdir (catfile($archive_path, $user_id, $subdirectory));
+        }
+        if ($second_subdirectory) {
+            if (! -d catfile($archive_path, $user_id, $subdirectory, $second_subdirectory)) {
+                mkdir (catfile($archive_path, $user_id, $subdirectory, $second_subdirectory));
+            }
+        }
+        if ($second_subdirectory && $third_subdirectory) {
+            if (! -d catfile($archive_path, $user_id, $subdirectory, $second_subdirectory, $third_subdirectory)) {
+                mkdir (catfile($archive_path, $user_id, $subdirectory, $second_subdirectory, $third_subdirectory));
+            }
+        }
+
+        $zipfile_member->extractToFileNamed($file_destination);
+    }
+    catch {
+        $error = "Error saving archived file: $file_destination\n$_";
+    };
+    if ($error) {
+        print STDERR  "$error\n";
+    }
+    print STDERR "ARCHIVED: $file_destination\n";
+    return ($file_destination, $filename);
 }
 
 sub get_md5 {
