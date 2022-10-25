@@ -654,7 +654,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
 
                 push @new_drone_run_bands, (
                     {
-                        description => "ODM orthophotomosaic Blue (450-520nm)",
+                        description => "Agisoft orthophotomosaic Blue (450-520nm)",
                         type => "Blue (450-520nm)",
                         upload_file_name => $odm_b1,
                         coordinate_system => "Pixels",
@@ -663,7 +663,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         geoparam_extent => \@geoparams_extent
                     },
                     {
-                        description => "ODM orthophotomosaic Green (515-600nm)",
+                        description => "Agisoft orthophotomosaic Green (515-600nm)",
                         type => "Green (515-600nm)",
                         upload_file_name => $odm_b2,
                         coordinate_system => "Pixels",
@@ -672,7 +672,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         geoparam_extent => \@geoparams_extent
                     },
                     {
-                        description => "ODM orthophotomosaic Red (600-690nm)",
+                        description => "Agisoft orthophotomosaic Red (600-690nm)",
                         type => "Red (600-690nm)",
                         upload_file_name => $odm_b3,
                         coordinate_system => "Pixels",
@@ -681,7 +681,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         geoparam_extent => \@geoparams_extent
                     },
                     {
-                        description => "ODM orthophotomosaic NIR (780-3000nm)",
+                        description => "Agisoft orthophotomosaic NIR (780-3000nm)",
                         type => "NIR (780-3000nm)",
                         upload_file_name => $odm_b4,
                         coordinate_system => "Pixels",
@@ -690,7 +690,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         geoparam_extent => \@geoparams_extent
                     },
                     {
-                        description => "ODM orthophotomosaic Red Edge (690-750nm)",
+                        description => "Agisoft orthophotomosaic Red Edge (690-750nm)",
                         type => "Red Edge (690-750nm)",
                         upload_file_name => $odm_b5,
                         coordinate_system => "Pixels",
@@ -699,7 +699,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         geoparam_extent => \@geoparams_extent
                     },
                     {
-                        description => "ODM orthophotomosaic Coastal Blue (410-480nm)",
+                        description => "Agisoft orthophotomosaic Coastal Blue (410-480nm)",
                         type => "Coastal Blue (410-480nm)",
                         upload_file_name => $odm_b6,
                         coordinate_system => "Pixels",
@@ -708,7 +708,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         geoparam_extent => \@geoparams_extent
                     },
                     {
-                        description => "ODM orthophotomosaic Green (510-550nm)",
+                        description => "Agisoft orthophotomosaic Green (510-550nm)",
                         type => "Green (510-550nm)",
                         upload_file_name => $odm_b7,
                         coordinate_system => "Pixels",
@@ -717,7 +717,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         geoparam_extent => \@geoparams_extent
                     },
                     {
-                        description => "ODM orthophotomosaic Red (590-670nm)",
+                        description => "Agisoft orthophotomosaic Red (590-670nm)",
                         type => "Red (590-670nm)",
                         upload_file_name => $odm_b8,
                         coordinate_system => "Pixels",
@@ -726,7 +726,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         geoparam_extent => \@geoparams_extent
                     },
                     {
-                        description => "ODM orthophotomosaic Red Edge (680-720nm)",
+                        description => "Agisoft orthophotomosaic Red Edge (680-720nm)",
                         type => "Red Edge (680-720nm)",
                         upload_file_name => $odm_b9,
                         coordinate_system => "Pixels",
@@ -735,7 +735,7 @@ sub upload_drone_imagery : Path("/drone_imagery/upload_drone_imagery") :Args(0) 
                         geoparam_extent => \@geoparams_extent
                     },
                     {
-                        description => "ODM orthophotomosaic Red Edge (720-760nm)",
+                        description => "Agisoft orthophotomosaic Red Edge (720-760nm)",
                         type => "Red Edge (720-760nm)",
                         upload_file_name => $odm_b10,
                         coordinate_system => "Pixels",
