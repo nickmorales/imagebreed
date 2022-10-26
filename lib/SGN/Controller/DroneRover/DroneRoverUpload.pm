@@ -399,14 +399,20 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                     return;
                 }
 
-                $seen_collection_files{$earthsense_collection_number}->{$collection_file}++;
-                push @{$archived_collection_files{$earthsense_collection_number}}, $collection_file;
+                $archived_collection_files{$earthsense_collection_number}->{collections}->{$collection_file} = $archived_filename_with_path_earthsense_collection;
                 $top_level_dirname = $top_level;
             }
 
-            while (my ($collection_number, $collection_file) = each %seen_collection_files) {
+            while (my ($collection_number, $collection_file_obj) = each %archived_collection_files) {
+                my $collection_file = $collection_file_obj->{collections};
+
                 if (!exists($collection_file->{'secondary_lidar_log.csv'})) {
                     $c->stash->{message} = "The collection number $collection_number does not include the secondary_lidar_log.csv!";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                if (!exists($collection_file->{'lidar_log.csv'})) {
+                    $c->stash->{message} = "The collection number $collection_number does not include the lidar_log.csv!";
                     $c->stash->{template} = 'generic_message.mas';
                     return;
                 }
@@ -415,6 +421,67 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                     $c->stash->{template} = 'generic_message.mas';
                     return;
                 }
+                if (!exists($collection_file->{'tracker.json'})) {
+                    $c->stash->{message} = "The collection number $collection_number does not include the tracker.json!";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                if (!exists($collection_file->{'field.json'})) {
+                    $c->stash->{message} = "The collection number $collection_number does not include the field.json!";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                if (!exists($collection_file->{'mission.json'})) {
+                    $c->stash->{message} = "The collection number $collection_number does not include the mission.json!";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+            }
+
+            while (my ($collection_number, $collection_file_obj) = each %archived_collection_files) {
+                my $collection_file = $collection_file_obj->{collections};
+
+                my $lidar_file = $collection_file->{'secondary_lidar_log.csv'};
+                my $system_log_file = $collection_file->{'system_log.csv'};
+                my $tracker_json_file = $collection_file->{'tracker.json'};
+                my $field_json_file = $collection_file->{'field.json'};
+                my $mission_json_file = $collection_file->{'mission.json'};
+
+                open(my $fh_tracker_json, '<', $tracker_json_file) or die "Could not open file '".$tracker_json_file."' $!";
+                    my $fh_tracker_json_content = do { local $/; <$fh_tracker_json> };
+                    my $tracker_json_content = decode_json $fh_tracker_json_content;
+                close($fh_tracker_json);
+
+                open(my $fh_field_json, '<', $field_json_file) or die "Could not open file '".$field_json_file."' $!";
+                    my $fh_field_json_content = do { local $/; <$fh_field_json> };
+                    my $field_json_content = decode_json $fh_field_json_content;
+                close($fh_field_json);
+
+                open(my $fh_mission_json, '<', $mission_json_file) or die "Could not open file '".$mission_json_file."' $!";
+                    my $fh_mission_json_content = do { local $/; <$fh_mission_json> };
+                    my $mission_json_content = decode_json $fh_mission_json_content;
+                close($fh_mission_json);
+
+                $collection_file_obj->{run_info} = {
+                    tracker => $tracker_json_content,
+                    field => $field_json_content,
+                    mission => $mission_json_content
+                };
+
+                my $collection_dir = dirname($lidar_file);
+                print STDERR Dumper $collection_dir;
+                my $output_log_file = $collection_dir."/output_log.json";
+
+                my $lidar_point_cloud_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/PointCloudProcess/ProcessEarthSensePointCloud.py --earthesense_capture_image_path $collection_dir --voxel_size 0.001 --outlier_nb_neighbors 15 --outlier_std_ratio 0.05 --mask_infinite True --side_mask_distance 2 --height_mask_distance 0.00001 --height_mask_max_distance 20";
+                print STDERR $lidar_point_cloud_cmd."\n";
+                my $lidar_point_cloud_status = system($lidar_point_cloud_cmd);
+
+                open(my $fh_ouput_json, '<', $output_log_file) or die "Could not open file '".$output_log_file."' $!";
+                    my $fh_ouput_json_content = do { local $/; <$fh_ouput_json> };
+                    my $output_json_content = decode_json $fh_ouput_json_content;
+                close($fh_ouput_json);
+
+                $collection_file_obj->{processing} = $output_json_content;
             }
 
             my $earthsense_collections_projectprop_rs = $schema->resultset("Project::Projectprop")->search({

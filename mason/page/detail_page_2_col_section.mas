@@ -531,6 +531,11 @@ $company_members => []
 % if ($info_section_id eq 'drone_run_project_point_cloud_3d'){
                                 <& /breeders_toolbox/drone_imagery/drone_run_point_cloud_3d.mas, trial_id=>$trial_id &>
 % } #End drone_run_project_point_cloud_3d
+
+% if ($info_section_id eq 'manage_drone_rover_main'){
+                                <& /breeders_toolbox/drone_rover/point_cloud_main.mas &>
+% } #End manage_drone_rover_main
+
 % if ($info_section_id eq 'analysis_details'){
                                 <& /analyses/analysis_details.mas, trial_id=>$trial_id, trial_name=>$trial_name, trial_description=>$trial_description, breeding_program_name=>$breeding_program_name, breeding_program_id=>$breeding_program_id, year=>$year, identifier_prefix=>$identifier_prefix, trial_stock_type => $trial_stock_type, analysis_metadata=>$analysis_metadata &>
 % } #End analysis_details
