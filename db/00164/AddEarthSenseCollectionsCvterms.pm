@@ -65,6 +65,12 @@ sub patch {
     my $terms = {
         'project_property' => [
             'earthsense_ground_rover_collections_archived',
+        ],
+        'project_md_image' => [
+            'rover_event_original_points_image',
+            'rover_event_points_filtered_height_image',
+            'rover_event_points_filtered_side_span_image',
+            'rover_event_points_filtered_side_height_image'
         ]
     };
 

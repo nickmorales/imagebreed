@@ -142,12 +142,17 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
     my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
     my $drone_run_is_rover_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_rover', 'project_property')->cvterm_id();
     my $earthsense_collections_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'earthsense_ground_rover_collections_archived', 'project_property')->cvterm_id();
+    my $drone_run_field_trial_project_relationship_type_id_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
+    my $project_start_date_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'project_start_date', 'project_property')->cvterm_id();
+    my $drone_run_project_type_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_project_type', 'project_property')->cvterm_id();
+    my $rover_event_original_points_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'rover_event_original_points_image', 'project_md_image')->cvterm_id();
+    my $rover_event_points_filtered_height_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'rover_event_points_filtered_height_image', 'project_md_image')->cvterm_id();
+    my $rover_event_points_filtered_side_span_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'rover_event_points_filtered_side_span_image', 'project_md_image')->cvterm_id();
+    my $rover_event_points_filtered_side_height_image_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'rover_event_points_filtered_side_height_image', 'project_md_image')->cvterm_id();
 
     my @selected_drone_run_infos;
     my @selected_drone_run_ids;
     if (!$selected_drone_run_id) {
-        my $drone_run_field_trial_project_relationship_type_id_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
-        my $project_start_date_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'project_start_date', 'project_property')->cvterm_id();
 
         my $calendar_funcs = CXGN::Calendar->new({});
 
@@ -239,7 +244,8 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                 {type_id => $project_start_date_type_id, value => $drone_run_event},
                 {type_id => $design_cvterm_id, value => 'drone_run'},
                 {type_id => $drone_run_camera_type_cvterm_id, value => $new_drone_run_camera_info},
-                {type_id => $drone_run_related_cvterms_cvterm_id, value => encode_json \%related_cvterms}
+                {type_id => $drone_run_related_cvterms_cvterm_id, value => encode_json \%related_cvterms},
+                {type_id => $drone_run_project_type_type_id, value => $new_drone_run_data_type}
             ];
 
             my $nd_experiment_rs = $schema->resultset("NaturalDiversity::NdExperiment")->create({
@@ -471,6 +477,10 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                 my $collection_dir = dirname($lidar_file);
                 print STDERR Dumper $collection_dir;
                 my $output_log_file = $collection_dir."/output_log.json";
+                my $output_points_original_image_file = $collection_dir."/points_original.png";
+                my $output_points_filtered_height_image_file = $collection_dir."/points_filtered_height.png";
+                my $output_points_filtered_side_span_image_file = $collection_dir."/points_filtered_side_span.png";
+                my $output_points_filtered_side_height_image_file = $collection_dir."/points_filtered_side_height.png";
 
                 my $lidar_point_cloud_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/PointCloudProcess/ProcessEarthSensePointCloud.py --earthesense_capture_image_path $collection_dir --voxel_size 0.001 --outlier_nb_neighbors 15 --outlier_std_ratio 0.05 --mask_infinite True --side_mask_distance 2 --height_mask_distance 0.00001 --height_mask_max_distance 20";
                 print STDERR $lidar_point_cloud_cmd."\n";
@@ -482,6 +492,41 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                 close($fh_ouput_json);
 
                 $collection_file_obj->{processing} = $output_json_content;
+
+                my $original_image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
+                $original_image_store->set_sp_person_id($user_id);
+                my $original_ret = $original_image_store->process_image($output_points_original_image_file, 'project', $drone_run_id, $rover_event_original_points_image_type_id, $private_company_id, $company_is_private);
+                my $original_image_fullpath = $original_image_store->get_filename('original_converted', 'full');
+                my $original_image_url = $original_image_store->get_image_url('original');
+                my $original_image_id = $original_image_store->get_image_id();
+
+                my $filtered1_image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
+                $filtered1_image_store->set_sp_person_id($user_id);
+                my $filtered1_ret = $filtered1_image_store->process_image($output_points_filtered_height_image_file, 'project', $drone_run_id, $rover_event_points_filtered_height_image_type_id, $private_company_id, $company_is_private);
+                my $filtered1_image_fullpath = $filtered1_image_store->get_filename('original_converted', 'full');
+                my $filtered1_image_url = $filtered1_image_store->get_image_url('original');
+                my $filtered1_image_id = $filtered1_image_store->get_image_id();
+
+                my $filtered2_image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
+                $filtered2_image_store->set_sp_person_id($user_id);
+                my $filtered2_ret = $filtered2_image_store->process_image($output_points_filtered_side_span_image_file, 'project', $drone_run_id, $rover_event_points_filtered_side_span_image_type_id, $private_company_id, $company_is_private);
+                my $filtered2_image_fullpath = $filtered2_image_store->get_filename('original_converted', 'full');
+                my $filtered2_image_url = $filtered2_image_store->get_image_url('original');
+                my $filtered2_image_id = $filtered2_image_store->get_image_id();
+
+                my $filtered3_image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
+                $filtered3_image_store->set_sp_person_id($user_id);
+                my $filtered3_ret = $filtered3_image_store->process_image($output_points_filtered_side_height_image_file, 'project', $drone_run_id, $rover_event_points_filtered_side_height_image_type_id, $private_company_id, $company_is_private);
+                my $filtered3_image_fullpath = $filtered3_image_store->get_filename('original_converted', 'full');
+                my $filtered3_image_url = $filtered3_image_store->get_image_url('original');
+                my $filtered3_image_id = $filtered3_image_store->get_image_id();
+
+                $collection_file_obj->{processed_image_ids} = {
+                    points_original => $original_image_id,
+                    points_filtered_height => $filtered1_image_id,
+                    points_filtered_side_span => $filtered2_image_id,
+                    points_filtered_side_height => $filtered3_image_id
+                };
             }
 
             my $earthsense_collections_projectprop_rs = $schema->resultset("Project::Projectprop")->search({

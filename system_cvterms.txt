@@ -145,7 +145,7 @@ project_property	drone_run_is_raw_images	To distinguish when uploading raw image
 project_property	drone_run_is_rover	For ground rover drone runs, saves the rover type and indicates it is a rover event vs imaging event	04/21/2022	nm529	00161
 project_property	earthsense_ground_rover_collections_archived	For ground rover drone runs, saves earthsense collections paths in archive	10/25/2022	nm529	00164
 project_property	drone_run_ground_control_points	Ground control points (GCPs) can optionally be saved for a drone run	08/01/2020	nm529	00127
-project_property	drone_run_project_type	To distinguish the type of drone run being stored (Aerial Medium to High Res, Aerial Low Res)	10/5/2018	nm529	00103
+project_property	drone_run_project_type	To distinguish the type of drone run being stored (Aerial Medium to High Res,Aerial Low Res,earthsense_raw_collections_point_clouds)	10/5/2018	nm529	00103
 project_property	drone_run_camera_type	To identify the camera used in the drone run (micasense 5 band, cmos, ccd)	10/5/2018	nm529	00103
 project_property	drone_run_orthophoto_stitching_type	To identify the orthophoto stitching software used in the drone run (None, ODM, Pix4D, Agisoft, Other)	04/19/2022	nm529	00161
 project_property	drone_run_band_project_type	To distinguish the type of band being stored under a drone run (red, blue, nir, etc)	10/5/2018	nm529	00103
@@ -922,3 +922,7 @@ project_md_image	image_analysis_necrosis_solomon_nsumba	Image analysis necrosis 
 project_md_image	image_analysis_white_fly_count_solomon_nsumba	Image analysis white fly count as implemented in Solomon's service	08/19/2019	nm529	00114
 project_md_image	standard_process_interactive_match_temporary_drone_imagery	Standard interactive process for drone imagery showing the match of captures	07/06/2020	nm529	00126
 project_md_image	standard_process_interactive_align_temporary_drone_imagery	Standard interactive process for drone imagery showing the alignment of captures	07/06/2020	nm529	00126
+project_md_image	rover_event_original_points_image	An image of the original rover event point cloud	10/26/2022	nm529	00164
+project_md_image	rover_event_points_filtered_height_image	An image of the rover event filtered point cloud showing height	10/26/2022	nm529	00164
+project_md_image	rover_event_points_filtered_side_span_image	An image of the rover event filtered point cloud showing side span	10/26/2022	nm529	00164
+project_md_image	rover_event_points_filtered_side_height_image	An image of the rover event filtered point cloud showing side height	10/26/2022	nm529	00164
