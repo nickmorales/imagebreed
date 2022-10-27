@@ -28,13 +28,13 @@ function manageDroneRoverEventDisplay(project_drone_run_id, collection_number, o
         url : '/ajax/image/'+original_image_id,
         success: function(response){
             console.log(response);
-            var html = response.medium_tag+'<br/>';
+            var html = '<a href="/image/view/'+original_image_id+'" target="_blank">'+response.medium_tag+'</a><br/>';
 
             jQuery.ajax({
                 url : '/ajax/image/'+filtered_image_id,
                 success: function(response){
                     console.log(response);
-                    html = html + response.medium_tag;
+                    html = html + '<a href="/image/view/'+filtered_image_id+'" target="_blank">'+ response.medium_tag+'</a>';
 
                     jQuery('#drone_run_rover_accordian_drone_run_band_div_'+collection_number).html(html);
                 },
