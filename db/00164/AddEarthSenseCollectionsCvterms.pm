@@ -72,6 +72,9 @@ sub patch {
             'rover_event_points_filtered_side_span_image',
             'rover_event_points_filtered_side_height_image'
         ],
+        'project_md_file' => [
+            'point_cloud_filtered_plot_point_cloud'
+        ],
         'experiment_type' => [
             'field_trial_drone_runs_in_same_rover_event'
         ]
@@ -85,6 +88,48 @@ sub patch {
 			});
 		}
 	}
+
+    my $coderef = sub {
+        my $sql = <<SQL;
+CREATE TABLE if not exists phenome.project_md_file (
+    project_md_file_id serial PRIMARY KEY,
+    project_id integer NOT NULL,
+    file_id integer NOT NULL,
+    type_id integer NOT NULL,
+    constraint project_md_file_project_id_fkey FOREIGN KEY (project_id) REFERENCES project (project_id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+    constraint project_md_file_file_id_fkey FOREIGN KEY (file_id) REFERENCES metadata.md_files (file_id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+    constraint project_md_file_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm (cvterm_id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+grant select,insert,delete on table phenome.project_md_file to web_usr;
+grant usage on phenome.project_md_file_project_md_file_id_seq to web_usr;
+
+CREATE TABLE if not exists phenome.stock_md_file (
+    stock_md_file_id serial PRIMARY KEY,
+    stock_id integer NOT NULL,
+    file_id integer NOT NULL,
+    type_id integer NOT NULL,
+    constraint stock_md_file_project_id_fkey FOREIGN KEY (stock_id) REFERENCES stock (stock_id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+    constraint stock_md_file_file_id_fkey FOREIGN KEY (file_id) REFERENCES metadata.md_files (file_id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION,
+    constraint stock_md_file_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm (cvterm_id) MATCH SIMPLE ON UPDATE NO ACTION ON DELETE NO ACTION
+);
+grant select,insert,delete on table phenome.stock_md_file to web_usr;
+grant usage on phenome.stock_md_file_stock_md_file_id_seq to web_usr;
+
+SQL
+        $schema->storage->dbh->do($sql);
+    };
+
+    my $transaction_error;
+    try {
+        $schema->txn_do($coderef);
+    } catch {
+        $transaction_error =  $_;
+    };
+    if ($transaction_error){
+        print STDERR "ERROR: $transaction_error\n";
+    } else {
+        print "You're done!\n";
+    }
 
     print "You're done!\n";
 }
