@@ -216,22 +216,21 @@ sub drone_rover_summary_top_GET : Args(0) {
 
                     print STDERR Dumper $collect;
 
-                    my $image_id = $collect->{processed_image_ids}->{points_original};
-                    my $image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
-                    my $image_source_tag_medium = $image->get_img_src_tag("medium");
-                    my $image_source_tag_small = $image->get_img_src_tag("thumbnail");
-                    my $image_original = $image->get_image_url("original");
+                    my $original_image_id = $collect->{processed_image_ids}->{points_original};
+                    my $filtered_image_id = $collect->{processed_image_ids}->{points_filtered_height};
 
                     $drone_run_band_table_html .= '<tr><td>';
                     $drone_run_band_table_html .= '<b>Collection Number</b>: '.$collection_number.'<br/>';
                     $drone_run_band_table_html .= '<b>Field</b>: '.$collect->{run_info}->{field}->{name}.'<br/>';
                     $drone_run_band_table_html .= '<b>Start Range</b>: '.$collect->{run_info}->{tracker}->{start_range}.'&nbsp;&nbsp;&nbsp;&nbsp;<b>Start Column</b>: '.$collect->{run_info}->{tracker}->{start_column}.'<br/>';
-                    $drone_run_band_table_html .= '<b>Stop Range</b>: '.$collect->{run_info}->{tracker}->{stop_range}.'&nbsp;&nbsp;&nbsp;&nbsp;<b>Stop Column</b>: '.$collect->{run_info}->{tracker}->{stop_column};
+                    $drone_run_band_table_html .= '<b>Stop Range</b>: '.$collect->{run_info}->{tracker}->{stop_range}.'&nbsp;&nbsp;&nbsp;&nbsp;<b>Stop Column</b>: '.$collect->{run_info}->{tracker}->{stop_column}.'<br/>';
+                    $drone_run_band_table_html .= '<b>Original Number Points</b>: '.$collect->{processing}->{pcd_original_num_points}.'<br/><b>Filtered Number Points</b>: '.$collect->{processing}->{pcd_down_filtered_height_side_points};
 
                     $drone_run_band_table_html .= '</td><td>';
-                    $drone_run_band_table_html .= '<div class="panel-group" id="drone_run_rover_accordion_'.$collection_number.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_run_rover_accordion_'.$collection_number.'" href="#drone_run_rover_accordion_one_'.$collection_number.'" onclick="manageDroneRoverEventDisplay('.$k.',&quot;'.$collection_number.'&quot;)">View Images</a></h4></div><div id="drone_run_rover_accordion_one_'.$collection_number.'" class="panel-collapse collapse"><div class="panel-body">';
+                    $drone_run_band_table_html .= '<div class="panel-group" id="drone_run_rover_accordion_'.$collection_number.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_run_rover_accordion_'.$collection_number.'" href="#drone_run_rover_accordion_one_'.$collection_number.'" onclick="manageDroneRoverEventDisplay('.$k.',&quot;'.$collection_number.'&quot;,'.$original_image_id.','.$filtered_image_id.')">View Images</a></h4></div><div id="drone_run_rover_accordion_one_'.$collection_number.'" class="panel-collapse collapse"><div class="panel-body">';
 
-                    $drone_run_band_table_html .= '<div id="drone_run_rover_accordian_drone_run_band_div_'.$collection_number.'"><a href="/image/view/'.$image_id.'" target="_blank">'.$image_source_tag_medium.'</a></div>';
+                    $drone_run_band_table_html .= '<div id="drone_run_rover_accordian_drone_run_band_div_'.$collection_number.'">';
+                    $drone_run_band_table_html .= '</div>';
 
                     $drone_run_band_table_html .= '</div></div></div></div>';
                     $drone_run_band_table_html .= '</td></tr>';

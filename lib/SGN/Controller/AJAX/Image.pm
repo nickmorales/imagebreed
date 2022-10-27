@@ -63,18 +63,22 @@ sub image_info :Chained('basic_ajax_image') PathPart('') Args(0) ActionClass('RE
 sub image_info_GET {
     my $self = shift;
     my $c = shift;
+    my $image = $c->stash->{image};
 
-    my @display_order_info = $c->stash->{image}->get_display_order_info();
-
+    my @display_order_info = $image->get_display_order_info();
 
     my $response = {
-	thumbnail => $c->stash->{image}->get_image_url("thumbnail"),
-	small => $c->stash->{image}->get_image_url("small"),
-	medium => $c->stash->{image}->get_image_url("medium"),
-	large => $c->stash->{image}->get_image_url("large"),
-	sp_person_id => $c->stash->{image}->get_sp_person_id(),
-        md5sum => $c->stash->{image}->get_md5sum(),
-	display_order => \@display_order_info
+        thumbnail => $image->get_image_url("thumbnail"),
+        thumbnail_tag => $image->get_img_src_tag("thumbnail"),
+        small => $image->get_image_url("small"),
+        small_tag => $image->get_img_src_tag("small"),
+        medium => $image->get_image_url("medium"),
+        medium_tag => $image->get_img_src_tag("medium"),
+        large => $image->get_image_url("large"),
+        large_tag => $image->get_img_src_tag("large"),
+        sp_person_id => $image->get_sp_person_id(),
+        md5sum => $image->get_md5sum(),
+        display_order => \@display_order_info
     };
 
     $c->stash->{rest} = $response;

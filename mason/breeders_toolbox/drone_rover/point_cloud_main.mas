@@ -23,22 +23,31 @@ jQuery(document).ready(function(){
 
 });
 
-function manageDroneRoverEventDisplay(project_drone_run_band_id){
-    //jQuery.ajax({
-    //    url : '/api/drone_imagery/raw_drone_imagery_drone_run_band?drone_run_band_project_id='+project_drone_run_band_id,
-    //    beforeSend: function() {
-    //        jQuery("#working_modal").modal("show");
-    //    },
-    //    success: function(response){
-    //        console.log(response);
-    //        jQuery('#drone_run_band_accordian_drone_run_band_div_'+project_drone_run_band_id).html(response.data[0]);
-    //        jQuery("#working_modal").modal("hide");
-    //    },
-    //    error: function(response){
-    //        jQuery("#working_modal").modal("hide");
-    //        alert('Error getting drone run band summary images!');
-    //    }
-    //});
+function manageDroneRoverEventDisplay(project_drone_run_id, collection_number, original_image_id, filtered_image_id){
+    jQuery.ajax({
+        url : '/ajax/image/'+original_image_id,
+        success: function(response){
+            console.log(response);
+            var html = response.medium_tag+'<br/>';
+
+            jQuery.ajax({
+                url : '/ajax/image/'+filtered_image_id,
+                success: function(response){
+                    console.log(response);
+                    html = html + response.medium_tag;
+
+                    jQuery('#drone_run_rover_accordian_drone_run_band_div_'+collection_number).html(html);
+                },
+                error: function(response){
+                    alert('Error getting drone run rover filtered image!');
+                }
+            });
+
+        },
+        error: function(response){
+            alert('Error getting drone run rover original image!');
+        }
+    });
 }
 
 </script>
