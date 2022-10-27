@@ -36,7 +36,7 @@ function manageDroneRoverEventDisplay(project_drone_run_id, collection_number, o
                     console.log(response);
                     html = html + '<a href="/image/view/'+filtered_image_id+'" target="_blank">'+ response.medium_tag+'</a>';
 
-                    jQuery('#drone_run_rover_accordian_drone_run_band_div_'+collection_number).html(html);
+                    jQuery('#drone_run_rover_accordian_drone_run_band_div_'+project_drone_run_id+'_'+collection_number).html(html);
                 },
                 error: function(response){
                     alert('Error getting drone run rover filtered image!');

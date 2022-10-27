@@ -71,6 +71,9 @@ sub patch {
             'rover_event_points_filtered_height_image',
             'rover_event_points_filtered_side_span_image',
             'rover_event_points_filtered_side_height_image'
+        ],
+        'experiment_type' => [
+            'field_trial_drone_runs_in_same_rover_event'
         ]
     };
 

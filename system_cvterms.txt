@@ -37,6 +37,7 @@ experiment_type	drone_run_experiment_odm_stitched_dsm	For saving drone run exper
 experiment_type	drone_run_experiment_odm_stitched_dtm	For saving drone run experiment ODM stitched reconstruction	02/19/2022	nm529	00158
 experiment_type	drone_run_experiment_odm_stitched_dsm_minus_dtm	For saving drone run experiment ODM stitched reconstruction	02/19/2022	nm529	00158
 experiment_type	field_trial_drone_runs_in_same_orthophoto	For linking drone runs that are in the same imaging event 	01/11/22	nm529	00154
+experiment_type	field_trial_drone_runs_in_same_rover_event	For linking drone runs that are in the same rover event 	10/27/22	nm529	00164
 experiment_type	sampling_layout	For saving sampling trials	11/25/2020	nm529	00132
 genotype_property	igd number				00052
 genotype_property	infinium array					sgn database

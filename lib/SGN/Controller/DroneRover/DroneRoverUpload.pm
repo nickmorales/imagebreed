@@ -137,7 +137,7 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
     my $drone_run_camera_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_type', 'project_property')->cvterm_id();
     my $drone_run_related_cvterms_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_related_time_cvterms_json', 'project_property')->cvterm_id();
     my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
-    my $field_trial_drone_runs_in_same_orthophoto_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'field_trial_drone_runs_in_same_orthophoto', 'experiment_type')->cvterm_id();
+    my $field_trial_drone_runs_in_same_rover_event_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'field_trial_drone_runs_in_same_rover_event', 'experiment_type')->cvterm_id();
     my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_rover', 'stock_type')->cvterm_id();
     my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
     my $drone_run_is_rover_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_rover', 'project_property')->cvterm_id();
@@ -261,7 +261,7 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                 if ($iterator == 0) {
                     my $nd_experiment_rs = $schema->resultset("NaturalDiversity::NdExperiment")->create({
                         nd_geolocation_id => $trial_location_id,
-                        type_id => $field_trial_drone_runs_in_same_orthophoto_type_id,
+                        type_id => $field_trial_drone_runs_in_same_rover_event_type_id,
                     });
                     $field_trial_drone_runs_in_same_orthophoto_nd_experiment_id = $nd_experiment_rs->nd_experiment_id();
                 }
@@ -364,183 +364,189 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
             return {error => 'Could not read your zipfile. Is it .zip format?</br></br>'};
         }
 
+        my $is_first_rover_event = 1;
+        my $earthsense_collections = {};
         foreach my $drone_run_id (@selected_drone_run_ids) {
 
-            my $earthsense_collections_projectprop_rs = $schema->resultset("Project::Projectprop")->search({
-                project_id => $drone_run_id,
-                type_id => $earthsense_collections_cvterm_id
-            });
-            my $earthsense_collections = {};
-            if ($earthsense_collections_projectprop_rs->count > 0) {
-                if ($earthsense_collections_projectprop_rs->count > 1) {
-                    $c->stash->{message} = "There should not be more than one EarthSense collections projectprop!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                $earthsense_collections = decode_json $earthsense_collections_projectprop_rs->first->value();
-            }
+            if ($is_first_rover_event) {
 
-            foreach my $file_member (@$file_members) {
-                my $filename = $file_member->fileName();
-
-                my $uploader_earthsense_dir = CXGN::UploadFile->new({
-                    subdirectory => "earthsense_rover_collections",
-                    second_subdirectory => "$drone_run_id",
-                    archive_path => $c->config->{archive_path},
-                    timestamp => $timestamp,
-                    user_id => $user_id,
-                    user_role => $user_role,
-                    include_timestamp => 0
+                my $earthsense_collections_projectprop_rs = $schema->resultset("Project::Projectprop")->search({
+                    project_id => $drone_run_id,
+                    type_id => $earthsense_collections_cvterm_id
                 });
-                my ($archived_filename_with_path_earthsense_collection, $earthsense_collection_file) = $uploader_earthsense_dir->archive_zipfile($file_member);
-                my $archived_filename_with_path_earthsense_collection_md5 = $uploader_earthsense_dir->get_md5($archived_filename_with_path_earthsense_collection);
-                if (!$archived_filename_with_path_earthsense_collection) {
-                    $c->stash->{message} = "Could not save file $filename in archive.";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                my ($top_level, $earthsense_collection_number, $collection_file) = split '/', $earthsense_collection_file;
-                if (!$top_level || !$earthsense_collection_number || !$collection_file) {
-                    $c->stash->{message} = "The uploaded file $earthsense_collection_file does not follow a pattern like TestEarthSenseCollections/0abb840a-9ab9-414c-b228-9e125810ebb0/secondary_lidar_log.csv";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                if (length($earthsense_collection_number) != 36) {
-                    $c->stash->{message} = "The collection number $earthsense_collection_number in the uploaded file $earthsense_collection_file does not have 36 characters!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                my @earthsense_collection_split = split '-', $earthsense_collection_number;
-                if (length($earthsense_collection_split[0]) != 8 || length($earthsense_collection_split[1]) != 4 || length($earthsense_collection_split[2]) != 4 || length($earthsense_collection_split[3]) != 4 || length($earthsense_collection_split[4]) != 12) {
-                    $c->stash->{message} = "The collection number $earthsense_collection_number in the uploaded file $earthsense_collection_file does not follow a pattern like 0abb840a-9ab9-414c-b228-9e125810ebb0!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
+                if ($earthsense_collections_projectprop_rs->count > 0) {
+                    if ($earthsense_collections_projectprop_rs->count > 1) {
+                        $c->stash->{message} = "There should not be more than one EarthSense collections projectprop!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    $earthsense_collections = decode_json $earthsense_collections_projectprop_rs->first->value();
                 }
 
-                $earthsense_collections->{$earthsense_collection_number}->{collections}->{$collection_file} = $archived_filename_with_path_earthsense_collection;
-                $earthsense_collections->{$earthsense_collection_number}->{top_level} = $top_level;
+                foreach my $file_member (@$file_members) {
+                    my $filename = $file_member->fileName();
+
+                    my $uploader_earthsense_dir = CXGN::UploadFile->new({
+                        subdirectory => "earthsense_rover_collections",
+                        second_subdirectory => "$drone_run_id",
+                        archive_path => $c->config->{archive_path},
+                        timestamp => $timestamp,
+                        user_id => $user_id,
+                        user_role => $user_role,
+                        include_timestamp => 0
+                    });
+                    my ($archived_filename_with_path_earthsense_collection, $earthsense_collection_file) = $uploader_earthsense_dir->archive_zipfile($file_member);
+                    my $archived_filename_with_path_earthsense_collection_md5 = $uploader_earthsense_dir->get_md5($archived_filename_with_path_earthsense_collection);
+                    if (!$archived_filename_with_path_earthsense_collection) {
+                        $c->stash->{message} = "Could not save file $filename in archive.";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    my ($top_level, $earthsense_collection_number, $collection_file) = split '/', $earthsense_collection_file;
+                    if (!$top_level || !$earthsense_collection_number || !$collection_file) {
+                        $c->stash->{message} = "The uploaded file $earthsense_collection_file does not follow a pattern like TestEarthSenseCollections/0abb840a-9ab9-414c-b228-9e125810ebb0/secondary_lidar_log.csv";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    if (length($earthsense_collection_number) != 36) {
+                        $c->stash->{message} = "The collection number $earthsense_collection_number in the uploaded file $earthsense_collection_file does not have 36 characters!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    my @earthsense_collection_split = split '-', $earthsense_collection_number;
+                    if (length($earthsense_collection_split[0]) != 8 || length($earthsense_collection_split[1]) != 4 || length($earthsense_collection_split[2]) != 4 || length($earthsense_collection_split[3]) != 4 || length($earthsense_collection_split[4]) != 12) {
+                        $c->stash->{message} = "The collection number $earthsense_collection_number in the uploaded file $earthsense_collection_file does not follow a pattern like 0abb840a-9ab9-414c-b228-9e125810ebb0!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+
+                    $earthsense_collections->{$earthsense_collection_number}->{collections}->{$collection_file} = $archived_filename_with_path_earthsense_collection;
+                    $earthsense_collections->{$earthsense_collection_number}->{top_level} = $top_level;
+                }
+
+                while (my ($collection_number, $collection_file_obj) = each %$earthsense_collections) {
+                    my $collection_file = $collection_file_obj->{collections};
+
+                    if (!exists($collection_file->{'secondary_lidar_log.csv'})) {
+                        $c->stash->{message} = "The collection number $collection_number does not include the secondary_lidar_log.csv!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    if (!exists($collection_file->{'lidar_log.csv'})) {
+                        $c->stash->{message} = "The collection number $collection_number does not include the lidar_log.csv!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    if (!exists($collection_file->{'system_log.csv'})) {
+                        $c->stash->{message} = "The collection number $collection_number does not include the system_log.csv!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    if (!exists($collection_file->{'tracker.json'})) {
+                        $c->stash->{message} = "The collection number $collection_number does not include the tracker.json!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    if (!exists($collection_file->{'field.json'})) {
+                        $c->stash->{message} = "The collection number $collection_number does not include the field.json!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                    if (!exists($collection_file->{'mission.json'})) {
+                        $c->stash->{message} = "The collection number $collection_number does not include the mission.json!";
+                        $c->stash->{template} = 'generic_message.mas';
+                        return;
+                    }
+                }
+
+                while (my ($collection_number, $collection_file_obj) = each %$earthsense_collections) {
+                    my $collection_file = $collection_file_obj->{collections};
+
+                    my $lidar_file = $collection_file->{'secondary_lidar_log.csv'};
+                    my $system_log_file = $collection_file->{'system_log.csv'};
+                    my $tracker_json_file = $collection_file->{'tracker.json'};
+                    my $field_json_file = $collection_file->{'field.json'};
+                    my $mission_json_file = $collection_file->{'mission.json'};
+
+                    open(my $fh_tracker_json, '<', $tracker_json_file) or die "Could not open file '".$tracker_json_file."' $!";
+                        my $fh_tracker_json_content = do { local $/; <$fh_tracker_json> };
+                        my $tracker_json_content = decode_json $fh_tracker_json_content;
+                    close($fh_tracker_json);
+
+                    open(my $fh_field_json, '<', $field_json_file) or die "Could not open file '".$field_json_file."' $!";
+                        my $fh_field_json_content = do { local $/; <$fh_field_json> };
+                        my $field_json_content = decode_json $fh_field_json_content;
+                    close($fh_field_json);
+
+                    open(my $fh_mission_json, '<', $mission_json_file) or die "Could not open file '".$mission_json_file."' $!";
+                        my $fh_mission_json_content = do { local $/; <$fh_mission_json> };
+                        my $mission_json_content = decode_json $fh_mission_json_content;
+                    close($fh_mission_json);
+
+                    $collection_file_obj->{run_info} = {
+                        tracker => $tracker_json_content,
+                        field => $field_json_content,
+                        mission => $mission_json_content
+                    };
+
+                    my $collection_dir = dirname($lidar_file);
+                    print STDERR Dumper $collection_dir;
+                    my $output_log_file = $collection_dir."/output_log.json";
+                    my $output_points_original_image_file = $collection_dir."/points_original.png";
+                    my $output_points_filtered_height_image_file = $collection_dir."/points_filtered_height.png";
+                    my $output_points_filtered_side_span_image_file = $collection_dir."/points_filtered_side_span.png";
+                    my $output_points_filtered_side_height_image_file = $collection_dir."/points_filtered_side_height.png";
+
+                    my $lidar_point_cloud_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/PointCloudProcess/ProcessEarthSensePointCloud.py --earthesense_capture_image_path $collection_dir --voxel_size 0.001 --outlier_nb_neighbors 15 --outlier_std_ratio 0.05 --mask_infinite True --side_mask_distance 2 --height_mask_distance 0.00001 --height_mask_max_distance 20";
+                    print STDERR $lidar_point_cloud_cmd."\n";
+                    my $lidar_point_cloud_status = system($lidar_point_cloud_cmd);
+
+                    open(my $fh_ouput_json, '<', $output_log_file) or die "Could not open file '".$output_log_file."' $!";
+                        my $fh_ouput_json_content = do { local $/; <$fh_ouput_json> };
+                        my $output_json_content = decode_json $fh_ouput_json_content;
+                    close($fh_ouput_json);
+
+                    $collection_file_obj->{processing} = $output_json_content;
+
+                    my $original_image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
+                    $original_image_store->set_sp_person_id($user_id);
+                    my $original_ret = $original_image_store->process_image($output_points_original_image_file, 'project', $drone_run_id, $rover_event_original_points_image_type_id, $private_company_id, $company_is_private);
+                    my $original_image_fullpath = $original_image_store->get_filename('original_converted', 'full');
+                    my $original_image_url = $original_image_store->get_image_url('original');
+                    my $original_image_id = $original_image_store->get_image_id();
+
+                    my $filtered1_image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
+                    $filtered1_image_store->set_sp_person_id($user_id);
+                    my $filtered1_ret = $filtered1_image_store->process_image($output_points_filtered_height_image_file, 'project', $drone_run_id, $rover_event_points_filtered_height_image_type_id, $private_company_id, $company_is_private);
+                    my $filtered1_image_fullpath = $filtered1_image_store->get_filename('original_converted', 'full');
+                    my $filtered1_image_url = $filtered1_image_store->get_image_url('original');
+                    my $filtered1_image_id = $filtered1_image_store->get_image_id();
+
+                    my $filtered2_image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
+                    $filtered2_image_store->set_sp_person_id($user_id);
+                    my $filtered2_ret = $filtered2_image_store->process_image($output_points_filtered_side_span_image_file, 'project', $drone_run_id, $rover_event_points_filtered_side_span_image_type_id, $private_company_id, $company_is_private);
+                    my $filtered2_image_fullpath = $filtered2_image_store->get_filename('original_converted', 'full');
+                    my $filtered2_image_url = $filtered2_image_store->get_image_url('original');
+                    my $filtered2_image_id = $filtered2_image_store->get_image_id();
+
+                    my $filtered3_image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
+                    $filtered3_image_store->set_sp_person_id($user_id);
+                    my $filtered3_ret = $filtered3_image_store->process_image($output_points_filtered_side_height_image_file, 'project', $drone_run_id, $rover_event_points_filtered_side_height_image_type_id, $private_company_id, $company_is_private);
+                    my $filtered3_image_fullpath = $filtered3_image_store->get_filename('original_converted', 'full');
+                    my $filtered3_image_url = $filtered3_image_store->get_image_url('original');
+                    my $filtered3_image_id = $filtered3_image_store->get_image_id();
+
+                    $collection_file_obj->{processed_image_ids} = {
+                        points_original => $original_image_id,
+                        points_filtered_height => $filtered1_image_id,
+                        points_filtered_side_span => $filtered2_image_id,
+                        points_filtered_side_height => $filtered3_image_id
+                    };
+                }
+                print STDERR Dumper $earthsense_collections;
+
+                $is_first_rover_event = 0;
             }
-
-            while (my ($collection_number, $collection_file_obj) = each %$earthsense_collections) {
-                my $collection_file = $collection_file_obj->{collections};
-
-                if (!exists($collection_file->{'secondary_lidar_log.csv'})) {
-                    $c->stash->{message} = "The collection number $collection_number does not include the secondary_lidar_log.csv!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                if (!exists($collection_file->{'lidar_log.csv'})) {
-                    $c->stash->{message} = "The collection number $collection_number does not include the lidar_log.csv!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                if (!exists($collection_file->{'system_log.csv'})) {
-                    $c->stash->{message} = "The collection number $collection_number does not include the system_log.csv!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                if (!exists($collection_file->{'tracker.json'})) {
-                    $c->stash->{message} = "The collection number $collection_number does not include the tracker.json!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                if (!exists($collection_file->{'field.json'})) {
-                    $c->stash->{message} = "The collection number $collection_number does not include the field.json!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                if (!exists($collection_file->{'mission.json'})) {
-                    $c->stash->{message} = "The collection number $collection_number does not include the mission.json!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-            }
-
-            while (my ($collection_number, $collection_file_obj) = each %$earthsense_collections) {
-                my $collection_file = $collection_file_obj->{collections};
-
-                my $lidar_file = $collection_file->{'secondary_lidar_log.csv'};
-                my $system_log_file = $collection_file->{'system_log.csv'};
-                my $tracker_json_file = $collection_file->{'tracker.json'};
-                my $field_json_file = $collection_file->{'field.json'};
-                my $mission_json_file = $collection_file->{'mission.json'};
-
-                open(my $fh_tracker_json, '<', $tracker_json_file) or die "Could not open file '".$tracker_json_file."' $!";
-                    my $fh_tracker_json_content = do { local $/; <$fh_tracker_json> };
-                    my $tracker_json_content = decode_json $fh_tracker_json_content;
-                close($fh_tracker_json);
-
-                open(my $fh_field_json, '<', $field_json_file) or die "Could not open file '".$field_json_file."' $!";
-                    my $fh_field_json_content = do { local $/; <$fh_field_json> };
-                    my $field_json_content = decode_json $fh_field_json_content;
-                close($fh_field_json);
-
-                open(my $fh_mission_json, '<', $mission_json_file) or die "Could not open file '".$mission_json_file."' $!";
-                    my $fh_mission_json_content = do { local $/; <$fh_mission_json> };
-                    my $mission_json_content = decode_json $fh_mission_json_content;
-                close($fh_mission_json);
-
-                $collection_file_obj->{run_info} = {
-                    tracker => $tracker_json_content,
-                    field => $field_json_content,
-                    mission => $mission_json_content
-                };
-
-                my $collection_dir = dirname($lidar_file);
-                print STDERR Dumper $collection_dir;
-                my $output_log_file = $collection_dir."/output_log.json";
-                my $output_points_original_image_file = $collection_dir."/points_original.png";
-                my $output_points_filtered_height_image_file = $collection_dir."/points_filtered_height.png";
-                my $output_points_filtered_side_span_image_file = $collection_dir."/points_filtered_side_span.png";
-                my $output_points_filtered_side_height_image_file = $collection_dir."/points_filtered_side_height.png";
-
-                my $lidar_point_cloud_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/PointCloudProcess/ProcessEarthSensePointCloud.py --earthesense_capture_image_path $collection_dir --voxel_size 0.001 --outlier_nb_neighbors 15 --outlier_std_ratio 0.05 --mask_infinite True --side_mask_distance 2 --height_mask_distance 0.00001 --height_mask_max_distance 20";
-                print STDERR $lidar_point_cloud_cmd."\n";
-                my $lidar_point_cloud_status = system($lidar_point_cloud_cmd);
-
-                open(my $fh_ouput_json, '<', $output_log_file) or die "Could not open file '".$output_log_file."' $!";
-                    my $fh_ouput_json_content = do { local $/; <$fh_ouput_json> };
-                    my $output_json_content = decode_json $fh_ouput_json_content;
-                close($fh_ouput_json);
-
-                $collection_file_obj->{processing} = $output_json_content;
-
-                my $original_image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
-                $original_image_store->set_sp_person_id($user_id);
-                my $original_ret = $original_image_store->process_image($output_points_original_image_file, 'project', $drone_run_id, $rover_event_original_points_image_type_id, $private_company_id, $company_is_private);
-                my $original_image_fullpath = $original_image_store->get_filename('original_converted', 'full');
-                my $original_image_url = $original_image_store->get_image_url('original');
-                my $original_image_id = $original_image_store->get_image_id();
-
-                my $filtered1_image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
-                $filtered1_image_store->set_sp_person_id($user_id);
-                my $filtered1_ret = $filtered1_image_store->process_image($output_points_filtered_height_image_file, 'project', $drone_run_id, $rover_event_points_filtered_height_image_type_id, $private_company_id, $company_is_private);
-                my $filtered1_image_fullpath = $filtered1_image_store->get_filename('original_converted', 'full');
-                my $filtered1_image_url = $filtered1_image_store->get_image_url('original');
-                my $filtered1_image_id = $filtered1_image_store->get_image_id();
-
-                my $filtered2_image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
-                $filtered2_image_store->set_sp_person_id($user_id);
-                my $filtered2_ret = $filtered2_image_store->process_image($output_points_filtered_side_span_image_file, 'project', $drone_run_id, $rover_event_points_filtered_side_span_image_type_id, $private_company_id, $company_is_private);
-                my $filtered2_image_fullpath = $filtered2_image_store->get_filename('original_converted', 'full');
-                my $filtered2_image_url = $filtered2_image_store->get_image_url('original');
-                my $filtered2_image_id = $filtered2_image_store->get_image_id();
-
-                my $filtered3_image_store = SGN::Image->new( $schema->storage->dbh, undef, $c );
-                $filtered3_image_store->set_sp_person_id($user_id);
-                my $filtered3_ret = $filtered3_image_store->process_image($output_points_filtered_side_height_image_file, 'project', $drone_run_id, $rover_event_points_filtered_side_height_image_type_id, $private_company_id, $company_is_private);
-                my $filtered3_image_fullpath = $filtered3_image_store->get_filename('original_converted', 'full');
-                my $filtered3_image_url = $filtered3_image_store->get_image_url('original');
-                my $filtered3_image_id = $filtered3_image_store->get_image_id();
-
-                $collection_file_obj->{processed_image_ids} = {
-                    points_original => $original_image_id,
-                    points_filtered_height => $filtered1_image_id,
-                    points_filtered_side_span => $filtered2_image_id,
-                    points_filtered_side_height => $filtered3_image_id
-                };
-            }
-            print STDERR Dumper $earthsense_collections;
 
             my $earthsense_collections_prop = $schema->resultset("Project::Projectprop")->find_or_create({
                 project_id => $drone_run_id,
