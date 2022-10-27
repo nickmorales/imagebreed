@@ -2,7 +2,7 @@
 <%args>
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch03152022', 'd3.d3v4Min.js', 'opencv.opencv', 'CXGN.Trial03152022', 'moment_min', 'daterangepicker' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch03152022', 'd3.d3v4Min.js', 'opencv.opencv', 'CXGN.Trial03152022', 'moment_min', 'daterangepicker', 'CXGN.ManageDroneImagery09072022' ] &>
 
 <& /page/page_title.mas, title=>"Manage Ground Rover Data" &>
 
@@ -283,6 +283,8 @@
     </div>
   </div>
 </div>
+
+<& /breeders_toolbox/drone_imagery/calculate_gdd_cp_dialogs.mas &>
 
 <& /page/detail_page_2_col_section.mas, info_section_collapsed => 0, info_section_title => "<h4 style='display:inline'>Ground Rover</h4>", info_section_subtitle => 'Please cite <a href="https://acsess.onlinelibrary.wiley.com/doi/full/10.1002/ppj2.20004" target=_blank>ImageBreed</a> if you find any of these tools useful', buttons_html => "<button class='btn btn-primary' style='margin:3px' id='upload_drone_rover_link'>Upload Ground Rover Data</button>", icon_class => undef, col1_width_class => "col-sm-0", col2_width_class => "col-sm-12", info_section_id => "manage_drone_rover_main" &>
 

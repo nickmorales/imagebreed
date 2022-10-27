@@ -185,20 +185,16 @@ sub drone_rover_summary_top_GET : Args(0) {
 
                 my %collection_times;
                 my %collected_fields;
-                foreach my $collection_obj (@$collections) {
-                    my $collection = $collection_obj->{collections};
+                while (my ($collection_number, $collect) = each %$collections) {
+                    my $start_time = $collect->{run_info}->{tracker}->{start_date};
+                    my $field_name = $collect->{run_info}->{field}->{name};
 
-                    while (my ($collection_number, $collect) = each %$collection) {
-                        my $start_time = $collect->{run_info}->{tracker}->{start_date};
-                        my $field_name = $collect->{run_info}->{field}->{name};
+                    $collection_times{$start_time} = {
+                        collection_number => $collection_number,
+                        collect => $collect
+                    };
 
-                        $collection_times{$start_time} = {
-                            collection_number => $collection_number,
-                            collect => $collect
-                        };
-
-                        $collected_fields{$field_name} = $collect->{run_info}->{field};
-                    }
+                    $collected_fields{$field_name} = $collect->{run_info}->{field};
                 }
 
                 $drone_run_html .= '<div class="well well-sm"><table class="table table-bordered table-hover"><thead><tr><th>Collected Fields</th><th>Range Min</th><th>Range Max</th><th>Column Min</th><th>Column Max</th><th>Rows Per Column</th><th>Plot Length</th><th>Row Width</th><th>Planting Spacing</th><th>Crop</th></tr></thead><tbody>';
@@ -213,8 +209,9 @@ sub drone_rover_summary_top_GET : Args(0) {
                     my $collect_obj = $collection_times{$collection_time};
                     my $collection_number = $collect_obj->{collection_number};
                     my $collect = $collect_obj->{collect};
-
                     print STDERR Dumper $collect;
+
+                    my $collect_plot_polygons = $collect->{plot_polygons};
 
                     my $original_image_id = $collect->{processed_image_ids}->{points_original};
                     my $filtered_image_id = $collect->{processed_image_ids}->{points_filtered_height};
@@ -224,7 +221,12 @@ sub drone_rover_summary_top_GET : Args(0) {
                     $drone_run_band_table_html .= '<b>Field</b>: '.$collect->{run_info}->{field}->{name}.'<br/>';
                     $drone_run_band_table_html .= '<b>Start Range</b>: '.$collect->{run_info}->{tracker}->{start_range}.'&nbsp;&nbsp;&nbsp;&nbsp;<b>Start Column</b>: '.$collect->{run_info}->{tracker}->{start_column}.'<br/>';
                     $drone_run_band_table_html .= '<b>Stop Range</b>: '.$collect->{run_info}->{tracker}->{stop_range}.'&nbsp;&nbsp;&nbsp;&nbsp;<b>Stop Column</b>: '.$collect->{run_info}->{tracker}->{stop_column}.'<br/>';
-                    $drone_run_band_table_html .= '<b>Original Number Points</b>: '.$collect->{processing}->{pcd_original_num_points}.'<br/><b>Filtered Number Points</b>: '.$collect->{processing}->{pcd_down_filtered_height_side_points};
+                    $drone_run_band_table_html .= '<b>Original Number Points</b>: '.$collect->{processing}->{pcd_original_num_points}.'<br/><b>Filtered Number Points</b>: '.$collect->{processing}->{pcd_down_filtered_height_side_points}.'<br/>';
+
+                    if (!$collect_plot_polygons) {
+                        $drone_run_band_table_html .= '<br/><button class="btn btn-primary btn-sm" name="project_drone_rover_plot_polygons" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Process Plot Polygons</button><br/><br/>';
+
+                    }
 
                     $drone_run_band_table_html .= '</td><td>';
                     $drone_run_band_table_html .= '<div class="panel-group" id="drone_run_rover_accordion_'.$collection_number.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_run_rover_accordion_'.$collection_number.'" href="#drone_run_rover_accordion_one_'.$collection_number.'" onclick="manageDroneRoverEventDisplay('.$k.',&quot;'.$collection_number.'&quot;,'.$original_image_id.','.$filtered_image_id.')">View Images</a></h4></div><div id="drone_run_rover_accordion_one_'.$collection_number.'" class="panel-collapse collapse"><div class="panel-body">';

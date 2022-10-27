@@ -365,9 +365,21 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
         }
 
         foreach my $drone_run_id (@selected_drone_run_ids) {
-            my %seen_collection_files;
-            my %archived_collection_files;
-            my $top_level_dirname;
+
+            my $earthsense_collections_projectprop_rs = $schema->resultset("Project::Projectprop")->search({
+                project_id => $drone_run_id,
+                type_id => $earthsense_collections_cvterm_id
+            });
+            my $earthsense_collections = {};
+            if ($earthsense_collections_projectprop_rs->count > 0) {
+                if ($earthsense_collections_projectprop_rs->count > 1) {
+                    $c->stash->{message} = "There should not be more than one EarthSense collections projectprop!";
+                    $c->stash->{template} = 'generic_message.mas';
+                    return;
+                }
+                $earthsense_collections = decode_json $earthsense_collections_projectprop_rs->first->value();
+            }
+
             foreach my $file_member (@$file_members) {
                 my $filename = $file_member->fileName();
 
@@ -405,11 +417,11 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                     return;
                 }
 
-                $archived_collection_files{$earthsense_collection_number}->{collections}->{$collection_file} = $archived_filename_with_path_earthsense_collection;
-                $top_level_dirname = $top_level;
+                $earthsense_collections->{$earthsense_collection_number}->{collections}->{$collection_file} = $archived_filename_with_path_earthsense_collection;
+                $earthsense_collections->{$earthsense_collection_number}->{top_level} = $top_level;
             }
 
-            while (my ($collection_number, $collection_file_obj) = each %archived_collection_files) {
+            while (my ($collection_number, $collection_file_obj) = each %$earthsense_collections) {
                 my $collection_file = $collection_file_obj->{collections};
 
                 if (!exists($collection_file->{'secondary_lidar_log.csv'})) {
@@ -444,7 +456,7 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                 }
             }
 
-            while (my ($collection_number, $collection_file_obj) = each %archived_collection_files) {
+            while (my ($collection_number, $collection_file_obj) = each %$earthsense_collections) {
                 my $collection_file = $collection_file_obj->{collections};
 
                 my $lidar_file = $collection_file->{'secondary_lidar_log.csv'};
@@ -528,25 +540,6 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                     points_filtered_side_height => $filtered3_image_id
                 };
             }
-
-            my $earthsense_collections_projectprop_rs = $schema->resultset("Project::Projectprop")->search({
-                project_id => $drone_run_id,
-                type_id => $earthsense_collections_cvterm_id
-            });
-            my $earthsense_collections = [];
-            if ($earthsense_collections_projectprop_rs->count > 0) {
-                if ($earthsense_collections_projectprop_rs->count > 1) {
-                    $c->stash->{message} = "There should not be more than one EarthSense collections projectprop!";
-                    $c->stash->{template} = 'generic_message.mas';
-                    return;
-                }
-                $earthsense_collections = decode_json $earthsense_collections_projectprop_rs->first->value();
-            }
-
-            push @$earthsense_collections, {
-                top_level => $top_level_dirname,
-                collections => \%archived_collection_files
-            };
             print STDERR Dumper $earthsense_collections;
 
             my $earthsense_collections_prop = $schema->resultset("Project::Projectprop")->find_or_create({
