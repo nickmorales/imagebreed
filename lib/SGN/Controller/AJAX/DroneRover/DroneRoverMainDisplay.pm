@@ -183,29 +183,58 @@ sub drone_rover_summary_top_GET : Args(0) {
             $drone_run_html .= '<div class="panel-group"><div class="panel panel-default panel-sm"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" >Loading Plot Point Cloud Summary...</a></h4></div></div></div>';
             $drone_run_html .= '</div>';
 
-                my $drone_run_band_table_html = '<table class="table table-bordered"><thead><tr><th>Rover Collection(s)</th><th>Images/Actions</th></thead><tbody>';
-
+                my %collection_times;
+                my %collected_fields;
                 foreach my $collection_obj (@$collections) {
                     my $collection = $collection_obj->{collections};
 
                     while (my ($collection_number, $collect) = each %$collection) {
-                        print STDERR Dumper $collect;
+                        my $start_time = $collect->{run_info}->{tracker}->{start_date};
+                        my $field_name = $collect->{run_info}->{field}->{name};
 
-                        my $image_id = $collect->{processed_image_ids}->{points_original};
-                        my $image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
-                        my $image_source_tag_medium = $image->get_img_src_tag("medium");
-                        my $image_source_tag_small = $image->get_img_src_tag("thumbnail");
-                        my $image_original = $image->get_image_url("original");
+                        $collection_times{$start_time} = {
+                            collection_number => $collection_number,
+                            collect => $collect
+                        };
 
-                        $drone_run_band_table_html .= '<tr><td><b>Collection Number</b>: '.$collection_number.'<br/><b>Start Column</b>: '.$collect->{run_info}->{tracker}->{start_column}.'<br/><b>Stop Column</b>: '.$collect->{run_info}->{tracker}->{stop_column}.'<br/><b>Start Range</b>: '.$collect->{run_info}->{tracker}->{start_range}.'<br/><b>Stop Range</b>: '.$collect->{run_info}->{tracker}->{stop_range}.'</td><td>';
-
-                        $drone_run_band_table_html .= '<div class="panel-group" id="drone_run_rover_accordion_'.$collection_number.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_run_rover_accordion_'.$collection_number.'" href="#drone_run_rover_accordion_one_'.$collection_number.'" onclick="manageDroneRoverEventDisplay('.$k.',&quot;'.$collection_number.'&quot;)">View Images</a></h4></div><div id="drone_run_rover_accordion_one_'.$collection_number.'" class="panel-collapse collapse"><div class="panel-body">';
-
-                        $drone_run_band_table_html .= '<div id="drone_run_rover_accordian_drone_run_band_div_'.$collection_number.'"><a href="/image/view/'.$image_id.'" target="_blank">'.$image_source_tag_medium.'</a></div>';
-
-                        $drone_run_band_table_html .= '</div></div></div></div>';
-                        $drone_run_band_table_html .= '</td></tr>';
+                        $collected_fields{$field_name} = $collect->{run_info}->{field};
                     }
+                }
+
+                $drone_run_html .= '<div class="well well-sm"><table class="table table-bordered table-hover"><thead><tr><th>Collected Fields</th><th>Range Min</th><th>Range Max</th><th>Column Min</th><th>Column Max</th><th>Rows Per Column</th><th>Plot Length</th><th>Row Width</th><th>Planting Spacing</th><th>Crop</th></tr></thead><tbody>';
+                foreach my $field_name (sort keys %collected_fields) {
+                    $drone_run_html .= '<tr><td>'.$field_name.'</td><td>'.$collected_fields{$field_name}->{range_min}.'</td><td>'.$collected_fields{$field_name}->{range_max}.'</td><td>'.$collected_fields{$field_name}->{column_min}.'</td><td>'.$collected_fields{$field_name}->{column_max}.'</td><td>'.$collected_fields{$field_name}->{rows_per_column}.'</td><td>'.$collected_fields{$field_name}->{plot_length}.'</td><td>'.$collected_fields{$field_name}->{row_width}.'</td><td>'.$collected_fields{$field_name}->{planting_spacing}.'</td><td>'.$collected_fields{$field_name}->{crop_name}.'</td></tr>';
+                }
+                $drone_run_html .= '</tbody></table></div>';
+
+                my $drone_run_band_table_html = '<table class="table table-bordered"><thead><tr><th>Rover Collection(s)</th><th>Images/Actions</th></thead><tbody>';
+
+                foreach my $collection_time (sort keys %collection_times) {
+                    my $collect_obj = $collection_times{$collection_time};
+                    my $collection_number = $collect_obj->{collection_number};
+                    my $collect = $collect_obj->{collect};
+
+                    print STDERR Dumper $collect;
+
+                    my $image_id = $collect->{processed_image_ids}->{points_original};
+                    my $image = SGN::Image->new( $schema->storage->dbh, $image_id, $c );
+                    my $image_source_tag_medium = $image->get_img_src_tag("medium");
+                    my $image_source_tag_small = $image->get_img_src_tag("thumbnail");
+                    my $image_original = $image->get_image_url("original");
+
+                    $drone_run_band_table_html .= '<tr><td>';
+                    $drone_run_band_table_html .= '<b>Collection Number</b>: '.$collection_number.'<br/>';
+                    $drone_run_band_table_html .= '<b>Field</b>: '.$collect->{run_info}->{field}->{name}.'<br/>';
+                    $drone_run_band_table_html .= '<b>Start Range</b>: '.$collect->{run_info}->{tracker}->{start_range}.'&nbsp;&nbsp;&nbsp;&nbsp;<b>Start Column</b>: '.$collect->{run_info}->{tracker}->{start_column}.'<br/>';
+                    $drone_run_band_table_html .= '<b>Stop Range</b>: '.$collect->{run_info}->{tracker}->{stop_range}.'&nbsp;&nbsp;&nbsp;&nbsp;<b>Stop Column</b>: '.$collect->{run_info}->{tracker}->{stop_column};
+
+                    $drone_run_band_table_html .= '</td><td>';
+                    $drone_run_band_table_html .= '<div class="panel-group" id="drone_run_rover_accordion_'.$collection_number.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#drone_run_rover_accordion_'.$collection_number.'" href="#drone_run_rover_accordion_one_'.$collection_number.'" onclick="manageDroneRoverEventDisplay('.$k.',&quot;'.$collection_number.'&quot;)">View Images</a></h4></div><div id="drone_run_rover_accordion_one_'.$collection_number.'" class="panel-collapse collapse"><div class="panel-body">';
+
+                    $drone_run_band_table_html .= '<div id="drone_run_rover_accordian_drone_run_band_div_'.$collection_number.'"><a href="/image/view/'.$image_id.'" target="_blank">'.$image_source_tag_medium.'</a></div>';
+
+                    $drone_run_band_table_html .= '</div></div></div></div>';
+                    $drone_run_band_table_html .= '</td></tr>';
                 }
                 $drone_run_band_table_html .= '</tbody></table>';
 
