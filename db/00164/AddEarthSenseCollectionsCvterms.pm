@@ -131,7 +131,6 @@ SQL
         print "You're done!\n";
     }
 
-    print "You're done!\n";
 }
 
 

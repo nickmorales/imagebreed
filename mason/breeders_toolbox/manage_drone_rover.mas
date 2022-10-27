@@ -4,13 +4,227 @@
 
 <& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch03152022', 'd3.d3v4Min.js', 'opencv.opencv', 'CXGN.Trial03152022', 'moment_min', 'daterangepicker', 'CXGN.ManageDroneImagery09072022', 'CXGN.ManageDroneRover10272022' ] &>
 
-<& /page/page_title.mas, title=>"Manage Ground Rover Data" &>
+<div id="manage_drone_rover_top_div">
 
-<div class="well well-sm">
-    <center>
-        <h4>Please use the Brave or Chrome web-browsers to view these image tools. In the future, other browsers may be supported.</h4>
-        <h4><a href="https://www.youtube.com/channel/UC1FYqz6kz9pE72sSHhG7ocQ">Watch tutorial videos from processing aerial imaging events</a>.</h4>
-    </center>
+    <& /page/page_title.mas, title=>"Manage Ground Rover Data" &>
+
+    <div class="well well-sm">
+        <center>
+            <h4>Please use the Brave or Chrome web-browsers to view these image tools. In the future, other browsers may be supported.</h4>
+            <h4><a href="https://www.youtube.com/channel/UC1FYqz6kz9pE72sSHhG7ocQ">Watch tutorial videos from processing aerial imaging events</a>.</h4>
+        </center>
+    </div>
+
+    <& /page/detail_page_2_col_section.mas, info_section_collapsed => 0, info_section_title => "<h4 style='display:inline'>Ground Rover</h4>", info_section_subtitle => 'Please cite <a href="https://acsess.onlinelibrary.wiley.com/doi/full/10.1002/ppj2.20004" target=_blank>ImageBreed</a> if you find any of these tools useful', buttons_html => "<button class='btn btn-primary' style='margin:3px' id='upload_drone_rover_link'>Upload Ground Rover Data</button><button class='btn btn-default' style='margin:3px' id='drone_rover_view_rover_vehicles_link'>Rover Vehicles</button>", icon_class => undef, col1_width_class => "col-sm-0", col2_width_class => "col-sm-12", info_section_id => "manage_drone_rover_main" &>
+
+</div>
+
+<div id="manage_drone_rover_plot_polygon_process_div" style="display:none">
+
+    <& /page/page_title.mas, title=>"Manage Drone Rovers: Run A Standard Process For Plot Polygons" &>
+
+    <div class="well well-sm">
+        <center>
+            <h4>Please use the Brave or Chrome web-browsers to view these image tools. In the future, other browsers may be supported.</h4>
+            <h4><a href="https://www.youtube.com/channel/UC1FYqz6kz9pE72sSHhG7ocQ">Watch tutorial videos from processing rover events</a>.</h4>
+        </center>
+    </div>
+
+    <&| /util/workflow.mas, id=> "manage_drone_rover_plot_polygon_process_workflow" &>
+        <&| /util/workflow.mas:step, title=> "Intro" &>
+            <& /page/page_title.mas, title=>"This workflow will guide you through assigning plot polygons to rover point clouds" &>
+            <br/><br/>
+            <center>
+            <button class="btn btn-primary" onclick="Workflow.complete(this); return false;">Go to Next Step</button>
+            </center>
+        </&>
+        <&| /util/workflow.mas:step, title=> "Plot Polygons" &>
+            <& /page/page_title.mas, title=>"Define plot polygons relative to the field layout" &>
+
+            <& /page/detail_page_2_col_section.mas, info_section_collapsible=>1, info_section_collapsed=>0, info_section_title => "<h4 style='display:inline'>Generate Polygon Template Tool</h4>", info_section_subtitle => 'Overlay a uniform grid over the image.', icon_class => "glyphicon glyphicon-th-large", info_section_id => "manage_drone_imagery_standard_process_generate_plot_polygons_section" &>
+
+            <div class="well well-sm">
+                <div id="drone_rover_plot_polygons_process_top_section"></div>
+
+                <button id="drone_imagery_standard_process_plot_polygons_clear" class="btn btn-danger">Clear All Polygons and Start Over Templating</button>
+                <br/><br/>
+                <button id="drone_imagery_standard_process_plot_polygons_get_distance" class="btn btn-default">Find Distance Between Points</button>
+                <button id="drone_imagery_standard_process_plot_polygons_switch_image_url" class="btn btn-default">Switch Between Original and Background Removed Image</button>
+            </div>
+
+            <div id="drone_rover_plot_polygons_process_load_div">
+                <img src="/img/wheel.gif" />
+            </div>
+
+            <div id="drone_rover_plot_polygons_process_image_div_svg"></div>
+
+            <hr>
+            <div class="well well-sm">
+
+                <div id="drone_imagery_standard_process_generated_polygons_table_header_div"></div>
+
+                <div class="panel panel-default"><div class="panel-body">
+                    <h3>(Option 1)</h3>
+
+                    <&| /page/info_section.mas, title => 'Auto Assign Plot Numbers to Polygon Numbers', collapsible=>1, collapsed => 1, subtitle=> 'Interface for automatically assigning plot numbers to polygon numbers.' &>
+                        <div class="well well-sm">
+                            <div id="drone_imagery_standard_process_generated_polygons_div">First Complete the Templating Above</div>
+                        </div>
+                    </&>
+                </div></div>
+
+                <div class="panel panel-default"><div class="panel-body">
+                    <h3>(Option 2)</h3>
+
+                    <&| /page/info_section.mas, title => 'Upload Spreadsheet File to Assign Plot Numbers to Polygon Numbers', collapsible=>1, collapsed => 1, subtitle=> 'Upload a spreadsheet file assigning plot numbers to polygon numbers.' &>
+                        <div class="well well-sm">
+                            <div id="drone_imagery_standard_process_generated_polygons_spreadsheet_div">
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                        <ul>
+                                            <li>If Option 1 is unable to fit your field experiments, Option 2 and 3 enable greater flexibility.</li>
+                                            <li>Upload an <b>XLS</b> file with the following three columns: <b>polygon_number, plot_number, field_trial</b>
+                                                <ul>
+                                                    <li><b>polygon_number</b>: The polygon number generated in the templating process. The polygon numbers are visible in the templated image.</li>
+                                                    <li><b>plot_number</b>: The plot number to assign to the polygon number. Field layouts are visible at the bottom of this page, where available plot numbers can be determined.</li>
+                                                    <li><b>field_trial</b>: The field trial for the plot number being assigned. The same plot number (e.g. 101) can exist in different field trials, so this column differentiates plot numbers among field trials.</li>
+                                                </ul>
+                                            </li>
+                                            <li>If you want to skip a generated polygon number, simply do not include it in the uploaded spreadsheet.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+                                        <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="drone_imagery_plot_polygons_spreadsheet_upload_form" name="drone_imagery_plot_polygons_spreadsheet_upload_form">
+                                            <div class="form-group form-group-sm">
+                                                <label class="col-sm-3 control-label">Spreadsheet Upload (.xls): </label>
+                                                <div class="col-sm-9">
+                                                    <input class="form-control" id="drone_imagery_plot_polygons_spreadsheet_upload" name="drone_imagery_plot_polygons_spreadsheet_upload" type="file" encoding="multipart/form-data" />
+                                                    <input id="drone_imagery_plot_polygons_spreadsheet_upload_stock_polygons" name="drone_imagery_plot_polygons_spreadsheet_upload_stock_polygons" type="hidden" />
+                                                </div>
+                                            </div>
+                                        </form>
+
+                                        <div id="drone_imagery_plot_polygons_spreadsheet_upload_form_response_div"></div>
+
+                                        <button class="btn btn-primary" id="drone_imagery_plot_polygons_spreadsheet_upload_button" name="drone_imagery_plot_polygons_spreadsheet_upload_button">Generate Assignments (Does Not Save)</button>&nbsp;&nbsp;&nbsp;<button class="btn btn-primary" name="drone_imagery_standard_process_plot_polygons_submit_bottom">Finish and Save Polygons To Plots</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </&>
+                </div></div>
+
+                <div class="panel panel-default"><div class="panel-body">
+                    <h3>(Option 3)</h3>
+
+                    <&| /page/info_section.mas, title => 'Manually Assign Plot Numbers to Polygon Numbers', collapsible=>1, collapsed => 1, subtitle=> 'Table input for manually assigning plot numbers to polygon numbers.' &>
+                        <div class="well well-sm">
+                            <div id="drone_imagery_standard_process_generated_polygons_table">First Complete the Templating Above</div>
+                        </div>
+                    </&>
+                </div></div>
+
+            </div>
+
+            <hr>
+            <div class="well well-sm">
+                <div id="drone_imagery_standard_process_trial_layout_div_0"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_1"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_2"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_3"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_4"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_5"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_6"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_7"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_8"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_9"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_10"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_11"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_12"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_13"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_14"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_15"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_16"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_17"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_18"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_19"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_20"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_21"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_22"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_23"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_24"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_25"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_26"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_27"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_28"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_29"></div>
+                <div id="drone_imagery_standard_process_trial_layout_div_30"></div>
+            </div>
+
+        </&>
+        <&| /util/workflow.mas:step, title=> "Phenotypes" &>
+            <& /page/page_title.mas, title=>"Calculate phenotypes for all plot polygon images" &>
+
+            <form class="form-horizontal">
+                <div class="well well-sm">
+                    <div class="form-group form-group-sm">
+                        <label class="col-sm-4 control-label">Zonal Statistics to Calculate and Save in Database: </label>
+                        <div class="col-sm-8">
+                            <input name="drone_imagery_standard_process_phenotypes_select" value="zonal" type="checkbox" checked disabled> Zonal Statistics: nonzero_pixel_count, total_pixel_sum, mean_pixel_value, harmonic_mean_value, median_pixel_value, variance_pixel_value, stdev_pixel_value, pstdev_pixel_value, min_pixel_value, max_pixel_value, minority_pixel_value, minority_pixel_count, majority_pixel_value, majority_pixel_count, pixel_variety_count <br/>
+                        </div>
+                    </div>
+                </div>
+                <div class="well well-sm">
+                    <input type="checkbox" id="drone_imagery_standard_process_phenotypes_margin_button">&nbsp;&nbsp;&nbsp;&nbsp; Change Margin Values
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group form-group-sm">
+                                <label class="col-sm-8 control-label">Buffer Margin When Calculating Phenotypes On Top/Bottom of Plot Polygons (%): </label>
+                                <div class="col-sm-4">
+                                    <input class="form-control" id="drone_imagery_standard_process_phenotypes_margin_top_bottom" name="drone_imagery_standard_process_phenotypes_margin_top_bottom" type="number" value=5 disabled/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group form-group-sm">
+                                <label class="col-sm-8 control-label">Buffer Margin When Calculating Phenotypes On Left/Right of Plot Polygons (%): </label>
+                                <div class="col-sm-4">
+                                    <input class="form-control" id="drone_imagery_standard_process_phenotypes_margin_left_right" name="drone_imagery_standard_process_phenotypes_margin_left_right" type="number" value=5 disabled/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div id="drone_imagery_standard_process_phenotypes_margin_visual_div_svg"><div class="well well-sm"><p>LOADING...Please wait...</p></div></div>
+                </div>
+                <div class="well well-sm">
+                    <div class="form-group form-group-sm">
+                        <label class="col-sm-9 control-label">Apply same standard process to all uploaded imaging events that use the same camera rig (Only applicable for static camera rigs, such as in a greenhouse or controlled environment): </label>
+                        <div class="col-sm-3">
+                            <select class="form-control" id="drone_imagery_standard_process_camera_rig_apply_select">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <br/>
+
+            <div id="drone_imagery_standard_process_week_term_div"></div>
+
+            <center>
+            <button type="button" class="btn btn-info" id="manage_drone_imagery_standard_process_phenotypes_step">Finish</button>
+            </center>
+        </&>
+    </&>
+
 </div>
 
 <div class="modal fade" id="upload_drone_rover_dialog" name="upload_drone_rover_dialog" tabindex="-1" role="dialog" aria-labelledby="uploadDroneRoverDialog">
@@ -317,8 +531,6 @@
 </div>
 
 <& /breeders_toolbox/drone_imagery/calculate_gdd_cp_dialogs.mas &>
-
-<& /page/detail_page_2_col_section.mas, info_section_collapsed => 0, info_section_title => "<h4 style='display:inline'>Ground Rover</h4>", info_section_subtitle => 'Please cite <a href="https://acsess.onlinelibrary.wiley.com/doi/full/10.1002/ppj2.20004" target=_blank>ImageBreed</a> if you find any of these tools useful', buttons_html => "<button class='btn btn-primary' style='margin:3px' id='upload_drone_rover_link'>Upload Ground Rover Data</button><button class='btn btn-default' style='margin:3px' id='drone_rover_view_rover_vehicles_link'>Rover Vehicles</button>", icon_class => undef, col1_width_class => "col-sm-0", col2_width_class => "col-sm-12", info_section_id => "manage_drone_rover_main" &>
 
 <script>
 
@@ -667,6 +879,12 @@ jQuery(document).ready(function() {
         Workflow.complete('#upload_drone_rover_select_point_clouds_earthsense_lidar');
         Workflow.focus('#drone_rover_upload_workflow_earthsense_lidar', 1);
         return false;
+    });
+
+    jQuery('#upload_drone_rover_form').submit(function() {
+        jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
+        jQuery('#working_modal').modal('show');
+        return true;
     });
 
 });
