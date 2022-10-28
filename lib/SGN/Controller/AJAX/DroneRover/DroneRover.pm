@@ -110,6 +110,30 @@ sub drone_rover_get_vehicles_GET : Args(0) {
     $c->stash->{rest} = { data => \@vehicles };
 }
 
+sub drone_rover_get_collection : Path('/api/drone_rover/get_collection') : ActionClass('REST') { }
+sub drone_rover_get_collection_GET : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
+    my $drone_run_project_id = $c->req->param('drone_run_project_id');
+    my $collection_number = $c->req->param('collection_number');
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_rover($c, 'user', undef, undef);
+
+    my $earthsense_collections_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'earthsense_ground_rover_collections_archived', 'project_property')->cvterm_id();
+
+    my $q = "SELECT projectprop.value
+        FROM projectprop
+        WHERE projectprop.type_id=$earthsense_collections_cvterm_id AND projectprop.project_id=?;";
+    my $h = $bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($drone_run_project_id);
+    my ($prop_json) = $h->fetchrow_array();
+    my $collections = decode_json $prop_json;
+    my $collection = $collections->{$collection_number} || {};
+
+    $c->stash->{rest} = $collection;
+}
+
 sub _check_user_login_drone_rover {
     my $c = shift;
     my $check_priv = shift;
