@@ -42,6 +42,7 @@
             <& /page/page_title.mas, title=>"Define plot polygons relative to the field layout" &>
 
             <div class="well well-sm">
+                <div id="drone_rover_plot_polygons_process_run_info_section"></div>
                 <div id="drone_rover_plot_polygons_process_top_section"></div>
 
                 <button id="drone_imagery_standard_process_plot_polygons_clear" class="btn btn-danger">Clear All Polygons and Start Over Templating</button>
