@@ -50,6 +50,9 @@ jQuery(document).ready(function() {
     var manage_drone_rover_plot_polygons_available_stock_names = [];
     var manage_drone_rover_plot_polygons_plot_names_colors = {};
     var manage_drone_rover_plot_polygons_plot_names_plot_numbers = {};
+    var manage_drone_rover_plot_polygons_num_plots = 0;
+    var manage_drone_rover_plot_polygons_plot_polygon_vertical_lines = [];
+    var manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines = [];
 
     var svgElementFilteredImage;
     var svgElementFilteredImageSideSpan;
@@ -84,6 +87,7 @@ jQuery(document).ready(function() {
         manage_drone_rover_plot_polygons_plot_names_plot_numbers = {};
         manage_drone_rover_plot_polygons_num_plots = 0;
         manage_drone_rover_plot_polygons_plot_polygon_vertical_lines = [];
+        manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines = [];
 
         jQuery.ajax({
             url : '/api/drone_imagery/get_field_trial_drone_run_projects_in_same_orthophoto?drone_run_project_id='+manage_drone_rover_plot_polygons_drone_run_project_id+'&field_trial_project_id='+manage_drone_rover_plot_polygons_field_trial_id,
@@ -358,10 +362,10 @@ jQuery(document).ready(function() {
                                         var column_diff = Math.abs(stop_column-start_column);
 
                                         if (range_diff == 0 && column_diff == 0) {
-                                            alert('The tracker.json says 0 ranges and 0 columns were passed!');
+                                            alert('The tracker.json says 0 ranges and 0 columns were passed! Manually specify the number of plots below.');
                                         }
                                         else if (range_diff > 0 && column_diff > 0) {
-                                            alert('The tracker.json says more than 0 ranges and more than 0 columns were passed!');
+                                            alert('The tracker.json says more than 0 ranges and more than 0 columns were passed! Manually specify the number of plots below.');
                                         }
                                         else {
                                             var current_diff = 0;
@@ -374,16 +378,7 @@ jQuery(document).ready(function() {
                                             manage_drone_rover_plot_polygons_num_plots = current_diff+1;
                                             jQuery('#manage_drone_rover_plot_polygon_process_num_plots').val(manage_drone_rover_plot_polygons_num_plots);
 
-                                            var average_plot_width = parseInt(manage_drone_rover_plot_polygons_background_image_width/manage_drone_rover_plot_polygons_num_plots);
-                                            var current_width = 0;
-                                            for (var i=0; i<=manage_drone_rover_plot_polygons_num_plots; i++) {
-                                                manage_drone_rover_plot_polygons_plot_polygon_vertical_lines.push([[current_width,0],[current_width,manage_drone_rover_plot_polygons_background_image_height]]);
-                                                current_width = current_width + average_plot_width;
-                                            }
-                                            //console.log(manage_drone_rover_plot_polygons_plot_polygon_vertical_lines);
-
-                                            drawRoverPlotLinesFilteredImage();
-                                            drawRoverPlotLinesFilteredSideSpanImage();
+                                            changeNumPlotsDrawVerticalLines();
                                         }
 
                                         jQuery("#working_modal").modal("hide");
@@ -412,6 +407,39 @@ jQuery(document).ready(function() {
         });
     }
 
+    jQuery(document).on('change', '#manage_drone_rover_plot_polygon_process_num_plots', function() {
+        manage_drone_rover_plot_polygons_num_plots = jQuery(this).val();
+        changeNumPlotsDrawVerticalLines();
+    });
+
+    function changeNumPlotsDrawVerticalLines() {
+        manage_drone_rover_plot_polygons_plot_polygon_vertical_lines = [];
+        var average_plot_width = parseInt(manage_drone_rover_plot_polygons_background_image_width/manage_drone_rover_plot_polygons_num_plots);
+        var current_width = 0;
+        for (var i=0; i<=manage_drone_rover_plot_polygons_num_plots; i++) {
+            manage_drone_rover_plot_polygons_plot_polygon_vertical_lines.push([
+                [current_width, 0],
+                [current_width, manage_drone_rover_plot_polygons_background_image_height]
+            ]);
+            current_width = current_width + average_plot_width;
+        }
+        //console.log(manage_drone_rover_plot_polygons_plot_polygon_vertical_lines);
+
+        manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines = [
+            [
+                [0, manage_drone_rover_plot_polygons_background_image_height*1/3],
+                [manage_drone_rover_plot_polygons_background_image_width, manage_drone_rover_plot_polygons_background_image_height*1/3]
+            ],
+            [
+                [0, manage_drone_rover_plot_polygons_background_image_height*2/3],
+                [manage_drone_rover_plot_polygons_background_image_width, manage_drone_rover_plot_polygons_background_image_height*2/3]
+            ]
+        ];
+
+        drawRoverPlotLinesFilteredImage();
+        drawRoverPlotLinesFilteredSideSpanImage();
+    }
+
     var line = d3.line()
         .x(function(d) { return d[0]; })
         .y(function(d) { return d[1]; });
@@ -429,7 +457,11 @@ jQuery(document).ready(function() {
         var x = d3.event.x;
         var y = d3.event.y;
         var line_index = d3.select(this).attr('line_index');
-        manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[line_index] = [[x,0],[x,manage_drone_rover_plot_polygons_background_image_height]];
+        var line_type = d3.select(this).attr('type');
+
+        if (line_type == 'vertical') {
+            manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[line_index] = [[x,0],[x,manage_drone_rover_plot_polygons_background_image_height]];
+        }
     }
 
     function dragendedFilteredImage(d) {
@@ -466,6 +498,7 @@ jQuery(document).ready(function() {
                 .attr("stroke-linecap", "round")
                 .attr("stroke-width", 5)
                 .attr("line_index", i)
+                .attr("type", "vertical")
                 .attr("d", line);
 
             imageGroup.append("text")
@@ -495,7 +528,14 @@ jQuery(document).ready(function() {
         var x = d3.event.x;
         var y = d3.event.y;
         var line_index = d3.select(this).attr('line_index');
-        manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[line_index] = [[x,0],[x,manage_drone_rover_plot_polygons_background_image_height]];
+        var line_type = d3.select(this).attr('type');
+
+        if (line_type == 'horizontal') {
+            manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[line_index] = [[0,y],[manage_drone_rover_plot_polygons_background_image_width,y]];
+        }
+        if (line_type == 'vertical') {
+            manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[line_index] = [[x,0],[x,manage_drone_rover_plot_polygons_background_image_height]];
+        }
     }
 
     function dragendedFilteredSideSpanImage(d) {
@@ -527,6 +567,7 @@ jQuery(document).ready(function() {
                 .attr("stroke-linecap", "round")
                 .attr("stroke-width", 5)
                 .attr("line_index", i)
+                .attr("type", "vertical")
                 .attr("d", line);
 
             imageGroup.append("text")
@@ -536,6 +577,21 @@ jQuery(document).ready(function() {
                 .style("font-size", "36px")
                 .style("font-weight", 500)
                 .text(i);
+        }
+
+        for (var i=0; i<manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines.length; i++) {
+            var x = manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[i];
+
+            imageGroup.append("path")
+                .datum(x)
+                .attr("fill", "none")
+                .attr("stroke", "red")
+                .attr("stroke-linejoin", "round")
+                .attr("stroke-linecap", "round")
+                .attr("stroke-width", 5)
+                .attr("line_index", i)
+                .attr("type", "horizontal")
+                .attr("d", line);
         }
 
         imageGroup.selectAll('path')
