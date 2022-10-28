@@ -58,6 +58,7 @@
 
             <div id="drone_rover_plot_polygons_process_image_div_svg"></div>
             <div id="drone_rover_plot_polygons_process_image_div_topview_svg"></div>
+            <div id="drone_rover_plot_polygons_process_image_div_sideheight_svg"></div>
 
             <hr>
             <div class="well well-sm">
