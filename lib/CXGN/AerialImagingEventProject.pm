@@ -113,6 +113,7 @@ sub get_field_trial_drone_run_projects_in_same_orthophoto {
     my $schema = $self->bcs_schema;
 
     my $field_trial_drone_runs_in_same_orthophoto_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'field_trial_drone_runs_in_same_orthophoto', 'experiment_type')->cvterm_id();
+    my $field_trial_drone_runs_in_same_rover_event_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'field_trial_drone_runs_in_same_rover_event', 'experiment_type')->cvterm_id();
     my $drone_run_drone_run_band_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_on_drone_run', 'project_relationship')->cvterm_id();
     my $drone_run_band_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_band_project_type', 'project_property')->cvterm_id();
     my $drone_run_field_trial_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
@@ -128,9 +129,9 @@ sub get_field_trial_drone_run_projects_in_same_orthophoto {
     my $q = "SELECT nd_experiment.nd_experiment_id
         FROM nd_experiment_project
         JOIN nd_experiment ON (nd_experiment_project.nd_experiment_id = nd_experiment.nd_experiment_id)
-        WHERE nd_experiment.type_id = ? and project_id = ?;";
+        WHERE nd_experiment.type_id IN (?,?) and project_id = ?;";
     my $h = $schema->storage->dbh()->prepare($q);
-    $h->execute($field_trial_drone_runs_in_same_orthophoto_type_id, $self->get_trial_id);
+    $h->execute($field_trial_drone_runs_in_same_orthophoto_type_id, $field_trial_drone_runs_in_same_rover_event_type_id, $self->get_trial_id);
     my @nd_experiment_ids;
     while (my ($nd_experiment_id) = $h->fetchrow_array()) {
         push @nd_experiment_ids, $nd_experiment_id;
@@ -145,9 +146,9 @@ sub get_field_trial_drone_run_projects_in_same_orthophoto {
             FROM nd_experiment_project
             JOIN nd_experiment ON (nd_experiment_project.nd_experiment_id = nd_experiment.nd_experiment_id)
             JOIN project ON (project.project_id = nd_experiment_project.project_id)
-            WHERE nd_experiment.type_id = ? AND nd_experiment_project.nd_experiment_id = ? AND project.project_id != ?;";
+            WHERE nd_experiment.type_id IN (?,?) AND nd_experiment_project.nd_experiment_id = ? AND project.project_id != ?;";
         my $h = $schema->storage->dbh()->prepare($q);
-        $h->execute($field_trial_drone_runs_in_same_orthophoto_type_id, $nd_experiment_id, $self->get_trial_id);
+        $h->execute($field_trial_drone_runs_in_same_orthophoto_type_id, $field_trial_drone_runs_in_same_rover_event_type_id, $nd_experiment_id, $self->get_trial_id);
         while (my ($project_id, $project_name) = $h->fetchrow_array()) {
             push @related_imaging_events, [$project_id, $project_name];
             push @related_imaging_event_ids, $project_id;
@@ -162,9 +163,9 @@ sub get_field_trial_drone_run_projects_in_same_orthophoto {
             JOIN project_relationship ON (drone_run.project_id = project_relationship.object_project_id AND project_relationship.type_id = $drone_run_drone_run_band_type_id)
             JOIN project AS drone_run_band ON (drone_run_band.project_id = project_relationship.subject_project_id)
             JOIN projectprop AS drone_run_band_project_type ON (drone_run_band.project_id = drone_run_band_project_type.project_id AND drone_run_band_project_type.type_id = $drone_run_band_type_cvterm_id)
-            WHERE nd_experiment.type_id = ? AND nd_experiment_project.nd_experiment_id = ? AND drone_run.project_id != ?;";
+            WHERE nd_experiment.type_id IN (?,?) AND nd_experiment_project.nd_experiment_id = ? AND drone_run.project_id != ?;";
         my $h2 = $schema->storage->dbh()->prepare($q2);
-        $h2->execute($field_trial_drone_runs_in_same_orthophoto_type_id, $nd_experiment_id, $self->get_trial_id);
+        $h2->execute($field_trial_drone_runs_in_same_orthophoto_type_id, $field_trial_drone_runs_in_same_rover_event_type_id, $nd_experiment_id, $self->get_trial_id);
         while (my ($drone_run_project_id, $drone_run_project_name, $drone_run_band_project_id, $drone_run_band_project_name, $drone_run_band_project_type) = $h2->fetchrow_array()) {
             push @related_imaging_event_bands, {
                 drone_run_id => $drone_run_project_id,
