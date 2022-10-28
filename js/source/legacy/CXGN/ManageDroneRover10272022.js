@@ -438,6 +438,7 @@ jQuery(document).ready(function() {
 
         drawRoverPlotLinesFilteredImage();
         drawRoverPlotLinesFilteredSideSpanImage();
+        drawRoverPlotLinesFilteredSideHeightImage();
     }
 
     var line = d3.line()
@@ -470,10 +471,11 @@ jQuery(document).ready(function() {
         d3.select(this).classed('active', false);
         drawRoverPlotLinesFilteredImage();
         drawRoverPlotLinesFilteredSideSpanImage();
+        drawRoverPlotLinesFilteredSideHeightImage();
     }
 
     function drawRoverPlotLinesFilteredImage() {
-        console.log(manage_drone_rover_plot_polygons_plot_polygon_vertical_lines);
+        //console.log(manage_drone_rover_plot_polygons_plot_polygon_vertical_lines);
 
         d3.selectAll("path").remove();
         d3.selectAll("text").remove();
@@ -544,10 +546,11 @@ jQuery(document).ready(function() {
         d3.select(this).classed('active', false);
         drawRoverPlotLinesFilteredImage();
         drawRoverPlotLinesFilteredSideSpanImage();
+        drawRoverPlotLinesFilteredSideHeightImage();
     }
 
     function drawRoverPlotLinesFilteredSideSpanImage() {
-        console.log(manage_drone_rover_plot_polygons_plot_polygon_vertical_lines);
+        //console.log(manage_drone_rover_plot_polygons_plot_polygon_vertical_lines);
 
         var imageGroup = svgElementFilteredImageSideSpan.append("g")
             .attr("x_pos", 0)
@@ -596,6 +599,75 @@ jQuery(document).ready(function() {
 
         imageGroup.selectAll('path')
                 .call(dragFilteredSideSpanImage);
+
+    }
+
+    let dragFilteredSideHeightImage = d3.drag()
+        .on('start', dragstartedFilteredSideHeightImage)
+        .on('drag', draggedFilteredSideHeightImage)
+        .on('end', dragendedFilteredSideHeightImage);
+
+    function dragstartedFilteredSideHeightImage(d) {
+        d3.select(this).raise().classed('active', true);
+    }
+
+    function draggedFilteredSideHeightImage(d) {
+        var x = d3.event.x;
+        var y = d3.event.y;
+        var line_index = d3.select(this).attr('line_index');
+        var line_type = d3.select(this).attr('type');
+
+        if (line_type == 'horizontal') {
+            var ratio = x/manage_drone_rover_plot_polygons_background_filtered_side_height_image_width;
+            var y_pos = parseInt(manage_drone_rover_plot_polygons_background_image_height * ratio);
+
+            manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[line_index] = [[0,y_pos],[manage_drone_rover_plot_polygons_background_image_width,y_pos]];
+        }
+    }
+
+    function dragendedFilteredSideHeightImage(d) {
+        var x = d3.event.x;
+        var y = d3.event.y;
+        d3.select(this).classed('active', false);
+        drawRoverPlotLinesFilteredImage();
+        drawRoverPlotLinesFilteredSideSpanImage();
+        drawRoverPlotLinesFilteredSideHeightImage();
+    }
+
+    function drawRoverPlotLinesFilteredSideHeightImage() {
+        //console.log(manage_drone_rover_plot_polygons_plot_polygon_vertical_lines);
+
+        var imageGroup = svgElementFilteredImageSideHeight.append("g")
+            .attr("x_pos", 0)
+            .attr("y_pos", 0)
+            .attr("x", 0)
+            .attr("y", 0);
+
+        for (var i=0; i<manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines.length; i++) {
+            var x = manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[i];
+            var y = x[0][1];
+            var ratio = y/manage_drone_rover_plot_polygons_background_image_height;
+            var x_pos = parseInt(manage_drone_rover_plot_polygons_background_filtered_side_height_image_width * ratio);
+
+            var lines_horizontal_display = [
+                [x_pos, 0 ],
+                [x_pos, manage_drone_rover_plot_polygons_background_filtered_side_height_image_height ]
+            ];
+
+            imageGroup.append("path")
+                .datum(lines_horizontal_display)
+                .attr("fill", "none")
+                .attr("stroke", "red")
+                .attr("stroke-linejoin", "round")
+                .attr("stroke-linecap", "round")
+                .attr("stroke-width", 5)
+                .attr("line_index", i)
+                .attr("type", "horizontal")
+                .attr("d", line);
+        }
+
+        imageGroup.selectAll('path')
+                .call(dragFilteredSideHeightImage);
 
     }
 
