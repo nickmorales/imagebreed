@@ -53,10 +53,15 @@ jQuery(document).ready(function() {
     var manage_drone_rover_plot_polygons_num_plots = 0;
     var manage_drone_rover_plot_polygons_plot_polygon_vertical_lines = [];
     var manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines = [];
+    var manage_drone_rover_plot_polygons_plot_polygon_boundaries = [];
+    var manage_drone_rover_plot_polygons_current_collection_field_name;
 
     var svgElementFilteredImage;
     var svgElementFilteredImageSideSpan;
     var svgElementFilteredImageSideHeight;
+
+    var manage_drone_rover_plot_polygons_stroke_width = 4;
+    var manage_drone_rover_plot_polygons_stroke_color = "red";
 
     jQuery(document).on('click', 'button[name="project_drone_rover_plot_polygons"]', function(){
         showManageDroneRoverSection('manage_drone_rover_plot_polygon_process_div');
@@ -88,6 +93,7 @@ jQuery(document).ready(function() {
         manage_drone_rover_plot_polygons_num_plots = 0;
         manage_drone_rover_plot_polygons_plot_polygon_vertical_lines = [];
         manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines = [];
+        manage_drone_rover_plot_polygons_plot_polygon_boundaries = [];
 
         jQuery.ajax({
             url : '/api/drone_imagery/get_field_trial_drone_run_projects_in_same_orthophoto?drone_run_project_id='+manage_drone_rover_plot_polygons_drone_run_project_id+'&field_trial_project_id='+manage_drone_rover_plot_polygons_field_trial_id,
@@ -346,13 +352,15 @@ jQuery(document).ready(function() {
                                         var start_column = response['run_info']['tracker']['start_column'];
                                         var stop_column = response['run_info']['tracker']['stop_column'];
 
-                                        var html = "<table class='table table-bordered table-hover'><thead><tr><th>Field</th><th>Range Min</th><th>Range Max</th><th>Column Min</th><th>Column Max</th><th>Rows Per Column</th><th>Plot Length</th><th>Row Width</th><th>Planting Spacing</th><th>Crop</th></tr></thead>";
-                                        html = html + "<tr><td>"+response['run_info']['field']['name']+"</td><td>"+response['run_info']['field']['range_min']+"</td><td>"+response['run_info']['field']['range_max']+"</td><td>"+response['run_info']['field']['column_min']+"</td><td>"+response['run_info']['field']['column_max']+"</td><td>"+response['run_info']['field']['rows_per_column']+"</td><td>"+response['run_info']['field']['plot_length']+"</td><td>"+response['run_info']['field']['row_width']+"</td><td>"+response['run_info']['field']['planting_spacing']+"</td><td>"+response['run_info']['field']['crop_name']+"</td></tr>";
-                                        html = html + "</thead></table>";
+                                        manage_drone_rover_plot_polygons_current_collection_field_name = response['run_info']['field']['name'];
 
-                                        html = html + "<table class='table table-bordered table-hover'><thead><tr><th>Collection</th><th>Start Range</th><th>Stop Range</th><th>Start Column</th><th>Stop Column</th></tr></thead>";
+                                        var html = "<table class='table table-bordered table-hover'><thead><tr><th>Field</th><th>Range Min</th><th>Range Max</th><th>Column Min</th><th>Column Max</th><th>Rows Per Column</th><th>Plot Length</th><th>Row Width</th><th>Planting Spacing</th><th>Crop</th></tr></thead><tbody>";
+                                        html = html + "<tr><td>"+manage_drone_rover_plot_polygons_current_collection_field_name+"</td><td>"+response['run_info']['field']['range_min']+"</td><td>"+response['run_info']['field']['range_max']+"</td><td>"+response['run_info']['field']['column_min']+"</td><td>"+response['run_info']['field']['column_max']+"</td><td>"+response['run_info']['field']['rows_per_column']+"</td><td>"+response['run_info']['field']['plot_length']+"</td><td>"+response['run_info']['field']['row_width']+"</td><td>"+response['run_info']['field']['planting_spacing']+"</td><td>"+response['run_info']['field']['crop_name']+"</td></tr>";
+                                        html = html + "</tbody></thead></table>";
+
+                                        html = html + "<table class='table table-bordered table-hover'><thead><tr><th>Collection</th><th>Start Range</th><th>Stop Range</th><th>Start Column</th><th>Stop Column</th></tr></thead><tbody>";
                                         html = html + "<tr><td>"+manage_drone_rover_plot_polygons_collection_number+"</td><td>"+start_range+"</td><td>"+stop_range+"</td><td>"+start_column+"</td><td>"+stop_column+"</td></tr>";
-                                        html = html + "</thead></table>";
+                                        html = html + "</tbody></thead></table>";
 
                                         html = html + "<div class='well well-sm'><div class='form-horizontal'><div class='form-group'><label class='col-sm-3 control-label'>Number Plots: </label><div class='col-sm-9'><input class='form-control' type='number' id='manage_drone_rover_plot_polygon_process_num_plots' /></div></div></div></div></div>";
 
@@ -439,7 +447,51 @@ jQuery(document).ready(function() {
         drawRoverPlotLinesFilteredImage();
         drawRoverPlotLinesFilteredSideSpanImage();
         drawRoverPlotLinesFilteredSideHeightImage();
+        evaluatePlotPolygonBoundaries();
+        drawRoverPlotPolygonAssignInput();
     }
+
+    function evaluatePlotPolygonBoundaries() {
+        manage_drone_rover_plot_polygons_plot_polygon_boundaries = [];
+
+        for (var i=0; i<manage_drone_rover_plot_polygons_num_plots; i++) {
+            manage_drone_rover_plot_polygons_plot_polygon_boundaries.push([
+                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i][0][0], manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[0][0][1]],
+                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i+1][0][0], manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[0][0][1]],
+                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i+1][0][0], manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[0][1][1]],
+                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i][0][0], manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[0][1][1]],
+                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i][0][0], manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[0][0][1]],
+            ]);
+        }
+        console.log(manage_drone_rover_plot_polygons_plot_polygon_boundaries);
+    }
+
+    function drawRoverPlotPolygonAssignInput() {
+        var html = "<table class='table table-bordered table-hover'><thead><tr><th>Field Name</th><th>Polygon Number</th><th>Plot Number</th></tr></thead><tbody>";
+        for (var i=0; i<manage_drone_rover_plot_polygons_num_plots; i++) {
+            html = html + "<tr><td>"+manage_drone_rover_plot_polygons_current_collection_field_name+"</td><td>"+i+"</td><td><input class='form-control input-sm' name='manage_drone_rover_plot_polgyons_assign_plot_number' data-polygon_number='"+i+"' /></td></tr>";
+        }
+        html = html + "</tbody></thead></table>";
+        html = html + "<button class='btn btn-primary' id='manage_drone_rover_plot_polgyons_assign_plot_number_submit' >Submit and Save Plot Polygons</button>";
+
+        jQuery('#drone_rover_plot_polygon_process_generated_polygons_table').html(html);
+    }
+
+    jQuery(document).on('click', '#manage_drone_rover_plot_polgyons_assign_plot_number_submit', function(){
+        if (manage_drone_rover_plot_polygons_num_plots < 1) {
+            alert('There must be atleast one plot! Increase the plot number!');
+            return false;
+        }
+        else {
+            plot_polygon_new_display = {};
+            jQuery('input[name="manage_drone_rover_plot_polgyons_assign_plot_number"]').each(function() {
+                var plot_number = jQuery(this).val();
+                var polygon_number = jQuery(this).data('polygon_number');
+
+                plot_polygon_new_display[plot_polygons_plot_numbers_plot_names[plot_number]] = drone_imagery_plot_polygons_display[polygon_number];
+            });
+        }
+    });
 
     var line = d3.line()
         .x(function(d) { return d[0]; })
@@ -472,6 +524,7 @@ jQuery(document).ready(function() {
         drawRoverPlotLinesFilteredImage();
         drawRoverPlotLinesFilteredSideSpanImage();
         drawRoverPlotLinesFilteredSideHeightImage();
+        evaluatePlotPolygonBoundaries();
     }
 
     function drawRoverPlotLinesFilteredImage() {
@@ -495,10 +548,10 @@ jQuery(document).ready(function() {
             imageGroup.append("path")
                 .datum(x)
                 .attr("fill", "none")
-                .attr("stroke", "red")
+                .attr("stroke", manage_drone_rover_plot_polygons_stroke_color)
                 .attr("stroke-linejoin", "round")
                 .attr("stroke-linecap", "round")
-                .attr("stroke-width", 5)
+                .attr("stroke-width", manage_drone_rover_plot_polygons_stroke_width)
                 .attr("line_index", i)
                 .attr("type", "vertical")
                 .attr("d", line);
@@ -506,7 +559,7 @@ jQuery(document).ready(function() {
             imageGroup.append("text")
                 .attr("x", x_pos)
                 .attr("y", 50)
-                .style('fill', "red")
+                .style('fill', manage_drone_rover_plot_polygons_stroke_color)
                 .style("font-size", "36px")
                 .style("font-weight", 500)
                 .text(i);
@@ -547,6 +600,7 @@ jQuery(document).ready(function() {
         drawRoverPlotLinesFilteredImage();
         drawRoverPlotLinesFilteredSideSpanImage();
         drawRoverPlotLinesFilteredSideHeightImage();
+        evaluatePlotPolygonBoundaries();
     }
 
     function drawRoverPlotLinesFilteredSideSpanImage() {
@@ -565,18 +619,18 @@ jQuery(document).ready(function() {
             imageGroup.append("path")
                 .datum(x)
                 .attr("fill", "none")
-                .attr("stroke", "red")
+                .attr("stroke", manage_drone_rover_plot_polygons_stroke_color)
                 .attr("stroke-linejoin", "round")
                 .attr("stroke-linecap", "round")
-                .attr("stroke-width", 5)
+                .attr("stroke-width", manage_drone_rover_plot_polygons_stroke_width)
                 .attr("line_index", i)
                 .attr("type", "vertical")
                 .attr("d", line);
 
             imageGroup.append("text")
                 .attr("x", x_pos)
-                .attr("y", 50)
-                .style('fill', "red")
+                .attr("y", manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[0][0][1]+70)
+                .style('fill', manage_drone_rover_plot_polygons_stroke_color)
                 .style("font-size", "36px")
                 .style("font-weight", 500)
                 .text(i);
@@ -588,10 +642,10 @@ jQuery(document).ready(function() {
             imageGroup.append("path")
                 .datum(x)
                 .attr("fill", "none")
-                .attr("stroke", "red")
+                .attr("stroke", manage_drone_rover_plot_polygons_stroke_color)
                 .attr("stroke-linejoin", "round")
                 .attr("stroke-linecap", "round")
-                .attr("stroke-width", 5)
+                .attr("stroke-width", manage_drone_rover_plot_polygons_stroke_width)
                 .attr("line_index", i)
                 .attr("type", "horizontal")
                 .attr("d", line);
@@ -632,6 +686,7 @@ jQuery(document).ready(function() {
         drawRoverPlotLinesFilteredImage();
         drawRoverPlotLinesFilteredSideSpanImage();
         drawRoverPlotLinesFilteredSideHeightImage();
+        evaluatePlotPolygonBoundaries();
     }
 
     function drawRoverPlotLinesFilteredSideHeightImage() {
@@ -657,10 +712,10 @@ jQuery(document).ready(function() {
             imageGroup.append("path")
                 .datum(lines_horizontal_display)
                 .attr("fill", "none")
-                .attr("stroke", "red")
+                .attr("stroke", manage_drone_rover_plot_polygons_stroke_color)
                 .attr("stroke-linejoin", "round")
                 .attr("stroke-linecap", "round")
-                .attr("stroke-width", 5)
+                .attr("stroke-width", manage_drone_rover_plot_polygons_stroke_width)
                 .attr("line_index", i)
                 .attr("type", "horizontal")
                 .attr("d", line);

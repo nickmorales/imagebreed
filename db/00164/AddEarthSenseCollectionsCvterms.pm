@@ -77,6 +77,9 @@ sub patch {
         ],
         'experiment_type' => [
             'field_trial_drone_runs_in_same_rover_event'
+        ],
+        'project_relationship' => [
+            'drone_run_collection_on_drone_run'
         ]
     };
 

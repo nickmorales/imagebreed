@@ -137,6 +137,7 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
     my $drone_run_camera_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_type', 'project_property')->cvterm_id();
     my $drone_run_related_cvterms_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_related_time_cvterms_json', 'project_property')->cvterm_id();
     my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
+    my $project_collection_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_collection_on_drone_run', 'project_relationship')->cvterm_id();
     my $field_trial_drone_runs_in_same_rover_event_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'field_trial_drone_runs_in_same_rover_event', 'experiment_type')->cvterm_id();
     my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_rover', 'stock_type')->cvterm_id();
     my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
@@ -364,9 +365,12 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
             return {error => 'Could not read your zipfile. Is it .zip format?</br></br>'};
         }
 
+        my $iterator = 0;
         my $is_first_rover_event = 1;
         my $earthsense_collections = {};
         foreach my $drone_run_id (@selected_drone_run_ids) {
+            my $drone_run_info = $selected_drone_run_infos[$iterator];
+            my $drone_run_name = $drone_run_info->{drone_run_name};
 
             if ($is_first_rover_event) {
 
@@ -554,6 +558,26 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
             });
             $earthsense_collections_prop->value(encode_json $earthsense_collections);
             $earthsense_collections_prop->update();
+
+            while (my ($collection_number, $collection_file_obj) = each %$earthsense_collections) {
+
+                my $drone_run_collection_projectprops = [
+                    {type_id => $design_cvterm_id, value => 'drone_run_rover_collection'},
+                    {type_id => $earthsense_collections_cvterm_id, value => encode_json $earthsense_collections->{$collection_number} }
+                ];
+
+                my $collection_project_rs = $schema->resultset("Project::Project")->create({
+                    name => $drone_run_name."_".$collection_number,
+                    description => "Ground Rover Collection: ".$collection_number.". Rover type: ".$new_drone_run_type.". Data Type: ".$new_drone_run_data_type,
+                    projectprops => $drone_run_collection_projectprops,
+                    project_relationship_subject_projects => [{type_id => $project_collection_relationship_type_id, object_project_id => $drone_run_id}],
+                });
+                my $collection_drone_run_id = $collection_project_rs->project_id();
+
+                $h_priv->execute($private_company_id, $company_is_private, $collection_drone_run_id);
+            }
+
+            $iterator++;
         }
 
         $c->stash->{message} = "Successfully uploaded! Go to <a href='/breeders/drone_rover'>Ground Rover Data</a>";

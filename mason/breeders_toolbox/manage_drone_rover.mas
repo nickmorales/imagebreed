@@ -31,13 +31,6 @@
     </div>
 
     <&| /util/workflow.mas, id=> "manage_drone_rover_plot_polygon_process_workflow" &>
-        <&| /util/workflow.mas:step, title=> "Intro" &>
-            <& /page/page_title.mas, title=>"This workflow will guide you through assigning plot polygons to rover point clouds" &>
-            <br/><br/>
-            <center>
-            <button class="btn btn-primary" onclick="Workflow.complete(this); return false;">Go to Next Step</button>
-            </center>
-        </&>
         <&| /util/workflow.mas:step, title=> "Plot Polygons" &>
             <& /page/page_title.mas, title=>"Define plot polygons relative to the field layout" &>
 
@@ -46,10 +39,7 @@
             <div class="well well-sm">
                 <div id="drone_rover_plot_polygons_process_top_section"></div>
 
-                <button id="drone_imagery_standard_process_plot_polygons_clear" class="btn btn-danger">Clear All Polygons and Start Over Templating</button>
-                <br/><br/>
-                <button id="drone_imagery_standard_process_plot_polygons_get_distance" class="btn btn-default">Find Distance Between Points</button>
-                <button id="drone_imagery_standard_process_plot_polygons_switch_image_url" class="btn btn-default">Switch Between Original and Background Removed Image</button>
+                <b>Specify Number of Plots, then Drag Lines to Define Plot Polygons, and finally Assign Plot Numbers to Polygons</b>
             </div>
 
             <div id="drone_rover_plot_polygons_process_load_div">
@@ -62,62 +52,7 @@
 
             <hr>
             <div class="well well-sm">
-
-                <div id="drone_imagery_standard_process_generated_polygons_table_header_div"></div>
-
-                <div class="panel panel-default"><div class="panel-body">
-                    <h3>(Option 2)</h3>
-
-                    <&| /page/info_section.mas, title => 'Upload Spreadsheet File to Assign Plot Numbers to Polygon Numbers', collapsible=>1, collapsed => 1, subtitle=> 'Upload a spreadsheet file assigning plot numbers to polygon numbers.' &>
-                        <div class="well well-sm">
-                            <div id="drone_imagery_standard_process_generated_polygons_spreadsheet_div">
-                                <div class="panel panel-default">
-                                    <div class="panel-body">
-                                        <ul>
-                                            <li>If Option 1 is unable to fit your field experiments, Option 2 and 3 enable greater flexibility.</li>
-                                            <li>Upload an <b>XLS</b> file with the following three columns: <b>polygon_number, plot_number, field_trial</b>
-                                                <ul>
-                                                    <li><b>polygon_number</b>: The polygon number generated in the templating process. The polygon numbers are visible in the templated image.</li>
-                                                    <li><b>plot_number</b>: The plot number to assign to the polygon number. Field layouts are visible at the bottom of this page, where available plot numbers can be determined.</li>
-                                                    <li><b>field_trial</b>: The field trial for the plot number being assigned. The same plot number (e.g. 101) can exist in different field trials, so this column differentiates plot numbers among field trials.</li>
-                                                </ul>
-                                            </li>
-                                            <li>If you want to skip a generated polygon number, simply do not include it in the uploaded spreadsheet.</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="panel panel-default">
-                                    <div class="panel-body">
-                                        <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="drone_imagery_plot_polygons_spreadsheet_upload_form" name="drone_imagery_plot_polygons_spreadsheet_upload_form">
-                                            <div class="form-group form-group-sm">
-                                                <label class="col-sm-3 control-label">Spreadsheet Upload (.xls): </label>
-                                                <div class="col-sm-9">
-                                                    <input class="form-control" id="drone_imagery_plot_polygons_spreadsheet_upload" name="drone_imagery_plot_polygons_spreadsheet_upload" type="file" encoding="multipart/form-data" />
-                                                    <input id="drone_imagery_plot_polygons_spreadsheet_upload_stock_polygons" name="drone_imagery_plot_polygons_spreadsheet_upload_stock_polygons" type="hidden" />
-                                                </div>
-                                            </div>
-                                        </form>
-
-                                        <div id="drone_imagery_plot_polygons_spreadsheet_upload_form_response_div"></div>
-
-                                        <button class="btn btn-primary" id="drone_imagery_plot_polygons_spreadsheet_upload_button" name="drone_imagery_plot_polygons_spreadsheet_upload_button">Generate Assignments (Does Not Save)</button>&nbsp;&nbsp;&nbsp;<button class="btn btn-primary" name="drone_imagery_standard_process_plot_polygons_submit_bottom">Finish and Save Polygons To Plots</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </&>
-                </div></div>
-
-                <div class="panel panel-default"><div class="panel-body">
-                    <h3>(Option 3)</h3>
-
-                    <&| /page/info_section.mas, title => 'Manually Assign Plot Numbers to Polygon Numbers', collapsible=>1, collapsed => 1, subtitle=> 'Table input for manually assigning plot numbers to polygon numbers.' &>
-                        <div class="well well-sm">
-                            <div id="drone_imagery_standard_process_generated_polygons_table">First Complete the Templating Above</div>
-                        </div>
-                    </&>
-                </div></div>
-
+                <div id="drone_rover_plot_polygon_process_generated_polygons_table">First Complete the Templating Above</div>
             </div>
 
             <hr>
@@ -873,7 +808,7 @@ jQuery(document).ready(function() {
         return false;
     });
 
-    jQuery('#upload_drone_rover_form').submit(function() {
+    jQuery('#upload_drone_rover_earthsense_lidar_form').submit(function() {
         jQuery('#working_msg').html('This can potentially take time to complete. Ensure the file(s) have completely transferred to the server before closing this tab.');
         jQuery('#working_modal').modal('show');
         return true;

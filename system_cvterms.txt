@@ -199,6 +199,7 @@ project_relationship	genotyping_trial_from_field_trial	For linking genotyping pl
 project_relationship	crossing_trial_from_field_trial	For linking crossing trials to the source field trials 	4/6/18	nm529	00093
 project_relationship	drone_run_on_field_trial	For linking drone image runs to field trials 	9/18/18	nm529	00103
 project_relationship	drone_run_band_on_drone_run	For linking drone image runs bands to drone runs 	10/5/18	nm529	00103
+project_relationship	drone_run_collection_on_drone_run	For linking drone rover collections to drone runs 	10/31/22	nm529	00164
 project_relationship	sampling_trial_from_field_trial	For linking sampling trial to field trials 	11/25/20	nm529	00132
 project_relationship	genotyping_project_and_plate_relationship	For linking genotyping project and genotyping plates 	08/22/22	tt15	00162
 project_table_type	field_trial_project_table_type	Saving a field trial in project table 	04/01/22	nm529	00160
