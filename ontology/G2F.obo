@@ -291,3 +291,56 @@ id: G2F:0000048
 name: Silking [date]
 def: "Date of silking in MM/DD/YY format." []
 relationship: variable_of G2F:0000001
+
+[Term]
+id: G2F:0000049
+name: Point Cloud Statistics Traits
+is_a: G2F:0000000
+
+[Term]
+id: G2F:0000050
+name: Average Point Height
+def: "Average height of all points in the point cloud, moving from ground level toward sky." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000051
+name: Average Point Length
+def: "Average length of all points in the point cloud, moving in direction parallel to planting order in plot." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000052
+name: Average Point Span
+def: "Average span of all points in the point cloud, moving in direction orthogonal to planting order in plot." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000053
+name: Average 3D Volume
+def: "3D volume of plot using average point height, length, and span." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000054
+name: Average Height Density
+def: "The average density of points along the height axis, moving from ground level toward sky." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000055
+name: Average Span Density
+def: "The average density of points along the length axis, moving in direction parallel to planting order in plot." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000056
+name: Average Span Density
+def: "The average density of points along the span axis, moving in direction orthogonal to planting order in plot." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000057
+name: Average 3D Density
+def: "The average density of points in plot volume using average 3D volume and total number of points." []
+relationship: variable_of G2F:0000049

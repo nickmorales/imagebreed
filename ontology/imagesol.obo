@@ -1772,3 +1772,14 @@ id: ISOL:0000378
 name: Fourier Transform High Pass Filter 40 Thresholded RedEdge3 Denoised Image
 def: "" []
 relationship: is_a ISOL:0000101
+
+[Term]
+id: ISOL:0010000
+name: Point Cloud Processed Type
+is_a: ISOL:0000000
+
+[Term]
+id: ISOL:0010001
+name: EarthSense Filtered Point Cloud
+def: "" []
+relationship: is_a ISOL:0010000
