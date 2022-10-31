@@ -210,7 +210,7 @@ sub drone_rover_summary_top_GET : Args(0) {
                     my $collect_obj = $collection_times{$collection_time};
                     my $collection_number = $collect_obj->{collection_number};
                     my $collect = $collect_obj->{collect};
-                    print STDERR Dumper $collect;
+                    # print STDERR Dumper $collect;
 
                     my $collect_plot_polygons = $collect->{plot_polygons};
 

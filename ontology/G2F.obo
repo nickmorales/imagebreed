@@ -329,7 +329,7 @@ relationship: variable_of G2F:0000049
 
 [Term]
 id: G2F:0000055
-name: Average Span Density
+name: Average Length Density
 def: "The average density of points along the length axis, moving in direction parallel to planting order in plot." []
 relationship: variable_of G2F:0000049
 
