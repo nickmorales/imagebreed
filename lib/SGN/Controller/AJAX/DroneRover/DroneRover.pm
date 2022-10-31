@@ -134,6 +134,44 @@ sub drone_rover_get_collection_GET : Args(0) {
     $c->stash->{rest} = $collection;
 }
 
+sub check_maximum_plot_polygon_processes : Path('/api/drone_rover/check_maximum_plot_polygon_processes') : ActionClass('REST') { }
+sub check_maximum_plot_polygon_processes_POST : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_rover($c, 0, 0, 0);
+
+    my $process_indicator_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'drone_rover_plot_polygon_in_progress', 'project_property')->cvterm_id();
+
+    my $rover_process_in_progress_count = $bcs_schema->resultset('Project::Projectprop')->search({type_id=>$process_indicator_cvterm_id, value=>1})->count;
+    print STDERR Dumper $rover_process_in_progress_count;
+    if ($rover_process_in_progress_count >= $c->config->{drone_rover_max_plot_polygon_processes}) {
+        $c->stash->{rest} = { error => "The maximum number of rover plot polygon processes has been reached on this server! Please wait until one of those processes finishes and try again." };
+        $c->detach();
+    }
+    $c->stash->{rest} = { success => 1 };
+}
+
+sub drone_rover_plot_polygons_process_apply : Path('/api/drone_rover/plot_polygons_process_apply') : ActionClass('REST') { }
+sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    print STDERR Dumper $c->req->params();
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
+    my $drone_run_project_id = $c->req->param('drone_run_project_id');
+    my $drone_run_collection_number = $c->req->param('drone_run_collection_number');
+    my $phenotype_types = decode_json $c->req->param('phenotype_types');
+    my $field_trial_id = $c->req->param('field_trial_id');
+    my $polygon_template_metadata = decode_json $c->req->param('polygon_template_metadata');
+    my $polygons_to_plot_names = decode_json $c->req->param('polygons_to_plot_names');
+    my $private_company_id = $c->req->param('company_id');
+    my $private_company_is_private = $c->req->param('is_private');
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_rover($c, 'submitter', $private_company_id, 'submitter_access');
+
+    $c->stash->{rest} = {};
+}
+
 sub _check_user_login_drone_rover {
     my $c = shift;
     my $check_priv = shift;

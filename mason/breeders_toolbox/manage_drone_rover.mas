@@ -92,62 +92,31 @@
 
         </&>
         <&| /util/workflow.mas:step, title=> "Phenotypes" &>
-            <& /page/page_title.mas, title=>"Calculate phenotypes for all plot polygon images" &>
+            <& /page/page_title.mas, title=>"Calculate phenotypes for all 3D plot polygons" &>
 
             <form class="form-horizontal">
                 <div class="well well-sm">
                     <div class="form-group form-group-sm">
-                        <label class="col-sm-4 control-label">Zonal Statistics to Calculate and Save in Database: </label>
+                        <label class="col-sm-4 control-label">Statistics to Calculate and Save in Database: </label>
                         <div class="col-sm-8">
-                            <input name="drone_imagery_standard_process_phenotypes_select" value="zonal" type="checkbox" checked disabled> Zonal Statistics: nonzero_pixel_count, total_pixel_sum, mean_pixel_value, harmonic_mean_value, median_pixel_value, variance_pixel_value, stdev_pixel_value, pstdev_pixel_value, min_pixel_value, max_pixel_value, minority_pixel_value, minority_pixel_count, majority_pixel_value, majority_pixel_count, pixel_variety_count <br/>
-                        </div>
-                    </div>
-                </div>
-                <div class="well well-sm">
-                    <input type="checkbox" id="drone_imagery_standard_process_phenotypes_margin_button">&nbsp;&nbsp;&nbsp;&nbsp; Change Margin Values
-                    <hr>
-
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div class="form-group form-group-sm">
-                                <label class="col-sm-8 control-label">Buffer Margin When Calculating Phenotypes On Top/Bottom of Plot Polygons (%): </label>
-                                <div class="col-sm-4">
-                                    <input class="form-control" id="drone_imagery_standard_process_phenotypes_margin_top_bottom" name="drone_imagery_standard_process_phenotypes_margin_top_bottom" type="number" value=5 disabled/>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group form-group-sm">
-                                <label class="col-sm-8 control-label">Buffer Margin When Calculating Phenotypes On Left/Right of Plot Polygons (%): </label>
-                                <div class="col-sm-4">
-                                    <input class="form-control" id="drone_imagery_standard_process_phenotypes_margin_left_right" name="drone_imagery_standard_process_phenotypes_margin_left_right" type="number" value=5 disabled/>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div id="drone_imagery_standard_process_phenotypes_margin_visual_div_svg"><div class="well well-sm"><p>LOADING...Please wait...</p></div></div>
-                </div>
-                <div class="well well-sm">
-                    <div class="form-group form-group-sm">
-                        <label class="col-sm-9 control-label">Apply same standard process to all uploaded imaging events that use the same camera rig (Only applicable for static camera rigs, such as in a greenhouse or controlled environment): </label>
-                        <div class="col-sm-3">
-                            <select class="form-control" id="drone_imagery_standard_process_camera_rig_apply_select">
-                                <option value="No">No</option>
-                                <option value="Yes">Yes</option>
-                            </select>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="average_point_height" type="checkbox" checked disabled> Average Point Height-wise <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="average_point_length" type="checkbox" checked disabled> Average Point Length-wise <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="average_point_span" type="checkbox" checked disabled> Average Point Span-wise <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="average_point_3d_volume" type="checkbox" checked disabled> Average Point 3D Volume <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="height_density" type="checkbox" checked disabled> Height-wise Density <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="length_density" type="checkbox" checked disabled> Length-wise Density <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="span_density" type="checkbox" checked disabled> Span-wise Density <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="3d_density" type="checkbox" checked disabled> 3D Density <br/>
                         </div>
                     </div>
                 </div>
             </form>
             <br/>
 
-            <div id="drone_imagery_standard_process_week_term_div"></div>
+            <div id="drone_rover_plot_polygon_process_week_term_div"></div>
 
             <center>
-            <button type="button" class="btn btn-info" id="manage_drone_imagery_standard_process_phenotypes_step">Finish</button>
+            <button type="button" class="btn btn-info" id="manage_drone_rover_plot_polygon_process_phenotypes_step">Finish</button>
             </center>
         </&>
     </&>
@@ -458,6 +427,28 @@
 </div>
 
 <& /breeders_toolbox/drone_imagery/calculate_gdd_cp_dialogs.mas &>
+
+<div class="modal fade" id="drone_rover_plot_polygons_process_complete_dialog" name="drone_rover_plot_polygons_process_complete_dialog" tabindex="-1" role="dialog" aria-labelledby="droneRoverPlotPolygonProcessCompleteDialog" data-backdrop="static">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="droneRoverPlotPolygonProcessCompleteDialog">Point Cloud Plot Polygon Process Complete</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <p>
+                <span class="ui-icon ui-icon-circle-check" style="float: left; margin: 0 7px 50px 0;"></span>
+                It will take time to finish processing your ground rover event and calculating phenotypes for all 3D plot polygons. Once it is complete, the "Processing Icon" on the Manage->Ground Rover page will disappear for the rover event.
+            </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Finish</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 
