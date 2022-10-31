@@ -25,6 +25,7 @@ jQuery(document).ready(function() {
     var manage_drone_rover_plot_polygons_drone_run_project_id;
     var manage_drone_rover_plot_polygons_drone_run_project_name;
     var manage_drone_rover_plot_polygons_collection_number;
+    var manage_drone_rover_plot_polygons_collection_project_id;
     var manage_drone_rover_plot_polygons_original_image_id;
     var manage_drone_rover_plot_polygons_filtered_image_id;
     var manage_drone_rover_plot_polygons_filtered_side_span_image_id;
@@ -82,6 +83,7 @@ jQuery(document).ready(function() {
         manage_drone_rover_plot_polygons_filtered_side_span_image_id = jQuery(this).data('filtered_side_span_image_id');
         manage_drone_rover_plot_polygons_filtered_side_height_image_id = jQuery(this).data('filtered_side_height_image_id');
         manage_drone_rover_plot_polygons_collection_number = jQuery(this).data('collection_number');
+        manage_drone_rover_plot_polygons_collection_project_id = jQuery(this).data('collection_project_id');
 
         manage_drone_rover_plot_polygons_drone_run_project_ids_in_same_orthophoto = [];
         manage_drone_rover_plot_polygons_drone_run_project_names_in_same_orthophoto = [];
@@ -897,6 +899,7 @@ jQuery(document).ready(function() {
                             data: {
                                 'drone_run_project_id': manage_drone_rover_plot_polygons_drone_run_project_id,
                                 'drone_run_collection_number': manage_drone_rover_plot_polygons_collection_number,
+                                'drone_run_collection_project_id':manage_drone_rover_plot_polygons_collection_project_id,
                                 'phenotype_types': JSON.stringify(selected),
                                 'field_trial_id':manage_drone_rover_plot_polygons_field_trial_id,
                                 'polygon_template_metadata':JSON.stringify(manage_drone_rover_template),

@@ -552,13 +552,6 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                 $is_first_rover_event = 0;
             }
 
-            my $earthsense_collections_prop = $schema->resultset("Project::Projectprop")->find_or_create({
-                project_id => $drone_run_id,
-                type_id => $earthsense_collections_cvterm_id
-            });
-            $earthsense_collections_prop->value(encode_json $earthsense_collections);
-            $earthsense_collections_prop->update();
-
             while (my ($collection_number, $collection_file_obj) = each %$earthsense_collections) {
 
                 my $drone_run_collection_projectprops = [
@@ -575,7 +568,16 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                 my $collection_drone_run_id = $collection_project_rs->project_id();
 
                 $h_priv->execute($private_company_id, $company_is_private, $collection_drone_run_id);
+
+                $collection_file_obj->{project_id} = $collection_drone_run_id;
             }
+
+            my $earthsense_collections_prop = $schema->resultset("Project::Projectprop")->find_or_create({
+                project_id => $drone_run_id,
+                type_id => $earthsense_collections_cvterm_id
+            });
+            $earthsense_collections_prop->value(encode_json $earthsense_collections);
+            $earthsense_collections_prop->update();
 
             $iterator++;
         }

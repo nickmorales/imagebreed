@@ -161,6 +161,7 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
     my $drone_run_project_id = $c->req->param('drone_run_project_id');
     my $drone_run_collection_number = $c->req->param('drone_run_collection_number');
+    my $drone_run_collection_project_id = $c->req->param('drone_run_collection_project_id');
     my $phenotype_types = decode_json $c->req->param('phenotype_types');
     my $field_trial_id = $c->req->param('field_trial_id');
     my $polygon_template_metadata = decode_json $c->req->param('polygon_template_metadata');
