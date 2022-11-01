@@ -20,7 +20,6 @@ use SGN::Model::Cvterm;
 use DateTime;
 use CXGN::UploadFile;
 use SGN::Image;
-use CXGN::DroneImagery::ImagesSearch;
 use URI::Encode qw(uri_encode uri_decode);
 use File::Basename qw | basename dirname|;
 use File::Slurp qw(write_file);
@@ -31,31 +30,17 @@ use CXGN::Calendar;
 use Image::Size;
 use Text::CSV;
 use CXGN::Phenotypes::StorePhenotypes;
-use CXGN::Phenotypes::PhenotypeMatrix;
-use CXGN::BrAPI::FileResponse;
 use CXGN::Onto;
-use CXGN::Tag;
-use CXGN::DroneImagery::ImageTypes;
 use Time::Piece;
 use POSIX;
 use Math::Round;
 use Parallel::ForkManager;
-use CXGN::NOAANCDC;
-use CXGN::BreederSearch;
-use CXGN::Phenotypes::SearchFactory;
-use CXGN::BreedersToolbox::Accessions;
-use CXGN::Genotype::GRM;
-use CXGN::Pedigree::ARM;
-use CXGN::AnalysisModel::SaveModel;
-use CXGN::AnalysisModel::GetModel;
-use Math::Polygon;
-use Math::Trig;
 use List::MoreUtils qw(first_index);
 use List::Util qw(sum);
 use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
-use Spreadsheet::WriteExcel;
-use Spreadsheet::ParseExcel;
 use CXGN::Location;
+use CXGN::Trial;
+use CXGN::Trial::TrialLayoutDownload;
 
 BEGIN { extends 'Catalyst::Controller::REST' }
 
@@ -133,6 +118,16 @@ sub drone_rover_get_collection_GET : Args(0) {
     my $collections = decode_json $prop_json;
     my $collection = $collections->{$collection_number} || {};
 
+    if (exists($collection->{plot_polygons})) {
+        foreach my $stock_id (sort keys %{$collection->{plot_polygons}} ) {
+            my $file_id = $collection->{plot_polygons}->{$stock_id}->{file_id};
+            my $stock = $bcs_schema->resultset("Stock::Stock")->find({stock_id => $stock_id});
+            my $stock_name = $stock->uniquename;
+
+            push @{$collection->{plot_polygons_names}}, [$stock_name, $file_id];
+        }
+    }
+
     $c->stash->{rest} = $collection;
 }
 
@@ -161,6 +156,7 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     print STDERR Dumper $c->req->params();
     my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
+    my $phenome_schema = $c->dbic_schema('CXGN::Phenome::Schema');
     my $drone_run_project_id = $c->req->param('drone_run_project_id');
     my $drone_run_collection_number = $c->req->param('drone_run_collection_number');
     my $drone_run_collection_project_id = $c->req->param('drone_run_collection_project_id');
@@ -173,6 +169,35 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_rover($c, 'submitter', $private_company_id, 'submitter_access');
 
     my $earthsense_collections_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'earthsense_ground_rover_collections_archived', 'project_property')->cvterm_id();
+    my $project_md_file_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'rover_collection_filtered_plot_point_cloud', 'project_md_file')->cvterm_id();
+    my $stock_md_file_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'stock_filtered_plot_point_cloud', 'stock_md_file')->cvterm_id();
+
+    my %stock_ids_all;
+    foreach my $stock_name (keys %$polygons_to_plot_names) {
+        my $stock = $bcs_schema->resultset("Stock::Stock")->find({uniquename => $stock_name});
+        if (!$stock) {
+            $c->stash->{rest} = {error=>'Error: Stock name '.$stock_name.' does not exist in the database!'};
+            $c->detach();
+        }
+        $stock_ids_all{$stock_name} = $stock->stock_id;
+    }
+
+    my $project = CXGN::Trial->new({ bcs_schema => $bcs_schema, trial_id => $drone_run_project_id });
+    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto,  $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, $related_rover_event_collections, $related_rover_event_collections_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
+    print STDERR Dumper $related_rover_event_collections;
+    print STDERR Dumper $related_rover_event_collections_hash;
+
+    my @all_field_trial_ids = ($field_trial_id);
+    push @all_field_trial_ids, @$field_trial_ids_in_same_orthophoto;
+
+    my %all_field_trial_layouts;
+    foreach my $trial_id (@all_field_trial_ids) {
+        my $trial_layout = CXGN::Trial::TrialLayout->new({schema => $bcs_schema, trial_id => $trial_id, experiment_type => 'field_layout'});
+        my $design = $trial_layout->get_design();
+        foreach my $p (values %$design) {
+            $all_field_trial_layouts{$p->{plot_id}} = $related_rover_event_collections_hash->{$trial_id}->{$drone_run_collection_number};
+        }
+    }
 
     my $image_width = $polygon_template_metadata->{image_width};
     my $image_height = $polygon_template_metadata->{image_height};
@@ -183,18 +208,148 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     my ($prop_json) = $h->fetchrow_array();
     my $earthsense_collection = decode_json $prop_json;
     $h = undef;
+    # print STDERR Dumper $earthsense_collection;
+    my $point_cloud_file = $earthsense_collection->{processing}->{point_cloud_side_filtered_output};
 
-    
+    my $dir = $c->tempfiles_subdir('/drone_rover_plot_polygons');
+    my $bulk_input_temp_file = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_rover_plot_polygons/bulkinputXXXX');
 
+    my @plot_polygons_cut;
+
+    open(my $F, ">", $bulk_input_temp_file) || die "Can't open file ".$bulk_input_temp_file;
     while (my($plot_name, $polygon) = each %$polygons_to_plot_names) {
+        my $stock_id = $stock_ids_all{$plot_name};
+
         my $x1_ratio = $polygon->[0]->[0]/$image_width;
         my $y1_ratio = $polygon->[0]->[1]/$image_height;
         my $x2_ratio = $polygon->[1]->[0]/$image_width;
         my $y2_ratio = $polygon->[3]->[1]/$image_height;
 
+        my $plot_polygons_temp_file = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_rover_plot_polygons/plotpointcloudXXXX');
+        $plot_polygons_temp_file .= '.xyz';
+
+        print $F "$stock_id\t$plot_polygons_temp_file\t$x1_ratio\t$y1_ratio\t$x2_ratio\t$y2_ratio\n";
+
+        push @plot_polygons_cut, {
+            stock_id => $stock_id,
+            temp_file => $plot_polygons_temp_file,
+            polygon_ratios => {
+                x1 => $x1_ratio,
+                x2 => $x2_ratio,
+                y1 => $y1_ratio,
+                y2 => $y2_ratio
+            }
+        };
+    }
+    close($F);
+
+    my $lidar_point_cloud_plot_polygons_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/PointCloudProcess/PointCloudPlotPolygons.py --pointcloud_xyz_file $point_cloud_file --plot_polygons_ratio_file $bulk_input_temp_file ";
+    print STDERR $lidar_point_cloud_plot_polygons_cmd."\n";
+    my $lidar_point_cloud_plot_polygons_status = system($lidar_point_cloud_plot_polygons_cmd);
+
+    my $time = DateTime->now();
+    my $timestamp = $time->ymd()."_".$time->hms();
+
+    my $q_project_md_file = "INSERT INTO phenome.project_md_file (project_id, file_id, type_id) VALUES (?,?,?);";
+    my $h_project_md_file = $bcs_schema->storage->dbh()->prepare($q_project_md_file);
+
+    my $q_stock_md_file = "INSERT INTO phenome.stock_md_file (stock_id, file_id, type_id) VALUES (?,?,?);";
+    my $h_stock_md_file = $bcs_schema->storage->dbh()->prepare($q_stock_md_file);
+
+    my $md_row = $metadata_schema->resultset("MdMetadata")->create({create_person_id => $user_id});
+
+    my %saved_point_cloud_files;
+    foreach (@plot_polygons_cut) {
+        my $stock_id = $_->{stock_id};
+        my $temp_file = $_->{temp_file};
+        my $polygon_ratios = $_->{polygon_ratios};
+        my $drone_run_project_id = $all_field_trial_layouts{$stock_id}->{drone_run_project_id};
+        my $project_collection_id = $all_field_trial_layouts{$stock_id}->{drone_run_collection_project_id};
+        my $collection_number = $all_field_trial_layouts{$stock_id}->{drone_run_collection_number};
+
+        my $temp_filename = basename($temp_file);
+        my $uploader = CXGN::UploadFile->new({
+            tempfile => $temp_file,
+            subdirectory => "earthsense_rover_collections_plot_polygons",
+            second_subdirectory => "$drone_run_collection_project_id",
+            archive_path => $c->config->{archive_path},
+            archive_filename => $temp_filename,
+            timestamp => $timestamp,
+            user_id => $user_id,
+            user_role => $user_role
+        });
+        my $archived_filename_with_path = $uploader->archive();
+        my $md5 = $uploader->get_md5($archived_filename_with_path);
+        if (!$archived_filename_with_path) {
+            $c->stash->{rest} = {error=>'Could not archive '.$temp_filename.'!'};
+            $c->detach();
+        }
+
+        my $file_row = $metadata_schema->resultset("MdFiles")->create({
+            basename => basename($archived_filename_with_path),
+            dirname => dirname($archived_filename_with_path),
+            filetype => "earthsense_rover_collections_plot_polygon_point_clouds",
+            md5checksum => $md5->hexdigest(),
+            metadata_id => $md_row->metadata_id()
+        });
+        my $plot_polygon_file_id = $file_row->file_id();
+
+        $h_project_md_file->execute($project_collection_id, $plot_polygon_file_id, $project_md_file_cvterm_id);
+        $h_stock_md_file->execute($stock_id, $plot_polygon_file_id, $stock_md_file_cvterm_id);
+
+        $saved_point_cloud_files{$drone_run_project_id}->{$project_collection_id}->{$collection_number}->{$stock_id} = {
+            file_id => $plot_polygon_file_id,
+            polygon_ratios => $polygon_ratios
+        };
+    }
+    print STDERR Dumper \%saved_point_cloud_files;
+
+    $h_project_md_file = undef;
+    $h_stock_md_file = undef;
+
+    while (my($drone_run_project_id, $o1) = each %saved_point_cloud_files) {
+
+        my $earthsense_collections_drone_run_projectprop_rs = $bcs_schema->resultset("Project::Projectprop")->search({
+            project_id => $drone_run_project_id,
+            type_id => $earthsense_collections_cvterm_id
+        });
+        if ($earthsense_collections_drone_run_projectprop_rs->count > 1) {
+            $c->stash->{rest} = {error => "There should not be more than one EarthSense collections projectprop!"};
+            $c->detach();
+        }
+        my $earthsense_collections_drone_run_projectprop_rs_first = $earthsense_collections_drone_run_projectprop_rs->first;
+        my $earthsense_collections_drone_run = decode_json $earthsense_collections_drone_run_projectprop_rs_first->value();
+
+        while (my($drone_run_collection_project_id, $o2) = each %$o1) {
+            while (my($drone_run_collection_number, $plot_polygons) = each %$o2) {
+
+                my $earthsense_collections_projectprop_rs = $bcs_schema->resultset("Project::Projectprop")->search({
+                    project_id => $drone_run_collection_project_id,
+                    type_id => $earthsense_collections_cvterm_id
+                });
+                if ($earthsense_collections_projectprop_rs->count > 1) {
+                    $c->stash->{rest} = {error => "There should not be more than one EarthSense collections projectprop!"};
+                    $c->detach();
+                }
+                my $earthsense_collections_projectprop_rs_first = $earthsense_collections_projectprop_rs->first;
+                my $earthsense_collections = decode_json $earthsense_collections_projectprop_rs_first->value();
+
+                $earthsense_collections->{plot_polygons} = $plot_polygons;
+                $earthsense_collections->{polygon_template_metadata} = $polygon_template_metadata;
+
+                $earthsense_collections_projectprop_rs_first->value(encode_json $earthsense_collections);
+                $earthsense_collections_projectprop_rs_first->update();
+
+                $earthsense_collections_drone_run->{$drone_run_collection_number}->{plot_polygons} = $plot_polygons;
+                $earthsense_collections_drone_run->{$drone_run_collection_number}->{polygon_template_metadata} = $polygon_template_metadata;
+            }
+        }
+
+        $earthsense_collections_drone_run_projectprop_rs_first->value(encode_json $earthsense_collections_drone_run);
+        $earthsense_collections_drone_run_projectprop_rs_first->update();
     }
 
-    $c->stash->{rest} = {};
+    $c->stash->{rest} = \%saved_point_cloud_files;
 }
 
 sub _check_user_login_drone_rover {

@@ -24,6 +24,7 @@ jQuery(document).ready(function(){
 });
 
 function manageDroneRoverEventDisplay(project_drone_run_id, collection_number, original_image_id, filtered_image_id){
+
     jQuery.ajax({
         url : '/ajax/image/'+original_image_id,
         success: function(response){
@@ -36,7 +37,26 @@ function manageDroneRoverEventDisplay(project_drone_run_id, collection_number, o
                     console.log(response);
                     html = html + '<a href="/image/view/'+filtered_image_id+'" target="_blank">'+ response.medium_tag+'</a>';
 
-                    jQuery('#drone_run_rover_accordian_drone_run_band_div_'+project_drone_run_id+'_'+collection_number).html(html);
+                    jQuery.ajax({
+                        url : '/api/drone_rover/get_collection?drone_run_project_id='+project_drone_run_id+'&collection_number='+collection_number,
+                        success: function(response){
+                            console.log(response);
+
+                            if (response.plot_polygons_names) {
+                                html = html + '<hr><h4>Plot Point Clouds</h4>';
+
+                                for (var i=0; i<response.plot_polygons_names.length; i++) {
+                                    html = html + '<button class="btn btn-sm btn-default" name="drone_rover_view_plot_point_cloud" data-file_id="'+response.plot_polygons_names[i][1]+'" >'+response.plot_polygons_names[i][0]+'</button>'
+                                }
+                            }
+
+                            jQuery('#drone_run_rover_accordian_drone_run_band_div_'+project_drone_run_id+'_'+collection_number).html(html);
+                        },
+                        error: function(response){
+                            alert('Error getting drone run collection!');
+                        }
+                    });
+
                 },
                 error: function(response){
                     alert('Error getting drone run rover filtered image!');

@@ -7302,7 +7302,7 @@ sub drone_run_get_field_trial_drone_run_projects_in_same_orthophoto_GET : Args(0
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 0, 0, 0);
 
     my $project = CXGN::Trial->new({ bcs_schema => $bcs_schema, trial_id => $drone_run_project_id_input });
-    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto,  $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
+    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto,  $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, $related_rover_event_collections, $related_rover_event_collections_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
 
     my @all_field_trial_ids = ($field_trial_project_id);
     push @all_field_trial_ids, @$field_trial_ids_in_same_orthophoto;
@@ -7422,7 +7422,7 @@ sub standard_process_apply_POST : Args(0) {
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 'submitter', $private_company_id, 'submitter_access');
 
     my $project = CXGN::Trial->new({ bcs_schema => $bcs_schema, trial_id => $drone_run_project_id_input });
-    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto,  $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
+    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto,  $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, $related_rover_event_collections, $related_rover_event_collections_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
     print STDERR Dumper $field_trial_drone_run_projects_in_same_orthophoto;
     print STDERR Dumper $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash;
 
@@ -7948,7 +7948,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     }
 
     my $project = CXGN::Trial->new({ bcs_schema => $bcs_schema, trial_id => $drone_run_project_id_input });
-    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
+    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, $related_rover_event_collections, $related_rover_event_collections_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
     my $apply_image_band_projects = $project->get_associated_image_band_projects();
 
     my @field_trial_ids_all = ($field_trial_id);
@@ -7988,7 +7988,7 @@ sub standard_process_apply_ground_control_points_POST : Args(0) {
     my $field_trial_drone_run_band_ids_in_same_orthophoto = $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash->{$drone_run_band_project_type_current};
 
     my $gcp_project = CXGN::Trial->new({ bcs_schema => $bcs_schema, trial_id => $gcp_drone_run_project_id_input });
-    my ($gcp_field_trial_drone_run_project_ids_in_same_orthophoto, $gcp_field_trial_drone_run_project_names_in_same_orthophoto, $gcp_field_trial_ids_in_same_orthophoto, $gcp_field_trial_names_in_same_orthophoto, $gcp_field_trial_drone_run_projects_in_same_orthophoto, $gcp_field_trial_drone_run_band_projects_in_same_orthophoto, $gcp_field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $gcp_project->get_field_trial_drone_run_projects_in_same_orthophoto();
+    my ($gcp_field_trial_drone_run_project_ids_in_same_orthophoto, $gcp_field_trial_drone_run_project_names_in_same_orthophoto, $gcp_field_trial_ids_in_same_orthophoto, $gcp_field_trial_names_in_same_orthophoto, $gcp_field_trial_drone_run_projects_in_same_orthophoto, $gcp_field_trial_drone_run_band_projects_in_same_orthophoto, $gcp_field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, $gcp_related_rover_event_collections, $gcp_related_rover_event_collections_hash) = $gcp_project->get_field_trial_drone_run_projects_in_same_orthophoto();
 
     my @gcp_drone_run_project_ids_all = ($gcp_drone_run_project_id_input+0);
     if (scalar(@$gcp_field_trial_drone_run_project_ids_in_same_orthophoto) > 0) {
@@ -11564,7 +11564,7 @@ sub drone_imagery_check_associated_field_trials_GET : Args(0) {
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_imagery($c, 0, 0, 0);
 
     my $project = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $drone_run_project_id });
-    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
+    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, $related_rover_event_collections, $related_rover_event_collections_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
 
     $c->stash->{rest} = {
         success => 1,
@@ -11587,7 +11587,7 @@ sub drone_imagery_save_associated_field_trials_GET : Args(0) {
     my $calendar_funcs = CXGN::Calendar->new({});
 
     my $project = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $drone_run_project_id });
-    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
+    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, $related_rover_event_collections, $related_rover_event_collections_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
     my $drone_run_description = $project->get_description();
     my $drone_run_company_id = $project->get_private_company_id();
     my $drone_run_company_is_private = $project->get_private_company_project_is_private();
@@ -15023,7 +15023,7 @@ sub drone_imagery_delete_drone_run_GET : Args(0) {
     print STDERR "DELETING DRONE RUN\n";
 
     my $project = CXGN::Trial->new({ bcs_schema => $schema, trial_id => $drone_run_project_id });
-    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
+    my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto, $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, $related_rover_event_collections, $related_rover_event_collections_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
     print STDERR Dumper $field_trial_drone_run_projects_in_same_orthophoto;
     print STDERR Dumper $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash;
 

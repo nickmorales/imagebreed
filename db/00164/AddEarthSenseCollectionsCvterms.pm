@@ -65,7 +65,8 @@ sub patch {
     my $terms = {
         'project_property' => [
             'earthsense_ground_rover_collections_archived',
-            'drone_rover_plot_polygon_in_progress'
+            'drone_rover_plot_polygon_in_progress',
+            'earthsense_collection_number'
         ],
         'project_md_image' => [
             'rover_event_original_points_image',
@@ -74,7 +75,10 @@ sub patch {
             'rover_event_points_filtered_side_height_image'
         ],
         'project_md_file' => [
-            'point_cloud_filtered_plot_point_cloud'
+            'rover_collection_filtered_plot_point_cloud'
+        ],
+        'stock_md_file' => [
+            'stock_filtered_plot_point_cloud'
         ],
         'experiment_type' => [
             'field_trial_drone_runs_in_same_rover_event'

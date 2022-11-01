@@ -145,6 +145,7 @@ project_property	drone_run_camera_rig_description	A ddescription for camera rig,
 project_property	drone_run_is_raw_images	To distinguish when uploading raw images or orthomosaic images as drone runs	07/5172020	nm529	00126
 project_property	drone_run_is_rover	For ground rover drone runs, saves the rover type and indicates it is a rover event vs imaging event	04/21/2022	nm529	00161
 project_property	earthsense_ground_rover_collections_archived	For ground rover drone runs, saves earthsense collections paths in archive	10/25/2022	nm529	00164
+project_property	earthsense_collection_number	The collection number from EarthSense ground rover	11/01/2022	nm529	00164
 project_property	drone_rover_plot_polygon_in_progress	For ground rover drone runs, if plot polygon process is running on a collection	10/25/2022	nm529	00164
 project_property	drone_run_ground_control_points	Ground control points (GCPs) can optionally be saved for a drone run	08/01/2020	nm529	00127
 project_property	drone_run_project_type	To distinguish the type of drone run being stored (Aerial Medium to High Res,Aerial Low Res,earthsense_raw_collections_point_clouds)	10/5/2018	nm529	00103
@@ -929,3 +930,5 @@ project_md_image	rover_event_original_points_image	An image of the original rove
 project_md_image	rover_event_points_filtered_height_image	An image of the rover event filtered point cloud showing height	10/26/2022	nm529	00164
 project_md_image	rover_event_points_filtered_side_span_image	An image of the rover event filtered point cloud showing side span	10/26/2022	nm529	00164
 project_md_image	rover_event_points_filtered_side_height_image	An image of the rover event filtered point cloud showing side height	10/26/2022	nm529	00164
+project_md_file	rover_collection_filtered_plot_point_cloud	Plot level filtered point cloud xyz file attached to rover collection project	11/01/2022	nm529	00164
+stock_md_file	stock_filtered_plot_point_cloud	Plot level filtered point cloud xyz file attached to plot	11/01/2022	nm529	00164

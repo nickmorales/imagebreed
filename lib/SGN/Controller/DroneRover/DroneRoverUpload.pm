@@ -136,13 +136,13 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
     my $design_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'design', 'project_property')->cvterm_id();
     my $drone_run_camera_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_camera_type', 'project_property')->cvterm_id();
     my $drone_run_related_cvterms_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_related_time_cvterms_json', 'project_property')->cvterm_id();
-    my $project_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
     my $project_collection_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_collection_on_drone_run', 'project_relationship')->cvterm_id();
     my $field_trial_drone_runs_in_same_rover_event_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'field_trial_drone_runs_in_same_rover_event', 'experiment_type')->cvterm_id();
     my $imaging_vehicle_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_rover', 'stock_type')->cvterm_id();
     my $imaging_vehicle_properties_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'imaging_event_vehicle_json', 'stock_property')->cvterm_id();
     my $drone_run_is_rover_type_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_is_rover', 'project_property')->cvterm_id();
     my $earthsense_collections_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'earthsense_ground_rover_collections_archived', 'project_property')->cvterm_id();
+    my $earthsense_collection_number_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'earthsense_collection_number', 'project_property')->cvterm_id();
     my $drone_run_field_trial_project_relationship_type_id_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_on_field_trial', 'project_relationship')->cvterm_id();
     my $project_start_date_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'project_start_date', 'project_property')->cvterm_id();
     my $drone_run_project_type_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_project_type', 'project_property')->cvterm_id();
@@ -273,7 +273,7 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                 name => $new_drone_run_name,
                 description => $new_drone_run_desc,
                 projectprops => $drone_run_projectprops,
-                project_relationship_subject_projects => [{type_id => $project_relationship_type_id, object_project_id => $selected_trial_id}],
+                project_relationship_subject_projects => [{type_id => $drone_run_field_trial_project_relationship_type_id_cvterm_id, object_project_id => $selected_trial_id}],
                 nd_experiment_projects => \@drone_run_nd_experiment_projects
             });
             $selected_drone_run_id = $project_rs->project_id();
@@ -556,7 +556,8 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
 
                 my $drone_run_collection_projectprops = [
                     {type_id => $design_cvterm_id, value => 'drone_run_rover_collection'},
-                    {type_id => $earthsense_collections_cvterm_id, value => encode_json $earthsense_collections->{$collection_number} }
+                    {type_id => $earthsense_collections_cvterm_id, value => encode_json $earthsense_collections->{$collection_number} },
+                    {type_id => $earthsense_collection_number_cvterm_id, value => $collection_number}
                 ];
 
                 my $collection_project_rs = $schema->resultset("Project::Project")->create({
