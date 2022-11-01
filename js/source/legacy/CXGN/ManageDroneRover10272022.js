@@ -513,11 +513,11 @@ jQuery(document).ready(function() {
 
         for (var i=0; i<manage_drone_rover_plot_polygons_num_plots; i++) {
             manage_drone_rover_plot_polygons_plot_polygon_boundaries.push([
-                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i][0][0], manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[0][0][1]],
-                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i+1][0][0], manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[0][0][1]],
-                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i+1][0][0], manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[1][0][1]],
-                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i][0][0], manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[1][0][1]],
-                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i][0][0], manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[0][0][1]],
+                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i][0][0], parseInt(manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[0][0][1]) ],
+                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i+1][0][0], parseInt(manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[0][0][1]) ],
+                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i+1][0][0], parseInt(manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[1][0][1]) ],
+                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i][0][0], parseInt(manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[1][0][1]) ],
+                [manage_drone_rover_plot_polygons_plot_polygon_vertical_lines[i][0][0], parseInt(manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines[0][0][1]) ],
             ]);
         }
         // console.log(manage_drone_rover_plot_polygons_plot_polygon_boundaries);

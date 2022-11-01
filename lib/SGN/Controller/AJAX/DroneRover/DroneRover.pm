@@ -106,6 +106,7 @@ sub drone_rover_get_vehicles_GET : Args(0) {
         my $private_company = "<a href='/company/$private_company_id'>$private_company_name</a>";
         push @vehicles, [$name, $description, $private_company, $batt_info_string]
     }
+    $h = undef;
 
     $c->stash->{rest} = { data => \@vehicles };
 }
@@ -128,6 +129,7 @@ sub drone_rover_get_collection_GET : Args(0) {
     my $h = $bcs_schema->storage->dbh()->prepare($q);
     $h->execute($drone_run_project_id);
     my ($prop_json) = $h->fetchrow_array();
+    $h = undef;
     my $collections = decode_json $prop_json;
     my $collection = $collections->{$collection_number} || {};
 
@@ -169,6 +171,28 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     my $private_company_id = $c->req->param('company_id');
     my $private_company_is_private = $c->req->param('is_private');
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_rover($c, 'submitter', $private_company_id, 'submitter_access');
+
+    my $earthsense_collections_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'earthsense_ground_rover_collections_archived', 'project_property')->cvterm_id();
+
+    my $image_width = $polygon_template_metadata->{image_width};
+    my $image_height = $polygon_template_metadata->{image_height};
+
+    my $q = "SELECT value FROM projectprop WHERE project_id = ? AND type_id=$earthsense_collections_cvterm_id;";
+    my $h = $bcs_schema->storage->dbh()->prepare($q);
+    $h->execute($drone_run_collection_project_id);
+    my ($prop_json) = $h->fetchrow_array();
+    my $earthsense_collection = decode_json $prop_json;
+    $h = undef;
+
+    
+
+    while (my($plot_name, $polygon) = each %$polygons_to_plot_names) {
+        my $x1_ratio = $polygon->[0]->[0]/$image_width;
+        my $y1_ratio = $polygon->[0]->[1]/$image_height;
+        my $x2_ratio = $polygon->[1]->[0]/$image_width;
+        my $y2_ratio = $polygon->[3]->[1]/$image_height;
+
+    }
 
     $c->stash->{rest} = {};
 }
