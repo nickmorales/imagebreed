@@ -854,4 +854,30 @@ sub manage_drone_rover : Path("/breeders/drone_rover") Args(0) {
     $c->stash->{template} = '/breeders_toolbox/manage_drone_rover.mas';
 }
 
+sub manage_point_cloud_visualization : Path("/breeders/point_cloud_visual") Args(1) {
+    my $self = shift;
+    my $c = shift;
+    my $point_cloud_file_id = shift;
+
+    if (!$c->user()) {
+        # redirect to login page
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
+    }
+
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
+
+    my $file_row = $metadata_schema->resultset("MdFiles")->find({file_id=>$point_cloud_file_id});
+    my $point_cloud_file = $file_row->dirname."/".$file_row->basename;
+
+    open(my $F, "<", $point_cloud_file) || die "Can't open file ".$point_cloud_file;
+    my $x = <$F>;
+    my $y = <$F>;
+    my $z = <$F>;
+
+    $c->stash->{point_cloud_file_id} = $point_cloud_file_id;
+    $c->stash->{template} = '/breeders_toolbox/drone_rover/point_cloud_visualization.mas';
+}
+
 1;

@@ -46,7 +46,7 @@ function manageDroneRoverEventDisplay(project_drone_run_id, collection_number, o
                                 html = html + '<hr><h4>Plot Point Clouds</h4>';
 
                                 for (var i=0; i<response.plot_polygons_names.length; i++) {
-                                    html = html + '<button class="btn btn-sm btn-default" name="drone_rover_view_plot_point_cloud" data-file_id="'+response.plot_polygons_names[i][1]+'" >'+response.plot_polygons_names[i][0]+'</button>'
+                                    html = html + '<button class="btn btn-sm btn-default" name="drone_rover_view_plot_point_cloud" data-file_id="'+response.plot_polygons_names[i][2]+'" >'+response.plot_polygons_names[i][0]+'</button>'
                                 }
                             }
 

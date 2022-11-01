@@ -546,7 +546,7 @@ jQuery(document).ready(function() {
             return false;
         }
         else {
-            manage_drone_rover_plot_polygons_current_collection_field_name = 'field_trial1'; // TO DO REMOVE THIS LINE
+            manage_drone_rover_plot_polygons_current_collection_field_name = 'field_trial1'; // TODO::  REMOVE THIS LINE
             if (manage_drone_rover_plot_polygons_current_collection_field_name in manage_drone_rover_plot_polygons_field_trial_layout_responses_designs) {
                 jQuery('input[name="manage_drone_rover_plot_polgyons_assign_plot_number"]').each(function() {
                     var plot_number = jQuery(this).val();
@@ -929,7 +929,7 @@ jQuery(document).ready(function() {
         }
     });
 
-    // jQuery('#drone_rover_plot_polygons_process_complete_dialog').on('hidden.bs.modal', function () {
+    // jQuery('#drone_rover_plot_polygons_process_complete_dialog').on('hidden.bs.modal', function () { TODO:: UNCOMMENT
     //     location.reload();
     // });
 
@@ -941,5 +941,10 @@ jQuery(document).ready(function() {
         }
         window.scrollTo(0,0);
     }
+
+    jQuery(document).on('click', 'button[name=drone_rover_view_plot_point_cloud]', function() {
+        var point_cloud_file_id = jQuery(this).data('file_id');
+        window.open('/breeders/point_cloud_visual/' + point_cloud_file_id ,'_blank');
+    });
 
 });
