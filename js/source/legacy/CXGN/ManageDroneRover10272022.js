@@ -944,7 +944,7 @@ jQuery(document).ready(function() {
 
     jQuery(document).on('click', 'button[name=drone_rover_view_plot_point_cloud]', function() {
         var point_cloud_file_id = jQuery(this).data('file_id');
-        window.open('/breeders/point_cloud_visual/' + point_cloud_file_id ,'_blank');
+        window.open('/breeders/point_cloud_visual/'+point_cloud_file_id ,'_blank');
     });
 
 });

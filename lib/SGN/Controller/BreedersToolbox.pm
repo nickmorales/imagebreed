@@ -865,7 +865,7 @@ sub manage_point_cloud_visualization : Path("/breeders/point_cloud_visual") Args
         $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
         return;
     }
-
+    my $thinner = $c->req->param('thin') || 8;
     my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
     my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
 
@@ -906,7 +906,6 @@ sub manage_point_cloud_visualization : Path("/breeders/point_cloud_visual") Args
 
     my @points;
     my $iterator = 0;
-    my $thinner = 6;
     open($fh, "<", $point_cloud_file) || die "Can't open file ".$point_cloud_file;
         while ( my $row = <$fh> ){
             if ($iterator == 0) {
@@ -924,6 +923,7 @@ sub manage_point_cloud_visualization : Path("/breeders/point_cloud_visual") Args
         }
     close($fh);
 
+    $c->stash->{thin} = $thinner;
     $c->stash->{points_json} = encode_json \@points;
     $c->stash->{point_cloud_file_id} = $point_cloud_file_id;
     $c->stash->{template} = '/breeders_toolbox/drone_rover/point_cloud_visualization.mas';

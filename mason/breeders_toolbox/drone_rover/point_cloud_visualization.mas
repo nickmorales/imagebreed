@@ -2,6 +2,7 @@
 <%args>
 $point_cloud_file_id
 $points_json
+$thin
 </%args>
 
 <& /util/import_javascript.mas, classes => [ 'd3.d3v4Min.js', 'x3dom.x3dom-full' ] &>
@@ -15,11 +16,32 @@ $points_json
     </center>
 </div>
 
+<div class="well well-sm">
+    <div class="form-horizontal">
+        <div class="form-group">
+            <label class="col-sm-6 control-label">Reduce Number of Points By: (e.g. 2 will reduce number to half, 5 will reduce number to one fifth. Too many points can crash your browser)</label>
+            <div class="col-sm-6" >
+                <input class="form-control" type="number" id="visual_point_cloud_thin_value" name="visual_point_cloud_thin_value" value="<% $thin %>" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="well well-sm">
+    <h4>3D Interactive Point Cloud (Please be patient)</h4>
+    <p><a href="/breeders/phenotyping/download/<% $point_cloud_file_id %>">Download Full Point Cloud</a></p>
+</div>
+
 <x3d id="chartholder"></x3d>
 
 <script>
 
 jQuery(document).ready(function(){
+
+    jQuery('#visual_point_cloud_thin_value').change(function(){
+        var thin = jQuery(this).val();
+        window.location.replace('/breeders/point_cloud_visual/'+<% $point_cloud_file_id %>+'?thin='+thin );
+    });
 
     function n(t, n, e) {
         function l(a) {
@@ -139,7 +161,7 @@ jQuery(document).ready(function(){
 
     var scene = x3d.append("scene");
     var view_pos = [80, 20, 80];
-    var fov = 0.8;
+    var fov = 1.2;
     var view_or = [0, 1, 0, 0.8];
 
     scene.append("viewpoint")
