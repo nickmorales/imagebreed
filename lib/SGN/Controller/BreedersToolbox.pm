@@ -25,6 +25,7 @@ use JSON::XS;
 use CXGN::Trial;
 use CXGN::Login;
 use CXGN::PrivateCompany;
+use JSON;
 
 BEGIN { extends 'Catalyst::Controller'; }
 
@@ -871,11 +872,59 @@ sub manage_point_cloud_visualization : Path("/breeders/point_cloud_visual") Args
     my $file_row = $metadata_schema->resultset("MdFiles")->find({file_id=>$point_cloud_file_id});
     my $point_cloud_file = $file_row->dirname."/".$file_row->basename;
 
-    open(my $F, "<", $point_cloud_file) || die "Can't open file ".$point_cloud_file;
-    my $x = <$F>;
-    my $y = <$F>;
-    my $z = <$F>;
+    my $max_x = -1000000000000000;
+    my $min_x = 10000000000000000;
+    my $max_y = -1000000000000000;
+    my $min_y = 10000000000000000;
+    my $max_z = -1000000000000000;
+    my $min_z = 10000000000000000;
 
+    open(my $fh, "<", $point_cloud_file) || die "Can't open file ".$point_cloud_file;
+        while ( my $row = <$fh> ){
+            my ($x, $y, $z) = split ' ', $row;
+            if ($x < $min_x) {
+                $min_x = $x;
+            }
+            if ($y < $min_y) {
+                $min_y = $y;
+            }
+            if ($z < $min_z) {
+                $min_z = $z;
+            }
+            if ($x > $max_x) {
+                $max_x = $x;
+            }
+            if ($y > $max_y) {
+                $max_y = $y;
+            }
+            if ($z > $max_z) {
+                $max_z = $z;
+            }
+        }
+    close($fh);
+    print STDERR Dumper [$min_x, $max_x, $min_y, $max_y, $min_z, $max_z];
+
+    my @points;
+    my $iterator = 0;
+    my $thinner = 6;
+    open($fh, "<", $point_cloud_file) || die "Can't open file ".$point_cloud_file;
+        while ( my $row = <$fh> ){
+            if ($iterator == 0) {
+                my ($x, $y, $z) = split ' ', $row;
+                push @points, {
+                    x => $x-$min_x,
+                    z => $y-$min_y,
+                    y => $z-$min_z
+                };
+            }
+            $iterator++;
+            if ($iterator == $thinner) {
+                $iterator = 0;
+            }
+        }
+    close($fh);
+
+    $c->stash->{points_json} = encode_json \@points;
     $c->stash->{point_cloud_file_id} = $point_cloud_file_id;
     $c->stash->{template} = '/breeders_toolbox/drone_rover/point_cloud_visualization.mas';
 }

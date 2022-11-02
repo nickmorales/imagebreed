@@ -17,7 +17,8 @@
     '/css/daterangepicker.css',
     '/css/buttons/buttons.bootstrap.min.css',
     '/css/bootstrap3-xl-class.css',
-    '/css/bootstrap-select.min.css'
+    '/css/bootstrap-select.min.css',
+    '/css/x3dom.css'
   ] &>
 
   <!-- <link rel="stylesheet" href="/documents/inc/colorbox/colorbox.css" type="text/css" /> -->

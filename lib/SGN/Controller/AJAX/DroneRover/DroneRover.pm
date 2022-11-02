@@ -121,11 +121,10 @@ sub drone_rover_get_collection_GET : Args(0) {
     if (exists($collection->{plot_polygons})) {
         foreach my $stock_id (sort keys %{$collection->{plot_polygons}} ) {
             my $file_id = $collection->{plot_polygons}->{$stock_id}->{file_id};
-            my $transpoed_file_id = $collection->{plot_polygons}->{$stock_id}->{transposed_file_id};
             my $stock = $bcs_schema->resultset("Stock::Stock")->find({stock_id => $stock_id});
             my $stock_name = $stock->uniquename;
 
-            push @{$collection->{plot_polygons_names}}, [$stock_name, $file_id, $transpoed_file_id];
+            push @{$collection->{plot_polygons_names}}, [$stock_name, $file_id];
         }
     }
 
@@ -148,6 +147,33 @@ sub check_maximum_plot_polygon_processes_POST : Args(0) {
         $c->detach();
     }
     $c->stash->{rest} = { success => 1 };
+}
+
+sub drone_rover_get_point_cloud : Path('/api/drone_rover/get_point_cloud') : ActionClass('REST') { }
+sub drone_rover_get_point_cloud_POST : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
+    my $point_cloud_file_id = $c->req->param('point_cloud_file_id');
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_rover($c, 'user', 0, 0);
+
+    my $file_row = $metadata_schema->resultset("MdFiles")->find({file_id=>$point_cloud_file_id});
+    my $point_cloud_file = $file_row->dirname."/".$file_row->basename;
+
+    my @points;
+    open(my $fh, "<", $point_cloud_file) || die "Can't open file ".$point_cloud_file;
+        while ( my $row = <$fh> ){
+            my ($x, $y, $z) = split ' ', $row;
+            push @points, {
+                x => $x,
+                y => $y,
+                z => $z
+            };
+        }
+    close($fh);
+
+    $c->stash->{rest} = { success => 1, points => \@points };
 }
 
 sub drone_rover_plot_polygons_process_apply : Path('/api/drone_rover/plot_polygons_process_apply') : ActionClass('REST') { }
@@ -228,14 +254,12 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
 
         my $plot_polygons_temp_file = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_rover_plot_polygons/plotpointcloudXXXX');
         $plot_polygons_temp_file .= '.xyz';
-        my $plot_polygons_transposed_temp_file = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_rover_plot_polygons/plotpointcloudXXXX');
 
-        print $F "$stock_id\t$plot_polygons_temp_file\t$plot_polygons_transposed_temp_file\t$x1_ratio\t$y1_ratio\t$x2_ratio\t$y2_ratio\n";
+        print $F "$stock_id\t$plot_polygons_temp_file\t$x1_ratio\t$y1_ratio\t$x2_ratio\t$y2_ratio\n";
 
         push @plot_polygons_cut, {
             stock_id => $stock_id,
             temp_file => $plot_polygons_temp_file,
-            transposed_temp_file => $plot_polygons_transposed_temp_file,
             polygon_ratios => {
                 x1 => $x1_ratio,
                 x2 => $x2_ratio,
@@ -265,7 +289,6 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     foreach (@plot_polygons_cut) {
         my $stock_id = $_->{stock_id};
         my $temp_file = $_->{temp_file};
-        my $transposed_temp_file = $_->{transposed_temp_file};
         my $polygon_ratios = $_->{polygon_ratios};
         my $drone_run_project_id = $all_field_trial_layouts{$stock_id}->{drone_run_project_id};
         my $project_collection_id = $all_field_trial_layouts{$stock_id}->{drone_run_collection_project_id};
@@ -301,39 +324,8 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
         $h_project_md_file->execute($project_collection_id, $plot_polygon_file_id, $project_md_file_cvterm_id);
         $h_stock_md_file->execute($stock_id, $plot_polygon_file_id, $stock_md_file_cvterm_id);
 
-        my $transposed_temp_filename = basename($transposed_temp_file);
-        my $transpoed_uploader = CXGN::UploadFile->new({
-            tempfile => $temp_file,
-            subdirectory => "earthsense_rover_collections_plot_polygons_transposed",
-            second_subdirectory => "$drone_run_collection_project_id",
-            archive_path => $c->config->{archive_path},
-            archive_filename => $transposed_temp_filename,
-            timestamp => $timestamp,
-            user_id => $user_id,
-            user_role => $user_role
-        });
-        my $transposed_archived_filename_with_path = $transpoed_uploader->archive();
-        my $transposed_md5 = $transpoed_uploader->get_md5($transposed_archived_filename_with_path);
-        if (!$transposed_archived_filename_with_path) {
-            $c->stash->{rest} = {error=>'Could not archive '.$transposed_temp_filename.'!'};
-            $c->detach();
-        }
-
-        my $file_row = $metadata_schema->resultset("MdFiles")->create({
-            basename => basename($transposed_archived_filename_with_path),
-            dirname => dirname($transposed_archived_filename_with_path),
-            filetype => "earthsense_rover_collections_plot_polygon_point_clouds_transposed",
-            md5checksum => $transposed_md5->hexdigest(),
-            metadata_id => $md_row->metadata_id()
-        });
-        my $transposed_plot_polygon_file_id = $file_row->file_id();
-
-        $h_project_md_file->execute($project_collection_id, $transposed_plot_polygon_file_id, $project_md_file_cvterm_id);
-        $h_stock_md_file->execute($stock_id, $transposed_plot_polygon_file_id, $stock_md_file_cvterm_id);
-
         $saved_point_cloud_files{$drone_run_project_id}->{$project_collection_id}->{$collection_number}->{$stock_id} = {
             file_id => $plot_polygon_file_id,
-            transposed_file_id => $transposed_plot_polygon_file_id,
             polygon_ratios => $polygon_ratios
         };
     }
