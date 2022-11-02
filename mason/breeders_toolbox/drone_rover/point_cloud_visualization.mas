@@ -32,7 +32,9 @@ $thin
     <p><a href="/breeders/phenotyping/download/<% $point_cloud_file_id %>">Download Full Point Cloud</a></p>
 </div>
 
-<x3d id="chartholder"></x3d>
+<div class="well well-sm">
+    <x3d id="chartholder"></x3d>
+</div>
 
 <script>
 
@@ -138,7 +140,7 @@ jQuery(document).ready(function(){
             .attr("diffuseColor", color || "black");
         return selection;
     };
-    var width = 1000;
+    var width = 1200;
     var height = 1000;
 
     var x3d = d3.select("#chartholder")
