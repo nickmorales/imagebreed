@@ -379,6 +379,41 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     $c->stash->{rest} = \%saved_point_cloud_files;
 }
 
+sub processed_plot_point_cloud_count : Path('/api/drone_rover/processed_plot_point_cloud_count') : ActionClass('REST') { }
+sub processed_plot_point_cloud_count_GET : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_rover($c, 0, 0, 0);
+
+    my $project_collection_relationship_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'drone_run_collection_on_drone_run', 'project_relationship')->cvterm_id();
+    my $project_md_file_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'rover_collection_filtered_plot_point_cloud', 'project_md_file')->cvterm_id();
+    my $earthsense_collection_number_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'earthsense_collection_number', 'project_property')->cvterm_id();
+
+    my $q = "SELECT drone_run.project_id, project_md_file.type_id, collection_number.value
+        FROM project AS drone_rover_collection
+        JOIN projectprop AS collection_number ON(drone_rover_collection.project_id=collection_number.project_id AND collection_number.type_id=$earthsense_collection_number_cvterm_id)
+        JOIN project_relationship AS drone_rover_collection_rel ON(drone_rover_collection.project_id=drone_rover_collection_rel.subject_project_id AND drone_rover_collection_rel.type_id=$project_collection_relationship_type_id)
+        JOIN project AS drone_run ON(drone_run.project_id=drone_rover_collection_rel.object_project_id)
+        JOIN phenome.project_md_file AS project_md_file ON(drone_rover_collection.project_id=project_md_file.project_id)
+        JOIN metadata.md_files AS md_file ON(md_file.file_id=project_md_file.file_id)
+        WHERE project_md_file.type_id = $project_md_file_cvterm_id;";
+
+    #print STDERR Dumper $q;
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute();
+
+    my %unique_drone_runs;
+    while (my ($drone_run_project_id, $project_md_file_type_id, $collection_number) = $h->fetchrow_array()) {
+        $unique_drone_runs{$drone_run_project_id}->{$collection_number}++;
+        $unique_drone_runs{$drone_run_project_id}->{total_plot_point_cloud_count}++;
+    }
+    $h = undef;
+    # print STDERR Dumper \%unique_drone_runs;
+
+    $c->stash->{rest} = { data => \%unique_drone_runs };
+}
+
 sub _check_user_login_drone_rover {
     my $c = shift;
     my $check_priv = shift;
