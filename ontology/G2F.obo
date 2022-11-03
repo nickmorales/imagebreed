@@ -293,96 +293,96 @@ def: "Date of silking in MM/DD/YY format." []
 relationship: variable_of G2F:0000001
 
 [Term]
-id: G2F:0000049
+id: G2F:0010000
 name: Point Cloud Statistics Traits
 is_a: G2F:0000000
 
 [Term]
-id: G2F:0000050
+id: G2F:0010001
 name: Average Point Height
 def: "Average height of all points in the point cloud, moving from ground level toward sky." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000051
+id: G2F:0010002
 name: Average Point Length
 def: "Average length of all points in the point cloud, moving in direction parallel to planting order in plot." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000052
+id: G2F:0010003
 name: Average Point Span
 def: "Average span of all points in the point cloud, moving in direction orthogonal to planting order in plot." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000053
+id: G2F:0010004
 name: Average 3D Volume
 def: "3D volume of plot using average point height, length, and span." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000054
+id: G2F:0010005
 name: Average Height Density
 def: "The average density of points along the height axis, moving from ground level toward sky." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000055
+id: G2F:0010006
 name: Average Length Density
 def: "The average density of points along the length axis, moving in direction parallel to planting order in plot." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000056
+id: G2F:0010007
 name: Average Span Density
 def: "The average density of points along the span axis, moving in direction orthogonal to planting order in plot." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000057
+id: G2F:0010008
 name: Average 3D Density
 def: "The average density of points in plot volume using average 3D volume and total number of points." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000058
+id: G2F:0010009
 name: Number of Points
 def: "The total number of points in the point cloud." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000059
+id: G2F:0010010
 name: Maximum Point Height Value
 def: "The maximum point height value in the point cloud." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000060
+id: G2F:0010011
 name: Maximum Point Length Value
 def: "The maximum point length value in the point cloud." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000061
+id: G2F:0010012
 name: Maximum Point Span Value
 def: "The maximum point span value in the point cloud." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000062
+id: G2F:0010013
 name: Minimum Point Height Value
 def: "The minimum point height value in the point cloud." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000063
+id: G2F:0010014
 name: Minimum Point Length Value
 def: "The minimum point length value in the point cloud." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000
 
 [Term]
-id: G2F:0000064
+id: G2F:0010015
 name: Minimum Point Span Value
 def: "The minimum point span value in the point cloud." []
-relationship: variable_of G2F:0000049
+relationship: variable_of G2F:0010000

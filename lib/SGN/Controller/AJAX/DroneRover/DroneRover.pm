@@ -348,21 +348,21 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
 
     my $point_cloud_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'EarthSense Filtered Point Cloud|ISOL:0010001')->cvterm_id;
 
-    my $average_height_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Point Height|G2F:0000050')->cvterm_id;
-    my $average_length_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Point Length|G2F:0000051')->cvterm_id;
-    my $average_span_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Point Span|G2F:0000052')->cvterm_id;
-    my $average_3d_volume_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average 3D Volume|G2F:0000053')->cvterm_id;
-    my $average_height_density_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Height Density|G2F:0000054')->cvterm_id;
-    my $average_length_density_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Length Density|G2F:0000055')->cvterm_id;
-    my $average_span_density_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Span Density|G2F:0000056')->cvterm_id;
-    my $average_3d_density_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average 3D Density|G2F:0000057')->cvterm_id;
-    my $number_of_points_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Number of Points|G2F:0000058')->cvterm_id;
-    my $max_height_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Maximum Point Height Value|G2F:0000059')->cvterm_id;
-    my $max_length_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Maximum Point Length Value|G2F:0000060')->cvterm_id;
-    my $max_span_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Maximum Point Span Value|G2F:0000061')->cvterm_id;
-    my $min_height_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Minimum Point Height Value|G2F:0000062')->cvterm_id;
-    my $min_length_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Minimum Point Length Value|G2F:0000063')->cvterm_id;
-    my $min_span_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Minimum Point Span Value|G2F:0000064')->cvterm_id;
+    my $average_height_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Point Height|G2F:0010001')->cvterm_id;
+    my $average_length_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Point Length|G2F:0010002')->cvterm_id;
+    my $average_span_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Point Span|G2F:0010003')->cvterm_id;
+    my $average_3d_volume_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average 3D Volume|G2F:0010004')->cvterm_id;
+    my $average_height_density_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Height Density|G2F:0010005')->cvterm_id;
+    my $average_length_density_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Length Density|G2F:0010006')->cvterm_id;
+    my $average_span_density_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Span Density|G2F:0010007')->cvterm_id;
+    my $average_3d_density_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average 3D Density|G2F:0010008')->cvterm_id;
+    my $number_of_points_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Number of Points|G2F:0010009')->cvterm_id;
+    my $max_height_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Maximum Point Height Value|G2F:0010010')->cvterm_id;
+    my $max_length_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Maximum Point Length Value|G2F:0010011')->cvterm_id;
+    my $max_span_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Maximum Point Span Value|G2F:0010012')->cvterm_id;
+    my $min_height_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Minimum Point Height Value|G2F:0010013')->cvterm_id;
+    my $min_length_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Minimum Point Length Value|G2F:0010014')->cvterm_id;
+    my $min_span_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Minimum Point Span Value|G2F:0010015')->cvterm_id;
 
     my @allowed_composed_cvs = split ',', $c->config->{composable_cvs};
     my $composable_cvterm_delimiter = $c->config->{composable_cvterm_delimiter};

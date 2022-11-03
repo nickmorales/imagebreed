@@ -45,7 +45,7 @@ eval {
     $h0->execute();
     my ($good_cvterm_id) = $h0->fetchrow_array();
     while (my ($bad_cvterm_id) = $h0->fetchrow_array()) {
-        $h1->execute($bad_cvterm_id, $good_cvterm_id);
+        $h1->execute($good_cvterm_id, $bad_cvterm_id);
         $h2->execute($bad_cvterm_id);
     }
 };
