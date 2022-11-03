@@ -258,16 +258,14 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
 
             my @drone_run_nd_experiment_projects = ({nd_experiment_id => $drone_run_nd_experiment_id});
 
-            if (scalar(@selected_trial_ids)>1) {
-                if ($iterator == 0) {
-                    my $nd_experiment_rs = $schema->resultset("NaturalDiversity::NdExperiment")->create({
-                        nd_geolocation_id => $trial_location_id,
-                        type_id => $field_trial_drone_runs_in_same_rover_event_type_id,
-                    });
-                    $field_trial_drone_runs_in_same_orthophoto_nd_experiment_id = $nd_experiment_rs->nd_experiment_id();
-                }
-                push @drone_run_nd_experiment_projects, {nd_experiment_id => $field_trial_drone_runs_in_same_orthophoto_nd_experiment_id};
+            if ($iterator == 0) {
+                my $nd_experiment_rs = $schema->resultset("NaturalDiversity::NdExperiment")->create({
+                    nd_geolocation_id => $trial_location_id,
+                    type_id => $field_trial_drone_runs_in_same_rover_event_type_id,
+                });
+                $field_trial_drone_runs_in_same_orthophoto_nd_experiment_id = $nd_experiment_rs->nd_experiment_id();
             }
+            push @drone_run_nd_experiment_projects, {nd_experiment_id => $field_trial_drone_runs_in_same_orthophoto_nd_experiment_id};
 
             my $project_rs = $schema->resultset("Project::Project")->create({
                 name => $new_drone_run_name,

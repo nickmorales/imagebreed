@@ -99,6 +99,11 @@ sub patch {
 
     my $coderef = sub {
         my $sql = <<SQL;
+
+ALTER TABLE nd_experiment_phenotype_bridge
+ADD COLUMN stock_file_id bigint REFERENCES metadata.md_files (file_id) ON DELETE SET NULL;
+CREATE INDEX nd_experiment_phenotype_bridge_stock_file_idx1 ON nd_experiment_phenotype_bridge USING btree (stock_file_id);
+
 CREATE TABLE if not exists phenome.project_md_file (
     project_md_file_id serial PRIMARY KEY,
     project_id integer NOT NULL,

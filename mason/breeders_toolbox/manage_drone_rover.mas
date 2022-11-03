@@ -106,7 +106,14 @@
                             <input name="drone_rover_plot_polygons_process_phenotypes_select" value="height_density" type="checkbox" checked disabled> Height-wise Density <br/>
                             <input name="drone_rover_plot_polygons_process_phenotypes_select" value="length_density" type="checkbox" checked disabled> Length-wise Density <br/>
                             <input name="drone_rover_plot_polygons_process_phenotypes_select" value="span_density" type="checkbox" checked disabled> Span-wise Density <br/>
-                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="3d_density" type="checkbox" checked disabled> 3D Density <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="3d_density" type="checkbox" checked disabled> Average 3D Density <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="number_points" type="checkbox" checked disabled> Number of Points <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="max_height" type="checkbox" checked disabled> Maximum Height Value <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="max_length" type="checkbox" checked disabled> Maximum Length Value <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="max_span" type="checkbox" checked disabled> Maximum Span Value <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="min_height" type="checkbox" checked disabled> Minimum Height Value <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="min_length" type="checkbox" checked disabled> Minimum Length Value <br/>
+                            <input name="drone_rover_plot_polygons_process_phenotypes_select" value="min_span" type="checkbox" checked disabled> Minimum Span Value <br/>
                         </div>
                     </div>
                 </div>

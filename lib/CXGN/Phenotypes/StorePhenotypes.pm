@@ -515,11 +515,17 @@ sub store {
     AND phenotype.cvalue_id=?";
     my $h_bridge = $self->bcs_schema->storage->dbh()->prepare($q_bridge);
 
-    my $nd_experiment_phenotype_bridge_q = "INSERT INTO nd_experiment_phenotype_bridge (stock_id, project_id, phenotype_id, nd_protocol_id, nd_geolocation_id, file_id, image_id, json_id, upload_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    my $nd_experiment_phenotype_bridge_q = "INSERT INTO nd_experiment_phenotype_bridge (stock_id, project_id, phenotype_id, nd_protocol_id, nd_geolocation_id, file_id, image_id, json_id, stock_file_id, upload_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
     my $nd_experiment_phenotype_bridge_dbh = $self->bcs_schema->storage->dbh()->prepare($nd_experiment_phenotype_bridge_q);
 
     my $nd_experiment_phenotype_bridge_update_image_q = "UPDATE nd_experiment_phenotype_bridge SET image_id = ? WHERE nd_experiment_phenotype_bridge_id = ?;";
     my $nd_experiment_phenotype_bridge_update_image_dbh = $self->bcs_schema->storage->dbh()->prepare($nd_experiment_phenotype_bridge_update_image_q);
+
+    my $nd_experiment_phenotype_bridge_update_file_q = "UPDATE nd_experiment_phenotype_bridge SET file_id = ? WHERE nd_experiment_phenotype_bridge_id = ?;";
+    my $nd_experiment_phenotype_bridge_update_file_dbh = $self->bcs_schema->storage->dbh()->prepare($nd_experiment_phenotype_bridge_update_file_q);
+
+    my $nd_experiment_phenotype_bridge_update_stock_file_q = "UPDATE nd_experiment_phenotype_bridge SET stock_file_id = ? WHERE nd_experiment_phenotype_bridge_id = ?;";
+    my $nd_experiment_phenotype_bridge_update_stock_file_dbh = $self->bcs_schema->storage->dbh()->prepare($nd_experiment_phenotype_bridge_update_stock_file_q);
 
     # print STDERR "DATA: ".Dumper(\%data);
     ## Use txn_do with the following coderef so that if any part fails, the entire transaction fails.
@@ -575,7 +581,8 @@ sub store {
             if (scalar(@trait_list) == 0 && $stored_json_id) {
                 my $stored_image_id = undef;
                 my $phenotype_id = undef;
-                $nd_experiment_phenotype_bridge_dbh->execute($stock_id, $project_id, $phenotype_id, $stored_protocol_id, $location_id, $stored_file_id, $stored_image_id, $stored_json_id, $upload_date);
+                my $stock_file_id = undef;
+                $nd_experiment_phenotype_bridge_dbh->execute($stock_id, $project_id, $phenotype_id, $stored_protocol_id, $location_id, $stored_file_id, $stored_image_id, $stored_json_id, $stock_file_id, $upload_date);
             }
             else {
                 foreach my $trait_name (@trait_list) {
@@ -591,6 +598,7 @@ sub store {
                     my $observation = $value_array->[3];
                     my $stored_image_id = $value_array->[4];
                     my $additional_info = $value_array->[5] || undef;
+                    my $stored_stock_file_id = $value_array->[6];
                     my $unique_time = $timestamp && defined($timestamp) ? $timestamp : 'NA'.$upload_date;
 
                     if (defined($trait_value) && length($trait_value)) {
@@ -643,6 +651,12 @@ sub store {
                                 if ($stored_image_id) {
                                     $nd_experiment_phenotype_bridge_update_image_dbh->execute($stored_image_id, $nd_experiment_phenotype_bridge_id);
                                 }
+                                if ($stored_file_id) {
+                                    $nd_experiment_phenotype_bridge_update_file_dbh->execute($stored_file_id, $nd_experiment_phenotype_bridge_id);
+                                }
+                                if ($stored_stock_file_id) {
+                                    $nd_experiment_phenotype_bridge_update_stock_file_dbh->execute($stored_stock_file_id, $nd_experiment_phenotype_bridge_id);
+                                }
                             }
 
                         } else {
@@ -657,7 +671,8 @@ sub store {
 
                             if (!$stored_image_id) {$stored_image_id = undef;}
                             if (!$stored_protocol_id) {$stored_protocol_id = undef;}
-                            $nd_experiment_phenotype_bridge_dbh->execute($stock_id, $project_id, $phenotype_id, $stored_protocol_id, $location_id, $stored_file_id, $stored_image_id, $stored_json_id, $upload_date);
+                            if (!$stored_stock_file_id) {$stored_stock_file_id = undef;}
+                            $nd_experiment_phenotype_bridge_dbh->execute($stock_id, $project_id, $phenotype_id, $stored_protocol_id, $location_id, $stored_file_id, $stored_image_id, $stored_json_id, $stored_stock_file_id, $upload_date);
                         }
 
                         if ($additional_info){

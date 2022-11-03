@@ -200,6 +200,7 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     my $stock_md_file_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'stock_filtered_plot_point_cloud', 'stock_md_file')->cvterm_id();
 
     my %stock_ids_all;
+    my %stock_info;
     foreach my $stock_name (keys %$polygons_to_plot_names) {
         my $stock = $bcs_schema->resultset("Stock::Stock")->find({uniquename => $stock_name});
         if (!$stock) {
@@ -207,7 +208,11 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
             $c->detach();
         }
         $stock_ids_all{$stock_name} = $stock->stock_id;
+        $stock_info{$stock->stock_id}->{stock_uniquename} = $stock_name;
     }
+
+    my $drone_run_time = SGN::Controller::AJAX::DroneImagery::DroneImagery::_perform_get_weeks_drone_run_after_planting($bcs_schema, $drone_run_project_id);
+    my $time_cvterm_id = $drone_run_time->{time_ontology_day_cvterm_id};
 
     my $project = CXGN::Trial->new({ bcs_schema => $bcs_schema, trial_id => $drone_run_project_id });
     my ($field_trial_drone_run_project_ids_in_same_orthophoto, $field_trial_drone_run_project_names_in_same_orthophoto, $field_trial_ids_in_same_orthophoto, $field_trial_names_in_same_orthophoto,  $field_trial_drone_run_projects_in_same_orthophoto, $field_trial_drone_run_band_projects_in_same_orthophoto, $field_trial_drone_run_band_project_ids_in_same_orthophoto_project_type_hash, $related_rover_event_collections, $related_rover_event_collections_hash) = $project->get_field_trial_drone_run_projects_in_same_orthophoto();
@@ -240,6 +245,8 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
 
     my $dir = $c->tempfiles_subdir('/drone_rover_plot_polygons');
     my $bulk_input_temp_file = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_rover_plot_polygons/bulkinputXXXX');
+    my $phenotype_output_temp_file = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => 'drone_rover_plot_polygons/bulkinputXXXX');
+    $phenotype_output_temp_file .= '.csv';
 
     my @plot_polygons_cut;
 
@@ -270,12 +277,33 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     }
     close($F);
 
-    my $lidar_point_cloud_plot_polygons_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/PointCloudProcess/PointCloudPlotPolygons.py --pointcloud_xyz_file $point_cloud_file --plot_polygons_ratio_file $bulk_input_temp_file ";
+    my $lidar_point_cloud_plot_polygons_cmd = $c->config->{python_executable}." ".$c->config->{rootpath}."/DroneImageScripts/PointCloudProcess/PointCloudPlotPolygons.py --pointcloud_xyz_file $point_cloud_file --plot_polygons_ratio_file $bulk_input_temp_file --phenotype_ouput_file $phenotype_output_temp_file ";
     print STDERR $lidar_point_cloud_plot_polygons_cmd."\n";
     my $lidar_point_cloud_plot_polygons_status = system($lidar_point_cloud_plot_polygons_cmd);
 
     my $time = DateTime->now();
     my $timestamp = $time->ymd()."_".$time->hms();
+
+    my $archive_file_type = 'point_cloud_statistics_phenotypes';
+
+    my $pheno_temp_filename = basename($phenotype_output_temp_file);
+    my $uploader = CXGN::UploadFile->new({
+        tempfile => $phenotype_output_temp_file,
+        subdirectory => $archive_file_type,
+        archive_path => $c->config->{archive_path},
+        archive_filename => $pheno_temp_filename,
+        timestamp => $timestamp,
+        user_id => $user_id,
+        user_role => $user_role
+    });
+    my $archived_pheno_filename_with_path = $uploader->archive();
+    my $archive_pheno_md5 = $uploader->get_md5($archived_pheno_filename_with_path);
+    if (!$archived_pheno_filename_with_path) {
+        $c->stash->{message} = "Could not save file $pheno_temp_filename in archive.";
+        $c->stash->{template} = 'generic_message.mas';
+        return;
+    }
+    print STDERR "Archived Point Cloud Pheno File: $archived_pheno_filename_with_path\n";
 
     my $q_project_md_file = "INSERT INTO phenome.project_md_file (project_id, file_id, type_id) VALUES (?,?,?);";
     my $h_project_md_file = $bcs_schema->storage->dbh()->prepare($q_project_md_file);
@@ -286,6 +314,7 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     my $md_row = $metadata_schema->resultset("MdMetadata")->create({create_person_id => $user_id});
 
     my %saved_point_cloud_files;
+    print STDERR Dumper \%all_field_trial_layouts;
     foreach (@plot_polygons_cut) {
         my $stock_id = $_->{stock_id};
         my $temp_file = $_->{temp_file};
@@ -328,11 +357,223 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
             file_id => $plot_polygon_file_id,
             polygon_ratios => $polygon_ratios
         };
+        $stock_info{$stock_id}->{file_id} = $plot_polygon_file_id;
     }
     print STDERR Dumper \%saved_point_cloud_files;
 
     $h_project_md_file = undef;
     $h_stock_md_file = undef;
+
+    my $point_cloud_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'EarthSense Filtered Point Cloud|ISOL:0010001')->cvterm_id;
+
+    my $average_height_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Point Height|G2F:0000050')->cvterm_id;
+    my $average_length_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Point Length|G2F:0000051')->cvterm_id;
+    my $average_span_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Point Span|G2F:0000052')->cvterm_id;
+    my $average_3d_volume_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average 3D Volume|G2F:0000053')->cvterm_id;
+    my $average_height_density_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Height Density|G2F:0000054')->cvterm_id;
+    my $average_length_density_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Length Density|G2F:0000055')->cvterm_id;
+    my $average_span_density_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average Span Density|G2F:0000056')->cvterm_id;
+    my $average_3d_density_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Average 3D Density|G2F:0000057')->cvterm_id;
+    my $number_of_points_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Number of Points|G2F:0000058')->cvterm_id;
+    my $max_height_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Maximum Point Height Value|G2F:0000059')->cvterm_id;
+    my $max_length_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Maximum Point Length Value|G2F:0000060')->cvterm_id;
+    my $max_span_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Maximum Point Span Value|G2F:0000061')->cvterm_id;
+    my $min_height_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Minimum Point Height Value|G2F:0000062')->cvterm_id;
+    my $min_length_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Minimum Point Length Value|G2F:0000063')->cvterm_id;
+    my $min_span_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'Minimum Point Span Value|G2F:0000064')->cvterm_id;
+
+    my @allowed_composed_cvs = split ',', $c->config->{composable_cvs};
+    my $composable_cvterm_delimiter = $c->config->{composable_cvterm_delimiter};
+    my $composable_cvterm_format = $c->config->{composable_cvterm_format};
+
+    my $traits = SGN::Model::Cvterm->get_traits_from_component_categories($bcs_schema, \@allowed_composed_cvs, $composable_cvterm_delimiter, $composable_cvterm_format, {
+        object => [],
+        attribute => [$point_cloud_cvterm_id],
+        method => [],
+        unit => [],
+        trait => [$average_height_cvterm_id, $average_length_cvterm_id, $average_span_cvterm_id, $average_3d_volume_cvterm_id, $average_height_density_cvterm_id, $average_length_density_cvterm_id, $average_span_density_cvterm_id, $average_3d_density_cvterm_id, $number_of_points_cvterm_id, $max_height_cvterm_id, $max_length_cvterm_id, $max_span_cvterm_id, $min_height_cvterm_id, $min_length_cvterm_id, $min_span_cvterm_id],
+        tod => [],
+        toy => [$time_cvterm_id],
+        gen => [],
+    });
+    my $existing_traits = $traits->{existing_traits};
+    my $new_traits = $traits->{new_traits};
+    #print STDERR Dumper $new_traits;
+    #print STDERR Dumper $existing_traits;
+    my %new_trait_names;
+    foreach (@$new_traits) {
+        my $components = $_->[0];
+        $new_trait_names{$_->[1]} = join ',', @$components;
+    }
+
+    my $onto = CXGN::Onto->new( { schema => $bcs_schema } );
+    my $new_terms = $onto->store_composed_term(\%new_trait_names);
+
+    my $average_height_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$average_height_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $average_length_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$average_length_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $average_span_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$average_span_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $average_3d_volume_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$average_3d_volume_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $average_height_density_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$average_height_density_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $average_length_density_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$average_length_density_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $average_span_density_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$average_span_density_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $average_3d_density_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$average_3d_density_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $num_points_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$number_of_points_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $max_height_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$max_height_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $max_length_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$max_length_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $max_span_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$max_span_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $min_height_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$min_height_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $min_length_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$min_length_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+    my $min_span_composed_cvterm_id = SGN::Model::Cvterm->get_trait_from_exact_components($bcs_schema, [$min_span_cvterm_id, $point_cloud_cvterm_id, $time_cvterm_id]);
+
+    my $average_height_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $average_height_composed_cvterm_id, 'extended');
+    my $average_length_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $average_length_composed_cvterm_id, 'extended');
+    my $average_span_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $average_span_composed_cvterm_id, 'extended');
+    my $average_3d_volume_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $average_3d_volume_composed_cvterm_id, 'extended');
+    my $average_height_density_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $average_height_density_composed_cvterm_id, 'extended');
+    my $average_length_density_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $average_length_density_composed_cvterm_id, 'extended');
+    my $average_span_density_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $average_span_density_composed_cvterm_id, 'extended');
+    my $average_3d_density_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $average_3d_density_composed_cvterm_id, 'extended');
+    my $num_points_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $num_points_composed_cvterm_id, 'extended');
+    my $max_height_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $max_height_composed_cvterm_id, 'extended');
+    my $max_length_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $max_length_composed_cvterm_id, 'extended');
+    my $max_span_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $max_span_composed_cvterm_id, 'extended');
+    my $min_height_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $min_height_composed_cvterm_id, 'extended');
+    my $min_length_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $min_length_composed_cvterm_id, 'extended');
+    my $min_span_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $min_span_composed_cvterm_id, 'extended');
+
+    my $csv = Text::CSV->new({ sep_char => ',' });
+    open(my $fh, '<', $phenotype_output_temp_file) or die "Could not open file '$phenotype_output_temp_file' $!";
+
+        print STDERR "Opened $phenotype_output_temp_file\n";
+        my $header = <$fh>;
+        my @header_cols;
+        if ($csv->parse($header)) {
+            @header_cols = $csv->fields();
+        }
+
+        my $line = 0;
+        my %point_cloud_stat_phenotype_data;
+        my %plots_seen;
+        if ($header_cols[0] ne 'stock_id' ||
+            $header_cols[1] ne 'num_points' ||
+            $header_cols[2] ne 'length_max' ||
+            $header_cols[3] ne 'height_max' ||
+            $header_cols[4] ne 'span_max' ||
+            $header_cols[5] ne 'length_min' ||
+            $header_cols[6] ne 'height_min' ||
+            $header_cols[7] ne 'span_min' ||
+            $header_cols[8] ne 'length_average' ||
+            $header_cols[9] ne 'height_average' ||
+            $header_cols[10] ne 'span_average' ||
+            $header_cols[11] ne 'average_volume' ||
+            $header_cols[12] ne 'length_density' ||
+            $header_cols[13] ne 'height_density' ||
+            $header_cols[14] ne 'span_density' ||
+            $header_cols[15] ne 'average_density'
+        ) {
+            $c->stash->{rest} = { error => "Pheno results must have header: 'stock_id','num_points','length_max','height_max','span_max','length_min','height_min','span_min','length_average','height_average','span_average','average_volume','length_density','height_density','span_density','average_density'" };
+            return;
+        }
+
+        my @traits_seen = (
+            $average_height_composed_trait_name,
+            $average_length_composed_trait_name,
+            $average_span_composed_trait_name,
+            $average_3d_volume_composed_trait_name,
+            $average_height_density_composed_trait_name,
+            $average_length_density_composed_trait_name,
+            $average_span_density_composed_trait_name,
+            $average_3d_density_composed_trait_name,
+            $num_points_composed_trait_name,
+            $max_height_composed_trait_name,
+            $max_length_composed_trait_name,
+            $max_span_composed_trait_name,
+            $min_height_composed_trait_name,
+            $min_length_composed_trait_name,
+            $min_span_composed_trait_name
+        );
+
+        while ( my $row = <$fh> ){
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+
+            my $stock_id = $columns[0];
+            my $stock_uniquename = $stock_info{$stock_id}->{stock_uniquename};
+            my $file_id = $stock_info{$stock_id}->{file_id};
+
+            #print STDERR Dumper \@columns;
+
+            $plots_seen{$stock_uniquename} = 1;
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$num_points_composed_trait_name} = [$columns[1], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$max_length_composed_trait_name} = [$columns[2], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$max_height_composed_trait_name} = [$columns[3], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$max_span_composed_trait_name} = [$columns[4], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$min_length_composed_trait_name} = [$columns[5], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$min_height_composed_trait_name} = [$columns[6], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$min_span_composed_trait_name} = [$columns[7], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$average_length_composed_trait_name} = [$columns[8], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$average_height_composed_trait_name} = [$columns[9], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$average_span_composed_trait_name} = [$columns[10], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$average_3d_volume_composed_trait_name} = [$columns[11], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$average_length_density_composed_trait_name} = [$columns[12], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$average_height_density_composed_trait_name} = [$columns[13], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$average_span_density_composed_trait_name} = [$columns[14], $timestamp, $user_name, '', '', '', $file_id];
+            $point_cloud_stat_phenotype_data{$stock_uniquename}->{$average_3d_density_composed_trait_name} = [$columns[15], $timestamp, $user_name, '', '', '', $file_id];
+
+            $line++;
+        }
+
+    close $fh;
+    print STDERR "Read $line lines in results file\n";
+
+    if ($line > 0) {
+        my %phenotype_metadata = (
+            'archived_file' => $archived_pheno_filename_with_path,
+            'archived_file_type' => $archive_file_type,
+            'operator' => $user_name,
+            'date' => $timestamp
+        );
+        my @plot_units_seen = keys %plots_seen;
+
+        my $store_args = {
+            basepath=>$c->config->{basepath},
+            dbhost=>$c->config->{dbhost},
+            dbname=>$c->config->{dbname},
+            dbuser=>$c->config->{dbuser},
+            dbpass=>$c->config->{dbpass},
+            bcs_schema=>$bcs_schema,
+            metadata_schema=>$metadata_schema,
+            phenome_schema=>$phenome_schema,
+            user_id=>$user_id,
+            stock_list=>\@plot_units_seen,
+            trait_list=>\@traits_seen,
+            values_hash=>\%point_cloud_stat_phenotype_data,
+            has_timestamps=>1,
+            metadata_hash=>\%phenotype_metadata,
+            private_company_id=>$private_company_id,
+            private_company_phenotype_is_private=>$private_company_is_private,
+        };
+
+        my $overwrite_phenotype_values = 1;
+        if ($overwrite_phenotype_values) {
+            $store_args->{overwrite_values} = $overwrite_phenotype_values;
+        }
+        my $ignore_new_phenotype_values = 0;
+        if ($ignore_new_phenotype_values) {
+            $store_args->{ignore_new_values} = $ignore_new_phenotype_values;
+        }
+
+        my $store_phenotypes = CXGN::Phenotypes::StorePhenotypes->new(
+            $store_args
+        );
+        my ($verified_warning, $verified_error) = $store_phenotypes->verify();
+        my ($stored_phenotype_error, $stored_phenotype_success) = $store_phenotypes->store();
+
+        my $bs = CXGN::BreederSearch->new( { dbh=>$c->dbc->dbh, dbname=>$c->config->{dbname}, } );
+        my $refresh = $bs->refresh_matviews($c->config->{dbhost}, $c->config->{dbname}, $c->config->{dbuser}, $c->config->{dbpass}, 'fullview', 'nonconcurrent', $c->config->{basepath});
+    }
 
     while (my($drone_run_project_id, $o1) = each %saved_point_cloud_files) {
 

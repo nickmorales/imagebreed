@@ -344,3 +344,45 @@ id: G2F:0000057
 name: Average 3D Density
 def: "The average density of points in plot volume using average 3D volume and total number of points." []
 relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000058
+name: Number of Points
+def: "The total number of points in the point cloud." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000059
+name: Maximum Point Height Value
+def: "The maximum point height value in the point cloud." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000060
+name: Maximum Point Length Value
+def: "The maximum point length value in the point cloud." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000061
+name: Maximum Point Span Value
+def: "The maximum point span value in the point cloud." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000062
+name: Minimum Point Height Value
+def: "The minimum point height value in the point cloud." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000063
+name: Minimum Point Length Value
+def: "The minimum point length value in the point cloud." []
+relationship: variable_of G2F:0000049
+
+[Term]
+id: G2F:0000064
+name: Minimum Point Span Value
+def: "The minimum point span value in the point cloud." []
+relationship: variable_of G2F:0000049

@@ -12745,6 +12745,7 @@ sub _perform_phenotype_calculation {
 
         $dir = $c->tempfiles_subdir('/'.$temp_results_subdir);
         my $archive_temp_results = $c->config->{basepath}."/".$c->tempfile( TEMPLATE => $temp_results_subdir.'/imageXXXX');
+        $archive_temp_results .= '.csv';
 
         my $cmd = $c->config->{python_executable}.' '.$c->config->{rootpath}.'/DroneImageScripts/ImageProcess/'.$calculate_phenotypes_script.' --image_paths_input_file \''.$temp_input_file.'\' '.$out_paths_string.' --results_outfile_path \''.$archive_temp_results.'\''.$calculate_phenotypes_extra_args;
         print STDERR Dumper $cmd;
@@ -12753,11 +12754,29 @@ sub _perform_phenotype_calculation {
         my $time = DateTime->now();
         my $timestamp = $time->ymd()."_".$time->hms();
 
-        my $csv = Text::CSV->new({ sep_char => ',' });
-        open(my $fh, '<', $archive_temp_results)
-            or die "Could not open file '$archive_temp_results' $!";
+        my $temp_filename = basename($archive_temp_results);
+        my $uploader = CXGN::UploadFile->new({
+            tempfile => $archive_temp_results,
+            subdirectory => $archive_file_type,
+            archive_path => $c->config->{archive_path},
+            archive_filename => $temp_filename,
+            timestamp => $timestamp,
+            user_id => $user_id,
+            user_role => $user_role
+        });
+        my $archived_pheno_filename_with_path = $uploader->archive();
+        my $archive_pheno_md5 = $uploader->get_md5($archived_pheno_filename_with_path);
+        if (!$archived_pheno_filename_with_path) {
+            $c->stash->{message} = "Could not save file $temp_filename in archive.";
+            $c->stash->{template} = 'generic_message.mas';
+            return;
+        }
+        print STDERR "Archived Aerial Image Pheno File: $archived_pheno_filename_with_path\n";
 
-            print STDERR "Opened $archive_temp_results\n";
+        my $csv = Text::CSV->new({ sep_char => ',' });
+        open(my $fh, '<', $archived_pheno_filename_with_path) or die "Could not open file '$archived_pheno_filename_with_path' $!";
+
+            print STDERR "Opened $archived_pheno_filename_with_path\n";
             my $header = <$fh>;
             if ($csv->parse($header)) {
                 @header_cols = $csv->fields();
@@ -12847,7 +12866,7 @@ sub _perform_phenotype_calculation {
 
         if ($line > 0) {
             my %phenotype_metadata = (
-                'archived_file' => $archive_temp_results,
+                'archived_file' => $archived_pheno_filename_with_path,
                 'archived_file_type' => $archive_file_type,
                 'operator' => $user_name,
                 'date' => $timestamp
