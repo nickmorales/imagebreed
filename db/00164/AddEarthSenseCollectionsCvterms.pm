@@ -65,7 +65,6 @@ sub patch {
     my $terms = {
         'project_property' => [
             'earthsense_ground_rover_collections_archived',
-            'drone_rover_plot_polygon_in_progress',
             'earthsense_collection_number'
         ],
         'project_md_image' => [

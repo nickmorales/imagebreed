@@ -884,48 +884,32 @@ jQuery(document).ready(function() {
 
             jQuery.ajax({
                 type: 'POST',
-                url: '/api/drone_rover/check_maximum_plot_polygon_processes',
+                url: '/api/drone_rover/plot_polygons_process_apply',
                 dataType: "json",
+                data: {
+                    'drone_run_project_id': manage_drone_rover_plot_polygons_drone_run_project_id,
+                    'drone_run_collection_number': manage_drone_rover_plot_polygons_collection_number,
+                    'drone_run_collection_project_id':manage_drone_rover_plot_polygons_collection_project_id,
+                    'phenotype_types': JSON.stringify(selected),
+                    'field_trial_id':manage_drone_rover_plot_polygons_field_trial_id,
+                    'polygon_template_metadata':JSON.stringify(manage_drone_rover_template),
+                    'polygons_to_plot_names':JSON.stringify(manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned),
+                    'company_id': manage_drone_rover_plot_polygons_private_company_id,
+                    'is_private': manage_drone_rover_plot_polygons_private_company_is_private
+                },
                 success: function(response){
+                    console.log(response);
                     if (response.error) {
                         alert(response.error);
-                        return false;
-                    }
-                    else if (response.success) {
-                        jQuery.ajax({
-                            type: 'POST',
-                            url: '/api/drone_rover/plot_polygons_process_apply',
-                            dataType: "json",
-                            data: {
-                                'drone_run_project_id': manage_drone_rover_plot_polygons_drone_run_project_id,
-                                'drone_run_collection_number': manage_drone_rover_plot_polygons_collection_number,
-                                'drone_run_collection_project_id':manage_drone_rover_plot_polygons_collection_project_id,
-                                'phenotype_types': JSON.stringify(selected),
-                                'field_trial_id':manage_drone_rover_plot_polygons_field_trial_id,
-                                'polygon_template_metadata':JSON.stringify(manage_drone_rover_template),
-                                'polygons_to_plot_names':JSON.stringify(manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned),
-                                'company_id': manage_drone_rover_plot_polygons_private_company_id,
-                                'is_private': manage_drone_rover_plot_polygons_private_company_is_private
-                            },
-                            success: function(response){
-                                console.log(response);
-                                if (response.error) {
-                                    alert(response.error);
-                                }
-                            },
-                            error: function(response){
-                                alert('Error saving rover process assigned plot polygons!')
-                            }
-                        });
-
-                        Workflow.complete("#manage_drone_rover_plot_polygon_process_phenotypes_step");
-                        jQuery('#drone_rover_plot_polygons_process_complete_dialog').modal('show');
                     }
                 },
                 error: function(response){
-                    alert('Error checking maximum number of rover standard processes!')
+                    alert('Error saving rover process assigned plot polygons!')
                 }
             });
+
+            Workflow.complete("#manage_drone_rover_plot_polygon_process_phenotypes_step");
+            jQuery('#drone_rover_plot_polygons_process_complete_dialog').modal('show');
         }
     });
 
