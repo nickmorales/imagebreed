@@ -3,6 +3,7 @@
   "version": "0.0.4",
   "description": "node package containing all importable CXGN/SGN JavaScript files.",
   "main": "webpack.config.js",
+  "type":"module",
   "scripts": {
     "reset": "npm config set engine-strict true; rm -r build/ || true && npm install --verbose .",
     "build": "npm run reset && webpack --config build.webpack.config.js",
