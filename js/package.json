@@ -3,15 +3,14 @@
   "version": "0.0.5",
   "description": "node package containing all importable CXGN/SGN JavaScript files.",
   "main": "webpack.config.js",
-  "type":"module",
   "scripts": {
     "reset": "npm config set engine-strict true; rm -r build/ || true && npm install --verbose .",
-    "build": "npm run reset && webpack --config build.webpack.config.mjs",
-    "build-ci": "npm ci --verbose && webpack --config build.webpack.config.mjs",
-    "build-watch": "npm run reset && webpack --config build.webpack.config.mjs -w",
-    "build-ci-watch": "npm ci --verbose && webpack --config build.webpack.config.mjs -w",
+    "build": "npm run reset && webpack --config build.webpack.config.js",
+    "build-ci": "npm ci --verbose && webpack --config build.webpack.config.js",
+    "build-watch": "npm run reset && webpack --config build.webpack.config.js -w",
+    "build-ci-watch": "npm ci --verbose && webpack --config build.webpack.config.js -w",
     "reset-test": "npm config set engine-strict true; rm -r build_test/ || true && npm install --verbose .",
-    "build-test": "npm run reset-test && webpack --config test.webpack.config.mjs"
+    "build-test": "npm run reset-test && webpack --config test.webpack.config.js"
   },
   "private": true,
   "author": "",
