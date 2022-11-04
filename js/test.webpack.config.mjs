@@ -1,4 +1,4 @@
-const rootConfig = require("./build.webpack.config.js");
+const rootConfig = require("./build.webpack.config.mjs");
 const merge = require('deepmerge');
 const isPlainObject = require('is-plain-object');
 const path = require('path');
