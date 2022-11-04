@@ -546,7 +546,7 @@ jQuery(document).ready(function() {
             return false;
         }
         else {
-            manage_drone_rover_plot_polygons_current_collection_field_name = 'field_trial1'; // TODO::  REMOVE THIS LINE
+            //manage_drone_rover_plot_polygons_current_collection_field_name = 'field_trial1'; // TODO::  REMOVE THIS LINE
             if (manage_drone_rover_plot_polygons_current_collection_field_name in manage_drone_rover_plot_polygons_field_trial_layout_responses_designs) {
                 jQuery('input[name="manage_drone_rover_plot_polgyons_assign_plot_number"]').each(function() {
                     var plot_number = jQuery(this).val();
@@ -913,9 +913,9 @@ jQuery(document).ready(function() {
         }
     });
 
-    // jQuery('#drone_rover_plot_polygons_process_complete_dialog').on('hidden.bs.modal', function () { TODO:: UNCOMMENT
-    //     location.reload();
-    // });
+    jQuery('#drone_rover_plot_polygons_process_complete_dialog').on('hidden.bs.modal', function () {
+        location.reload();
+    });
 
     function showManageDroneRoverSection(section_div_id) {
         console.log(section_div_id);
