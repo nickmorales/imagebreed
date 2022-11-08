@@ -12462,7 +12462,7 @@ sub drone_imagery_generate_phenotypes_GET : Args(0) {
     my @standard_processes = split ',', $standard_process_type;
     my $return;
     foreach my $standard_process_type (@standard_processes) {
-        $return = _perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id, $time_cvterm_id, $phenotype_methods, $standard_process_type, undef, 1, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role);
+        $return = _perform_phenotype_automated($c, $schema, $metadata_schema, $phenome_schema, $drone_run_project_id, $time_cvterm_id, $phenotype_methods, $standard_process_type, undef, 1, $plot_margin_top_bottom, $plot_margin_left_right, $user_id, $user_name, $user_role, 1, 0);
     }
 
     $c->stash->{rest} = $return;
