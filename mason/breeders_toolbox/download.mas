@@ -54,8 +54,8 @@ Choose a list for each parameter and click "Download".
     <select class="form-control" id="format" name="format">
         <option value="csv">CSV Wide</option>
         <option value="csv_long">CSV Long</option>
-        <option value="xls">XLS Wide</option>
-        <option value="xls_long">XLS Long</option>
+        <option value="xlsx">Excel (xlsx) Wide</option>
+        <option value="xlsx_long">Excel (xlsx) Long</option>
         <option value="html">HTML</option>
     </select>
     <br/>

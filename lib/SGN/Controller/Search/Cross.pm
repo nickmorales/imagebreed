@@ -91,7 +91,7 @@ sub download_cross_entries : Path('/search/download_cross_entries') Args(0) {
 
     my $cross_properties_string = $c->config->{cross_properties};
     my @cross_properties = split ',', $cross_properties_string;
-    my $file_format = "xls";
+    my $file_format = "xlsx";
 
     my $time = DateTime->now();
     my $timestamp = $time->ymd();
@@ -112,7 +112,7 @@ sub download_cross_entries : Path('/search/download_cross_entries') Args(0) {
     my $error = $download->download();
 
     my $file_name = "cross_entries" . "_" . "$timestamp" . ".$file_format";
-    $c->res->content_type('Application/'.$file_format);
+    $c->res->content_type('application/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     $c->res->header('Content-Disposition', qq[attachment; filename="$file_name"]);
 
     my $output = read_file($tempfile);

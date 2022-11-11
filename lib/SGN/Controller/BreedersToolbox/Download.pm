@@ -22,6 +22,7 @@ use File::Copy;
 use URI::FromHash 'uri';
 use CXGN::List::Transform;
 use Spreadsheet::WriteExcel;
+use Excel::Writer::XLSX;
 use CXGN::Trial::Download;
 use POSIX qw(strftime);
 use Sort::Maker;
@@ -40,7 +41,6 @@ use CXGN::Genotype::DownloadFactory;
 use CXGN::Genotype::GRM;
 use CXGN::Genotype::GWAS;
 use CXGN::Accession;
-use Spreadsheet::WriteExcel;
 
 sub breeder_download : Path('/breeders/download/') Args(0) {
     my $self = shift;
@@ -237,6 +237,10 @@ sub download_phenotypes_action : Path('/breeders/trials/phenotype/download') Arg
         $plugin = "TrialPhenotypeExcel";
         $extension = "xls";
     }
+    if ($format eq "xlsx") {
+        $plugin = "TrialPhenotypeExcel";
+        $extension = "xlsx";
+    }
     if ($format eq "csv") {
         $plugin = "TrialPhenotypeCSV";
         $extension = "csv";
@@ -244,6 +248,10 @@ sub download_phenotypes_action : Path('/breeders/trials/phenotype/download') Arg
     if ($format eq "xls_long") {
         $plugin = "TrialPhenotypeLongExcel";
         $extension = "xls";
+    }
+    if ($format eq "xlsx_long") {
+        $plugin = "TrialPhenotypeLongExcel";
+        $extension = "xlsx";
     }
     if ($format eq "csv_long") {
         $plugin = "TrialPhenotypeLongCSV";
@@ -256,13 +264,13 @@ sub download_phenotypes_action : Path('/breeders/trials/phenotype/download') Arg
 
     if ($data_level eq 'metadata'){
         $temp_file_name = "metadata" . "XXXX";
-        $download_file_name = "metadata.$format";
-    }else{
+        $download_file_name = "metadata.$extension";
+    } else {
         $temp_file_name = "phenotype" . "XXXX";
-        $download_file_name = "phenotype.$format";
+        $download_file_name = "phenotype.$extension";
     }
     my $rel_file = $c->tempfile( TEMPLATE => "download/$temp_file_name");
-    $rel_file = $rel_file . ".$format";
+    $rel_file = $rel_file . ".$extension";
     my $tempfile = $c->config->{basepath}."/".$rel_file;
 
     print STDERR "TEMPFILE : $tempfile\n";
@@ -294,7 +302,7 @@ sub download_phenotypes_action : Path('/breeders/trials/phenotype/download') Arg
 
     my $error = $download->download();
 
-    $c->res->content_type('Application/'.$format);
+    $c->res->content_type('application/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     $c->res->header('Content-Disposition', qq[attachment; filename="$download_file_name"]);
 
     my $output = read_file($tempfile);  ## works for xls format
@@ -333,6 +341,9 @@ sub download_action : Path('/breeders/download_action') Args(0) {
     if ($format_input eq 'xls' || $format_input eq 'xls_long') {
         $format = '.xls';
     }
+    if ($format_input eq 'xlsx' || $format_input eq 'xlsx_long') {
+        $format = '.xlsx';
+    }
     if ($format_input eq 'html') {
         $format = 'html';
     }
@@ -351,17 +362,17 @@ sub download_action : Path('/breeders/download_action') Args(0) {
 
     my $accession_data;
     if ($accession_list_id) {
-	$accession_data = SGN::Controller::AJAX::List->retrieve_list($c, $accession_list_id);
+        $accession_data = SGN::Controller::AJAX::List->retrieve_list($c, $accession_list_id);
     }
 
     my $trial_data;
     if ($trial_list_id) {
-	$trial_data = SGN::Controller::AJAX::List->retrieve_list($c, $trial_list_id);
+        $trial_data = SGN::Controller::AJAX::List->retrieve_list($c, $trial_list_id);
     }
 
     my $trait_data;
     if ($trait_list_id) {
-	$trait_data = SGN::Controller::AJAX::List->retrieve_list($c, $trait_list_id);
+        $trait_data = SGN::Controller::AJAX::List->retrieve_list($c, $trait_list_id);
     }
 
     my @accession_list = map { $_->[1] } @$accession_data;
@@ -412,7 +423,7 @@ sub download_action : Path('/breeders/download_action') Args(0) {
         @data = $metadata_search->get_metadata_matrix();
     }
     else {
-        if ($format_input eq 'csv' || $format_input eq 'xls') {
+        if ($format_input eq 'csv' || $format_input eq 'xls' || $format_input eq 'xlsx') {
             my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrix->new(
                 bcs_schema=>$schema,
                 search_type=>'MaterializedViewTable',
@@ -427,7 +438,7 @@ sub download_action : Path('/breeders/download_action') Args(0) {
             );
             @data = $phenotypes_search->get_phenotype_matrix();
         }
-        elsif ($format_input eq 'csv_long' || $format_input eq 'xls_long' || $format_input eq 'html') {
+        elsif ($format_input eq 'csv_long' || $format_input eq 'xls_long' || $format_input eq 'xlsx_long' || $format_input eq 'html') {
             my $phenotypes_search = CXGN::Phenotypes::PhenotypeMatrixLong->new(
                 bcs_schema=>$schema,
                 search_type=>'MaterializedViewTable',
@@ -471,13 +482,18 @@ sub download_action : Path('/breeders/download_action') Args(0) {
         # if xls or csv, create tempfile name and place to save it
 
         my $what;
-        if ($datalevel eq 'metadata'){$what = "metadata_download";}
-        else{$what = "phenotype_download"; }
+        if ($datalevel eq 'metadata') {
+            $what = "metadata_download";
+        }
+        else {
+            $what = "phenotype_download";
+        }
         my $time_stamp = strftime "%Y-%m-%dT%H%M%S", localtime();
         my $dir = $c->tempfiles_subdir('download');
         my $temp_file_name = $time_stamp . "$what" . "XXXX";
         my $rel_file = $c->tempfile( TEMPLATE => "download/$temp_file_name");
         my $tempfile = $c->config->{basepath}."/".$rel_file;
+
         if ($format eq ".csv") {
 
             #build csv with column names
@@ -502,8 +518,17 @@ sub download_action : Path('/breeders/download_action') Args(0) {
                 }
             close CSV;
 
-        } else {
-            my $ss = Spreadsheet::WriteExcel->new($tempfile);
+        }
+        else {
+            my $ss;
+            if ($format eq ".xls") {
+                $ss = Spreadsheet::WriteExcel->new($tempfile);
+                $format = ".xls";
+            }
+            elsif ($format eq ".xlsx") {
+                $ss = Excel::Writer::XLSX->new($tempfile);
+                $format = ".xlsx";
+            }
             my $ws = $ss->add_worksheet();
 
             for (my $line =0; $line< @data; $line++) {
@@ -512,29 +537,26 @@ sub download_action : Path('/breeders/download_action') Args(0) {
                     $ws->write($line, $col, $columns[$col]);
                 }
             }
-            #$ws->write(0, 0, "$program_name, $location ($year)");
             $ss ->close();
-
-            $format = ".xls";
         }
 
         #Using tempfile and new filename,send file to client
         my $file_name = $time_stamp . "$what" . "$format";
-        $c->res->content_type('Application/'.$format);
+        $c->res->content_type('application/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $c->res->cookies->{$dl_cookie} = {
           value => $dl_token,
           expires => '+1m',
         };
         $c->res->header('Content-Disposition', qq[attachment; filename="$file_name"]);
 
-	my $output = "";
-	open(my $F, "< :raw", $tempfile) || die "Can't open file $tempfile for reading.";
-	while (<$F>) {
-	    $output .= $_;
-	}
-	close($F);
+        my $output = "";
+        open(my $F, "< :raw", $tempfile) || die "Can't open file $tempfile for reading.";
+        while (<$F>) {
+            $output .= $_;
+        }
+        close($F);
 
-	#$output = read_file($tempfile, binmode=>':raw:utf8');  ## works for xls format
+        #$output = read_file($tempfile, binmode=>':raw:utf8');  ## works for xls format
 
         $c->res->body($output);
     }
@@ -566,7 +588,7 @@ sub download_accession_properties_action : Path('/breeders/download_accession_pr
 
     # Get request params
     my $accession_list_id = $c->req->param("accession_properties_accession_list_list_select");
-    my $file_format = $c->req->param("file_format") || ".xls";
+    my $file_format = $c->req->param("file_format") || ".xlsx";
     my $dl_token = $c->req->param("accession_properties_download_token") || "no_token";
     my $dl_cookie = "download".$dl_token;
     if ( !$accession_list_id ) {
@@ -596,13 +618,22 @@ sub download_accession_properties_action : Path('/breeders/download_accession_pr
     my @editable_stock_props = split ',', $c->config->{editable_stock_props};
     my $rows = $self->build_accession_properties_info($schema, \@accession_ids, \@editable_stock_props);
 
-    # Create and Return XLS file
-    if ( $file_format eq ".xls" ) {
-        my $file_path = $tempfile . ".xls";
+    # Create and Return XLSX file
+    if ( $file_format eq ".xlsx" || $file_format eq ".xls" ) {
+
+        my $file_path;
+        my $workbook;
+        if ($file_format eq ".xlsx") {
+            $file_path = $tempfile . ".xlsx";
+            $workbook = Excel::Writer::XLSX->new($file_path);
+        }
+        elsif ($file_format eq ".xls") {
+            $file_path = $tempfile . ".xls";
+            $workbook = Spreadsheet::WriteExcel->new($file_path);
+        }
         my $file_name = basename($file_path);
 
         # Write to the xls file
-        my $workbook = Spreadsheet::WriteExcel->new($file_path);
         my $worksheet = $workbook->add_worksheet();
         for ( my $i = 0; $i <= $#$rows; $i++ ) {
             $worksheet->write_row($i, 0, $rows->[$i]);
@@ -610,7 +641,7 @@ sub download_accession_properties_action : Path('/breeders/download_accession_pr
         $workbook->close();
 
         # Return the xls file
-        $c->res->content_type('Application/xls');
+        $c->res->content_type('application/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $c->res->cookies->{$dl_cookie} = {
           value => $dl_token,
           expires => '+1m',
@@ -658,13 +689,13 @@ sub download_accession_properties_action : Path('/breeders/download_accession_pr
           expires => '+1m',
         };
         $c->res->header('Content-Disposition', qq[attachment; filename="$file_name"]);
-        #my $output = read_file($file_path);   ### Does not work with UTF8 text files
-	my $output = "";
-	open(my $F, "< :encoding(UTF-8)", $file_path) || die "Can't open file $file_path for reading.";
-	while (<$F>) {
-	    $output .= $_;
-	}
-	close($F);
+
+        my $output = "";
+        open(my $F, "< :encoding(UTF-8)", $file_path) || die "Can't open file $file_path for reading.";
+        while (<$F>) {
+            $output .= $_;
+        }
+        close($F);
 
         $c->res->body($output);
     }

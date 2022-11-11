@@ -18,8 +18,8 @@
                     <select class="form-control" id="download_trials_phenotypes_format">
                         <option value="csv">CSV Wide Format</option>
                         <option value="csv_long">CSV Long Format</option>
-                        <option value="xls">Excel (xls) Wide Format</option>
-                        <option value="xls_long">Excel (xls) Long Format</option>
+                        <option value="xlsx">Excel (xlsx) Wide Format</option>
+                        <option value="xlsx_long">Excel (xlsx) Long Format</option>
                     </select>
                 </div>
 	        </div>

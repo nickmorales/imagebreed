@@ -621,7 +621,7 @@ sub cross_wishlist_download : Path('/cross_wishlist/file_download/') Args(1) {
     my $file_destination =  catfile($file_row->dirname, $file_row->basename);
     my $contents = read_file($file_destination);
     my $file_name = $file_row->basename;
-    $c->res->content_type('Application/xls');
+    $c->res->content_type('application/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     $c->res->header('Content-Disposition', qq[attachment; filename="$file_name"]);
     $c->res->body($contents);
 }

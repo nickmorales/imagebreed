@@ -358,8 +358,8 @@ $dataset_id => undef
                   <option value="" disabled>Format</option>
                   <option selected value="csv">CSV Wide Format</option>
                   <option value="csv_long">CSV Long Format</option>
-                  <option value="xls">XLS Wide Format</option>
-                  <option value="xls_long">XLS Long Format</option>
+                  <option value="xlsx">Excel (xlsx) Wide Format</option>
+                  <option value="xlsx_long">Excel (xlsx) Long Format</option>
                 </select>
               </td>
               <td>
