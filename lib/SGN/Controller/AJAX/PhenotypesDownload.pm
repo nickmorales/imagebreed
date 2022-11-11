@@ -95,7 +95,7 @@ sub create_phenotype_spreadsheet_POST : Args(0) {
     my @trait_list = @{_parse_list_from_json($c->req->param('trait_list'))};
     my $dir = $c->tempfiles_subdir('/download');
     my $rel_file = $c->tempfile( TEMPLATE => 'download/downloadXXXXX');
-    my $tempfile = $c->config->{basepath}."/".$rel_file.".xls";
+    my $tempfile = $c->config->{basepath}."/".$rel_file.".xlsx";
 
     my $create_spreadsheet = CXGN::Trial::Download->new({
         bcs_schema => $schema,
@@ -152,7 +152,7 @@ sub create_phenotype_spreadsheet_POST : Args(0) {
         #print STDERR Dumper $new_terms;
     }
 
-    $c->stash->{rest} = { filename => $urlencode{$rel_file.".xls"} };
+    $c->stash->{rest} = { filename => $urlencode{$rel_file.".xlsx"} };
 }
 
 sub _parse_list_from_json {

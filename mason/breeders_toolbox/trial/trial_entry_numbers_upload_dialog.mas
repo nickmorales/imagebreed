@@ -13,7 +13,7 @@ $trial_name => undef
       </div>
       <div class="modal-body">
         <div class="container-fluid">
-          <b>Trial Entry Numbers may be uploaded in an Excel file (.xls)</b><br>
+          <b>Trial Entry Numbers may be uploaded in an Excel file (.xls or .xlsx)</b><br>
           (.xlsx format not supported)
           <br><br>
           <b>Header:</b><br>
@@ -117,7 +117,7 @@ function addResultMessage(message, type) {
   let html = "";
   let class_name = "danger";
   let icon_name = "remove";
-  
+
   if ( type === "success" ) {
     class_name = "success";
     icon_name = "ok";
