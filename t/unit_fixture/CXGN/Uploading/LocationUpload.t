@@ -25,7 +25,7 @@ my $pre_locationprop_count = $c->bcs_schema->resultset('NaturalDiversity::NdGeol
 
 #First Upload Excel Location File
 
-my $file_name = 't/data/location_upload/location_test_file';
+my $file_name = 't/data/location_upload/location_test_file.xls';
 my $time = DateTime->now();
 my $timestamp = $time->ymd()."_".$time->hms();
 
@@ -34,7 +34,7 @@ my $uploader = CXGN::UploadFile->new({
   tempfile => $file_name,
   subdirectory => 'temp_location_upload',
   archive_path => '/tmp',
-  archive_filename => 'location_test_file',
+  archive_filename => 'location_test_file.xls',
   timestamp => $timestamp,
   user_id => 41, #janedoe in fixture
   user_role => 'curator'

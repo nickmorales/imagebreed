@@ -28,7 +28,7 @@ print STDERR $sgn_session_id."\n";
 
 my $breeding_program_id = $schema->resultset('Project::Project')->find({name=>'test'})->project_id();
 
-my $file = $f->config->{basepath}."/t/data/stock/seedlot_upload_named_accessions";
+my $file = $f->config->{basepath}."/t/data/stock/seedlot_upload_named_accessions.xls";
 my $ua = LWP::UserAgent->new;
 $response = $ua->post(
         'http://localhost:3010/ajax/breeders/seedlot-upload',
@@ -52,7 +52,7 @@ print STDERR Dumper $message_hash;
 ok($message_hash->{success});
 is(scalar(@{$message_hash->{added_seedlot}}),2);
 
-$file = $f->config->{basepath}."/t/data/stock/seedlot_upload_harvested";
+$file = $f->config->{basepath}."/t/data/stock/seedlot_upload_harvested.xls";
 $ua = LWP::UserAgent->new;
 $response = $ua->post(
         'http://localhost:3010/ajax/breeders/seedlot-upload',
@@ -75,7 +75,7 @@ print STDERR Dumper $message_hash;
 ok($message_hash->{success});
 is(scalar(@{$message_hash->{added_seedlot}}),2);
 
-$file = $f->config->{basepath}."/t/data/stock/seedlot_inventory_android_app";
+$file = $f->config->{basepath}."/t/data/stock/seedlot_inventory_android_app.csv";
 $ua = LWP::UserAgent->new;
 $response = $ua->post(
         'http://localhost:3010/ajax/breeders/seedlot-inventory-upload',

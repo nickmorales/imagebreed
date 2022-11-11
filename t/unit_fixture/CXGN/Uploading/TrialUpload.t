@@ -749,7 +749,7 @@ print STDERR Dumper $response;
 my $sgn_session_id = $response->{access_token};
 print STDERR $sgn_session_id."\n";
 
-my $file = $f->config->{basepath}."/t/data/genotype_trial_upload/NewGenotypeUpload";
+my $file = $f->config->{basepath}."/t/data/genotype_trial_upload/NewGenotypeUpload.xls";
 my $ua = LWP::UserAgent->new;
 $response = $ua->post(
         'http://localhost:3010/ajax/breeders/parsegenotypetrial',
@@ -843,7 +843,7 @@ $response = decode_json $mech->content;
 ok($response->{trial_id});
 
 
-my $file = $f->config->{basepath}."/t/data/genotype_trial_upload/CoordinateTemplate";
+my $file = $f->config->{basepath}."/t/data/genotype_trial_upload/CoordinateTemplate.csv";
 my $ua = LWP::UserAgent->new;
 $response = $ua->post(
         'http://localhost:3010/ajax/breeders/parsegenotypetrial',
@@ -969,7 +969,7 @@ $response = decode_json $mech->content;
 ok($response->{trial_id});
 
 
-my $file = $f->config->{basepath}."/t/data/genotype_trial_upload/CoordinatePlateUpload";
+my $file = $f->config->{basepath}."/t/data/genotype_trial_upload/CoordinatePlateUpload.csv";
 my $ua = LWP::UserAgent->new;
 $response = $ua->post(
         'http://localhost:3010/ajax/breeders/parsegenotypetrial',

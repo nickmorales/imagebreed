@@ -103,13 +103,13 @@ my $population = $schema->resultset("Stock::Stock")->find({uniquename => 'popula
 $population->delete();
 
 # Test uploading accession file
-my $file = $f->config->{basepath}."/t/data/stock/test_accession_upload";
+my $file = $f->config->{basepath}."/t/data/stock/test_accession_upload.xls";
 my $ua = LWP::UserAgent->new;
 $response = $ua->post(
         'http://localhost:3010/ajax/accessions/verify_accessions_file',
         Content_Type => 'form-data',
         Content => [
-            new_accessions_upload_file => [ $file, 'test_accession_upload', Content_Type => 'application/vnd.ms-excel', ],
+            new_accessions_upload_file => [ $file, 'test_accession_upload.xls', Content_Type => 'application/vnd.ms-excel', ],
             "sgn_session_id"=>$sgn_session_id,
             "fuzzy_check_upload_accessions"=>1,
             "add_accessions_file_private_company_select"=>1
