@@ -48,20 +48,32 @@ $c->res->body($output);
 use Moose::Role;
 use Data::Dumper;
 use Spreadsheet::WriteExcel;
+use Excel::Writer::XLSX;
 use CXGN::Trial;
 use CXGN::Trial::TrialLayoutDownload;
 use CXGN::Trial::TrialLayout;
 use List::MoreUtils ':all';
 
-sub verify { 
+sub verify {
     return 1;
-} 
+}
 
-sub download { 
+sub download {
     my $self = shift;
 
     print STDERR "DATALEVEL ".$self->data_level."\n";
-    my $ss = Spreadsheet::WriteExcel->new($self->filename());
+
+    # Match a dot, extension .xls / .xlsx
+    my ($extension) = $self->filename() =~ /(\.[^.]+)$/;
+    my $ss;
+
+    if ($extension eq '.xlsx') {
+        $ss = Excel::Writer::XLSX->new($self->filename());
+    }
+    else {
+        $ss = Spreadsheet::WriteExcel->new($self->filename());
+    }
+
     my $ws = $ss->add_worksheet();
 
     my $trial_layout_download = CXGN::Trial::TrialLayoutDownload->new({
@@ -77,7 +89,7 @@ sub download {
     if ($output->{error_messages}){
         return $output;
     }
-    
+
     if ($self->data_level eq 'plot_fieldMap'){
         my (@unique_col,@unique_row);
         my %hash = %{$output->{output}};
@@ -95,20 +107,20 @@ sub download {
         my $trial_name =  $trial_layout->get_trial_name();
         my $info = $trial_name."\nColumns\nRows";
         $ws->write( "A1", $info );
-        my $row_num_label = 1;        
+        my $row_num_label = 1;
         foreach my $l (@unique_row){
             my $col_num_label = 0;
             $ws->write( $row_num_label, $col_num_label, $l);
             $col_num_label++;
             $row_num_label++;
-        }        
+        }
         my $row_num_label_col = 1;
         foreach my $l (@unique_col){
             my $col_num_label_col = 0;
             $ws->write($col_num_label_col, $row_num_label_col, $l);
             $col_num_label_col++;
             $row_num_label_col++;
-        }        
+        }
         foreach my $row (keys %hash){
             my $cols = $hash{$row};
             foreach my $col (keys %$cols){
@@ -128,7 +140,9 @@ sub download {
             $row_num++;
         }
     }
-        
+
+    $ss ->close();
+
 }
 
 1;

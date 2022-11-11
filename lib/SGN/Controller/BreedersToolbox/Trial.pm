@@ -363,33 +363,41 @@ sub trial_download : Chained('trial_init') PathPart('download') Args(1) {
     }
 
     my $plugin = "";
+    my $extension_type;
     if ( ($format eq "xls") && ($what eq "layout")) {
         $plugin = "TrialLayoutExcel";
+        $extension_type = ".xlsx";
     }
     if (($format eq "csv") && ($what eq "layout")) {
         $plugin = "TrialLayoutCSV";
+        $extension_type = ".csv";
     }
     if (($format eq "xls") && ($what =~ /phenotype/)) {
         $plugin = "TrialPhenotypeExcel";
+        $extension_type = ".xlsx";
     }
     if (($format eq "csv") && ($what =~ /phenotype/)) {
         $plugin = "TrialPhenotypeCSV";
+        $extension_type = ".csv";
     }
     if (($format eq "xls") && ($what eq "basic_trial_excel")) {
         $plugin = "BasicExcel";
+        $extension_type = ".xlsx";
     }
     if ( ($format eq "intertekxls") && ($what eq "layout")) {
         $plugin = "GenotypingTrialLayoutIntertekXLS";
+        $extension_type = ".xlsx";
     }
     if ( ($format eq "dartseqcsv") && ($what eq "layout")) {
         $plugin = "GenotypingTrialLayoutDartSeqCSV";
+        $extension_type = ".csv";
     }
 
     my @field_crossing_data_order;
     if ($format eq "crossing_experiment_xls") {
         $plugin = "CrossingExperimentXLS";
         $what = "crosses";
-        $format = "xls";
+        $extension_type = ".xlsx";
         my $cross_properties = $c->config->{cross_properties};
         @field_crossing_data_order = split ',',$cross_properties;
     }
@@ -398,7 +406,7 @@ sub trial_download : Chained('trial_init') PathPart('download') Args(1) {
     if ($format eq "soil_data_xls") {
         $plugin = "SoilDataXLS";
         $what = "soil_data";
-        $format = "xls";
+        $extension_type = ".xlsx";
         $prop_id = $c->req->param("prop_id");
     }
 
@@ -407,7 +415,7 @@ sub trial_download : Chained('trial_init') PathPart('download') Args(1) {
     my $dir = $c->tempfiles_subdir('download');
     my $temp_file_name = $trial_id . "_" . "$what" . "XXXX";
     my $rel_file = $c->tempfile( TEMPLATE => "download/$temp_file_name");
-    $rel_file = $rel_file . ".$format";
+    $rel_file = $rel_file . $extension_type;
     my $tempfile = $c->config->{basepath}."/".$rel_file;
 
     print STDERR "TEMPFILE : $tempfile\n";
@@ -430,15 +438,8 @@ sub trial_download : Chained('trial_init') PathPart('download') Args(1) {
 
     my $error = $download->download();
 
-    if ($format eq 'intertekxls'){
-        $format = 'xls';
-    }
-    if ($format eq 'dartseqcsv'){
-        $format = 'csv';
-    }
-
-    my $file_name = $trial_id . "_" . "$what" . ".$format";
-    $c->res->content_type('Application/'.$format);
+    my $file_name = $trial_id . "_" . "$what" . $extension_type;
+    $c->res->content_type('application/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     $c->res->header('Content-Disposition', qq[attachment; filename="$file_name"]);
 
     my $output = read_file($tempfile);

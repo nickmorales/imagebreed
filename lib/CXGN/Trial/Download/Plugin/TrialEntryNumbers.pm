@@ -32,6 +32,8 @@ David Waring <djw64@cornell.edu>
 use Moose::Role;
 use JSON;
 use Data::Dumper;
+use Spreadsheet::WriteExcel;
+use Spreadsheet::ParseXLSX;
 
 sub verify {
     my $self = shift;
@@ -44,7 +46,17 @@ sub download {
     my $schema = $self->bcs_schema();
     my @trial_ids = @{$self->trial_list()};
 
-    my $workbook = Spreadsheet::WriteExcel->new($self->filename());
+    # Match a dot, extension .xls / .xlsx
+    my ($extension) = $self->filename() =~ /(\.[^.]+)$/;
+    my $workbook;
+
+    if ($extension eq '.xlsx') {
+        $workbook = Excel::Writer::XLSX->new($self->filename());
+    }
+    else {
+        $workbook = Spreadsheet::WriteExcel->new($self->filename());
+    }
+
     my $ws = $workbook->add_worksheet();
 
     # Add Column Headers
@@ -60,7 +72,7 @@ sub download {
         my $trial_name = $trial->get_name();
         my $stocks = $trial->get_accessions();
         my $existing_entry_numbers = $trial->get_entry_numbers();
-        
+
         for my $stock (@$stocks) {
             my $stock_id = $stock->{'stock_id'};
             my $accession_name = $stock->{'accession_name'};
