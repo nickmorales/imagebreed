@@ -855,6 +855,34 @@ sub manage_drone_rover : Path("/breeders/drone_rover") Args(0) {
     $c->stash->{template} = '/breeders_toolbox/manage_drone_rover.mas';
 }
 
+
+sub manage_drone_rover_plot_polygon_process : Path("/breeders/drone_rover_plot_polygon_process") Args(0) {
+    my $self = shift;
+    my $c = shift;
+
+    if (!$c->user()) {
+        # redirect to login page
+        $c->res->redirect( uri( path => '/user/login', query => { goto_url => $c->req->uri->path_query } ) );
+        return;
+    }
+
+    my $schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+
+    $c->stash->{private_company_id} = $c->req->param('company_id');
+    $c->stash->{private_company_is_private} = $c->req->param('is_private');
+    $c->stash->{field_trial_id} = $c->req->param('trial_id');
+    $c->stash->{field_trial_name} = $c->req->param('trial_name');
+    $c->stash->{drone_run_project_id} = $c->req->param('drone_run_id');
+    $c->stash->{drone_run_project_name} = $c->req->param('drone_run_name');
+    $c->stash->{original_image_id} = $c->req->param('original_image_id');
+    $c->stash->{filtered_image_id} = $c->req->param('filtered_image_id');
+    $c->stash->{filtered_side_span_image_id} = $c->req->param('side_span_image_id');
+    $c->stash->{filtered_side_height_image_id} = $c->req->param('side_height_image_id');
+    $c->stash->{collection_number} = $c->req->param('collection_number');
+    $c->stash->{collection_project_id} = $c->req->param('collection_project_id');
+    $c->stash->{template} = '/breeders_toolbox/drone_rover/point_cloud_plot_polygon_process.mas';
+}
+
 sub manage_point_cloud_visualization : Path("/breeders/point_cloud_visual") Args(1) {
     my $self = shift;
     my $c = shift;

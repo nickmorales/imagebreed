@@ -22,8 +22,9 @@ sub search {
     my $page = $self->page;
     my $status = $self->status;
     my @data_files;
+    print STDERR Dumper $params;
 
-    my $data_level = $params->{observationLevel} ? [$params->{observationLevel}] : ['all'];
+    my $data_level = $params->{observationLevel} && scalar(@{$params->{observationLevel}})>0 ? $params->{observationLevel} : ['all'];
     my $years_arrayref = $params->{seasonDbId} || ($params->{seasonDbIds} || ());
     my $location_ids_arrayref = $params->{locationDbId} || ($params->{locationDbIds} || ());
     my $study_ids_arrayref = $params->{studyDbId} || ($params->{studyDbIds} || ());

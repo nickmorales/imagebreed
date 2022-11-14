@@ -18,18 +18,6 @@ jQuery(document).ready(function() {
     // Standard Process for EarthSense Rover Events
     //
 
-    var manage_drone_rover_plot_polygons_private_company_id;
-    var manage_drone_rover_plot_polygons_private_company_is_private;
-    var manage_drone_rover_plot_polygons_field_trial_id;
-    var manage_drone_rover_plot_polygons_field_trial_name;
-    var manage_drone_rover_plot_polygons_drone_run_project_id;
-    var manage_drone_rover_plot_polygons_drone_run_project_name;
-    var manage_drone_rover_plot_polygons_collection_number;
-    var manage_drone_rover_plot_polygons_collection_project_id;
-    var manage_drone_rover_plot_polygons_original_image_id;
-    var manage_drone_rover_plot_polygons_filtered_image_id;
-    var manage_drone_rover_plot_polygons_filtered_side_span_image_id;
-    var manage_drone_rover_plot_polygons_filtered_side_height_image_id;
     var manage_drone_rover_plot_polygons_background_image_url;
     var manage_drone_rover_plot_polygons_background_image_width;
     var manage_drone_rover_plot_polygons_background_image_height;
@@ -69,100 +57,75 @@ jQuery(document).ready(function() {
     var manage_drone_rover_plot_polygons_stroke_width = 4;
     var manage_drone_rover_plot_polygons_stroke_color = "red";
 
-    jQuery(document).on('click', 'button[name="project_drone_rover_plot_polygons"]', function(){
-        showManageDroneRoverSection('manage_drone_rover_plot_polygon_process_div');
+    var manage_drone_rover_plot_polygons_private_company_id = jQuery('#plot_polygon_process_private_company_id').val();
+    var manage_drone_rover_plot_polygons_private_company_is_private = jQuery('#plot_polygon_process_private_company_is_private').val();
+    var manage_drone_rover_plot_polygons_field_trial_id = jQuery('#plot_polygon_process_field_trial_id').val();
+    var manage_drone_rover_plot_polygons_field_trial_name = jQuery('#plot_polygon_process_field_trial_name').val();
+    var manage_drone_rover_plot_polygons_drone_run_project_id = jQuery('#plot_polygon_process_drone_run_project_id').val();
+    var manage_drone_rover_plot_polygons_drone_run_project_name = jQuery('#plot_polygon_process_drone_run_project_name').val();
+    var manage_drone_rover_plot_polygons_original_image_id = jQuery('#plot_polygon_process_original_image_id').val();
+    var manage_drone_rover_plot_polygons_filtered_image_id = jQuery('#plot_polygon_process_filtered_image_id').val();
+    var manage_drone_rover_plot_polygons_filtered_side_span_image_id = jQuery('#plot_polygon_process_filtered_side_span_image_id').val();
+    var manage_drone_rover_plot_polygons_filtered_side_height_image_id = jQuery('#plot_polygon_process_filtered_side_height_image_id').val();
+    var manage_drone_rover_plot_polygons_collection_number = jQuery('#plot_polygon_process_collection_number').val();
+    var manage_drone_rover_plot_polygons_collection_project_id = jQuery('#plot_polygon_process_collection_project_id').val();
 
-        manage_drone_rover_plot_polygons_private_company_id = jQuery(this).data('private_company_id');
-        manage_drone_rover_plot_polygons_private_company_is_private = jQuery(this).data('private_company_is_private');
-        manage_drone_rover_plot_polygons_field_trial_id = jQuery(this).data('field_trial_id');
-        manage_drone_rover_plot_polygons_field_trial_name = jQuery(this).data('field_trial_name');
-        manage_drone_rover_plot_polygons_drone_run_project_id = jQuery(this).data('drone_run_project_id');
-        manage_drone_rover_plot_polygons_drone_run_project_name = jQuery(this).data('drone_run_project_name');
-        manage_drone_rover_plot_polygons_original_image_id = jQuery(this).data('original_image_id');
-        manage_drone_rover_plot_polygons_filtered_image_id = jQuery(this).data('filtered_image_id');
-        manage_drone_rover_plot_polygons_filtered_side_span_image_id = jQuery(this).data('filtered_side_span_image_id');
-        manage_drone_rover_plot_polygons_filtered_side_height_image_id = jQuery(this).data('filtered_side_height_image_id');
-        manage_drone_rover_plot_polygons_collection_number = jQuery(this).data('collection_number');
-        manage_drone_rover_plot_polygons_collection_project_id = jQuery(this).data('collection_project_id');
+    jQuery.ajax({
+        url : '/api/drone_imagery/get_field_trial_drone_run_projects_in_same_orthophoto?drone_run_project_id='+manage_drone_rover_plot_polygons_drone_run_project_id+'&field_trial_project_id='+manage_drone_rover_plot_polygons_field_trial_id,
+        success: function(response){
+            // console.log(response);
+            manage_drone_rover_plot_polygons_drone_run_project_ids_in_same_orthophoto = response.drone_run_project_ids;
+            manage_drone_rover_plot_polygons_drone_run_project_names_in_same_orthophoto = response.drone_run_project_names;
+            manage_drone_rover_plot_polygons_field_trial_ids_in_same_orthophoto = response.drone_run_field_trial_ids;
+            manage_drone_rover_plot_polygons_field_trial_names_in_same_orthophoto = response.drone_run_field_trial_names;
 
-        manage_drone_rover_plot_polygons_drone_run_project_ids_in_same_orthophoto = [];
-        manage_drone_rover_plot_polygons_drone_run_project_names_in_same_orthophoto = [];
-        manage_drone_rover_plot_polygons_field_trial_ids_in_same_orthophoto = [];
-        manage_drone_rover_plot_polygons_field_trial_names_in_same_orthophoto = [];
-        manage_drone_rover_plot_polygons_phenotype_time = '';
-        manage_drone_rover_plot_polygon_process_click_type = '';
-        manage_drone_rover_plot_polygons_field_trial_layout_responses = {};
-        manage_drone_rover_plot_polygons_field_trial_layout_response_names = [];
-        manage_drone_rover_plot_polygons_field_trial_layout_responses_designs = {};
-        manage_drone_rover_plot_polygons_available_stock_names = [];
-        manage_drone_rover_plot_polygons_plot_names_colors = {};
-        manage_drone_rover_plot_polygons_plot_names_plot_numbers = {};
-        manage_drone_rover_plot_polygons_num_plots = 0;
-        manage_drone_rover_plot_polygons_plot_polygon_vertical_lines = [];
-        manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines = [];
-        manage_drone_rover_plot_polygons_plot_polygon_boundaries = [];
-        manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned = {};
-        manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned_map = {};
-        manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned_squares = [];
-        manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned_plot_names = [];
-        manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned_plot_numbers = [];
+            manage_drone_rover_plot_polygons_field_trial_layout_responses = response.drone_run_all_field_trial_layouts;
+            manage_drone_rover_plot_polygons_field_trial_layout_response_names = response.drone_run_all_field_trial_names;
 
-        jQuery.ajax({
-            url : '/api/drone_imagery/get_field_trial_drone_run_projects_in_same_orthophoto?drone_run_project_id='+manage_drone_rover_plot_polygons_drone_run_project_id+'&field_trial_project_id='+manage_drone_rover_plot_polygons_field_trial_id,
-            success: function(response){
-                // console.log(response);
-                manage_drone_rover_plot_polygons_drone_run_project_ids_in_same_orthophoto = response.drone_run_project_ids;
-                manage_drone_rover_plot_polygons_drone_run_project_names_in_same_orthophoto = response.drone_run_project_names;
-                manage_drone_rover_plot_polygons_field_trial_ids_in_same_orthophoto = response.drone_run_field_trial_ids;
-                manage_drone_rover_plot_polygons_field_trial_names_in_same_orthophoto = response.drone_run_field_trial_names;
+            var field_trial_layout_counter = 0;
+            for (var key in manage_drone_rover_plot_polygons_field_trial_layout_responses) {
+                if (manage_drone_rover_plot_polygons_field_trial_layout_responses.hasOwnProperty(key)) {
+                    var response = manage_drone_rover_plot_polygons_field_trial_layout_responses[key];
+                    var layout = response.output;
 
-                manage_drone_rover_plot_polygons_field_trial_layout_responses = response.drone_run_all_field_trial_layouts;
-                manage_drone_rover_plot_polygons_field_trial_layout_response_names = response.drone_run_all_field_trial_names;
-
-                var field_trial_layout_counter = 0;
-                for (var key in manage_drone_rover_plot_polygons_field_trial_layout_responses) {
-                    if (manage_drone_rover_plot_polygons_field_trial_layout_responses.hasOwnProperty(key)) {
-                        var response = manage_drone_rover_plot_polygons_field_trial_layout_responses[key];
-                        var layout = response.output;
-
-                        for (var i=1; i<layout.length; i++) {
-                            manage_drone_rover_plot_polygons_available_stock_names.push(layout[i][0]);
-                        }
-                        droneRoverDrawLayoutTable(response, {}, 'drone_rover_plot_polygons_process_trial_layout_div_'+field_trial_layout_counter, 'drone_rover_plot_polygons_process_layout_table_'+field_trial_layout_counter);
-
-                        manage_drone_rover_plot_polygons_field_trial_layout_responses_designs[key] = {};
-                        field_trial_layout_counter = field_trial_layout_counter + 1;
+                    for (var i=1; i<layout.length; i++) {
+                        manage_drone_rover_plot_polygons_available_stock_names.push(layout[i][0]);
                     }
+                    droneRoverDrawLayoutTable(response, {}, 'drone_rover_plot_polygons_process_trial_layout_div_'+field_trial_layout_counter, 'drone_rover_plot_polygons_process_layout_table_'+field_trial_layout_counter);
+
+                    manage_drone_rover_plot_polygons_field_trial_layout_responses_designs[key] = {};
+                    field_trial_layout_counter = field_trial_layout_counter + 1;
                 }
-
-                var plot_polygons_field_trial_names_order = manage_drone_rover_plot_polygons_field_trial_layout_response_names;
-
-                for (var plot_polygons_field_trial_name_iterator=0; plot_polygons_field_trial_name_iterator<plot_polygons_field_trial_names_order.length; plot_polygons_field_trial_name_iterator++) {
-                    var plot_polygons_field_trial_names_order_current = plot_polygons_field_trial_names_order[plot_polygons_field_trial_name_iterator];
-                    var field_trial_layout_response_current = manage_drone_rover_plot_polygons_field_trial_layout_responses[plot_polygons_field_trial_names_order_current];
-
-                    var randomColor = '#'+Math.floor(Math.random()*16777215).toString(16);
-
-                    var plot_polygons_layout = field_trial_layout_response_current.output;
-                    for (var i=1; i<plot_polygons_layout.length; i++) {
-                        var plot_polygons_plot_number = Number(plot_polygons_layout[i][2]);
-                        var plot_polygons_plot_name = plot_polygons_layout[i][0];
-
-                        manage_drone_rover_plot_polygons_plot_names_colors[plot_polygons_plot_name] = randomColor;
-                        manage_drone_rover_plot_polygons_plot_names_plot_numbers[plot_polygons_plot_name] = plot_polygons_plot_number;
-                        manage_drone_rover_plot_polygons_field_trial_layout_responses_designs[plot_polygons_field_trial_names_order_current][plot_polygons_plot_number] = plot_polygons_plot_name;
-                    }
-                }
-                // console.log(manage_drone_rover_plot_polygons_field_trial_layout_responses_designs);
-
-            },
-            error: function(response){
-                alert('Error getting other field trial rover events in the same rover event!');
             }
-        });
 
-        showPlotPolygonStartRoverSVG('drone_rover_plot_polygons_process_top_section', 'drone_rover_plot_polygons_process_load_div', );
+            var plot_polygons_field_trial_names_order = manage_drone_rover_plot_polygons_field_trial_layout_response_names;
+
+            for (var plot_polygons_field_trial_name_iterator=0; plot_polygons_field_trial_name_iterator<plot_polygons_field_trial_names_order.length; plot_polygons_field_trial_name_iterator++) {
+                var plot_polygons_field_trial_names_order_current = plot_polygons_field_trial_names_order[plot_polygons_field_trial_name_iterator];
+                var field_trial_layout_response_current = manage_drone_rover_plot_polygons_field_trial_layout_responses[plot_polygons_field_trial_names_order_current];
+
+                var randomColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+
+                var plot_polygons_layout = field_trial_layout_response_current.output;
+                for (var i=1; i<plot_polygons_layout.length; i++) {
+                    var plot_polygons_plot_number = Number(plot_polygons_layout[i][2]);
+                    var plot_polygons_plot_name = plot_polygons_layout[i][0];
+
+                    manage_drone_rover_plot_polygons_plot_names_colors[plot_polygons_plot_name] = randomColor;
+                    manage_drone_rover_plot_polygons_plot_names_plot_numbers[plot_polygons_plot_name] = plot_polygons_plot_number;
+                    manage_drone_rover_plot_polygons_field_trial_layout_responses_designs[plot_polygons_field_trial_names_order_current][plot_polygons_plot_number] = plot_polygons_plot_name;
+                }
+            }
+            // console.log(manage_drone_rover_plot_polygons_field_trial_layout_responses_designs);
+
+        },
+        error: function(response){
+            alert('Error getting other field trial rover events in the same rover event!');
+        }
     });
+
+    showPlotPolygonStartRoverSVG('drone_rover_plot_polygons_process_top_section', 'drone_rover_plot_polygons_process_load_div');
+
 
     function droneRoverDrawLayoutTable(response, plot_polygons, layout_div_id, layout_table_div_id) {
         var output = response.output;
@@ -915,20 +878,6 @@ jQuery(document).ready(function() {
 
     jQuery('#drone_rover_plot_polygons_process_complete_dialog').on('hidden.bs.modal', function () {
         location.reload();
-    });
-
-    function showManageDroneRoverSection(section_div_id) {
-        console.log(section_div_id);
-        if (section_div_id == 'manage_drone_rover_plot_polygon_process_div'){
-            jQuery('#manage_drone_rover_top_div').hide();
-            jQuery('#manage_drone_rover_plot_polygon_process_div').show();
-        }
-        window.scrollTo(0,0);
-    }
-
-    jQuery(document).on('click', 'button[name=drone_rover_view_plot_point_cloud]', function() {
-        var point_cloud_file_id = jQuery(this).data('file_id');
-        window.open('/breeders/point_cloud_visual/'+point_cloud_file_id ,'_blank');
     });
 
 });

@@ -216,7 +216,7 @@ sub drone_rover_summary_top_GET : Args(0) {
                     my $field_name = $collect->{run_info}->{field}->{name};
                     my $collect_plot_polygons = $collect->{plot_polygons};
 
-                    if (index($trial_name, $field_name) != -1) { # TODO:: UNCOMMENT
+                    # if (index($trial_name, $field_name) != -1) { # TODO:: UNCOMMENT
                         my $original_image_id = $collect->{processed_image_ids}->{points_original};
                         my $filtered_image_id = $collect->{processed_image_ids}->{points_filtered_height};
                         my $filtered_side_span_image_id = $collect->{processed_image_ids}->{points_filtered_side_span};
@@ -243,7 +243,7 @@ sub drone_rover_summary_top_GET : Args(0) {
 
                         $drone_run_band_table_html .= '</div></div></div></div>';
                         $drone_run_band_table_html .= '</td></tr>';
-                    }
+                    # }
                 }
                 $drone_run_band_table_html .= '</tbody></table>';
 
