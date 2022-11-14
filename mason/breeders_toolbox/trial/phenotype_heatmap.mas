@@ -3,10 +3,11 @@
 $trial_id
 $stockref => undef
 $data_level => 'plot'
+$suppress_initial_working_modal => undef
 </%args>
 
 <& /util/import_css.mas, paths => ['fieldmap/leaflet-search.min.css', 'fieldmap/leaflet.css'] &>
- <& /util/import_javascript.mas, classes => [ 'jqueryui.js', 'jquery.js', 'jstree.dist.jstree', 'd3.d3v4Min.js', "thickbox", "CXGN.Page.FormattingHelpers", 'brapi.fieldmap.leaflet', 'brapi.fieldmap.L-Path-Transform', 'brapi.fieldmap.leaflet-search', 'brapi.fieldmap.turf', 'brapi.BrAPI', 'brapi.BrAPIFieldmap' ] &>
+<& /util/import_javascript.mas, classes => [ 'jqueryui.js', 'jquery.js', 'jstree.dist.jstree', 'd3.d3v4Min.js', "thickbox", "CXGN.Page.FormattingHelpers", 'brapi.fieldmap.leaflet', 'brapi.fieldmap.L-Path-Transform', 'brapi.fieldmap.leaflet-search', 'brapi.fieldmap.turf', 'brapi.BrAPI', 'brapi.BrAPIFieldmap' ] &>
 
 <style>
     #trait_heatmap {display: inline; }
@@ -76,10 +77,13 @@ $data_level => 'plot'
 
 <div class="well well-sm">
     <div class="form-group form-group-sm" id="traitdiv" style="display:inline-block">
-        <label for="trait_list_dropdown" class="col-sm-2 control-label">Select:</label></br>
+        <label for="trait_list_dropdown" class="col-sm-2 control-label">Select Trait:</label></br>
         <div class="col-sm-12">
             <div id="heatmap_traits_assayed_dropdown">
                 Loading Traits Assayed...
+            </div>
+            <div id="heatmap_traits_assayed_download_div" style="display:none">
+                <br/><button class='btn btn-primary btn-sm' id='trial_phenotype_heatmap_download'>Download Heatmap</button>
             </div>
         </div>
     </div>
@@ -97,9 +101,9 @@ $data_level => 'plot'
 
 </div>
 
-<div id="view_ctrl_button" style="display:none">
+<!--div id="view_ctrl_button" style="display:none">
   <a id="view_ctrl_button_link"><button class="btn btn-primary"  type="button" id="view_ctrl_id_button" value="delete_cords" >View Controls</button></a>
-</div>
+</div-->
 
 
 <div class="well well-sm">
@@ -351,7 +355,7 @@ my $image_ids =  $stockref->{image_ids} || [] ;
 
 var trial_id = <% $trial_id %>;
 var value = 'plot';
-var selected;
+var selected = 'fieldmap';
 var trialStudyDesign;
 var phenotypes_id = [];
 
@@ -659,11 +663,12 @@ jQuery(document).ready( function() {
                 jQuery("#working_modal").modal("show");
             },
             success: function(response) {
+                jQuery("#working_modal").modal("hide");
+
                 var newData = preprocessSortFieldMapDataBrAPIPhenotypeSearch(response);
                 var [datasets, col_length, row_length, col_max, row_max, rep_max, block_max, rows, cols, unique_rows, unique_cols, unique_ctrl, false_coord] = preprocessFieldMapData(newData);
 
                 if (col_length && row_length) {
-                    jQuery("#working_modal").modal("hide");
                     jQuery("#chart").css({"display": "inline-block"});
                     jQuery("#container_heatmap").css({"display": "inline-block", "overflow": "auto"});
                     jQuery("#trait_heatmap").css("display", "none");
@@ -820,13 +825,13 @@ jQuery(document).ready( function() {
                     }
                 }
                 else  {
-                    jQuery("#working_modal").modal("hide");
                     jQuery("#container_heatmap").css("display", "none");
                     jQuery("#trait_heatmap").css("display", "none");
                     jQuery("#trial_no_rowColMSG").css("display", "none");
                 }
             },
             error: function(reponse) {
+                jQuery("#working_modal").modal("hide");
                 alert('Error displaying traits assayed heatmap');
             }
         });
@@ -849,14 +854,20 @@ jQuery(document).ready( function() {
             headers: (auth_token)? {'Authorization': `Bearer ` + auth_token } : {},
             url: '/brapi/v1/studies/'+trial_id+'/layout?pageSize=10000&page=0',
             beforeSend: function() {
+%  if (!$suppress_initial_working_modal) {
                 jQuery("#working_modal").modal("show");
+%  }
             },
             success: function(response) {
+
+%  if (!$suppress_initial_working_modal) {
+                jQuery("#working_modal").modal("hide");
+%  }
+
                 var data = preprocessSortFieldMapDataBrAPIStudiesLayout(response);
                 var [datasets, col_length, row_length, col_max, row_max, rep_max, block_max, rows, cols, unique_rows, unique_cols, unique_ctrl, false_coord] = preprocessFieldMapData(data);
 
                 if (col_length && row_length) {
-                    jQuery("#working_modal").modal("hide");
                     jQuery("#chart_fm").css({"display": "inline-block"});
                     jQuery("#container_fm").css({"display": "inline-block", "overflow": "auto"});
                     jQuery("#trait_heatmap").css("display", "none");
@@ -1040,7 +1051,6 @@ jQuery(document).ready( function() {
                                     'plot_id': replace_plot_id,
                                 },
                                 success: function (response) {
-                                    jQuery('#working_modal').modal("hide");
                                     var images = response.image_html;
                                     if (response.error) {
                                         alert("Error Retrieving Plot Images: "+response.error);
@@ -1051,7 +1061,6 @@ jQuery(document).ready( function() {
                                     }
                                 },
                                 error: function () {
-                                    jQuery('#working_modal').modal("hide");
                                     alert('An error occurred retrieving plot images');
                                 }
                             });
@@ -1089,13 +1098,15 @@ jQuery(document).ready( function() {
                     }
                 }
                 else  {
-                    jQuery("#working_modal").modal("hide");
                     jQuery("#container_heatmap").css("display", "none");
                     jQuery("#trait_heatmap").css("display", "none");
                     jQuery("#trial_no_rowColMSG").css("display", "inline-block");
                 }
             },
             error: function(reponse) {
+%  if (!$suppress_initial_working_modal) {
+                jQuery("#working_modal").modal("hide");
+%  }
                 alert('Error displaying traits assayed heatmap');
             }
         });
@@ -1197,7 +1208,6 @@ jQuery(document).ready( function() {
             headers: (auth_token)? {'Authorization': `Bearer ` + auth_token } : {},
             url: '/brapi/v1/studies/'+ <% $trial_id %> +'/observationvariables?pageSize=1000000',
             beforeSend: function() {
-                jQuery("#working_modal").modal("show");
             },
             success: function(response){
                 var data = response.result.data;
@@ -1225,8 +1235,6 @@ jQuery(document).ready( function() {
                     }
                     traits_assayed_html = traits_assayed_html +"</optgroup>";
                     traits_assayed_html = traits_assayed_html +"</select>";
-
-                    traits_assayed_html = traits_assayed_html + "<br/><button class='btn btn-primary btn-sm' id='trial_phenotype_heatmap_download'>Download Heatmap</button>";
 
                     jQuery("#trait_heatmap").css("display", "none");
                     jQuery("#heatmap_traits_assayed_dropdown").html(traits_assayed_html);
@@ -1268,6 +1276,7 @@ jQuery(document).ready( function() {
             jQuery("#view_ctrl_button").css("display", "none");
             jQuery("#ctrldiv").css("display", "none");
             d3.select("#container_heatmap_geo_div").remove();
+            jQuery('#heatmap_traits_assayed_download_div').hide();
 
             field_map_view();
 
@@ -1282,6 +1291,7 @@ jQuery(document).ready( function() {
             jQuery("#delete_button_fm").css("display", "none");
             jQuery("#view_ctrl_button").css("display", "none");
             jQuery("#ctrldiv").css("display", "none");
+            jQuery('#heatmap_traits_assayed_download_div').hide();
 
             geo_field_map_view();
             jQuery('#working_modal').modal("hide");
@@ -1294,6 +1304,7 @@ jQuery(document).ready( function() {
             jQuery("#delete_button_fm").css("display", "none");
             jQuery("#ctrldiv").css("display", "none");
             jQuery("#view_ctrl_button").show();
+            jQuery('#heatmap_traits_assayed_download_div').show();
 
             assayed_trait_heatmap_view(selected);
 

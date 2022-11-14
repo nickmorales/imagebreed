@@ -68,7 +68,7 @@ $collection_project_id
 
         <hr>
 
-        <& /breeders_toolbox/trial/phenotype_heatmap.mas, trial_id => $field_trial_id &>
+        <& /breeders_toolbox/trial/phenotype_heatmap.mas, trial_id => $field_trial_id, suppress_plot_pheno_dialog => 1 &>
 
         <hr>
         <div class="well well-sm">
