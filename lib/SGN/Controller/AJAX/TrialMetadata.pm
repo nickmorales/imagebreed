@@ -393,14 +393,6 @@ sub phenotype_summary : Chained('trial') PathPart('phenotypes') Args(0) {
     my $accesion_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'accession', 'stock_type')->cvterm_id();
     my $family_name_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'family_name', 'stock_type')->cvterm_id();
     my $cross_type_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'cross', 'stock_type')->cvterm_id();
-    my $trial_stock_type_id;
-    if ($trial_stock_type eq 'family_name') {
-        $trial_stock_type_id = $family_name_type_id;
-    } elsif ($trial_stock_type eq 'cross') {
-        $trial_stock_type_id = $cross_type_id;
-    } else {
-        $trial_stock_type_id = $accesion_type_id;
-    }
 
     my $q = "SELECT (((cvterm.name::text || '|'::text) || db.name::text) || ':'::text) || dbxref.accession::text AS trait,
         cvterm.cvterm_id,
@@ -421,7 +413,7 @@ sub phenotype_summary : Chained('trial') PathPart('phenotypes') Args(0) {
             AND phenotype.value~?
             AND stock_relationship.type_id=$rel_type_id
             AND plot.type_id=$stock_type_id
-            AND accession.type_id=$trial_stock_type_id
+            AND accession.type_id IN ($family_name_type_id,$cross_type_id,$accesion_type_id)
         GROUP BY (((cvterm.name::text || '|'::text) || db.name::text) || ':'::text) || dbxref.accession::text, cvterm.cvterm_id $group_by_additional
         ORDER BY cvterm.name ASC
         $order_by_additional;";
