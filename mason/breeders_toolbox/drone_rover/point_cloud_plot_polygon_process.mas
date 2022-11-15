@@ -15,7 +15,7 @@ $collection_project_id
 $database_field_name
 </%args>
 
-<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch03152022', 'd3.d3v4Min.js', 'opencv.opencv', 'CXGN.Trial03152022', 'moment_min', 'daterangepicker', 'CXGN.ManageDroneImagery09072022', 'CXGN.ManageDroneRover10272022' ] &>
+<& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch03152022', 'd3.d3v4Min.js', 'opencv.opencv', 'CXGN.Trial03152022', 'moment_min', 'daterangepicker', 'CXGN.ManageDroneImagery09072022', 'CXGN.ManageDroneRover11142022' ] &>
 
 
 <& /page/page_title.mas, title=>"Manage Drone Rovers: Run A Standard Process For Plot Polygons" &>
