@@ -171,9 +171,9 @@ sub drone_rover_summary_top_GET : Args(0) {
 
             $drone_run_html .= '<div class="panel-group" id="project_drone_rover_buttons_sections_'.$k.'" ><div class="panel panel-default"><div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#project_drone_rover_buttons_sections_'.$k.'" href="#project_drone_rover_buttons_sections_accordian_'.$k.'" >Additional Options</a></h4></div><div id="project_drone_rover_buttons_sections_accordian_'.$k.'" class="panel-collapse collapse"><div class="panel-body">';
 
-            # $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_imagery_phenotype_run" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Calculate Phenotypes Again</button><br/><br/>';
+                $drone_run_html .= '<button class="btn btn-default btn-sm" name="project_drone_rover_field_name_link" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Define Collection Field Names</button><br/><br/>';
 
-            # $drone_run_html .= '<button class="btn btn-danger btn-sm" name="project_drone_imagery_delete_drone_run" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" >Delete Imaging Event</button>';
+                # $drone_run_html .= '<button class="btn btn-danger btn-sm" name="project_drone_imagery_delete_drone_run" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$v->{drone_run_project_name}.'" >Delete Imaging Event</button>';
 
             $drone_run_html .= '</div></div></div></div>';
 
@@ -207,16 +207,19 @@ sub drone_rover_summary_top_GET : Args(0) {
 
                 my $drone_run_band_table_html = '<table class="table table-bordered"><thead><tr><th>Rover Collection(s)</th><th>Images/Actions</th></thead><tbody>';
 
+                my $collections_displaying = 0;
                 foreach my $collection_time (sort keys %collection_times) {
                     my $collect_obj = $collection_times{$collection_time};
                     my $collection_number = $collect_obj->{collection_number};
                     my $collect = $collect_obj->{collect};
-                    print STDERR Dumper $collect;
+                    # print STDERR Dumper $collect;
 
                     my $field_name = $collect->{run_info}->{field}->{name};
+                    my $database_field_name = $collect->{run_info}->{field}->{database_field_name} || $field_name;
                     my $collect_plot_polygons = $collect->{plot_polygons};
 
-                    # if (index($trial_name, $field_name) != -1) { # TODO:: UNCOMMENT
+                    if ($trial_name eq $database_field_name) {
+                        $collections_displaying = 1;
                         my $original_image_id = $collect->{processed_image_ids}->{points_original};
                         my $filtered_image_id = $collect->{processed_image_ids}->{points_filtered_height};
                         my $filtered_side_span_image_id = $collect->{processed_image_ids}->{points_filtered_side_span};
@@ -224,13 +227,13 @@ sub drone_rover_summary_top_GET : Args(0) {
 
                         $drone_run_band_table_html .= '<tr><td>';
                         $drone_run_band_table_html .= '<b>Collection Number</b>: '.$collection_number.'<br/>';
-                        $drone_run_band_table_html .= '<b>Field</b>: '.$field_name.'<br/>';
+                        $drone_run_band_table_html .= '<b>Collection Field</b>: '.$field_name.'&nbsp;&nbsp;&nbsp;<b>Database Field Trial</b>: '.$database_field_name.'<br/>';
                         $drone_run_band_table_html .= '<b>Start Range</b>: '.$collect->{run_info}->{tracker}->{start_range}.'&nbsp;&nbsp;&nbsp;&nbsp;<b>Start Column</b>: '.$collect->{run_info}->{tracker}->{start_column}.'<br/>';
                         $drone_run_band_table_html .= '<b>Stop Range</b>: '.$collect->{run_info}->{tracker}->{stop_range}.'&nbsp;&nbsp;&nbsp;&nbsp;<b>Stop Column</b>: '.$collect->{run_info}->{tracker}->{stop_column}.'<br/>';
                         $drone_run_band_table_html .= '<b>Original Number Points</b>: '.$collect->{processing}->{pcd_original_num_points}.'<br/><b>Filtered Number Points</b>: '.$collect->{processing}->{pcd_down_filtered_height_side_points}.'<br/>';
 
                         if (!$collect_plot_polygons) {
-                            $drone_run_band_table_html .= '<br/><button class="btn btn-primary btn-sm" name="project_drone_rover_plot_polygons" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$drone_run_name.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" data-original_image_id="'.$original_image_id.'" data-filtered_image_id="'.$filtered_image_id.'" data-filtered_side_span_image_id="'.$filtered_side_span_image_id.'" data-filtered_side_height_image_id="'.$filtered_side_height_image_id.'" data-collection_number="'.$collection_number.'" data-collection_project_id="'.$collect->{project_id}.'" >Process Plot Polygons</button><br/><br/>';
+                            $drone_run_band_table_html .= '<br/><button class="btn btn-primary btn-sm" name="project_drone_rover_plot_polygons" data-drone_run_project_id="'.$k.'" data-drone_run_project_name="'.$drone_run_name.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" data-original_image_id="'.$original_image_id.'" data-filtered_image_id="'.$filtered_image_id.'" data-filtered_side_span_image_id="'.$filtered_side_span_image_id.'" data-filtered_side_height_image_id="'.$filtered_side_height_image_id.'" data-collection_number="'.$collection_number.'" data-collection_project_id="'.$collect->{project_id}.'" data-database_field_name="'.$database_field_name.'" >Process Plot Polygons</button><br/><br/>';
                         }
                         else {
                            $drone_run_band_table_html .= '<br/><span class="label label-success" ><span class="glyphicon glyphicon-ok"></span>&nbsp;&nbsp;&nbsp;Plot Polygons Processed</span><br/><br/>';
@@ -243,7 +246,11 @@ sub drone_rover_summary_top_GET : Args(0) {
 
                         $drone_run_band_table_html .= '</div></div></div></div>';
                         $drone_run_band_table_html .= '</td></tr>';
-                    # }
+                    }
+                }
+                if (!$collections_displaying) {
+                    $drone_run_band_table_html .= '<tr><td><button class="btn btn-danger" name="project_drone_rover_field_name_link" data-drone_run_project_id="'.$k.'" data-field_trial_id="'.$v->{trial_id}.'" data-field_trial_name="'.$v->{trial_name}.'" data-private_company_id="'.$v->{private_company_id}.'" data-private_company_is_private="'.$v->{private_company_is_private}.'" >Error: Please Define Collection Field Names</button><br/><br/></td></tr>';
+
                 }
                 $drone_run_band_table_html .= '</tbody></table>';
 

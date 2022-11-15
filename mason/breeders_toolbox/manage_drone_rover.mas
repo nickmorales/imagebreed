@@ -261,6 +261,29 @@
   </div>
 </div>
 
+<div class="modal fade" id="drone_run_rover_link_field_collection_names_modal" name="drone_run_rover_link_field_collection_names_modal" tabindex="-1" role="dialog" aria-labelledby="droneRunRoverLinkFieldNamesDialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="droneRunRoverLinkFieldNamesDialog">Add New Ground Rover Vehicle</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+            <div id="drone_run_rover_link_field_collection_names_table">
+            </div>
+            <center>
+                <button class="btn btn-primary" type="button" id="drone_run_rover_link_field_collection_names_submit" name="drone_run_rover_link_field_collection_names_submit">Submit</button>
+            </center>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="upload_drone_rover_earthsense_lidar_data_dialog" name="upload_drone_rover_earthsense_lidar_data_dialog" tabindex="-1" role="dialog" aria-labelledby="uploadDroneRoverEarthSenseLidarDataDialog">
   <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
@@ -712,14 +735,87 @@ jQuery(document).ready(function() {
         var manage_drone_rover_plot_polygons_filtered_side_height_image_id = jQuery(this).data('filtered_side_height_image_id');
         var manage_drone_rover_plot_polygons_collection_number = jQuery(this).data('collection_number');
         var manage_drone_rover_plot_polygons_collection_project_id = jQuery(this).data('collection_project_id');
+        var manage_drone_rover_plot_polygons_database_field_name = jQuery(this).data('database_field_name');
 
-        window.open('/breeders/drone_rover_plot_polygon_process?company_id='+manage_drone_rover_plot_polygons_private_company_id+'&is_private='+manage_drone_rover_plot_polygons_private_company_is_private+'&trial_id='+manage_drone_rover_plot_polygons_field_trial_id+'&trial_name='+manage_drone_rover_plot_polygons_field_trial_name+'&drone_run_id='+manage_drone_rover_plot_polygons_drone_run_project_id+'&drone_run_name='+manage_drone_rover_plot_polygons_drone_run_project_name+'&original_image_id='+manage_drone_rover_plot_polygons_original_image_id+'&filtered_image_id='+manage_drone_rover_plot_polygons_filtered_image_id+'&side_span_image_id='+manage_drone_rover_plot_polygons_filtered_side_span_image_id+'&side_height_image_id='+manage_drone_rover_plot_polygons_filtered_side_height_image_id+'&collection_number='+manage_drone_rover_plot_polygons_collection_number+'&collection_project_id='+manage_drone_rover_plot_polygons_collection_project_id );
+        window.open('/breeders/drone_rover_plot_polygon_process?company_id='+manage_drone_rover_plot_polygons_private_company_id+'&is_private='+manage_drone_rover_plot_polygons_private_company_is_private+'&trial_id='+manage_drone_rover_plot_polygons_field_trial_id+'&trial_name='+manage_drone_rover_plot_polygons_field_trial_name+'&drone_run_id='+manage_drone_rover_plot_polygons_drone_run_project_id+'&drone_run_name='+manage_drone_rover_plot_polygons_drone_run_project_name+'&original_image_id='+manage_drone_rover_plot_polygons_original_image_id+'&filtered_image_id='+manage_drone_rover_plot_polygons_filtered_image_id+'&side_span_image_id='+manage_drone_rover_plot_polygons_filtered_side_span_image_id+'&side_height_image_id='+manage_drone_rover_plot_polygons_filtered_side_height_image_id+'&collection_number='+manage_drone_rover_plot_polygons_collection_number+'&collection_project_id='+manage_drone_rover_plot_polygons_collection_project_id+'&database_field_name='+manage_drone_rover_plot_polygons_database_field_name );
     });
 
     jQuery(document).on('click', 'button[name=drone_rover_view_plot_point_cloud]', function() {
         var point_cloud_file_id = jQuery(this).data('file_id');
         window.open('/breeders/point_cloud_visual/'+point_cloud_file_id ,'_blank');
     });
+
+    var manage_drone_rover_field_collection_names_drone_run_project_id;
+    var manage_drone_rover_field_collection_names = [];
+
+    jQuery(document).on('click', 'button[name=project_drone_rover_field_name_link]', function(){
+        manage_drone_rover_field_collection_names_drone_run_project_id = jQuery(this).data('drone_run_project_id');
+
+        jQuery.ajax({
+            url : '/api/drone_rover/collections_field_names?drone_run_id='+manage_drone_rover_field_collection_names_drone_run_project_id,
+            type : 'GET',
+            success: function(response){
+                console.log(response);
+                if (response.error) {
+                    alert(response.error);
+                }
+                else if (response.success) {
+                    var html = '<table class="table table-bordered table-hover"><thead><tr><th>Collection Number</th><th>Collection Field Name</th><th>Database Field Name</th></tr></thead><tbody>';
+                    for (var i=0; i<response.field_names.length; i++) {
+                        html = html + '<tr><td>'+response.field_names[i][0]+'</td><td>'+response.field_names[i][1]+'</td><td><input class="form-control" name="project_drone_rover_field_name_input" data-collection_number="'+response.field_names[i][0]+'" data-collection_field_name="'+response.field_names[i][1]+'" value="'+response.field_names[i][2]+'" /></td></tr>';
+                    }
+                    html = html + '</tbody></table>';
+
+                    jQuery('#drone_run_rover_link_field_collection_names_table').html(html);
+                    jQuery('#drone_run_rover_link_field_collection_names_modal').modal('show');
+                }
+
+                return false;
+            },
+            error: function(response){
+                alert('Error getting field collection names!');
+            }
+        });
+    });
+
+    jQuery('#drone_run_rover_link_field_collection_names_submit').click(function(){
+        manage_drone_rover_field_collection_names = [];
+
+        jQuery('input[name="project_drone_rover_field_name_input"]').each(function() {
+            var field_name = jQuery(this).val();
+            var collection_number = jQuery(this).data('collection_number');
+            var collection_field_name = jQuery(this).data('collection_field_name');
+            if (field_name != '' && field_name != undefined && field_name != 'null') {
+                manage_drone_rover_field_collection_names.push([collection_number, collection_field_name, field_name]);
+            }
+        });
+        console.log(manage_drone_rover_field_collection_names);
+
+        jQuery.ajax({
+            url : '/api/drone_rover/collections_field_names_link?drone_run_id='+manage_drone_rover_field_collection_names_drone_run_project_id,
+            type : 'POST',
+            data : {
+                'drone_run_id':manage_drone_rover_field_collection_names_drone_run_project_id,
+                'field_collection_names': JSON.stringify(manage_drone_rover_field_collection_names)
+            },
+            success: function(response){
+                console.log(response);
+                if (response.error) {
+                    alert(response.error);
+                }
+                else if (response.success) {
+                    alert('Saved links to collection field names!');
+                    location.reload();
+                }
+
+                return false;
+            },
+            error: function(response){
+                alert('Error saving links for field collection names!');
+            }
+        });
+    });
+
 
 });
 

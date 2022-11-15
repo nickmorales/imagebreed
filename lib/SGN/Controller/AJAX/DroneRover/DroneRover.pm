@@ -637,6 +637,92 @@ sub processed_plot_point_cloud_count_GET : Args(0) {
     $c->stash->{rest} = { data => \%unique_drone_runs };
 }
 
+sub drone_rover_collections_field_names : Path('/api/drone_rover/collections_field_names') : ActionClass('REST') { }
+sub drone_rover_collections_field_names_GET : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_rover($c, 'submitter', 0, 0);
+    my $drone_run_project_id = $c->req->param('drone_run_id');
+
+    my $earthsense_collections_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'earthsense_ground_rover_collections_archived', 'project_property')->cvterm_id();
+
+    my $q = "SELECT projectprop.value
+        FROM projectprop
+        WHERE projectprop.type_id = $earthsense_collections_cvterm_id AND projectprop.project_id=?;";
+
+    #print STDERR Dumper $q;
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute($drone_run_project_id);
+
+    my ($collections_json) = $h->fetchrow_array();
+    $h = undef;
+
+    my $collections = decode_json $collections_json;
+    # print STDERR Dumper $collections;
+
+    my @field_names;
+    foreach my $collection_number (sort keys %$collections) {
+        my $o = $collections->{$collection_number};
+        my $field_name = $o->{run_info}->{field}->{name};
+        my $database_field_name = $o->{run_info}->{field}->{database_field_name};
+        push @field_names, [$collection_number, $field_name, $database_field_name];
+    }
+
+    $c->stash->{rest} = {
+        success => 1,
+        data => $collections,
+        field_names => \@field_names
+    };
+}
+
+sub drone_rover_collections_field_names_link : Path('/api/drone_rover/collections_field_names_link') : ActionClass('REST') { }
+sub drone_rover_collections_field_names_link_POST : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $schema = $c->dbic_schema("Bio::Chado::Schema", "sgn_chado");
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_rover($c, 'submitter', 0, 0);
+    my $drone_run_project_id = $c->req->param('drone_run_id');
+    my $field_collection_names = decode_json $c->req->param('field_collection_names');
+
+    my $earthsense_collections_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($schema, 'earthsense_ground_rover_collections_archived', 'project_property')->cvterm_id();
+
+    my $q = "SELECT projectprop.projectprop_id, projectprop.value
+        FROM projectprop
+        WHERE projectprop.type_id = $earthsense_collections_cvterm_id AND projectprop.project_id=?;";
+
+    #print STDERR Dumper $q;
+    my $h = $schema->storage->dbh()->prepare($q);
+    $h->execute($drone_run_project_id);
+
+    my ($projectprop_id, $collections_json) = $h->fetchrow_array();
+    $h = undef;
+
+    my $collections = decode_json $collections_json;
+    # print STDERR Dumper $collections;
+
+    foreach (@$field_collection_names) {
+        my $collection_number = $_->[0];
+        my $collection_field_name = $_->[1];
+        my $field_name = $_->[2];
+
+        if ($collection_field_name ne $collections->{$collection_number}->{run_info}->{field}->{name}) {
+            $c->stash->{rest} = { error => "Collection field names are not matching! This should not happen!" };
+            $c->detach();
+        }
+
+        $collections->{$collection_number}->{run_info}->{field}->{database_field_name} = $field_name;
+    }
+    my $collections_save = encode_json $collections;
+
+    my $q2 = "UPDATE projectprop SET value = ? WHERE projectprop_id = ?;";
+    my $h2 = $schema->storage->dbh->prepare($q2);
+    $h2->execute($collections_save, $projectprop_id);
+    $h2 = undef;
+
+    $c->stash->{rest} = { success => 1 };
+}
+
 sub _check_user_login_drone_rover {
     my $c = shift;
     my $check_priv = shift;

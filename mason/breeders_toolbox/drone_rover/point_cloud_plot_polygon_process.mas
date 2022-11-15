@@ -12,6 +12,7 @@ $filtered_side_span_image_id
 $filtered_side_height_image_id
 $collection_number
 $collection_project_id
+$database_field_name
 </%args>
 
 <& /util/import_javascript.mas, classes => [ 'jquery.iframe-post-form', 'CXGN.BreederSearch03152022', 'd3.d3v4Min.js', 'opencv.opencv', 'CXGN.Trial03152022', 'moment_min', 'daterangepicker', 'CXGN.ManageDroneImagery09072022', 'CXGN.ManageDroneRover10272022' ] &>
@@ -38,6 +39,7 @@ $collection_project_id
 <input type="hidden" id="plot_polygon_process_filtered_side_height_image_id" value="<% $filtered_side_height_image_id %>" />
 <input type="hidden" id="plot_polygon_process_collection_number" value="<% $collection_number %>" />
 <input type="hidden" id="plot_polygon_process_collection_project_id" value="<% $collection_project_id %>" />
+<input type="hidden" id="plot_polygon_process_database_field_name" value="<% $database_field_name %>" />
 
 <input type="hidden" id="pheno_heatmap_onswitch" />
 
@@ -68,8 +70,9 @@ $collection_project_id
 
         <hr>
         <center>
-        <h2>Field Layout Reference Below</h2>
+        <h2>Field Layout References Below</h2>
         </center>
+        <hr>
 
         <& /breeders_toolbox/trial/phenotype_heatmap.mas, trial_id => $field_trial_id, suppress_plot_pheno_dialog => 1 &>
 

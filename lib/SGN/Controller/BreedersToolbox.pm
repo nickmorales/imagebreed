@@ -880,6 +880,7 @@ sub manage_drone_rover_plot_polygon_process : Path("/breeders/drone_rover_plot_p
     $c->stash->{filtered_side_height_image_id} = $c->req->param('side_height_image_id');
     $c->stash->{collection_number} = $c->req->param('collection_number');
     $c->stash->{collection_project_id} = $c->req->param('collection_project_id');
+    $c->stash->{database_field_name} = $c->req->param('database_field_name');
     $c->stash->{template} = '/breeders_toolbox/drone_rover/point_cloud_plot_polygon_process.mas';
 }
 
