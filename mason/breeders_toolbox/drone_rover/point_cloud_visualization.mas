@@ -19,7 +19,7 @@ $thin
 <div class="well well-sm">
     <div class="form-horizontal">
         <div class="form-group">
-            <label class="col-sm-6 control-label">Reduce Number of Points By: (e.g. 2 will reduce number to half, 5 will reduce number to one fifth. Too many points can crash your browser)</label>
+            <label class="col-sm-6 control-label">Reduce Number of Points to Display By: (e.g. 2 will reduce number to half, 5 will reduce number to one fifth. Too many points can crash your browser)</label>
             <div class="col-sm-6" >
                 <input class="form-control" type="number" id="visual_point_cloud_thin_value" name="visual_point_cloud_thin_value" value="<% $thin %>" />
             </div>
