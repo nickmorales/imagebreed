@@ -515,6 +515,10 @@ function edit_genotyping_trial_details(){
         jQuery('#edit_genotyping_trial_company').data("originalValue", default_company);
     });
 
+    var default_facility = document.getElementById("edit_genotyping_facility").getAttribute("value");
+    get_select_box('genotyping_facilities', 'edit_genotyping_facility', { 'default' : default_facility });
+    jQuery('#edit_genotyping_facility').data("originalValue", default_facility);
+
     jQuery('#edit_genotyping_trial_details_cancel_button').click(function(){
         reset_dialog_body('genotyping_trial_details_edit_body', edit_details_body_html);
     });
