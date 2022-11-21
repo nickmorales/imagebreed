@@ -202,7 +202,8 @@ sub trial_info : Chained('trial_init') PathPart('') Args(0) {
 
         my $plate_info = CXGN::Genotype::GenotypingProject->new({
             bcs_schema => $schema,
-            project_id => $c->stash->{trial_id}
+            project_id => $c->stash->{trial_id},
+            subscription_model => $c->config->{subscription_model}
         });
         my ($data, $tc) = $plate_info->get_plate_info();
         my $has_plate;

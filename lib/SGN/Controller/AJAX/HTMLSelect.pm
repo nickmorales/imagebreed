@@ -2429,7 +2429,7 @@ sub get_genotyping_facility_select : Path('/ajax/html/select/genotyping_faciliti
 
     if ($empty) { unshift @facilities, [ "", "Select Facility" ] }
 
-    my $default = $c->req->param("default") || @facilities[0]->[0];
+    my $default = $c->req->param("default") || $facilities[0]->[0];
 
     my $html = simple_selectbox_html(
         name => $name,
