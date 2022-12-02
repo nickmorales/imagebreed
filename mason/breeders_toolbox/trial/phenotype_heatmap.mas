@@ -692,7 +692,7 @@ jQuery(document).ready( function() {
                     rows = unique_rows,
                     columns = unique_cols.sort((a,b)=>a-b);
 
-                    d3.select("svg").remove();
+                    d3.select('#container_heatmap').selectAll("*").remove();
 
                     var svg = d3.select("#container_heatmap").append("svg")
                         .attr("width", width + margin.left + margin.right)
@@ -885,7 +885,7 @@ jQuery(document).ready( function() {
                     rows = unique_rows,
                     columns = unique_cols.sort((a,b)=>a-b);
 
-                    d3.select("svg").remove();
+                    d3.select('#container_fm').selectAll("*").remove();
 
                     var svg = d3.select("#container_fm").append("svg")
                         .attr("width", width + margin.left + margin.right)
@@ -1258,7 +1258,9 @@ jQuery(document).ready( function() {
     });
 
     jQuery('#pheno_heatmap_offswitch').click( function() {
-        d3.select("svg").remove();
+        d3.select('#container_heatmap').selectAll("*").remove();
+        d3.select('#container_fm').selectAll("*").remove();
+
         jQuery("#trait_heatmap").css("display", "none");
         jQuery("#trial_heatmap_div").css("display", "none");
         jQuery("#container_heatmap").css("display", "none");
@@ -1271,8 +1273,11 @@ jQuery(document).ready( function() {
     jQuery(document).on('change', '#trait_list_dropdown', function () {
         selected = jQuery("#trait_list_dropdown").val();
         console.log(selected);
+
+        d3.select('#container_heatmap').selectAll("*").remove();
+        d3.select('#container_fm').selectAll("*").remove();
+
         if (selected == 'fieldmap'){
-            d3.select("svg").remove();
             jQuery("#view_ctrl_button").css("display", "none");
             jQuery("#ctrldiv").css("display", "none");
             d3.select("#container_heatmap_geo_div").remove();
@@ -1282,7 +1287,6 @@ jQuery(document).ready( function() {
 
         } else if (selected == 'geofieldmap'){
             jQuery('#working_modal').modal("show");
-            d3.select("svg").remove();
             d3.select("#container_heatmap_geo_div").remove();
             d3.select('#container_heatmap_geo').append('div').attr("id","container_heatmap_geo_div");
             jQuery("#container_heatmap").css("display", "none");
@@ -1297,7 +1301,6 @@ jQuery(document).ready( function() {
             jQuery('#working_modal').modal("hide");
 
         } else  if (selected != ''){
-            d3.select("svg").remove();
             d3.select("#container_heatmap_geo_div").remove();
             jQuery("#d3legend").css("display", "none");
             jQuery("#container_fm").css("display", "none");
@@ -1307,7 +1310,6 @@ jQuery(document).ready( function() {
             jQuery('#heatmap_traits_assayed_download_div').show();
 
             assayed_trait_heatmap_view(selected);
-
         }
     });
 
