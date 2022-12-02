@@ -1834,9 +1834,9 @@ sub get_datasets_select :Path('/ajax/html/select/datasets') Args(0) {
                 @items = @{$transform->{transform}};
             }
             else {
-		if (defined($ids)) {
-		    @items = @$ids;
-		}
+                if (defined($ids)) {
+                    @items = @$ids;
+                }
             }
 
             $html .= "<td><div class='well well-sm'>";
@@ -2412,9 +2412,7 @@ sub get_items_select : Path('/ajax/html/select/items') Args(0) {
     );
 
     $c->stash->{rest} = { select => $html };
-
 }
-
 
 sub get_genotyping_facility_select : Path('/ajax/html/select/genotyping_facilities') Args(0) {
     my $self = shift;
@@ -2442,24 +2440,24 @@ sub get_genotyping_facility_select : Path('/ajax/html/select/genotyping_faciliti
 
 
 sub _clean_inputs {
-	no warnings 'uninitialized';
-	my $params = shift;
-	foreach (keys %$params){
-		my $values = $params->{$_};
-		my $ret_val;
-		if (ref \$values eq 'SCALAR'){
-			push @$ret_val, $values;
-		} elsif (ref $values eq 'ARRAY'){
-			$ret_val = $values;
-		} else {
-			die "Input is not a scalar or an arrayref\n";
-		}
-		@$ret_val = grep {$_ ne undef} @$ret_val;
-		@$ret_val = grep {$_ ne ''} @$ret_val;
+    no warnings 'uninitialized';
+    my $params = shift;
+    foreach (keys %$params){
+        my $values = $params->{$_};
+        my $ret_val;
+        if (ref \$values eq 'SCALAR'){
+            push @$ret_val, $values;
+        } elsif (ref $values eq 'ARRAY'){
+            $ret_val = $values;
+        } else {
+            die "Input is not a scalar or an arrayref\n";
+        }
+        @$ret_val = grep {$_ ne undef} @$ret_val;
+        @$ret_val = grep {$_ ne ''} @$ret_val;
         $_ =~ s/\[\]$//; #ajax POST with arrays adds [] to the end of the name e.g. germplasmName[]. since all inputs are arrays now we can remove the [].
-		$params->{$_} = $ret_val;
-	}
-	return $params;
+        $params->{$_} = $ret_val;
+    }
+    return $params;
 }
 
 sub _check_user_login_html_select {
