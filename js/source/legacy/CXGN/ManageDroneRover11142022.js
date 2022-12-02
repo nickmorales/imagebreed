@@ -539,7 +539,10 @@ jQuery(document).ready(function() {
             .attr("x", 0)
             .attr("y", 0);
 
-        d3.selectAll("text").remove();
+        d3.select('#drone_rover_plot_polygons_process_image_div_svg').selectAll("text").remove();
+        d3.select('#drone_rover_plot_polygons_process_image_div_topview_svg').selectAll("text").remove();
+        d3.select('#drone_rover_plot_polygons_process_image_div_sideheight_svg').selectAll("text").remove();
+
         var fill_color = '#'+Math.floor(Math.random()*16777215).toString(16);
 
         for (var i=0; i<manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned_squares.length; i++) {
@@ -628,10 +631,21 @@ jQuery(document).ready(function() {
     function drawRoverPlotLinesFilteredImage() {
         //console.log(manage_drone_rover_plot_polygons_plot_polygon_vertical_lines);
 
-        d3.selectAll("path").remove();
-        d3.selectAll("text").remove();
-        d3.selectAll("circle").remove();
-        d3.selectAll("rect").remove();
+        d3.select('#drone_rover_plot_polygons_process_image_div_svg').selectAll("path").remove();
+        d3.select('#drone_rover_plot_polygons_process_image_div_topview_svg').selectAll("path").remove();
+        d3.select('#drone_rover_plot_polygons_process_image_div_sideheight_svg').selectAll("path").remove();
+
+        d3.select('#drone_rover_plot_polygons_process_image_div_svg').selectAll("text").remove();
+        d3.select('#drone_rover_plot_polygons_process_image_div_topview_svg').selectAll("text").remove();
+        d3.select('#drone_rover_plot_polygons_process_image_div_sideheight_svg').selectAll("text").remove();
+
+        d3.select('#drone_rover_plot_polygons_process_image_div_svg').selectAll("circle").remove();
+        d3.select('#drone_rover_plot_polygons_process_image_div_topview_svg').selectAll("circle").remove();
+        d3.select('#drone_rover_plot_polygons_process_image_div_sideheight_svg').selectAll("circle").remove();
+
+        d3.select('#drone_rover_plot_polygons_process_image_div_svg').selectAll("rect").remove();
+        d3.select('#drone_rover_plot_polygons_process_image_div_topview_svg').selectAll("rect").remove();
+        d3.select('#drone_rover_plot_polygons_process_image_div_sideheight_svg').selectAll("rect").remove();
 
         var imageGroup = svgElementFilteredImage.append("g")
             .attr("x_pos", 0)
