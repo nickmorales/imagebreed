@@ -887,6 +887,103 @@ jQuery(document).ready(function() {
         }
     });
 
+    jQuery('#drone_rover_plot_polygons_process_correlate_phenotype_trait_submit').click(function(){
+
+        if (manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned_plot_names.length == 0) {
+            alert('Please assign the plot polygons to plot numbers above first!');
+            return false;
+        }
+
+        var selected_trait_ids = jQuery('#drone_rover_plot_polygons_process_correlate_phenotype_trait_select').val();
+        console.log(selected_trait_ids);
+
+        if (!selected_trait_ids || selected_trait_ids.length < 1) {
+            alert('Please select at least one trait!');
+            return false;
+        }
+        else {
+            var manage_drone_rover_template = {
+                num_plots: manage_drone_rover_plot_polygons_num_plots,
+                image_width: manage_drone_rover_plot_polygons_background_filtered_side_span_image_width,
+                image_height: manage_drone_rover_plot_polygons_background_filtered_side_span_image_height,
+                vertical_lines: manage_drone_rover_plot_polygons_plot_polygon_vertical_lines,
+                horizontal_lines: manage_drone_rover_plot_polygons_plot_polygon_horizontal_lines,
+                polygon_number_to_plot_number: manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned_map
+            };
+
+            jQuery.ajax({
+                type: 'POST',
+                url: '/api/drone_rover/plot_polygons_process_apply',
+                dataType: "json",
+                beforeSend: function() {
+                    jQuery("#working_modal").modal("show");
+                },
+                data: {
+                    'drone_run_project_id': manage_drone_rover_plot_polygons_drone_run_project_id,
+                    'drone_run_collection_number': manage_drone_rover_plot_polygons_collection_number,
+                    'drone_run_collection_project_id':manage_drone_rover_plot_polygons_collection_project_id,
+                    'phenotype_types': JSON.stringify(selected),
+                    'field_trial_id':manage_drone_rover_plot_polygons_field_trial_id,
+                    'polygon_template_metadata':JSON.stringify(manage_drone_rover_template),
+                    'polygons_to_plot_names':JSON.stringify(manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned),
+                    'company_id': manage_drone_rover_plot_polygons_private_company_id,
+                    'is_private': manage_drone_rover_plot_polygons_private_company_is_private,
+                    'is_test' : 1
+                },
+                success: function(response){
+                    console.log(response);
+                    if (response.error) {
+                        alert(response.error);
+                    }
+                    else {
+                        jQuery.ajax({
+                            type: 'POST',
+                            url : '/ajax/breeders/trial/'+manage_drone_rover_plot_polygons_field_trial_id+'/correlate_traits',
+                            data : {
+                                'trait_ids': JSON.stringify(selected_trait_ids),
+                                'observation_unit_level':'plot',
+                                'correlation_type':'pearson',
+                                'additional_pheno': JSON.stringify(response.pheno_data),
+                                'additional_traits': JSON.stringify(response.traits)
+                            },
+                            success: function(response){
+                                console.log(response);
+                                jQuery("#working_modal").modal("hide");
+                                if (response.error) {
+                                    alert(response.error);
+                                }
+                                else {
+                                    var html = '<table class="table table-hover table-bordered"><thead><tr>';
+                                    for(var i=0; i<response.result[0].length; i++) {
+                                        html = html + '<th>'+response.result[0][i]+'</th>';
+                                    }
+                                    html = html + '</tr></thead>';
+                                    for(var i=1; i<response.result.length; i++) {
+                                        html = html + '<tr>';
+                                        for(var j=0; j<response.result[i].length; j++) {
+                                            html = html + '<td>'+response.result[i][j]+'</td>';
+                                        }
+                                        html = html + '</tr>';
+                                    }
+                                    html = html + '</tbody></table>';
+                                    jQuery('#drone_rover_plot_polygons_process_correlate_phenotype_trait_results').html(html);
+                                }
+                            },
+                            error: function(response){
+                                jQuery("#working_modal").modal("hide");
+                                alert('Error doing correlation!');
+                            }
+                        });
+                    }
+                },
+                error: function(response){
+                    jQuery("#working_modal").modal("hide");
+                    alert('Error saving rover process assigned plot polygons!')
+                }
+            });
+        }
+    });
+
     jQuery('#drone_rover_plot_polygons_process_complete_dialog').on('hidden.bs.modal', function () {
         location.reload();
     });

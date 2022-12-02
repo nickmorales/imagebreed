@@ -3278,12 +3278,15 @@ sub crossing_trial_from_field_trial : Chained('trial') PathPart('crossing_trial_
 sub trial_correlate_traits : Chained('trial') PathPart('correlate_traits') Args(0) {
     my $self = shift;
     my $c = shift;
+    # print STDERR Dumper $c->req->params();
     my ($user_id, $user_name, $user_role) = _check_user_login_trial_metadata($c, 0, 0);
 
     my $schema = $c->stash->{schema};
     my $trait_ids = decode_json $c->req->param('trait_ids');
     my $obsunit_level = $c->req->param('observation_unit_level');
     my $correlation_type = $c->req->param('correlation_type');
+    my $additional_pheno = $c->req->param('additional_pheno') ? decode_json $c->req->param('additional_pheno') : {};
+    my $additional_traits = $c->req->param('additional_traits') ? decode_json $c->req->param('additional_traits') : {};
 
     my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
         'MaterializedViewTable',
@@ -3297,7 +3300,6 @@ sub trial_correlate_traits : Chained('trial') PathPart('correlate_traits') Args(
         }
     );
     my ($data, $unique_traits) = $phenotypes_search->search();
-    my @sorted_trait_names = sort keys %$unique_traits;
 
     if (scalar(@$data) == 0) {
         $c->stash->{rest} = { error => "There are no phenotypes for the trials and traits you have selected!"};
@@ -3308,15 +3310,31 @@ sub trial_correlate_traits : Chained('trial') PathPart('correlate_traits') Args(
     my %trait_hash;
     my %seen_obsunit_ids;
     foreach my $obs_unit (@$data){
-        my $obsunit_id = $obs_unit->{observationunit_stock_id};
+        my $obsunit_id = $obs_unit->{observationunit_uniquename};
         my $observations = $obs_unit->{observations};
         foreach (@$observations){
             $phenotype_data{$obsunit_id}->{$_->{trait_id}} = $_->{value};
             $trait_hash{$_->{trait_id}} = $_->{trait_name};
         }
+
+        if ($additional_pheno) {
+            while (my ($trait_id_additional, $trait_name_additional) = each %$additional_traits) {
+                my $ph = $additional_pheno->{$obsunit_id}->{$trait_name_additional};
+                if ($ph) {
+                    my $additional_value = $ph->[0];
+                    $phenotype_data{$obsunit_id}->{$trait_id_additional} = $additional_value;
+                    $trait_hash{$trait_id_additional} = $trait_name_additional;
+                }
+            }
+        }
+
         $seen_obsunit_ids{$obsunit_id}++;
     }
     my @sorted_obs_units = sort keys %seen_obsunit_ids;
+
+    while (my ($trait_id_additional, $trait_name_additional) = each %$additional_traits) {
+        push @$trait_ids, $trait_id_additional;
+    }
 
     my $header_string = join ',', @$trait_ids;
 

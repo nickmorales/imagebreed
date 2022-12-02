@@ -111,6 +111,26 @@ $database_field_name
             <div id="drone_rover_plot_polygons_process_trial_layout_div_30"></div>
         </div>
 
+        <hr>
+        <div class="well well-sm">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Check Correlation to Trait(s): </label>
+                    <div class="col-sm-10">
+                        <div id="drone_rover_plot_polygons_process_correlate_phenotype_trait_div">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <center>
+                <button class="btn btn-default" id="drone_rover_plot_polygons_process_correlate_phenotype_trait_submit">Check Trait(s) Correlation</button>
+            </center>
+
+            <br/>
+            <div id="drone_rover_plot_polygons_process_correlate_phenotype_trait_results">
+            </div>
+        </div>
+
     </&>
     <&| /util/workflow.mas:step, title=> "Phenotypes" &>
         <& /page/page_title.mas, title=>"Calculate phenotypes for all 3D plot polygons" &>
@@ -155,6 +175,8 @@ $database_field_name
 jQuery(document).ready(function() {
 
     jQuery('#pheno_heatmap_onswitch').trigger('click');
+
+    get_select_box('traits', 'drone_rover_plot_polygons_process_correlate_phenotype_trait_div', { 'name' : 'drone_rover_plot_polygons_process_correlate_phenotype_trait_select', 'id' : 'drone_rover_plot_polygons_process_correlate_phenotype_trait_select', 'empty':1, 'multiple':1, 'trial_ids':<% $field_trial_id %>, 'stock_type':'plot', 'size':20 });
 
 });
 

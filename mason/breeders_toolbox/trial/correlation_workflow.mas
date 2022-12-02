@@ -90,7 +90,13 @@ jQuery(document).ready(function(){
         }
         else {
             jQuery.ajax({
-                url : '/ajax/breeders/trial/<% $trial_id %>/correlate_traits?trait_ids='+JSON.stringify(selected_trait_ids)+'&observation_unit_level='+jQuery('#trial_analysis_correlation_workflow_observation_level').val()+'&correlation_type='+jQuery('#trial_analysis_correlation_workflow_correlation_type').val(),
+                type: 'POST',
+                url : '/ajax/breeders/trial/<% $trial_id %>/correlate_traits',
+                data : {
+                    'trait_ids': JSON.stringify(selected_trait_ids),
+                    'observation_unit_level': jQuery('#trial_analysis_correlation_workflow_observation_level').val(),
+                    'correlation_type': jQuery('#trial_analysis_correlation_workflow_correlation_type').val()
+                },
                 beforeSend: function() {
                     jQuery("#working_modal").modal("show");
                 },

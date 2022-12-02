@@ -175,6 +175,7 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     my $polygons_to_plot_names = decode_json $c->req->param('polygons_to_plot_names');
     my $private_company_id = $c->req->param('company_id');
     my $private_company_is_private = $c->req->param('is_private');
+    my $is_test = $c->req->param('is_test');
     my ($user_id, $user_name, $user_role) = _check_user_login_drone_rover($c, 'submitter', $private_company_id, 'submitter_access');
 
     my $earthsense_collections_cvterm_id = SGN::Model::Cvterm->get_cvterm_row($bcs_schema, 'earthsense_ground_rover_collections_archived', 'project_property')->cvterm_id();
@@ -268,83 +269,86 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
 
     my $archive_file_type = 'point_cloud_statistics_phenotypes';
 
-    my $pheno_temp_filename = basename($phenotype_output_temp_file);
-    my $uploader = CXGN::UploadFile->new({
-        tempfile => $phenotype_output_temp_file,
-        subdirectory => $archive_file_type,
-        archive_path => $c->config->{archive_path},
-        archive_filename => $pheno_temp_filename,
-        timestamp => $timestamp,
-        user_id => $user_id,
-        user_role => $user_role
-    });
-    my $archived_pheno_filename_with_path = $uploader->archive();
-    my $archive_pheno_md5 = $uploader->get_md5($archived_pheno_filename_with_path);
-    if (!$archived_pheno_filename_with_path) {
-        $c->stash->{message} = "Could not save file $pheno_temp_filename in archive.";
-        $c->stash->{template} = 'generic_message.mas';
-        return;
-    }
-    print STDERR "Archived Point Cloud Pheno File: $archived_pheno_filename_with_path\n";
-
-    my $q_project_md_file = "INSERT INTO phenome.project_md_file (project_id, file_id, type_id) VALUES (?,?,?);";
-    my $h_project_md_file = $bcs_schema->storage->dbh()->prepare($q_project_md_file);
-
-    my $q_stock_md_file = "INSERT INTO phenome.stock_md_file (stock_id, file_id, type_id) VALUES (?,?,?);";
-    my $h_stock_md_file = $bcs_schema->storage->dbh()->prepare($q_stock_md_file);
-
-    my $md_row = $metadata_schema->resultset("MdMetadata")->create({create_person_id => $user_id});
-
+    my $archived_pheno_filename_with_path;
     my %saved_point_cloud_files;
-    print STDERR Dumper \%all_field_trial_layouts;
-    foreach (@plot_polygons_cut) {
-        my $stock_id = $_->{stock_id};
-        my $temp_file = $_->{temp_file};
-        my $polygon_ratios = $_->{polygon_ratios};
-        my $drone_run_project_id = $all_field_trial_layouts{$stock_id}->{drone_run_project_id};
-        my $project_collection_id = $all_field_trial_layouts{$stock_id}->{drone_run_collection_project_id};
-        my $collection_number = $all_field_trial_layouts{$stock_id}->{drone_run_collection_number};
-
-        my $temp_filename = basename($temp_file);
+    if (!$is_test) {
+        my $pheno_temp_filename = basename($phenotype_output_temp_file);
         my $uploader = CXGN::UploadFile->new({
-            tempfile => $temp_file,
-            subdirectory => "earthsense_rover_collections_plot_polygons",
-            second_subdirectory => "$drone_run_collection_project_id",
+            tempfile => $phenotype_output_temp_file,
+            subdirectory => $archive_file_type,
             archive_path => $c->config->{archive_path},
-            archive_filename => $temp_filename,
+            archive_filename => $pheno_temp_filename,
             timestamp => $timestamp,
             user_id => $user_id,
             user_role => $user_role
         });
-        my $archived_filename_with_path = $uploader->archive();
-        my $md5 = $uploader->get_md5($archived_filename_with_path);
-        if (!$archived_filename_with_path) {
-            $c->stash->{rest} = {error=>'Could not archive '.$temp_filename.'!'};
-            $c->detach();
+        $archived_pheno_filename_with_path = $uploader->archive();
+        my $archive_pheno_md5 = $uploader->get_md5($archived_pheno_filename_with_path);
+        if (!$archived_pheno_filename_with_path) {
+            $c->stash->{message} = "Could not save file $pheno_temp_filename in archive.";
+            $c->stash->{template} = 'generic_message.mas';
+            return;
         }
+        print STDERR "Archived Point Cloud Pheno File: $archived_pheno_filename_with_path\n";
 
-        my $file_row = $metadata_schema->resultset("MdFiles")->create({
-            basename => basename($archived_filename_with_path),
-            dirname => dirname($archived_filename_with_path),
-            filetype => "earthsense_rover_collections_plot_polygon_point_clouds",
-            md5checksum => $md5->hexdigest(),
-            metadata_id => $md_row->metadata_id()
-        });
-        my $plot_polygon_file_id = $file_row->file_id();
+        my $q_project_md_file = "INSERT INTO phenome.project_md_file (project_id, file_id, type_id) VALUES (?,?,?);";
+        my $h_project_md_file = $bcs_schema->storage->dbh()->prepare($q_project_md_file);
 
-        $h_project_md_file->execute($project_collection_id, $plot_polygon_file_id, $project_md_file_cvterm_id);
-        $h_stock_md_file->execute($stock_id, $plot_polygon_file_id, $stock_md_file_cvterm_id);
+        my $q_stock_md_file = "INSERT INTO phenome.stock_md_file (stock_id, file_id, type_id) VALUES (?,?,?);";
+        my $h_stock_md_file = $bcs_schema->storage->dbh()->prepare($q_stock_md_file);
 
-        $saved_point_cloud_files{$drone_run_project_id}->{$project_collection_id}->{$collection_number}->{$stock_id} = {
-            file_id => $plot_polygon_file_id,
-            polygon_ratios => $polygon_ratios
-        };
-        $stock_info{$stock_id}->{file_id} = $plot_polygon_file_id;
+        my $md_row = $metadata_schema->resultset("MdMetadata")->create({create_person_id => $user_id});
+
+        print STDERR Dumper \%all_field_trial_layouts;
+        foreach (@plot_polygons_cut) {
+            my $stock_id = $_->{stock_id};
+            my $temp_file = $_->{temp_file};
+            my $polygon_ratios = $_->{polygon_ratios};
+            my $drone_run_project_id = $all_field_trial_layouts{$stock_id}->{drone_run_project_id};
+            my $project_collection_id = $all_field_trial_layouts{$stock_id}->{drone_run_collection_project_id};
+            my $collection_number = $all_field_trial_layouts{$stock_id}->{drone_run_collection_number};
+
+            my $temp_filename = basename($temp_file);
+            my $uploader = CXGN::UploadFile->new({
+                tempfile => $temp_file,
+                subdirectory => "earthsense_rover_collections_plot_polygons",
+                second_subdirectory => "$drone_run_collection_project_id",
+                archive_path => $c->config->{archive_path},
+                archive_filename => $temp_filename,
+                timestamp => $timestamp,
+                user_id => $user_id,
+                user_role => $user_role
+            });
+            my $archived_filename_with_path = $uploader->archive();
+            my $md5 = $uploader->get_md5($archived_filename_with_path);
+            if (!$archived_filename_with_path) {
+                $c->stash->{rest} = {error=>'Could not archive '.$temp_filename.'!'};
+                $c->detach();
+            }
+
+            my $file_row = $metadata_schema->resultset("MdFiles")->create({
+                basename => basename($archived_filename_with_path),
+                dirname => dirname($archived_filename_with_path),
+                filetype => "earthsense_rover_collections_plot_polygon_point_clouds",
+                md5checksum => $md5->hexdigest(),
+                metadata_id => $md_row->metadata_id()
+            });
+            my $plot_polygon_file_id = $file_row->file_id();
+
+            $h_project_md_file->execute($project_collection_id, $plot_polygon_file_id, $project_md_file_cvterm_id);
+            $h_stock_md_file->execute($stock_id, $plot_polygon_file_id, $stock_md_file_cvterm_id);
+
+            $saved_point_cloud_files{$drone_run_project_id}->{$project_collection_id}->{$collection_number}->{$stock_id} = {
+                file_id => $plot_polygon_file_id,
+                polygon_ratios => $polygon_ratios
+            };
+            $stock_info{$stock_id}->{file_id} = $plot_polygon_file_id;
+        }
+        print STDERR Dumper \%saved_point_cloud_files;
+
+        $h_project_md_file = undef;
+        $h_stock_md_file = undef;
     }
-    print STDERR Dumper \%saved_point_cloud_files;
-
-    $h_project_md_file = undef;
-    $h_stock_md_file = undef;
 
     my $point_cloud_cvterm_id = SGN::Model::Cvterm->get_cvterm_row_from_trait_name($bcs_schema, 'EarthSense Filtered Point Cloud|ISOL:0010001')->cvterm_id;
 
@@ -422,6 +426,24 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     my $min_height_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $min_height_composed_cvterm_id, 'extended');
     my $min_length_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $min_length_composed_cvterm_id, 'extended');
     my $min_span_composed_trait_name = SGN::Model::Cvterm::get_trait_from_cvterm_id($bcs_schema, $min_span_composed_cvterm_id, 'extended');
+
+    my %trait_id_map = (
+        $average_height_composed_cvterm_id => $average_height_composed_trait_name,
+        $average_length_composed_cvterm_id => $average_length_composed_trait_name,
+        $average_span_composed_cvterm_id => $average_span_composed_trait_name,
+        $average_3d_volume_composed_cvterm_id => $average_3d_volume_composed_trait_name,
+        $average_height_density_composed_cvterm_id => $average_height_density_composed_trait_name,
+        $average_length_density_composed_cvterm_id => $average_length_density_composed_trait_name,
+        $average_span_density_composed_cvterm_id => $average_span_density_composed_trait_name,
+        $average_3d_density_composed_cvterm_id => $average_3d_density_composed_trait_name,
+        $num_points_composed_cvterm_id => $num_points_composed_trait_name,
+        $max_height_composed_cvterm_id => $max_height_composed_trait_name,
+        $max_length_composed_cvterm_id => $max_length_composed_trait_name,
+        $max_span_composed_cvterm_id => $max_span_composed_trait_name,
+        $min_height_composed_cvterm_id => $min_height_composed_trait_name,
+        $min_length_composed_cvterm_id => $min_length_composed_trait_name,
+        $min_span_composed_cvterm_id => $min_span_composed_trait_name
+    );
 
     my $csv = Text::CSV->new({ sep_char => ',' });
     open(my $fh, '<', $phenotype_output_temp_file) or die "Could not open file '$phenotype_output_temp_file' $!";
@@ -509,6 +531,14 @@ sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
 
     close $fh;
     print STDERR "Read $line lines in results file\n";
+
+    if ($is_test) {
+        $c->stash->{rest} = {
+            pheno_data => \%point_cloud_stat_phenotype_data,
+            traits => \%trait_id_map
+        };
+        $c->detach();
+    }
 
     if ($line > 0) {
         my %phenotype_metadata = (
