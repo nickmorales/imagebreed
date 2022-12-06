@@ -277,7 +277,7 @@ sub drone_rover_plot_polygons_test_pheno_range_correlations_POST : Args(0) {
 
         $seen_obsunit_ids{$obsunit_id}++;
     }
-    my @sorted_obs_units = sort {$a <=> $b} keys %seen_obsunit_ids;
+    my @sorted_obs_units = sort keys %seen_obsunit_ids;
     my @seen_along_vals_sorted = sort {$a <=> $b} keys %seen_along_vals;
     my @seen_across_vals_sorted = sort {$a <=> $b} keys %seen_across_vals;
     my @seen_across_vals_sorted_reverse = sort {$b <=> $a} keys %seen_across_vals;
@@ -360,6 +360,63 @@ sub drone_rover_plot_polygons_test_pheno_range_correlations_POST : Args(0) {
         close($fh);
 
         $is_first_result = 0;
+    }
+
+    foreach my $collection_along_val (@collection_along_vals_sorted) {
+
+        my ($stats_tempfile_fh, $stats_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_tempfile_fh, $stats_out_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
+        open(my $F, ">", $stats_tempfile) || die "Can't open file ".$stats_tempfile;
+            print $F $header_string."\n";
+
+            foreach my $seen_across_val (@seen_across_vals_sorted_reverse) {
+                my @line = ();
+                my $pheno_vals = $phenotype_data{$collection_along_val}->{$seen_across_val};
+                my $pheno_vals_htp = $phenotype_data_htp{$seen_across_val};
+
+                foreach my $t (@$trait_ids) {
+                    if (exists($pheno_vals->{$t})) {
+                        my $val = $pheno_vals->{$t};
+                        push @line, $val;
+                    }
+                    if (exists($pheno_vals_htp->{$t})) {
+                        my $val = $pheno_vals_htp->{$t};
+                        push @line, $val;
+                    }
+                }
+                my $line_string = join ',', @line;
+                print $F "$line_string\n";
+            }
+        close($F);
+
+        my $cmd = 'R -e "library(data.table);
+        mat <- fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\');
+        res <- cor(mat, method=\''.$correlation_type.'\', use = \'complete.obs\')
+        res_rounded <- round(res, 2)
+        write.table(res_rounded, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');"';
+        print STDERR Dumper $cmd;
+        my $status = system($cmd);
+
+        my $csv = Text::CSV->new({ sep_char => "\t" });
+        open(my $fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            my $header = <$fh>;
+            my @header_cols;
+            if ($csv->parse($header)) {
+                @header_cols = $csv->fields();
+            }
+
+            my $row = <$fh>;
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+
+            my $trait_id = shift @columns;
+            my @line = ($trait_hash{$trait_id}."_Tested Reverse $collection_along_val", @columns);
+            push @result, \@line;
+        close($fh);
     }
 
     $c->stash->{rest} = {
