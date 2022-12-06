@@ -224,10 +224,10 @@ sub drone_rover_plot_polygons_test_pheno_range_correlations_POST : Args(0) {
         $collection_along_vals{$collection_along_val}++;
         $collection_across_vals{$collection_across_val}++;
     }
-    my @collection_along_vals_sorted = sort keys %collection_along_vals;
-    my @collection_along_vals_sorted_rev = reverse sort keys %collection_along_vals;
-    my @collection_across_vals_sorted = sort keys %collection_across_vals;
-    my @collection_across_vals_sorted_rev = reverse sort keys %collection_across_vals;
+    my @collection_along_vals_sorted = sort {$a <=> $b} keys %collection_along_vals;
+    my @collection_along_vals_sorted_rev = sort {$b <=> $a} keys %collection_along_vals;
+    my @collection_across_vals_sorted = sort {$a <=> $b} keys %collection_across_vals;
+    my @collection_across_vals_sorted_rev = sort {$b <=> $a} keys %collection_across_vals;
 
     my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
         'MaterializedViewTable',
@@ -277,10 +277,10 @@ sub drone_rover_plot_polygons_test_pheno_range_correlations_POST : Args(0) {
 
         $seen_obsunit_ids{$obsunit_id}++;
     }
-    my @sorted_obs_units = sort keys %seen_obsunit_ids;
-    my @seen_along_vals_sorted = sort keys %seen_along_vals;
-    my @seen_across_vals_sorted = sort keys %seen_across_vals;
-    my @seen_across_vals_sorted_reverse = reverse sort keys %seen_across_vals;
+    my @sorted_obs_units = sort {$a <=> $b} keys %seen_obsunit_ids;
+    my @seen_along_vals_sorted = sort {$a <=> $b} keys %seen_along_vals;
+    my @seen_across_vals_sorted = sort {$a <=> $b} keys %seen_across_vals;
+    my @seen_across_vals_sorted_reverse = sort {$b <=> $a} keys %seen_across_vals;
     print STDERR Dumper \@seen_along_vals_sorted;
 
     while (my ($trait_id_additional, $trait_name_additional) = each %$additional_traits) {
@@ -355,8 +355,7 @@ sub drone_rover_plot_polygons_test_pheno_range_correlations_POST : Args(0) {
             }
 
             my $trait_id = shift @columns;
-            my @line = ($trait_hash{$trait_id}."_$collection_along_val");
-            push @line, @columns;
+            my @line = ($trait_hash{$trait_id}."_Tested $collection_along_val", @columns);
             push @result, \@line;
         close($fh);
 
