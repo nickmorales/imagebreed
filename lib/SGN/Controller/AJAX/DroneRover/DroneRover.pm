@@ -158,6 +158,217 @@ sub drone_rover_get_point_cloud_POST : Args(0) {
     $c->stash->{rest} = { success => 1, points => \@points };
 }
 
+sub drone_rover_plot_polygons_test_pheno_range_correlations : Path('/api/drone_rover/plot_polygons_test_pheno_range_correlations') : ActionClass('REST') { }
+sub drone_rover_plot_polygons_test_pheno_range_correlations_POST : Args(0) {
+    my $self = shift;
+    my $c = shift;
+    my $bcs_schema = $c->dbic_schema('Bio::Chado::Schema', 'sgn_chado');
+    my $metadata_schema = $c->dbic_schema('CXGN::Metadata::Schema');
+
+    my $trait_ids = decode_json $c->req->param('trait_ids');
+    my $field_trial_id = $c->req->param('field_trial_id');
+    my $obsunit_level = $c->req->param('observation_unit_level');
+    my $correlation_type = $c->req->param('correlation_type');
+    my $range_min = $c->req->param('range_min');
+    my $range_max = $c->req->param('range_max');
+    my $column_min = $c->req->param('column_min');
+    my $column_max = $c->req->param('column_max');
+    my $range_start = $c->req->param('range_start');
+    my $range_stop = $c->req->param('range_stop');
+    my $column_start = $c->req->param('column_start');
+    my $column_stop = $c->req->param('column_stop');
+    my $columns_question = $c->req->param('columns_question');
+    my $additional_pheno = $c->req->param('additional_pheno') ? decode_json $c->req->param('additional_pheno') : {};
+    my $additional_traits = $c->req->param('additional_traits') ? decode_json $c->req->param('additional_traits') : {};
+
+    my ($user_id, $user_name, $user_role) = _check_user_login_drone_rover($c, 'submitter', 0, 0);
+
+    if (scalar(@$trait_ids) > 1) {
+        $c->stash->{rest} = { error => "Please only select one trait for the testing of correlations!"};
+        return;
+    }
+    my $selected_trait_id = $trait_ids->[0];
+
+    my $column_min_from_1 = $column_min - ($column_min - 1);
+    my $column_max_from_1 = $column_max - ($column_min - 1);
+    my $range_min_from_1 = $range_min - ($range_min - 1);
+    my $range_max_from_1 = $range_max - ($range_min - 1);
+
+    my $trial_layout = CXGN::Trial::TrialLayout->new({schema => $bcs_schema, trial_id => $field_trial_id, experiment_type => 'field_layout'});
+    my $design = $trial_layout->get_design();
+    # print STDERR Dumper $design;
+
+    my $collection_across = $columns_question;
+    my $collection_along = $collection_across eq 'col_number' ? 'row_number' : 'col_number';
+
+    my %row_col_hash;
+    my %row_col_hash_lookup;
+    my %collection_along_vals;
+    my %collection_across_vals;
+    foreach my $p (values %$design) {
+        my $plot_name = $p->{plot_name};
+        my $plot_id = $p->{plot_id};
+        my $collection_along_val = $p->{$collection_along};
+        my $collection_across_val = $p->{$collection_across};
+
+        $row_col_hash{$collection_along_val}->{$collection_across_val} = {
+            plot_name => $plot_name,
+            plot_id => $plot_id
+        };
+
+        $row_col_hash_lookup{$plot_name} = {
+            $collection_along => $collection_along_val,
+            $collection_across => $collection_across_val
+        };
+
+        $collection_along_vals{$collection_along_val}++;
+        $collection_across_vals{$collection_across_val}++;
+    }
+    my @collection_along_vals_sorted = sort keys %collection_along_vals;
+    my @collection_along_vals_sorted_rev = reverse sort keys %collection_along_vals;
+    my @collection_across_vals_sorted = sort keys %collection_across_vals;
+    my @collection_across_vals_sorted_rev = reverse sort keys %collection_across_vals;
+
+    my $phenotypes_search = CXGN::Phenotypes::SearchFactory->instantiate(
+        'MaterializedViewTable',
+        {
+            bcs_schema=>$bcs_schema,
+            data_level=>$obsunit_level,
+            trait_list=>$trait_ids,
+            trial_list=>[$field_trial_id],
+            include_timestamp=>0,
+            exclude_phenotype_outlier=>0
+        }
+    );
+    my ($data, $unique_traits) = $phenotypes_search->search();
+
+    if (scalar(@$data) == 0) {
+        $c->stash->{rest} = { error => "There are no phenotypes for the trials and traits you have selected!"};
+        return;
+    }
+
+    my %phenotype_data;
+    my %phenotype_data_htp;
+    my %trait_hash;
+    my %seen_obsunit_ids;
+    my %seen_along_vals;
+    my %seen_across_vals;
+    foreach my $obs_unit (@$data){
+        my $obsunit_id = $obs_unit->{observationunit_uniquename};
+        my $obsunit_along_val = $obs_unit->{"obsunit_".$collection_along};
+        my $obsunit_across_val = $obs_unit->{"obsunit_".$collection_across};
+        my $observations = $obs_unit->{observations};
+        foreach (@$observations){
+            $phenotype_data{$obsunit_along_val}->{$obsunit_across_val}->{$_->{trait_id}} = $_->{value};
+            $trait_hash{$_->{trait_id}} = $_->{trait_name};
+        }
+
+        while (my ($trait_id_additional, $trait_name_additional) = each %$additional_traits) {
+            my $ph = $additional_pheno->{$obsunit_id}->{$trait_name_additional};
+            if ($ph) {
+                my $additional_value = $ph->[0];
+
+                $phenotype_data_htp{$obsunit_across_val}->{$trait_id_additional} = $additional_value;
+                $trait_hash{$trait_id_additional} = $trait_name_additional;
+                $seen_along_vals{$obsunit_along_val}++;
+                $seen_across_vals{$obsunit_across_val}++;
+            }
+        }
+
+        $seen_obsunit_ids{$obsunit_id}++;
+    }
+    my @sorted_obs_units = sort keys %seen_obsunit_ids;
+    my @seen_along_vals_sorted = sort keys %seen_along_vals;
+    my @seen_across_vals_sorted = sort keys %seen_across_vals;
+    my @seen_across_vals_sorted_reverse = reverse sort keys %seen_across_vals;
+    print STDERR Dumper \@seen_along_vals_sorted;
+
+    while (my ($trait_id_additional, $trait_name_additional) = each %$additional_traits) {
+        push @$trait_ids, $trait_id_additional;
+    }
+
+    my $header_string = join ',', @$trait_ids;
+
+    my $shared_cluster_dir_config = $c->config->{cluster_shared_tempdir};
+    my $tmp_stats_dir = $shared_cluster_dir_config."/tmp_trial_correlation";
+    mkdir $tmp_stats_dir if ! -d $tmp_stats_dir;
+
+    my @result;
+    my $is_first_result = 1;
+    foreach my $collection_along_val (@collection_along_vals_sorted) {
+
+        my ($stats_tempfile_fh, $stats_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+        my ($stats_out_tempfile_fh, $stats_out_tempfile) = tempfile("drone_stats_XXXXX", DIR=> $tmp_stats_dir);
+
+        open(my $F, ">", $stats_tempfile) || die "Can't open file ".$stats_tempfile;
+            print $F $header_string."\n";
+
+            foreach my $seen_across_val (@seen_across_vals_sorted) {
+                my @line = ();
+                my $pheno_vals = $phenotype_data{$collection_along_val}->{$seen_across_val};
+                my $pheno_vals_htp = $phenotype_data_htp{$seen_across_val};
+
+                foreach my $t (@$trait_ids) {
+                    if (exists($pheno_vals->{$t})) {
+                        my $val = $pheno_vals->{$t};
+                        push @line, $val;
+                    }
+                    if (exists($pheno_vals_htp->{$t})) {
+                        my $val = $pheno_vals_htp->{$t};
+                        push @line, $val;
+                    }
+                }
+                my $line_string = join ',', @line;
+                print $F "$line_string\n";
+            }
+        close($F);
+
+        my $cmd = 'R -e "library(data.table);
+        mat <- fread(\''.$stats_tempfile.'\', header=TRUE, sep=\',\');
+        res <- cor(mat, method=\''.$correlation_type.'\', use = \'complete.obs\')
+        res_rounded <- round(res, 2)
+        write.table(res_rounded, file=\''.$stats_out_tempfile.'\', row.names=TRUE, col.names=TRUE, sep=\'\t\');"';
+        print STDERR Dumper $cmd;
+        my $status = system($cmd);
+
+        my $csv = Text::CSV->new({ sep_char => "\t" });
+        open(my $fh, '<', $stats_out_tempfile) or die "Could not open file '$stats_out_tempfile' $!";
+            print STDERR "Opened $stats_out_tempfile\n";
+            my $header = <$fh>;
+            my @header_cols;
+            if ($csv->parse($header)) {
+                @header_cols = $csv->fields();
+            }
+
+            my @header_trait_names = ("Trait");
+            foreach (@header_cols) {
+                push @header_trait_names, $trait_hash{$_};
+            }
+            if ($is_first_result) {
+                push @result, \@header_trait_names;
+            }
+
+            my $row = <$fh>;
+            my @columns;
+            if ($csv->parse($row)) {
+                @columns = $csv->fields();
+            }
+
+            my $trait_id = shift @columns;
+            my @line = ($trait_hash{$trait_id}."_$collection_along_val");
+            push @line, @columns;
+            push @result, \@line;
+        close($fh);
+
+        $is_first_result = 0;
+    }
+
+    $c->stash->{rest} = {
+        success => 1,
+        result => \@result
+    };
+}
+
 sub drone_rover_plot_polygons_process_apply : Path('/api/drone_rover/plot_polygons_process_apply') : ActionClass('REST') { }
 sub drone_rover_plot_polygons_process_apply_POST : Args(0) {
     my $self = shift;

@@ -41,6 +41,15 @@ $database_field_name
 <input type="hidden" id="plot_polygon_process_collection_project_id" value="<% $collection_project_id %>" />
 <input type="hidden" id="plot_polygon_process_database_field_name" value="<% $database_field_name %>" />
 
+<input type="hidden" id="plot_polygon_process_collection_range_start" />
+<input type="hidden" id="plot_polygon_process_collection_range_stop" />
+<input type="hidden" id="plot_polygon_process_collection_column_start" />
+<input type="hidden" id="plot_polygon_process_collection_column_stop" />
+<input type="hidden" id="plot_polygon_process_collection_range_min" />
+<input type="hidden" id="plot_polygon_process_collection_range_max" />
+<input type="hidden" id="plot_polygon_process_collection_column_min" />
+<input type="hidden" id="plot_polygon_process_collection_column_max" />
+
 <input type="hidden" id="pheno_heatmap_onswitch" />
 
 <&| /util/workflow.mas, id=> "manage_drone_rover_plot_polygon_process_workflow" &>
@@ -121,14 +130,23 @@ $database_field_name
                         </div>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Collection Moved Along What in Field Trial?: </label>
+                    <div class="col-sm-10">
+                        <select class="form-control" id="drone_rover_plot_polygons_process_correlate_phenotype_columns_question">
+                            <option value="col_number">Col Number</option>
+                            <option value="row_number">Row Number</option>
+                        </select>
+                    </div>
+                </div>
             </div>
             <center>
                 <button class="btn btn-default" id="drone_rover_plot_polygons_process_correlate_phenotype_trait_submit">Check Trait(s) Correlation</button>
             </center>
 
             <br/>
-            <div id="drone_rover_plot_polygons_process_correlate_phenotype_trait_results">
-            </div>
+            <div id="drone_rover_plot_polygons_process_correlate_phenotype_trait_results"></div>
+            <div id="drone_rover_plot_polygons_process_correlate_test_phenotype_trait_results"></div>
         </div>
 
     </&>

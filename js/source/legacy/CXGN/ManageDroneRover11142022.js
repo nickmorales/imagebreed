@@ -49,6 +49,9 @@ jQuery(document).ready(function() {
     var manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned_plot_names = [];
     var manage_drone_rover_plot_polygons_plot_polygon_boundaries_assigned_plot_numbers = [];
 
+    var manage_drone_rover_plot_polygons_plot_polygon_phenotypes = {};
+    var manage_drone_rover_plot_polygons_plot_polygon_phenotypes_traits = {};
+
     var svgElementFilteredImage;
     var svgElementFilteredImageSideSpan;
     var svgElementFilteredImageSideHeight;
@@ -328,9 +331,13 @@ jQuery(document).ready(function() {
                                         var stop_range = response['run_info']['tracker']['stop_range'];
                                         var start_column = response['run_info']['tracker']['start_column'];
                                         var stop_column = response['run_info']['tracker']['stop_column'];
+                                        var range_min = response['run_info']['field']['range_min'];
+                                        var range_max = response['run_info']['field']['range_max'];
+                                        var column_min = response['run_info']['field']['column_min'];
+                                        var column_max = response['run_info']['field']['column_max'];
 
                                         var html = "<table class='table table-bordered table-hover'><thead><tr><th>Collection Field</th><th>Database Field Trial</th><th>Range Min</th><th>Range Max</th><th>Column Min</th><th>Column Max</th><th>Rows Per Column</th><th>Plot Length</th><th>Row Width</th><th>Planting Spacing</th><th>Crop</th></tr></thead><tbody>";
-                                        html = html + "<tr><td>"+response['run_info']['field']['name']+"</td><td>"+manage_drone_rover_plot_polygons_database_field_name+"</td><td>"+response['run_info']['field']['range_min']+"</td><td>"+response['run_info']['field']['range_max']+"</td><td>"+response['run_info']['field']['column_min']+"</td><td>"+response['run_info']['field']['column_max']+"</td><td>"+response['run_info']['field']['rows_per_column']+"</td><td>"+response['run_info']['field']['plot_length']+"</td><td>"+response['run_info']['field']['row_width']+"</td><td>"+response['run_info']['field']['planting_spacing']+"</td><td>"+response['run_info']['field']['crop_name']+"</td></tr>";
+                                        html = html + "<tr><td>"+response['run_info']['field']['name']+"</td><td>"+manage_drone_rover_plot_polygons_database_field_name+"</td><td>"+range_min+"</td><td>"+range_max+"</td><td>"+column_min+"</td><td>"+column_max+"</td><td>"+response['run_info']['field']['rows_per_column']+"</td><td>"+response['run_info']['field']['plot_length']+"</td><td>"+response['run_info']['field']['row_width']+"</td><td>"+response['run_info']['field']['planting_spacing']+"</td><td>"+response['run_info']['field']['crop_name']+"</td></tr>";
                                         html = html + "</tbody></thead></table>";
 
                                         html = html + "<table class='table table-bordered table-hover'><thead><tr><th>Collection</th><th>Start Range</th><th>Stop Range</th><th>Start Column</th><th>Stop Column</th></tr></thead><tbody>";
@@ -338,6 +345,15 @@ jQuery(document).ready(function() {
                                         html = html + "</tbody></thead></table>";
 
                                         html = html + "<div class='well well-sm'><div class='form-horizontal'><div class='form-group'><label class='col-sm-3 control-label'>Number Plots: </label><div class='col-sm-9'><input class='form-control' type='number' id='manage_drone_rover_plot_polygon_process_num_plots' /></div></div></div></div></div>";
+
+                                        jQuery('#plot_polygon_process_collection_range_start').val(start_range);
+                                        jQuery('#plot_polygon_process_collection_range_stop').val(stop_range);
+                                        jQuery('#plot_polygon_process_collection_column_start').val(start_column);
+                                        jQuery('#plot_polygon_process_collection_column_stop').val(stop_column);
+                                        jQuery('#plot_polygon_process_collection_range_min').val(range_min);
+                                        jQuery('#plot_polygon_process_collection_range_max').val(range_max);
+                                        jQuery('#plot_polygon_process_collection_column_min').val(column_min);
+                                        jQuery('#plot_polygon_process_collection_column_max').val(column_max);
 
                                         jQuery('#drone_rover_plot_polygons_process_run_info_section').html(html);
 
@@ -936,6 +952,9 @@ jQuery(document).ready(function() {
                         alert(response.error);
                     }
                     else {
+                        manage_drone_rover_plot_polygons_plot_polygon_phenotypes = response.pheno_data;
+                        manage_drone_rover_plot_polygons_plot_polygon_phenotypes_traits = response.traits;
+
                         jQuery.ajax({
                             type: 'POST',
                             url : '/ajax/breeders/trial/'+manage_drone_rover_plot_polygons_field_trial_id+'/correlate_traits',
@@ -943,8 +962,8 @@ jQuery(document).ready(function() {
                                 'trait_ids': JSON.stringify(selected_trait_ids),
                                 'observation_unit_level':'plot',
                                 'correlation_type':'pearson',
-                                'additional_pheno': JSON.stringify(response.pheno_data),
-                                'additional_traits': JSON.stringify(response.traits)
+                                'additional_pheno': JSON.stringify(manage_drone_rover_plot_polygons_plot_polygon_phenotypes),
+                                'additional_traits': JSON.stringify(manage_drone_rover_plot_polygons_plot_polygon_phenotypes_traits)
                             },
                             success: function(response){
                                 console.log(response);
@@ -967,6 +986,55 @@ jQuery(document).ready(function() {
                                     }
                                     html = html + '</tbody></table>';
                                     jQuery('#drone_rover_plot_polygons_process_correlate_phenotype_trait_results').html(html);
+
+                                    jQuery.ajax({
+                                        type: 'POST',
+                                        url: '/api/drone_rover/plot_polygons_test_pheno_range_correlations',
+                                        dataType: "json",
+                                        data: {
+                                            'trait_ids': JSON.stringify(selected_trait_ids),
+                                            'observation_unit_level':'plot',
+                                            'correlation_type':'pearson',
+                                            'field_trial_id':manage_drone_rover_plot_polygons_field_trial_id,
+                                            'additional_pheno': JSON.stringify(manage_drone_rover_plot_polygons_plot_polygon_phenotypes),
+                                            'additional_traits': JSON.stringify(manage_drone_rover_plot_polygons_plot_polygon_phenotypes_traits),
+                                            'range_min': jQuery('#plot_polygon_process_collection_range_min').val(),
+                                            'range_max': jQuery('#plot_polygon_process_collection_range_max').val(),
+                                            'column_min': jQuery('#plot_polygon_process_collection_column_min').val(),
+                                            'column_max': jQuery('#plot_polygon_process_collection_column_max').val(),
+                                            'range_start': jQuery('#plot_polygon_process_collection_range_start').val(),
+                                            'range_stop': jQuery('#plot_polygon_process_collection_range_stop').val(),
+                                            'column_start': jQuery('#plot_polygon_process_collection_column_start').val(),
+                                            'column_stop': jQuery('#plot_polygon_process_collection_column_stop').val(),
+                                            'columns_question': jQuery('#drone_rover_plot_polygons_process_correlate_phenotype_columns_question').val()
+                                        },
+                                        success: function(response){
+                                            console.log(response);
+                                            if (response.error) {
+                                                alert(response.error);
+                                            }
+                                            else {
+                                                var html = '<table class="table table-hover table-bordered"><thead><tr>';
+                                                for(var i=0; i<response.result[0].length; i++) {
+                                                    html = html + '<th>'+response.result[0][i]+'</th>';
+                                                }
+                                                html = html + '</tr></thead>';
+                                                for(var i=1; i<response.result.length; i++) {
+                                                    html = html + '<tr>';
+                                                    for(var j=0; j<response.result[i].length; j++) {
+                                                        html = html + '<td>'+response.result[i][j]+'</td>';
+                                                    }
+                                                    html = html + '</tr>';
+                                                }
+                                                html = html + '</tbody></table>';
+                                                jQuery('#drone_rover_plot_polygons_process_correlate_test_phenotype_trait_results').html(html);
+                                            }
+                                        },
+                                        error: function(response){
+                                            alert('Error doing correlation across other potential ranges!');
+                                        }
+                                    });
+
                                 }
                             },
                             error: function(response){
