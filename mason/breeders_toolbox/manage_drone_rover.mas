@@ -63,17 +63,8 @@
                         <div id="upload_drone_rover_field_trial_info">
                         </div>
 
-                        <div id="upload_drone_rover_field_trial_select_date_continue_div" style="display:none">
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Rover Event Date and Hour (Must be after the planting date):</label>
-                                <div class="col-sm-9" >
-                                    <input class="form-control" id="rover_run_date" name="rover_run_date" title="rover_run_date" type="text" />
-                                </div>
-                            </div>
-                        </div>
-
                         <center>
-                        <button class="btn btn-primary" id="upload_drone_rover_field_trial_select_date_continue">Go to Next Step</button>
+                        <button class="btn btn-primary" id="upload_drone_rover_field_trial_select_continue">Go to Next Step</button>
                         </center>
                     </&>
                     <&| /util/workflow.mas:step, title=> "Rover Event" &>
@@ -95,16 +86,7 @@
                             </thead>
                         </table>
 
-                        <!-- If rover run is selected above, the drone_run_project_id is passed to controller, negating need to create new drone run -->
-                        <input id="rover_run_id" name="rover_run_id" type="hidden" value=""/>
-
                         <br/>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Ground Rover Event Name(s) (Uniquely Generated): </label>
-                            <div class="col-sm-9" >
-                                <input class="form-control" id="rover_run_name" name="rover_run_name" type="text" placeholder="e.g. Field Trial Name + Date of Flight" disabled/>
-                            </div>
-                        </div>
                         <div class="form-group">
                             <label class="col-sm-3 control-label">Sensor Type:</label>
                             <div class="col-sm-9" >
@@ -124,12 +106,6 @@
                             <label class="col-sm-3 control-label">Rover Vehicle Battery Set:</label>
                             <div class="col-sm-9" >
                                 <div id="drone_run_rover_vehicle_battery_div"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">Rover Event Description (e.g. control plan name, overall weather conditions): </label>
-                            <div class="col-sm-9" >
-                                <input class="form-control" id="drone_run_rover_description" name="drone_run_rover_description" type="text" />
                             </div>
                         </div>
                         <br/>
@@ -298,11 +274,7 @@
             <form class="form-horizontal" role="form" method="post" enctype="multipart/form-data" encoding="multipart/form-data" id="upload_drone_rover_earthsense_lidar_form" name="upload_drone_rover_earthsense_lidar_form" action="/drone_rover/upload_drone_rover" >
 
                 <input type="hidden" name="rover_run_field_trial_id" value="" >
-                <input type="hidden" name="rover_run_id" value=""/>
                 <input type="hidden" name="rover_run_company_id" value="" />
-                <input type="hidden" name="rover_run_name" value="" />
-                <input type="hidden" name="rover_run_description" value="" />
-                <input type="hidden" name="rover_run_date" value="" />
                 <input type="hidden" name="rover_run_sensor_type" value="" />
                 <input type="hidden" name="rover_run_rover_type" value="" />
                 <input type="hidden" name="rover_run_rover_data_type" value="" />
@@ -396,8 +368,6 @@ jQuery(document).ready(function() {
         jQuery('#upload_drone_rover_dialog').modal('show');
     });
 
-    var upload_drone_rover_field_trial_ids_string = '';
-    var upload_drone_rover_field_trial_names = [];
     jQuery(document).on('change', '#rover_run_field_trial_id', function() {
         var upload_drone_rover_field_trial_ids = jQuery(this).val();
         upload_drone_rover_field_trial_ids_string = upload_drone_rover_field_trial_ids.join();
@@ -419,15 +389,6 @@ jQuery(document).ready(function() {
                 if (response.html) {
                     jQuery('#upload_drone_rover_field_trial_info').html(response.html);
                 }
-                if (response.can_proceed == 1) {
-                    jQuery('#upload_drone_rover_field_trial_select_date_continue_div').show();
-                    upload_drone_rover_field_trial_names = response.field_trial_names;
-                }
-                else {
-                    upload_drone_rover_field_trial_ids_string = '';
-                    upload_drone_rover_field_trial_names = [];
-                    jQuery('#upload_drone_rover_field_trial_select_date_continue_div').hide();
-                }
             },
             error: function(response){
                 alert('Error checking field trial details!');
@@ -435,22 +396,7 @@ jQuery(document).ready(function() {
         });
     });
 
-    var rover_run_date_element = jQuery("#rover_run_date");
-    set_daterangepicker_default (rover_run_date_element);
-    jQuery('input[title="rover_run_date"]').daterangepicker(
-        {
-            "singleDatePicker": true,
-            "showDropdowns": true,
-            "autoUpdateInput": false,
-            "timePicker": true,
-            "timePicker24Hour": true,
-        },
-        function(start){
-            rover_run_date_element.val(start.format('YYYY/MM/DD HH:mm:ss'));
-        }
-    );
-
-    jQuery('#upload_drone_rover_field_trial_select_date_continue').click(function(e){
+    jQuery('#upload_drone_rover_field_trial_select_continue').click(function(e){
         e.preventDefault();
 
         if (upload_drone_rover_field_trial_ids_string == '') {
@@ -458,51 +404,14 @@ jQuery(document).ready(function() {
             return false;
         }
         else {
-            if (jQuery('#rover_run_date').val() == ''){
-                alert('Please give an imaging event date!');
+            jQuery('#new_rover_vehicle_company_hide_div').hide();
+            upload_drone_rover_vehicle_id = jQuery('#rover_run_imaging_vehicle_id').val();
+            if (upload_drone_rover_vehicle_id) {
+                _show_rover_vehicle_battery_select();
             }
-            else {
-                jQuery('#new_rover_vehicle_company_hide_div').hide();
-                upload_drone_rover_vehicle_id = jQuery('#rover_run_imaging_vehicle_id').val();
-                if (upload_drone_rover_vehicle_id) {
-                    _show_rover_vehicle_battery_select();
-                }
 
-                var field_trial_names_generated = [];
-                var rover_run_date = jQuery('#rover_run_date').val();
-                var rover_run_date_gen = rover_run_date.replace(/\//g, '');
-                for (var i=0; i<upload_drone_rover_field_trial_names.length; i++) {
-                    var rover_run_name_gen = upload_drone_rover_field_trial_names[i]+"_Rover_"+rover_run_date_gen;
-                    rover_run_name_gen = rover_run_name_gen.replace(/ /g, '_');
-                    rover_run_name_gen = rover_run_name_gen.replace(/\,/g, '_');
-
-                    jQuery.ajax({
-                        url : '/api/drone_imagery/upload_drone_imagery_check_drone_name?drone_run_name='+rover_run_name_gen,
-                        success: function(response){
-                            console.log(response);
-
-                            if (response.success) {
-                                console.log("Checked "+rover_run_name_gen);
-                            }
-                            else if (response.error) {
-                                alert("Error: " + response.error);
-
-                                Workflow.focus('#drone_rover_upload_workflow', 1);
-                            }
-                        },
-                        error: function(response) {
-                            alert('Error checking rover run name!');
-                        }
-                    });
-
-                    field_trial_names_generated.push(rover_run_name_gen);
-                }
-                var field_trial_names_generated_string = field_trial_names_generated.join();
-                jQuery('#rover_run_name').val(field_trial_names_generated_string);
-
-                Workflow.complete('#upload_drone_rover_field_trial_select_date_continue');
-                Workflow.focus('#drone_rover_upload_workflow', 2);
-            }
+            Workflow.complete('#upload_drone_rover_field_trial_select_continue');
+            Workflow.focus('#drone_rover_upload_workflow', 2);
         }
         return false;
     });
@@ -607,33 +516,17 @@ jQuery(document).ready(function() {
         if (selected.length > 1){
             alert('Only select one rover run!');
         } else {
-            if (selected.length == 0 && jQuery('#rover_run_name').val() == ''){
-                alert('Select an rover event or create a new one!');
-            } else if (selected.length == 1 && jQuery('#rover_run_name').val() != ''){
-                alert('If you selected an rover run event, do not try to make a new one at the same time!');
-            } else if (selected.length == 1 && jQuery('#rover_run_name').val() == ''){
-                jQuery('#rover_run_id').val(selected[0]);
+            if (jQuery('#drone_run_type').val() == ''){
+                alert('Please select an imaging event type');
+            } else if (jQuery('#drone_rover_upload_camera_info').val() == ''){
+                alert('Please select an rover event sensor type');
+            } else if (jQuery('#rover_run_imaging_vehicle_id').val() == '' || jQuery('#drone_run_rover_vehicle_battery_name').val() == '') {
+                alert('Please select a ground rover vehicle and the associated battery! You can create a new vehicle if needed e.g. default_uav');
+                return false;
+            } else {
                 Workflow.complete('#drone_rover_upload_drone_run_continue');
                 Workflow.focus('#drone_rover_upload_workflow', 3);
-            } else if (selected.length == 0 && jQuery('#rover_run_name').val() != '') {
-                if (jQuery('#drone_run_rover_description').val() == ''){
-                    alert('Please give a rover run event description.');
-                } else if (jQuery('#rover_run_date').val() == ''){
-                    alert('Please give a rover event date.');
-                } else if (jQuery('#drone_run_type').val() == ''){
-                    alert('Please select an imaging event type');
-                } else if (jQuery('#drone_rover_upload_camera_info').val() == ''){
-                    alert('Please select an rover event sensor type');
-                } else if (jQuery('#rover_run_imaging_vehicle_id').val() == '' || jQuery('#drone_run_rover_vehicle_battery_name').val() == '') {
-                    alert('Please select a ground rover vehicle and the associated battery! You can create a new vehicle if needed e.g. default_uav');
-                    return false;
-                } else {
-                    jQuery('#rover_run_id').val('');
-
-                    Workflow.complete('#drone_rover_upload_drone_run_continue');
-                    Workflow.focus('#drone_rover_upload_workflow', 3);
-                    return false;
-                }
+                return false;
             }
         }
         return false;
@@ -642,18 +535,14 @@ jQuery(document).ready(function() {
     jQuery('#drone_rover_upload_continue').click(function(e){
         e.preventDefault();
 
-        var drone_run_id = jQuery('#rover_run_id').val();
-        var drone_run_name = jQuery('#rover_run_name').val();
         var drone_run_company_id = jQuery('#rover_run_company_id').val();
-        var drone_run_description = jQuery('#drone_run_rover_description').val();
-        var drone_run_date = jQuery('#rover_run_date').val();
         var drone_run_sensor_type = jQuery('#drone_rover_upload_camera_info').val();
         var drone_run_rover_type = jQuery('#drone_run_upload_rover_type').val();
         var drone_run_rover_data_type = jQuery('#drone_run_upload_rover_data_type').val();
         var drone_run_vehicle_id = jQuery('#rover_run_imaging_vehicle_id').val();
         var drone_run_vehicle_battery_name = jQuery('#drone_run_rover_vehicle_battery_name').val();
 
-        if (drone_run_id == '' && drone_run_sensor_type == '') {
+        if (drone_run_sensor_type == '') {
             alert('Please select the sensor type used.');
             return false;
         }
@@ -680,11 +569,7 @@ jQuery(document).ready(function() {
         }
 
         jQuery('input[name="rover_run_field_trial_id"]').val(upload_drone_rover_field_trial_ids_string);
-        jQuery('input[name="rover_run_id"]').val(drone_run_id);
         jQuery('input[name="rover_run_company_id"]').val(drone_run_company_id);
-        jQuery('input[name="rover_run_name"]').val(drone_run_name);
-        jQuery('input[name="rover_run_description"]').val(drone_run_description);
-        jQuery('input[name="rover_run_date"]').val(drone_run_date);
         jQuery('input[name="rover_run_sensor_type"]').val(drone_run_sensor_type);
         jQuery('input[name="rover_run_rover_type"]').val(drone_run_rover_type);
         jQuery('input[name="rover_run_rover_data_type"]').val(drone_run_rover_data_type);
