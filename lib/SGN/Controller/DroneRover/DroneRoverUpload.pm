@@ -210,11 +210,11 @@ sub upload_drone_rover : Path("/drone_rover/upload_drone_rover") :Args(0) {
                 $c->stash->{template} = 'generic_message.mas';
                 return;
             }
-            if (!exists($collection_file->{'lidar_log.csv'})) {
-                $c->stash->{message} = "The collection number $collection_number does not include the lidar_log.csv!";
-                $c->stash->{template} = 'generic_message.mas';
-                return;
-            }
+            #if (!exists($collection_file->{'lidar_log.csv'})) {
+            #    $c->stash->{message} = "The collection number $collection_number does not include the lidar_log.csv!";
+            #    $c->stash->{template} = 'generic_message.mas';
+            #    return;
+            #}
             if (!exists($collection_file->{'system_log.csv'})) {
                 $c->stash->{message} = "The collection number $collection_number does not include the system_log.csv!";
                 $c->stash->{template} = 'generic_message.mas';
