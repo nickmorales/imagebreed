@@ -68,8 +68,7 @@ sub new_account :Path('/ajax/user/new') Args(0) {
         return;
     }
 
-    my ($first_name, $last_name, $username, $password, $confirm_password, $email_address, $organization, $breeding_program_ids, $private_company_ids)
-	= map { $c->req->params->{$_} } (qw|first_name last_name username password confirm_password email_address organization breeding_programs private_companies|);
+    my ($first_name, $last_name, $username, $password, $confirm_password, $email_address, $organization, $breeding_program_ids, $private_company_ids) = map { $c->req->params->{$_} } (qw|first_name last_name username password confirm_password email_address organization breeding_programs private_companies|);
 
     if ($private_company_ids && ref($private_company_ids) ne 'ARRAY') {
         $private_company_ids = [$private_company_ids];
@@ -89,63 +88,57 @@ sub new_account :Path('/ajax/user/new') Args(0) {
     }
 
     if ($username) {
-	#
-	# check password properties...
-	#
-	my @fail = ();
-	if (length($username) < 7) {
-	    push @fail, "Username is too short. Username must be 7 or more characters";
-	} elsif ( $username =~ /\s/ ) {
-        push @fail, "Username must not contain spaces";
-    } else {
-	    # does user already exist?
-	    #
-	    my $existing_login = CXGN::People::Login -> get_login($c->dbc()->dbh(), $username);
+        my @fail = ();
+        if (length($username) < 7) {
+            push @fail, "Username is too short. Username must be 7 or more characters";
+        } elsif ( $username =~ /\s/ ) {
+            push @fail, "Username must not contain spaces";
+        } else {
+            my $existing_login = CXGN::People::Login -> get_login($c->dbc()->dbh(), $username);
 
-	    if ($existing_login->get_username()) {
-		push @fail, "Username \"$username\" is already in use. Please pick a different username.";
-	    }
-
-	}
-	if (length($password) < 7) {
-	    push @fail, "Password is too short. Password must be 7 or more characters";
-	}
-	if ("$password" ne "$confirm_password") {
-	    push @fail, "Password and confirm password do not match.";
-	}
-
-	if ($password eq $username) {
-	    push @fail, "Password must not be the same as your username.";
-	}
-	if ($email_address !~ m/[^\@]+\@[^\@]+/) {
-	    push @fail, "Email address is invalid.";
-	}
-    if ( $email_address ) {
-        my @person_ids = CXGN::People::Login->get_login_by_email($c->dbc()->dbh(), $email_address);
-        if ( scalar(@person_ids) > 0 ) {
-            push @fail, "Email address is already associated with an account.";
+            if ($existing_login->get_username()) {
+                push @fail, "Username \"$username\" is already in use. Please pick a different username.";
+            }
         }
-    }
-	unless($first_name) {
-	    push @fail,"You must enter a first name or initial.";
-	}
-	unless($last_name) {
-	    push @fail,"You must enter a last name.";
-	}
+        if (length($password) < 7) {
+            push @fail, "Password is too short. Password must be 7 or more characters";
+        }
+        if ("$password" ne "$confirm_password") {
+            push @fail, "Password and confirm password do not match.";
+        }
 
-	if (@fail) {
-	    $c->stash->{rest} = { error => "Account creation failed for the following reason(s): ".(join ", ", @fail) };
-	    return;
-	}
+        if ($password eq $username) {
+            push @fail, "Password must not be the same as your username.";
+        }
+        if ($email_address !~ m/[^\@]+\@[^\@]+/) {
+            push @fail, "Email address is invalid.";
+        }
+        if ( $email_address ) {
+            my @person_ids = CXGN::People::Login->get_login_by_email($c->dbc()->dbh(), $email_address);
+            if ( scalar(@person_ids) > 0 ) {
+                push @fail, "Email address is already associated with an account.";
+            }
+        }
+        unless($first_name) {
+            push @fail,"You must enter a first name or initial.";
+        }
+        unless($last_name) {
+            push @fail,"You must enter a last name.";
+        }
+
+        if (@fail) {
+            $c->stash->{rest} = { error => "Account creation failed for the following reason(s): ".(join ", ", @fail) };
+            return;
+        }
     }
 
     my $confirm_code = $self->tempname();
     my $new_user = CXGN::People::Login->new($c->dbc->dbh());
-    $new_user -> set_username($username);
-    $new_user -> set_pending_email($email_address);
-    $new_user -> set_disabled('unconfirmed account');
-    $new_user -> set_organization($organization);
-    $new_user -> store();
+    $new_user->set_username($username);
+    $new_user->set_pending_email($email_address);
+    $new_user->set_disabled('unconfirmed account');
+    $new_user->set_organization($organization);
+    $new_user->store();
 
     print STDERR "Generated sp_person_id ".$new_user->get_sp_person_id()."\n";
     print STDERR "Update password and confirm code...\n";
@@ -227,13 +220,10 @@ END_HEREDOC
     # Send confirmation email to admin
     my $message = "";
     if ( $c->config->{user_registration_admin_confirmation} && $c->config->{user_registration_admin_confirmation_email} ) {
-        CXGN::Contact::send_email($subject,$body,'user_registration_admin_confirmation_email');
+        CXGN::Contact::send_email($subject, $body, $c->config->{user_registration_admin_confirmation_email});
         $message = "Your account has been created but first must be confirmed by the site administrators.  You will receive an email once your account has been confirmed.";
-    }
-
-    # Send confirmation email to user
-    else {
-        CXGN::Contact::send_email($subject,$body,$email_address);
+    } else {
+        CXGN::Contact::send_email($subject, $body, $email_address);
         $message = "To continue, you must confirm that we can reach you via email address \"$email_address\". An email has been sent with a URL to confirm this address. Please check your email for this message and use the link to confirm your email address.";
     }
 
@@ -241,7 +231,6 @@ END_HEREDOC
         message => "Account was created with username \"$username\".\n\n$message\n\nYou will be able to login once your account has been confirmed."
     };
 }
-
 
 sub change_account_info_action :Path('/ajax/user/update') Args(0) {
     my $self = shift;

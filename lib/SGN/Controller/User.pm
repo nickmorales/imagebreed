@@ -46,9 +46,9 @@ sub confirm_user :Path('/user/confirm') Args(0) {
     my $confirm_code = $c->req->param('confirm_code');
     my $username = $c->req->param('username');
 
-    if ($c->config->{disable_account_confirm}) {
+    if ($c->config->{disable_account_confirm} && !$c->config->{user_registration_admin_confirmation} && !$c->config->{user_registration_admin_confirmation_email}) {
         $c->stash->{template} = '/generic_message.mas';
-        $c->stash->{message} = 'Account confirmation is disabled on this site. Please contact nm529@cornell.edu to confirm your account.';
+        $c->stash->{message} = 'Account confirmation is disabled on this site. Please contact the site admin to confirm your account.';
         return;
     }
 
@@ -90,7 +90,7 @@ $host
 Thank you,
 $project_name Team
 
-Please do *NOT* reply to this message. If you have any trouble logging into your 
+Please do *NOT* reply to this message. If you have any trouble logging into your
 account or have any other questions, please use the contact form instead:
 $host/contact/form
 
